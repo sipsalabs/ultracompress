@@ -8,9 +8,21 @@
 
 ## Project Goal
 Extreme LLM weight compression. Flagship the industry.
-- 235B params -> 20GB (0.68 BPW) -- **ACHIEVED: 2.3 GB at 0.08 BPW**
-- 10T params -> 20GB (0.016 BPW) -- **ACHIEVED: 19.5 GB at scale**
-- 1000T params -> 20GB (0.00016 BPW) -- OPEN: need cross-layer SVD on large models
+- 235B params -> 20GB (0.68 BPW)
+- 10T params -> 20GB (0.016 BPW)
+- 1000T params -> 20GB (0.00016 BPW)
+
+## CRITICAL REALITY CHECK (2026-04-10)
+The 0.9999 output cosine metric was WRONG — it measured against random calibration
+activations that don't match real inference. Actual text generation shows:
+- 3.0 BPW, 0.955 weight cosine: 40% top-10 agreement, top-1 MISS
+- 1.5 BPW, 0.953 weight cosine: 0% agreement, broken
+- Sub-1 BPW: completely unusable for text generation
+
+The compound pipeline framework is VALID but needs:
+1. Real text calibration data (C4/WikiText), not random tokens
+2. Proper attention during calibration (RoPE, causal mask) — DONE
+3. 0.99+ weight cosine per layer for actual text quality
 
 ## What Exists (Complete)
 

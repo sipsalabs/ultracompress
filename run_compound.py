@@ -164,13 +164,26 @@ def parse_layer_weights(weights_dict, layer_idx):
     return result
 
 
-def simplified_attention(q, k, v, n_heads, n_kv_heads):
-    """Simplified multi-head attention (no RoPE, no causal mask).
+def rope_embed(x, positions, theta=10000.0):
+    """Apply rotary position embeddings."""
+    d = x.shape[-1]
+    freqs = 1.0 / (theta ** (torch.arange(0, d, 2, device=x.device).float() / d))
+    t = positions.float()
+    angles = torch.outer(t, freqs)
+    cos_a = torch.cos(angles)
+    sin_a = torch.sin(angles)
+    x_r = x.reshape(*x.shape[:-1], -1, 2)
+    x0, x1 = x_r[..., 0], x_r[..., 1]
+    out_r = x0 * cos_a - x1 * sin_a
+    out_i = x0 * sin_a + x1 * cos_a
+    return torch.stack([out_r, out_i], dim=-1).reshape(x.shape)
 
-    This is sufficient for generating activations for output-aware PQ.
-    We don't need perfect attention — we need realistic activation
-    distributions so the gradient refinement knows which output
-    dimensions matter.
+
+def full_attention(q, k, v, n_heads, n_kv_heads):
+    """Full multi-head attention with RoPE and causal mask.
+
+    Uses the same logic as MiniTransformer's TransformerLayer to ensure
+    activations during compression match activations during inference.
     """
     B, T, _ = q.shape
     head_dim_q = q.shape[-1] // n_heads
@@ -179,6 +192,14 @@ def simplified_attention(q, k, v, n_heads, n_kv_heads):
     q = q.reshape(B, T, n_heads, head_dim_q).transpose(1, 2)
     k = k.reshape(B, T, n_kv_heads, head_dim_kv).transpose(1, 2)
     v = v.reshape(B, T, n_kv_heads, head_dim_kv).transpose(1, 2)
+
+    # RoPE
+    positions = torch.arange(T, device=q.device)
+    rope_dim = min(head_dim_q, head_dim_kv)
+    q_rope = rope_embed(q[..., :rope_dim], positions)
+    k_rope = rope_embed(k[..., :rope_dim], positions)
+    q = torch.cat([q_rope, q[..., rope_dim:]], dim=-1) if head_dim_q > rope_dim else q_rope
+    k = torch.cat([k_rope, k[..., rope_dim:]], dim=-1) if head_dim_kv > rope_dim else k_rope
 
     # GQA: repeat k/v
     if n_kv_heads < n_heads:
@@ -194,6 +215,12 @@ def simplified_attention(q, k, v, n_heads, n_kv_heads):
 
     attn = torch.matmul(q_attn.float(), k.float().transpose(-2, -1))
     attn = attn / math.sqrt(head_dim_kv)
+
+    # Causal mask
+    if T > 1:
+        mask = torch.triu(torch.ones(T, T, device=q.device), diagonal=1).bool()
+        attn = attn.masked_fill(mask.unsqueeze(0).unsqueeze(0), float('-inf'))
+
     attn = F.softmax(attn, dim=-1)
     out = torch.matmul(attn, v.float())
     return out.transpose(1, 2).reshape(B, T, -1)
@@ -210,8 +237,14 @@ def compress_layer_full(
         → layernorm → gate/up → silu(gate)*up → down → residual
 
     At each weight, we have the correct input activations for output-aware refinement.
+
+    Returns:
+        results: list of (weight_type, stats) tuples
+        output: propagated activations for next layer
+        compressed_weights: dict mapping weight_type -> reconstructed tensor (CPU)
     """
     results = []
+    compressed_weights = {}
     x = activations  # (B*T, hidden_dim) flattened sequences
 
     # We need 3D for attention: reshape to (B, T, hidden)
@@ -235,6 +268,7 @@ def compress_layer_full(
             layer_weights['q_proj'], x_norm, M, K, G, n_iter, refine_steps, lr, device,
         )
         results.append(('q_proj', stats))
+        compressed_weights['q_proj'] = q_recon.cpu()
         q = (x_norm @ q_recon.t()).unsqueeze(0)  # (1, T, q_dim)
         print(f"ocos={stats['ocos_ref']:.4f} ", end="", flush=True)
     else:
@@ -247,6 +281,7 @@ def compress_layer_full(
             layer_weights['k_proj'], x_norm, M, K, G, n_iter, refine_steps, lr, device,
         )
         results.append(('k_proj', stats))
+        compressed_weights['k_proj'] = k_recon.cpu()
         k = (x_norm @ k_recon.t()).unsqueeze(0)
         print(f"ocos={stats['ocos_ref']:.4f} ", end="", flush=True)
     else:
@@ -259,14 +294,15 @@ def compress_layer_full(
             layer_weights['v_proj'], x_norm, M, K, G, n_iter, refine_steps, lr, device,
         )
         results.append(('v_proj', stats))
+        compressed_weights['v_proj'] = v_recon.cpu()
         v = (x_norm @ v_recon.t()).unsqueeze(0)
         print(f"ocos={stats['ocos_ref']:.4f} ", end="", flush=True)
     else:
         v = x_norm_3d
 
-    # 5. Attention computation (simplified — no RoPE, no causal mask)
+    # 5. Attention computation (full — with RoPE + causal mask)
     with torch.no_grad():
-        attn_out = simplified_attention(q, k, v, n_heads, n_kv_heads)
+        attn_out = full_attention(q, k, v, n_heads, n_kv_heads)
     attn_out_2d = attn_out.reshape(-1, attn_out.shape[-1])
 
     # 6. O projection — activations = attention output
@@ -276,6 +312,7 @@ def compress_layer_full(
             layer_weights['o_proj'], attn_out_2d, M, K, G, n_iter, refine_steps, lr, device,
         )
         results.append(('o_proj', stats))
+        compressed_weights['o_proj'] = o_recon.cpu()
         o_out = attn_out_2d @ o_recon.t()
         print(f"ocos={stats['ocos_ref']:.4f}", flush=True)
     else:
@@ -300,6 +337,7 @@ def compress_layer_full(
             layer_weights['gate_proj'], h_norm, M, K, G, n_iter, refine_steps, lr, device,
         )
         results.append(('gate_proj', stats))
+        compressed_weights['gate_proj'] = gate_recon.cpu()
         gate = h_norm @ gate_recon.t()
         print(f"ocos={stats['ocos_ref']:.4f} ", end="", flush=True)
     else:
@@ -312,6 +350,7 @@ def compress_layer_full(
             layer_weights['up_proj'], h_norm, M, K, G, n_iter, refine_steps, lr, device,
         )
         results.append(('up_proj', stats))
+        compressed_weights['up_proj'] = up_recon.cpu()
         up = h_norm @ up_recon.t()
         print(f"ocos={stats['ocos_ref']:.4f} ", end="", flush=True)
     else:
@@ -328,6 +367,7 @@ def compress_layer_full(
             layer_weights['down_proj'], ffn_hidden, M, K, G, n_iter, refine_steps, lr, device,
         )
         results.append(('down_proj', stats))
+        compressed_weights['down_proj'] = down_recon.cpu()
         down_out = ffn_hidden @ down_recon.t()
         print(f"ocos={stats['ocos_ref']:.4f}", flush=True)
     else:
@@ -336,7 +376,7 @@ def compress_layer_full(
     # Residual connection
     output = h + down_out  # (T, hidden)
 
-    return results, output
+    return results, output, compressed_weights
 
 
 def run_pipeline(args):
@@ -425,7 +465,7 @@ def run_pipeline(args):
             lM, lK, lG = M, K, G
             print(f"  Layer {layer_idx}:")
 
-        results, activations = compress_layer_full(
+        results, activations, _cw = compress_layer_full(
             layer_weights, activations, lM, lK, lG,
             n_iter=20, refine_steps=args.steps, lr=args.lr,
             device=device, n_heads=n_heads, n_kv_heads=n_kv_heads,
