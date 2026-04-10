@@ -186,6 +186,189 @@ class GenomeCompressor:
         self.weights = model_weights
         self.config = model_config
 
+    def build_cache(self, n_samples=10000, batch_size=32, seq_len=32, n_layers=None):
+        """Pre-compute teacher outputs for fast training.
+
+        Instead of running the teacher every step, cache logits for
+        many inputs upfront. Training becomes 10-100x faster.
+
+        Also the foundation for API-based compression: query the
+        remote model once, cache results, train locally forever.
+        """
+        from ultracompress.inference import MiniTransformer
+
+        actual_layers = n_layers or self.config.n_layers
+
+        # Build teacher
+        hf_to_gguf = {
+            'self_attn.q_proj.weight': 'attn_q.weight',
+            'self_attn.k_proj.weight': 'attn_k.weight',
+            'self_attn.v_proj.weight': 'attn_v.weight',
+            'self_attn.o_proj.weight': 'attn_output.weight',
+            'self_attn.q_norm.weight': 'attn_q_norm.weight',
+            'self_attn.k_norm.weight': 'attn_k_norm.weight',
+            'input_layernorm.weight': 'attn_norm.weight',
+            'post_attention_layernorm.weight': 'ffn_norm.weight',
+            'mlp.gate_proj.weight': 'ffn_gate.weight',
+            'mlp.up_proj.weight': 'ffn_up.weight',
+            'mlp.down_proj.weight': 'ffn_down.weight',
+        }
+        gd = {}
+        gd['token_embd.weight'] = self.weights['model.embed_tokens.weight'].float()
+        gd['output_norm.weight'] = self.weights.get('model.norm.weight',
+                                                     torch.ones(self.config.hidden_size)).float()
+        gd['output.weight'] = self.weights.get('lm_head.weight', gd['token_embd.weight']).float()
+        for li in range(actual_layers):
+            for h, g in hf_to_gguf.items():
+                k = f'model.layers.{li}.{h}'
+                if k in self.weights:
+                    gd[f'blk.{li}.{g}'] = self.weights[k].float()
+
+        teacher = MiniTransformer(self.config, self.device)
+        teacher.load_weights(gd)
+
+        print(f"Building cache: {n_samples} samples...")
+        all_tokens = []
+        all_logits = []
+
+        for start in range(0, n_samples, batch_size):
+            end = min(start + batch_size, n_samples)
+            torch.manual_seed(start)
+            tokens = torch.randint(100, 100000, (end - start, seq_len), device=self.device)
+            with torch.no_grad():
+                logits = teacher.forward(tokens, max_layers=actual_layers)[:, -1, :]
+            all_tokens.append(tokens.cpu())
+            all_logits.append(logits.cpu())
+
+            if (start // batch_size) % 50 == 0:
+                print(f"  {start}/{n_samples}")
+                sys.stdout.flush()
+
+        cache = {
+            'tokens': torch.cat(all_tokens),
+            'logits': torch.cat(all_logits),
+            'n_layers': actual_layers,
+            'embed': gd['token_embd.weight'],
+            'norm': gd['output_norm.weight'],
+            'head': gd['output.weight'],
+        }
+        print(f"Cache built: {cache['tokens'].shape[0]} samples")
+        return cache
+
+    def compress_from_cache(
+        self,
+        cache: dict,
+        small_dim: int = 128,
+        n_heads: int = 4,
+        n_steps: int = 10000,
+        batch_size: int = 64,
+        lr: float = 0.001,
+        eval_every: int = 2000,
+        verbose: bool = True,
+    ) -> CompressionResult:
+        """Train genome from cached teacher outputs. 10-100x faster."""
+        n_layers = cache['n_layers']
+        embed = cache['embed'].to(self.device)
+        norm_w = cache['norm'].to(self.device)
+        lm_head = cache['head'].to(self.device)
+        cached_tokens = cache['tokens']
+        cached_logits = cache['logits']
+        n_cached = cached_tokens.shape[0]
+
+        orig_params = sum(
+            self.weights[k].numel()
+            for k in self.weights
+            if any(f'layers.{i}' in k for i in range(n_layers))
+            and 'weight' in k and self.weights[k].ndim >= 2
+        ) if self.weights else 0
+
+        genome = GenomeModel(
+            vocab_size=self.config.vocab_size,
+            big_dim=self.config.hidden_size,
+            small_dim=small_dim,
+            n_heads=n_heads,
+            n_layers=n_layers,
+            embed_weight=embed,
+            lm_head_weight=lm_head,
+            norm_weight=norm_w,
+        ).to(self.device)
+
+        genome_params = genome.genome_param_count()
+        bpw = genome_params * 16 / orig_params if orig_params > 0 else 0
+
+        if verbose:
+            print(f"Genome: {genome_params:,} params ({genome_params*2/1e6:.1f} MB)")
+            print(f"BPW: {bpw:.4f}, Compression: {orig_params/genome_params:.0f}x")
+            print(f"Training from cache ({n_cached} samples, {n_steps} steps)")
+
+        opt = torch.optim.AdamW(genome.genome_layers.parameters(), lr=lr, weight_decay=0.005)
+        sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, n_steps)
+
+        t_start = time.time()
+        for step in range(n_steps):
+            idx = torch.randint(0, n_cached, (batch_size,))
+            tokens = cached_tokens[idx].to(self.device)
+            target_logits = cached_logits[idx].to(self.device)
+
+            student_logits = genome(tokens, max_layers=n_layers)[:, -1, :]
+            loss = F.kl_div(
+                F.log_softmax(student_logits / 2, dim=-1),
+                F.softmax(target_logits / 2, dim=-1),
+                reduction='batchmean',
+            ) * 4
+
+            opt.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(genome.genome_layers.parameters(), 1.0)
+            opt.step()
+            sched.step()
+
+            if verbose and eval_every and step % eval_every == 0:
+                elapsed = time.time() - t_start
+                steps_per_sec = (step + 1) / elapsed if elapsed > 0 else 0
+                print(f"  Step {step:>5}: loss={loss.item():.3f} [{steps_per_sec:.1f} steps/s]")
+                sys.stdout.flush()
+
+        # Eval using teacher forward (need to build it)
+        from ultracompress.inference import MiniTransformer
+        hf_to_gguf = {
+            'self_attn.q_proj.weight': 'attn_q.weight', 'self_attn.k_proj.weight': 'attn_k.weight',
+            'self_attn.v_proj.weight': 'attn_v.weight', 'self_attn.o_proj.weight': 'attn_output.weight',
+            'self_attn.q_norm.weight': 'attn_q_norm.weight', 'self_attn.k_norm.weight': 'attn_k_norm.weight',
+            'input_layernorm.weight': 'attn_norm.weight', 'post_attention_layernorm.weight': 'ffn_norm.weight',
+            'mlp.gate_proj.weight': 'ffn_gate.weight', 'mlp.up_proj.weight': 'ffn_up.weight',
+            'mlp.down_proj.weight': 'ffn_down.weight',
+        }
+        gd = {}
+        gd['token_embd.weight'] = self.weights['model.embed_tokens.weight'].float()
+        gd['output_norm.weight'] = self.weights.get('model.norm.weight', torch.ones(self.config.hidden_size)).float()
+        gd['output.weight'] = self.weights.get('lm_head.weight', gd['token_embd.weight']).float()
+        for li in range(n_layers):
+            for h, g in hf_to_gguf.items():
+                k = f'model.layers.{li}.{h}'
+                if k in self.weights:
+                    gd[f'blk.{li}.{g}'] = self.weights[k].float()
+        teacher = MiniTransformer(self.config, self.device)
+        teacher.load_weights(gd)
+        def teacher_forward(tokens):
+            with torch.no_grad():
+                return teacher.forward(tokens, max_layers=n_layers)
+
+        top1, top10 = self._evaluate(genome, teacher_forward, n_layers, 50)
+        training_time = time.time() - t_start
+
+        if verbose:
+            print(f"\nFinal: Top1={top1*100:.0f}% Top10={top10*100:.0f}%")
+            print(f"Time: {training_time:.0f}s")
+
+        return CompressionResult(
+            genome=genome, top1_accuracy=top1, top10_overlap=top10,
+            genome_params=genome_params, genome_size_mb=genome_params * 2 / 1e6,
+            original_layer_params=orig_params,
+            compression_ratio=orig_params / genome_params if genome_params > 0 else 0,
+            bpw=bpw, training_steps=n_steps, training_time=training_time,
+        )
+
     def compress_progressive(
         self,
         small_dim: int = 64,
