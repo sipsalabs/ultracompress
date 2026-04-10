@@ -109,11 +109,15 @@ not just those where activation dims happen to match.
 - All other weights: 0.99+ from layer 1 onwards
 - **1T model fits in 7.6 GB at 0.06 BPW**
 
+### FULL DEPTH VALIDATION (28 layers, 0.32 BPW):
+Pattern holds PERFECTLY across entire model. 0.9958 avg, 0.9999 from layer 3 to 27.
+No degradation at depth. Error reversal is STABLE.
+
 ### Remaining challenges:
-1. Layer 0 v_proj is weak (0.38-0.52) — needs special handling (higher BPW or mixed precision)
-2. 10T still 75 GB — need cross-layer SVD or Weight Genome to push further  
+1. Layer 0 v_proj is weak (0.52) — needs special handling (higher BPW or mixed precision)
+2. 10T still 400 GB at 0.32 BPW — need cross-layer SVD or Weight Genome for 10T+ scale
 3. Need to validate with actual text generation (not just cosine similarity)
-4. Need to test at full model depth (28 layers, not just 8)
+4. Need to test on larger models (Qwen3-8B needs more RAM)
 
 ## What Needs to Happen Next
 
