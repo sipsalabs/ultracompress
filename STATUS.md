@@ -26,6 +26,19 @@ The compound pipeline framework is VALID but needs fundamentally different optim
 4. Need 0.99+ weight cosine per layer for actual text quality
 5. GPTQ-style ROW-BY-ROW optimization is the industry path — we need the PQ equivalent
 
+**Behavioral Sensitivity Analysis (2026-04-10):**
+- 94-99% of weight COLUMNS are behaviorally dead (zeroing them changes nothing)
+- Layer 2 behavior is effectively rank-1 (3584x compressible IN THEORY)
+- BUT: behavioral extraction from calibration doesn't generalize to test inputs
+- Same generalization gap as output-aware refinement — calibration != inference
+
+**The REAL problem (10D insight):**
+Any compression using calibration data inherits a generalization gap.
+The solution must come from WITHIN the weights, not from external data.
+Need to find the intrinsic low-dimensional structure of the weight matrices
+that is input-INDEPENDENT — the structure that matters for ALL inputs,
+not just calibration inputs.
+
 **Honest BPW quality ladder (Qwen3-0.6B, 4 layers, plain PQ):**
 | BPW | Wt Cos | L0 cos | Logit cos | Top-10 | Usable? |
 |-----|--------|--------|-----------|--------|---------|
