@@ -186,6 +186,179 @@ class GenomeCompressor:
         self.weights = model_weights
         self.config = model_config
 
+    def compress_progressive(
+        self,
+        small_dim: int = 64,
+        n_heads: int = 4,
+        n_layers: int = None,
+        steps_per_layer: int = 500,
+        batch_size: int = 8,
+        seq_len: int = 32,
+        lr: float = 0.001,
+        eval_samples: int = 50,
+        verbose: bool = True,
+    ) -> CompressionResult:
+        """Progressive compression: train one genome layer at a time.
+
+        Much faster than end-to-end: each layer trains on its OWN
+        input-output behavior, then we freeze and move to next.
+        Final fine-tuning pass trains all layers jointly.
+
+        For 28 layers: 28 × 500 steps + 2000 joint = 16K steps total
+        vs 28 × 5000 = 140K for end-to-end. ~9x faster.
+        """
+        from ultracompress.inference import ModelConfig, MiniTransformer
+
+        assert self.weights is not None
+        actual_layers = n_layers or self.config.n_layers
+
+        # Build teacher
+        hf_to_gguf = {
+            'self_attn.q_proj.weight': 'attn_q.weight',
+            'self_attn.k_proj.weight': 'attn_k.weight',
+            'self_attn.v_proj.weight': 'attn_v.weight',
+            'self_attn.o_proj.weight': 'attn_output.weight',
+            'self_attn.q_norm.weight': 'attn_q_norm.weight',
+            'self_attn.k_norm.weight': 'attn_k_norm.weight',
+            'input_layernorm.weight': 'attn_norm.weight',
+            'post_attention_layernorm.weight': 'ffn_norm.weight',
+            'mlp.gate_proj.weight': 'ffn_gate.weight',
+            'mlp.up_proj.weight': 'ffn_up.weight',
+            'mlp.down_proj.weight': 'ffn_down.weight',
+        }
+        gd = {}
+        gd['token_embd.weight'] = self.weights['model.embed_tokens.weight'].float()
+        gd['output_norm.weight'] = self.weights.get('model.norm.weight',
+                                                     torch.ones(self.config.hidden_size)).float()
+        gd['output.weight'] = self.weights.get('lm_head.weight', gd['token_embd.weight']).float()
+        for li in range(actual_layers):
+            for h, g in hf_to_gguf.items():
+                k = f'model.layers.{li}.{h}'
+                if k in self.weights:
+                    gd[f'blk.{li}.{g}'] = self.weights[k].float()
+
+        teacher = MiniTransformer(self.config, self.device)
+        teacher.load_weights(gd)
+
+        embed = gd['token_embd.weight'].to(self.device)
+        norm_w = gd['output_norm.weight'].to(self.device)
+        lm_head = gd['output.weight'].to(self.device)
+        positions = torch.arange(seq_len, device=self.device)
+
+        orig_params = sum(
+            self.weights[k].numel()
+            for k in self.weights
+            if any(f'layers.{i}' in k for i in range(actual_layers))
+            and 'weight' in k and self.weights[k].ndim >= 2
+        )
+
+        # Build genome
+        genome = GenomeModel(
+            vocab_size=self.config.vocab_size,
+            big_dim=self.config.hidden_size,
+            small_dim=small_dim,
+            n_heads=n_heads,
+            n_layers=actual_layers,
+            embed_weight=embed,
+            lm_head_weight=lm_head,
+            norm_weight=norm_w,
+        ).to(self.device)
+
+        genome_params = genome.genome_param_count()
+        bpw = genome_params * 16 / orig_params if orig_params > 0 else 0
+
+        if verbose:
+            print(f"Genome: {genome_params:,} params ({genome_params*2/1e6:.1f} MB), BPW={bpw:.4f}")
+            print(f"Progressive: {steps_per_layer} steps/layer + 2000 joint")
+            print()
+
+        t_start = time.time()
+
+        # Phase 1: Train each layer independently on its own I/O
+        for li in range(actual_layers):
+            opt = torch.optim.AdamW(
+                genome.genome_layers[li].parameters(), lr=lr, weight_decay=0.005
+            )
+
+            for step in range(steps_per_layer):
+                torch.manual_seed(step + li * 10000)
+                tokens = torch.randint(100, 100000, (batch_size, seq_len), device=self.device)
+
+                with torch.no_grad():
+                    x = F.embedding(tokens, embed).float()
+                    # Run through ORIGINAL layers 0..li-1
+                    for prev in range(li):
+                        x = teacher.layers[prev](x, positions)
+                    x_in = x.clone()
+                    x_out = teacher.layers[li](x, positions)
+                    target_delta = x_out - x_in
+
+                pred_delta = genome.genome_layers[li](x_in)
+                loss = F.mse_loss(pred_delta, target_delta)
+                opt.zero_grad()
+                loss.backward()
+                nn.utils.clip_grad_norm_(genome.genome_layers[li].parameters(), 1.0)
+                opt.step()
+
+            if verbose and (li % 7 == 0 or li == actual_layers - 1):
+                print(f"  Layer {li}/{actual_layers}: loss={loss.item():.4f}")
+                sys.stdout.flush()
+
+        # Phase 2: Joint fine-tuning on logits
+        if verbose:
+            print("\nJoint fine-tuning (2000 steps)...")
+
+        def teacher_forward(tokens):
+            with torch.no_grad():
+                return teacher.forward(tokens, max_layers=actual_layers)
+
+        opt = torch.optim.AdamW(genome.genome_layers.parameters(), lr=lr * 0.1, weight_decay=0.005)
+        sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, 2000)
+
+        for step in range(2000):
+            torch.manual_seed(step + 999999)
+            tokens = torch.randint(100, 100000, (batch_size, seq_len), device=self.device)
+
+            teacher_logits = teacher_forward(tokens)[:, -1, :]
+            student_logits = genome(tokens, max_layers=actual_layers)[:, -1, :]
+
+            loss = F.kl_div(
+                F.log_softmax(student_logits / 2, dim=-1),
+                F.softmax(teacher_logits / 2, dim=-1),
+                reduction='batchmean',
+            ) * 4
+
+            opt.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(genome.genome_layers.parameters(), 1.0)
+            opt.step()
+            sched.step()
+
+            if verbose and step % 500 == 0:
+                print(f"  Joint step {step}: loss={loss.item():.3f}")
+                sys.stdout.flush()
+
+        # Evaluate
+        top1, top10 = self._evaluate(genome, teacher_forward, actual_layers, eval_samples)
+        training_time = time.time() - t_start
+
+        if verbose:
+            print(f"\nFinal: Top1={top1*100:.0f}% Top10={top10*100:.0f}%")
+            print(f"Time: {training_time:.0f}s")
+
+        return CompressionResult(
+            genome=genome,
+            top1_accuracy=top1,
+            top10_overlap=top10,
+            genome_params=genome_params,
+            genome_size_mb=genome_params * 2 / 1e6,
+            original_layer_params=orig_params,
+            compression_ratio=orig_params / genome_params if genome_params > 0 else 0,
+            bpw=bpw,
+            training_steps=steps_per_layer * actual_layers + 2000,
+            training_time=training_time,
+        )
+
     def compress(
         self,
         small_dim: int = 64,
