@@ -32,12 +32,34 @@ The compound pipeline framework is VALID but needs fundamentally different optim
 - BUT: behavioral extraction from calibration doesn't generalize to test inputs
 - Same generalization gap as output-aware refinement — calibration != inference
 
-**The REAL problem (10D insight):**
-Any compression using calibration data inherits a generalization gap.
-The solution must come from WITHIN the weights, not from external data.
-Need to find the intrinsic low-dimensional structure of the weight matrices
-that is input-INDEPENDENT — the structure that matters for ALL inputs,
-not just calibration inputs.
+**THE INVENTION: Input-Magnitude Column Selection (2026-04-10)**
+
+Instead of compressing weights, use INTELLIGENT MEMORY ACCESS.
+The input x itself tells you which columns of W matter:
+
+  contribution[i] = |x[i]| * ||W[:,i]||
+
+Only load the top-k contributing columns per token.
+
+| Columns loaded | % of W | Output cosine | Equivalent |
+|---------------|--------|---------------|------------|
+| Top 51 (5%) | 5% | 0.864 | 3 BPW PQ quality |
+| Top 102 (10%) | 10% | 0.899 | Better than any PQ |
+| Top 256 (25%) | 25% | 0.955 | Near-perfect |
+| Top 512 (50%) | 50% | 0.989 | Almost lossless |
+
+Key properties:
+- NO compression. Weights stored at FULL PRECISION on disk.
+- Per-input adaptive: different tokens use different columns
+- Only column norms stored in RAM (~2KB per weight matrix)
+- Scales to ANY model size — storage is disk, compute is per-token
+- ZERO degradation possible (use enough columns)
+
+Per-input selection BEATS static selection at same column count.
+The gate is FREE — it's just the input magnitudes.
+
+Challenge: disk/SSD bandwidth for loading columns per token.
+Solutions: column prefetching, batch prediction, cross-layer reuse.
 
 **Honest BPW quality ladder (Qwen3-0.6B, 4 layers, plain PQ):**
 | BPW | Wt Cos | L0 cos | Logit cos | Top-10 | Usable? |
