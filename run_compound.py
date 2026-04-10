@@ -23,6 +23,7 @@ Usage:
     python run_compound.py --bpw 0.5 --layers 8          # More layers
     python run_compound.py --bpw 0.19 --layers 4         # Extreme
     python run_compound.py --steps 1000                   # More refinement
+    python run_compound.py --mixed-precision               # Higher BPW for first/last layers
 """
 
 import argparse
@@ -61,6 +62,24 @@ BPW_CONFIGS = {
 def find_closest_config(target_bpw):
     best_bpw = min(BPW_CONFIGS.keys(), key=lambda x: abs(x - target_bpw))
     return best_bpw, BPW_CONFIGS[best_bpw]
+
+
+def get_layer_bpw_multiplier(layer_idx, n_layers, mixed_precision=False):
+    """Mixed precision: give first/last layers more bits.
+
+    Layer 0 has no upstream error context for error reversal, so it
+    needs higher quality PQ to avoid the v_proj bottleneck.
+    Last layer feeds directly into the output head.
+    """
+    if not mixed_precision:
+        return 1.0
+    if layer_idx == 0:
+        return 4.0  # 4x more bits for first layer
+    if layer_idx == n_layers - 1:
+        return 2.0  # 2x more for last layer
+    if layer_idx == 1:
+        return 2.0  # 2x for second layer (still building context)
+    return 1.0
 
 
 def rms_norm(x, weight, eps=1e-6):
@@ -396,9 +415,18 @@ def run_pipeline(args):
         if not layer_weights:
             continue
 
-        print(f"  Layer {layer_idx}:")
+        # Mixed precision: adjust BPW per layer
+        bpw_mult = get_layer_bpw_multiplier(layer_idx, max_layers, args.mixed_precision)
+        if bpw_mult != 1.0:
+            layer_bpw = min(args.bpw * bpw_mult, 1.5)  # Cap at 1.5 BPW
+            _, (lM, lK, lG) = find_closest_config(layer_bpw)
+            print(f"  Layer {layer_idx} (mixed: {bpw_mult:.0f}x -> {layer_bpw:.3f} BPW, M={lM} K={lK} G={lG}):")
+        else:
+            lM, lK, lG = M, K, G
+            print(f"  Layer {layer_idx}:")
+
         results, activations = compress_layer_full(
-            layer_weights, activations, M, K, G,
+            layer_weights, activations, lM, lK, lG,
             n_iter=20, refine_steps=args.steps, lr=args.lr,
             device=device, n_heads=n_heads, n_kv_heads=n_kv_heads,
             layer_idx=layer_idx,
@@ -489,6 +517,8 @@ def main():
                        help="Calibration token sequences")
     parser.add_argument("--seq-len", type=int, default=128,
                        help="Sequence length for calibration")
+    parser.add_argument("--mixed-precision", action="store_true",
+                       help="Use higher BPW for first/last layers")
 
     args = parser.parse_args()
     run_pipeline(args)
