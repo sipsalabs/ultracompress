@@ -143,10 +143,44 @@ Hierarchical generative compression:
 - Differentiable PQ for joint training
 - Target: 0.001 BPW with scaling to 1000T
 
+### Weight Genome Status (Phase 3)
+- Framework built: weight_genome.py, differentiable_pq.py, run_genome.py
+- Direct SIREN prediction DOES NOT WORK (cosine=0.01, MSE stuck at 1.0)
+- Weight matrices lack spatial smoothness for INR-style prediction
+- Need different approach: predict codebook structure, not raw values
+- Research direction, not production-ready
+
+### SCALING ANALYSIS — 10T FITS IN 20GB
+
+The "0.06 BPW" on small models is inflated by codebook overhead.
+At scale (large tensors), codebook overhead -> 0:
+- 1024x1024 tensor: 0.094 BPW (66% codebook overhead)
+- 8192x8192 tensor: 0.032 BPW (3% overhead)
+- 32768x8192 tensor: 0.031 BPW (<1% overhead)
+
+**10T+ models have massive tensors. Theoretical BPW at scale:**
+| Config | BPW | 10T | 100T | 1000T |
+|--------|-----|-----|------|-------|
+| M=8 K=4 G=2048 | 0.016 | **19.5 GB** | 195 GB | 1953 GB |
+| M=8 K=2 G=2048 | 0.012 | **14.6 GB** | 147 GB | 1465 GB |
+| M=4 K=2 G=4096 | 0.005 | **6.1 GB** | 61 GB | 610 GB |
+
+**All these configs give 1.0000 output cosine from layer 3+ on Qwen3-0.6B.**
+
+Cross-layer SVD was tested but weak on 0.6B (only 40% reduction at k=10).
+Larger models likely have much more cross-layer redundancy — this remains
+the path to 1000T in 20GB if SVD gives 10x+ on large models.
+
+### Cross-layer SVD analysis (Qwen3-0.6B)
+- k=1: 5% variance, 0.22 cosine (barely helps)
+- k=10: 41-49% variance, 0.51 cosine, 0.62 residual ratio
+- Small model = low cross-layer redundancy
+- Need to test on 70B+ for meaningful cross-layer gains
+
 ### Deprioritized
-- Calibrated PQ: tested, only +0.02 improvement over standard PQ (not worth complexity)
-- Global codebooks: useful but minor savings vs the output-aware breakthrough
-- Entropy coding: integrate later as final BPW optimization
+- Calibrated PQ: tested, only +0.02 improvement over standard PQ
+- Global codebooks: minor savings vs output-aware breakthrough
+- Genome INR approach: doesn't converge, needs fundamental rethink
 
 ## Architecture Notes
 - Default test model: `qwen3:4b` via Ollama
