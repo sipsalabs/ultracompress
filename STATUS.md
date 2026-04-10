@@ -79,10 +79,30 @@ On 0.6B model, ~10 BPW is the information-theoretic floor.
 Larger models (10T+) should achieve dramatically lower BPW due to
 cross-layer redundancy and MoE sparsity.
 
+### BEHAVIORAL GENOME (most promising direction, 2026-04-10)
+Replace each layer with k learned vector pairs. No weight matrices stored.
+Layer behavior GENERATED from genome at inference time.
+
+| Rank | BPW | Top-1 | Top-10 | Compression | 405B size |
+|------|-----|-------|--------|-------------|-----------|
+| 256 | 0.097 | 14% | 14% | 164x | 4.9 GB |
+| 512 | 0.194 | TBD | TBD | 82x | 9.8 GB |
+
+Generalization gap FIXED: < 0.02 with 20K diverse samples + regularization.
+End-to-end training (KL divergence on logits) beats independent per-layer.
+Behavioral representation beats weight SVD at same BPW.
+
+Quality needs improvement (14% top-1 isn't usable). Next:
+- More training steps and data
+- Nonlinear genome (add attention-like operation to genome forward)
+- Genome pyramid (genome base + correction layer)
+
 ### WHAT NEEDS TO HAPPEN NEXT
-1. Test pyramid on LARGER model (need 8B+ to see cross-layer gains)
-2. Add cross-layer SVD as Layer 0 of pyramid (before per-weight SVD)
-3. Each pyramid layer captures a DIFFERENT type of structure:
+1. Push behavioral genome quality (currently 14% top-1 at 164x compression)
+2. Add nonlinearity to genome (current is purely linear outer products)
+3. Test pyramid on LARGER model (need 8B+ to see cross-layer gains)
+4. Add cross-layer SVD as Layer 0 of pyramid (before per-weight SVD)
+5. Each pyramid layer captures a DIFFERENT type of structure:
    - Layer 0: Cross-layer sharing (what's common across 200 layers)
    - Layer 1: Per-weight SVD (linear spectral structure)
    - Layer 2: PQ on residual (group codebook patterns)
