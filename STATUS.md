@@ -61,6 +61,35 @@ The gate is FREE — it's just the input magnitudes.
 Challenge: disk/SSD bandwidth for loading columns per token.
 Solutions: column prefetching, batch prediction, cross-layer reuse.
 
+### PYRAMID STACKING RESULTS (2026-04-10)
+Stacking compression layers — each makes the next layer's job easier:
+
+| Pyramid | BPW | Top-10 | Top-1 |
+|---------|-----|--------|-------|
+| SVD-128 + PQ1 | 5.49 | 60% | N |
+| SVD-128 + PQ1 + PQ2 | 7.51 | 70% | N |
+| SVD-128 + PQ1 + PQ2 + PQ3 | 9.01 | 80% | N |
+| **SVD-256 + PQ1 + PQ2** | **10.44** | **90%** | **Y** |
+
+Noise floor: 1% noise (~29 BPW) = 100% top-10. Pyramid at 10.44 BPW
+matches quality of ~25 BPW random noise = 2.5x more efficient.
+
+Residual after SVD+PQ is RANDOM NOISE — all structure extracted.
+On 0.6B model, ~10 BPW is the information-theoretic floor.
+Larger models (10T+) should achieve dramatically lower BPW due to
+cross-layer redundancy and MoE sparsity.
+
+### WHAT NEEDS TO HAPPEN NEXT
+1. Test pyramid on LARGER model (need 8B+ to see cross-layer gains)
+2. Add cross-layer SVD as Layer 0 of pyramid (before per-weight SVD)
+3. Each pyramid layer captures a DIFFERENT type of structure:
+   - Layer 0: Cross-layer sharing (what's common across 200 layers)
+   - Layer 1: Per-weight SVD (linear spectral structure)
+   - Layer 2: PQ on residual (group codebook patterns)
+   - Layer 3: PQ on residual-of-residual (finer patterns)
+   - Layer ???: The thing we haven't invented yet
+4. The invention gap: need 100x more compression per layer for 10T in 20GB
+
 **Honest BPW quality ladder (Qwen3-0.6B, 4 layers, plain PQ):**
 | BPW | Wt Cos | L0 cos | Logit cos | Top-10 | Usable? |
 |-----|--------|--------|-----------|--------|---------|
