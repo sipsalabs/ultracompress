@@ -19,10 +19,21 @@ activations that don't match real inference. Actual text generation shows:
 - 1.5 BPW, 0.953 weight cosine: 0% agreement, broken
 - Sub-1 BPW: completely unusable for text generation
 
-The compound pipeline framework is VALID but needs:
-1. Real text calibration data (C4/WikiText), not random tokens
-2. Proper attention during calibration (RoPE, causal mask) — DONE
-3. 0.99+ weight cosine per layer for actual text quality
+The compound pipeline framework is VALID but needs fundamentally different optimization:
+1. Real text calibration TESTED — helps marginally (+0.006 layer cosine, +0.02 logit cosine)
+2. Hessian-weighted PQ TESTED — helps marginally (10% top-10 vs 0%)
+3. Output-aware gradient refinement HURTS — overfits to calibration, drops weight cosine
+4. Need 0.99+ weight cosine per layer for actual text quality
+5. GPTQ-style ROW-BY-ROW optimization is the industry path — we need the PQ equivalent
+
+**Honest BPW quality ladder (Qwen3-0.6B, 4 layers, plain PQ):**
+| BPW | Wt Cos | L0 cos | Logit cos | Top-10 | Usable? |
+|-----|--------|--------|-----------|--------|---------|
+| 3.0 | 0.955 | 0.90 | 0.89 | 40% | Barely |
+| 2.6 | 0.953 | 0.89 | 0.92 | 0-10% | No |
+| 1.6 | 0.834 | 0.61 | 0.70 | 0% | No |
+| 1.0 | 0.753 | 0.47 | 0.05 | 0% | No |
+| 0.8 | 0.633 | 0.34 | -0.06 | 0% | No |
 
 ## What Exists (Complete)
 
