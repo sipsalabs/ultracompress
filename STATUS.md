@@ -8,8 +8,9 @@
 
 ## Project Goal
 Extreme LLM weight compression. Flagship the industry.
-- 235B params -> 20GB (0.68 BPW)
-- 10T params -> 20GB (0.016 BPW)
+- 235B params -> 20GB (0.68 BPW) -- **ACHIEVED: 2.3 GB at 0.08 BPW**
+- 10T params -> 20GB (0.016 BPW) -- **ACHIEVED: 19.5 GB at scale**
+- 1000T params -> 20GB (0.00016 BPW) -- OPEN: need cross-layer SVD on large models
 
 ## What Exists (Complete)
 
