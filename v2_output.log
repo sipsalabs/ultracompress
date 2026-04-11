@@ -14,3 +14,10 @@ Cache built: 5000 samples
 V1 MicroTransformer: 11,934,720 params
   V1-MicroTF step 0: loss=8.824
   V1-MicroTF step 5000: loss=0.796
+  V1-MicroTF step 10000: loss=1.566
+  V1-MicroTF step 15000: loss=0.820
+  V1-MicroTF: Top1=14% Top10=37% params=11,934,720 time=1089s
+
+V2a MultiView: 8,261,148 params
+  V2a-MultiView step 0: loss=8.551
+  V2a-MultiView step 5000: loss=0.624
