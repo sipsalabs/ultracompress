@@ -61,5 +61,23 @@
     "compression": 37.0,
     "time": 4118.0,
     "timestamp": "2026-04-10 21:33"
+  },
+  {
+    "name": "V2a-MultiView-28L-cached",
+    "top1": 0.18,
+    "top10": 0.44,
+    "params": 8261148,
+    "compression": 50.0,
+    "time": 1342.0,
+    "timestamp": "2026-04-10 21:36"
+  },
+  {
+    "name": "V2b-LoRA-28L-cached",
+    "top1": 0.14,
+    "top10": 0.37,
+    "params": 7340060,
+    "compression": 55.0,
+    "time": 472.0,
+    "timestamp": "2026-04-10 21:46"
   }
 ]

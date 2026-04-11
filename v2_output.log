@@ -23,3 +23,11 @@ V2a MultiView: 8,261,148 params
   V2a-MultiView step 5000: loss=0.624
   V2a-MultiView step 10000: loss=0.581
   V2a-MultiView step 15000: loss=0.357
+  V2a-MultiView: Top1=18% Top10=44% params=8,261,148 time=1342s
+
+V2b LoRA: 7,340,060 params
+  V2b-LoRA step 0: loss=165.853
+  V2b-LoRA step 5000: loss=0.735
+  V2b-LoRA step 10000: loss=1.862
+  V2b-LoRA step 15000: loss=0.878
+  V2b-LoRA: Top1=14% Top10=37% params=7,340,060 time=472s
