@@ -1,0 +1,16 @@
+=== HYBRID: Progressive init + long cached training ===
+Phase 1: Progressive per-layer init (1000 steps/layer)
+Phase 2: Cache teacher outputs
+Phase 3: Long cached fine-tuning (50K steps)
+
+Genome: 11,934,720 params (23.9 MB), BPW=0.4336
+Progressive: 1000 steps/layer + 2000 joint
+
+  Layer 0/28: loss=0.0463
+  Layer 7/28: loss=0.0327
+  Layer 14/28: loss=0.0353
+  Layer 21/28: loss=1.6486
+  Layer 27/28: loss=6.9111
+
+Joint fine-tuning (2000 steps)...
+  Joint step 0: loss=4.190
