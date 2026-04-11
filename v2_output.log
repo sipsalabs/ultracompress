@@ -1,0 +1,16 @@
+Building cache...
+Building cache: 5000 samples...
+  0/5000
+  800/5000
+  1600/5000
+  2400/5000
+  3200/5000
+  4000/5000
+  4800/5000
+Cache built: 5000 samples
+
+=== ARCHITECTURE COMPARISON ===
+
+V1 MicroTransformer: 11,934,720 params
+  V1-MicroTF step 0: loss=8.824
+  V1-MicroTF step 5000: loss=0.796

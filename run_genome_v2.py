@@ -52,7 +52,7 @@ def train_and_eval(layers, name, n_steps=20000):
 
     t0 = time.time()
     for step in range(n_steps):
-        idx = torch.randint(0, cache['tokens'].shape[0], (64,))
+        idx = torch.randint(0, cache['tokens'].shape[0], (16,))
         tokens = cache['tokens'][idx].to(device)
         target = cache['logits'][idx].to(device)
         student = genome(tokens, max_layers=28)[:, -1, :]
