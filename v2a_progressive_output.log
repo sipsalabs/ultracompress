@@ -1,0 +1,9 @@
+=== V2a MultiView + Progressive + Hybrid ===
+Best architecture + best training method
+
+V2a genome: 8,261,148 params (16.5 MB)
+Phase 1: Progressive training (1000 steps/layer)...
+  Layer 0/28: loss=0.0432
+  Layer 7/28: loss=0.0272
+  Layer 14/28: loss=0.0276
+  Layer 21/28: loss=1.7528
