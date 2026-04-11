@@ -42,3 +42,11 @@ Phase 3: Cached fine-tuning (50K steps from progressive init)...
   Step     0: loss=0.821 [4.8 steps/s]
   Step 10000: loss=0.184 [11.9 steps/s]
   Step 20000: loss=0.088 [12.4 steps/s]
+  Step 30000: loss=0.047 [12.2 steps/s]
+  Step 40000: loss=0.026 [12.2 steps/s]
+
+============================================================
+  HYBRID RESULT: Top1=27% Top10=46%
+  Genome: 23.9 MB (37x compression)
+  Total time: 4118s (69min)
+============================================================
