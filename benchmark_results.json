@@ -79,5 +79,14 @@
     "compression": 55.0,
     "time": 472.0,
     "timestamp": "2026-04-10 21:46"
+  },
+  {
+    "name": "V2a-MultiView-28L-progressive",
+    "top1": 0.26,
+    "top10": 0.48,
+    "params": 8261148,
+    "compression": 53.0,
+    "time": 0.0,
+    "timestamp": "2026-04-10 22:18"
   }
 ]
