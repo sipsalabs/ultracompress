@@ -14,3 +14,29 @@ Progressive: 1000 steps/layer + 2000 joint
 
 Joint fine-tuning (2000 steps)...
   Joint step 0: loss=4.190
+  Joint step 500: loss=0.767
+  Joint step 1000: loss=0.647
+  Joint step 1500: loss=1.191
+
+Final: Top1=20% Top10=53%
+Time: 1228s
+
+After progressive: Top1=20% Top10=53%
+Building cache: 10000 samples...
+  0/10000
+  800/10000
+  1600/10000
+  2400/10000
+  3200/10000
+  4000/10000
+  4800/10000
+  5600/10000
+  6400/10000
+  7200/10000
+  8000/10000
+  8800/10000
+  9600/10000
+Cache built: 10000 samples
+
+Phase 3: Cached fine-tuning (50K steps from progressive init)...
+  Step     0: loss=0.821 [4.8 steps/s]
