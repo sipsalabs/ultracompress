@@ -1,0 +1,65 @@
+[
+  {
+    "name": "sd64-4L-progressive",
+    "top1": 0.14,
+    "top10": 0.14,
+    "params": 540672,
+    "compression": 640.0,
+    "time": 60.0,
+    "timestamp": "2026-04-10 21:33"
+  },
+  {
+    "name": "sd64-28L-progressive",
+    "top1": 0.16,
+    "top10": 0.47,
+    "params": 4820480,
+    "compression": 91.0,
+    "time": 993.0,
+    "timestamp": "2026-04-10 21:33"
+  },
+  {
+    "name": "sd128-28L-progressive",
+    "top1": 0.2,
+    "top10": 0.53,
+    "params": 11934720,
+    "compression": 37.0,
+    "time": 954.0,
+    "timestamp": "2026-04-10 21:33"
+  },
+  {
+    "name": "sd128-28L-aggressive",
+    "top1": 0.23,
+    "top10": 0.51,
+    "params": 11934720,
+    "compression": 37.0,
+    "time": 1931.0,
+    "timestamp": "2026-04-10 21:33"
+  },
+  {
+    "name": "sd128-28L-cached",
+    "top1": 0.16,
+    "top10": 0.47,
+    "params": 11934720,
+    "compression": 37.0,
+    "time": 1704.0,
+    "timestamp": "2026-04-10 21:33"
+  },
+  {
+    "name": "sd256-28L-cached",
+    "top1": 0.16,
+    "top10": 0.47,
+    "params": 33044480,
+    "compression": 13.0,
+    "time": 1715.0,
+    "timestamp": "2026-04-10 21:33"
+  },
+  {
+    "name": "sd128-28L-hybrid-50K",
+    "top1": 0.27,
+    "top10": 0.46,
+    "params": 11934720,
+    "compression": 37.0,
+    "time": 4118.0,
+    "timestamp": "2026-04-10 21:33"
+  }
+]

@@ -21,3 +21,5 @@ V1 MicroTransformer: 11,934,720 params
 V2a MultiView: 8,261,148 params
   V2a-MultiView step 0: loss=8.551
   V2a-MultiView step 5000: loss=0.624
+  V2a-MultiView step 10000: loss=0.581
+  V2a-MultiView step 15000: loss=0.357
