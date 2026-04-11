@@ -129,8 +129,19 @@ def rope_embed(x: torch.Tensor, positions: torch.Tensor, theta: float = 10000.0)
 
     x_reshape = x.reshape(*x.shape[:-1], -1, 2)
     x_r, x_i = x_reshape[..., 0], x_reshape[..., 1]
-    out_r = x_r * cos_angles - x_i * sin_angles
-    out_i = x_r * sin_angles + x_i * cos_angles
+    # Ensure angles broadcast correctly with attention head dims
+    n_pairs = x_r.shape[-1]
+    # Recompute angles to match actual dimension
+    actual_freqs = 1.0 / (theta ** (torch.arange(0, n_pairs * 2, 2, device=x.device).float() / (n_pairs * 2)))
+    actual_angles = torch.outer(positions.float(), actual_freqs)
+    cos_a = torch.cos(actual_angles)
+    sin_a = torch.sin(actual_angles)
+    # Broadcast for batch dims
+    while cos_a.dim() < x_r.dim():
+        cos_a = cos_a.unsqueeze(0)
+        sin_a = sin_a.unsqueeze(0)
+    out_r = x_r * cos_a - x_i * sin_a
+    out_i = x_r * sin_a + x_i * cos_a
     return torch.stack([out_r, out_i], dim=-1).reshape(x.shape)
 
 
