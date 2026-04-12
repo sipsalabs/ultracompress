@@ -68,16 +68,25 @@ hf_to_gguf = {
     'mlp.gate_proj.weight': 'ffn_gate.weight', 'mlp.up_proj.weight': 'ffn_up.weight',
     'mlp.down_proj.weight': 'ffn_down.weight',
 }
+# Build gd dict — convert to FP32 and move to teacher GPU immediately to save CPU RAM
+print(f"Building teacher on {TEACHER_DEVICE} (streaming to GPU to save RAM)...")
 gd = {}
-gd['token_embd.weight'] = wd['model.embed_tokens.weight'].float()
-gd['output_norm.weight'] = wd.get('model.norm.weight', torch.ones(hidden_size)).float()
-gd['output.weight'] = wd.get('lm_head.weight', gd['token_embd.weight']).float()
+gd['token_embd.weight'] = wd['model.embed_tokens.weight'].float().to(TEACHER_DEVICE)
+gd['output_norm.weight'] = wd.get('model.norm.weight', torch.ones(hidden_size)).float().to(TEACHER_DEVICE)
+gd['output.weight'] = wd.get('lm_head.weight', wd['model.embed_tokens.weight']).float().to(TEACHER_DEVICE)
 for li in range(n_layers):
     for h, g in hf_to_gguf.items():
         k = f'model.layers.{li}.{h}'
-        if k in wd: gd[f'blk.{li}.{g}'] = wd[k].float()
+        if k in wd: gd[f'blk.{li}.{g}'] = wd[k].float().to(TEACHER_DEVICE)
+    # Free each layer from CPU after moving to GPU
+    for h in hf_to_gguf:
+        k = f'model.layers.{li}.{h}'
+        if k in wd: del wd[k]
+    if li % 4 == 0:
+        import gc; gc.collect()
+        print(f"  Loaded layer {li}/{n_layers}")
 
-del wd  # Free CPU memory
+del wd  # Free remaining CPU memory
 import gc; gc.collect()
 
 config = ModelConfig(n_layers=n_layers, n_heads=n_heads, n_kv_heads=n_kv_heads,
