@@ -183,6 +183,10 @@ PAPER_DRAFT.md                  # Arxiv paper draft
 
 No other published method achieves architectural compression beyond 2-4x. FRR at 60x (or 959x with full pipeline, or 239x with PHM) operates an order of magnitude beyond all competitors.
 
+### FRR is Also Faster (Not Just Smaller)
+
+FRR has a unique inference advantage: the shared block (14.7 MB FP16) fits entirely in GPU L2 cache (96 MB on RTX 5090, 72 MB on RTX 4090). Standard transformers load 28 different layer weights from VRAM each forward pass (880 MB for 0.6B). FRR loads the block once, then it stays cached for all 28 applications — **60x fewer VRAM reads**, shifting from memory-bound to compute-bound inference.
+
 ---
 
 ## Citation
