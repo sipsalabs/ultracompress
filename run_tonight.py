@@ -12,6 +12,8 @@ import lib.unbuffered
 import subprocess, time, os, sys
 
 scripts = [
+    ('DUAL-OBJECTIVE TEST (Sips T1/T10 split)', 'run_dual_objective_test.py', 'dual_objective_output.log', 2.5),
+    ('TOP-1 LOSS TEST', 'run_top1_test.py', 'top1_output.log', 2.5),
     ('OPTIMIZED TRAINING 50K', 'run_optimized_train.py', 'optimized_output.log', 4.0),
 ]
 
