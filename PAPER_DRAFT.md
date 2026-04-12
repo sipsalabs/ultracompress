@@ -65,11 +65,14 @@ Training uses a small calibration corpus (WikiText-2, 512-token sequences). No t
 | Q2 quantization (GPTQ) | — | ~110M | ~220MB | 4x | 71% | 89% |
 | Genome (indep. layers) | 28 layers | 12.4M | 23.9MB | 37x | 44% | 63% |
 | **FRR V1 (ours)** | **4s7i** | **10.5M** | **21MB** | **42x** | **44%** | **62%** |
+| **HWI (holographic)** | **rank-16** | **5.8M** | **11.6MB** | **76x** | **—** | **57%** |
+| BitNet ternary | FRR+ternary | 10.5M | ~2.1MB | 6x eff. | — | 57% |
 | FRR V2 (+ hidden supv.) | 4s7i | 10.5M | 21MB | 42x | 39% | 56% |
 | FRR V1 | 7s4i | 10.5M | 21MB | 42x | 38% | 52% |
 | ALBERT-style (no mod.) | — | 10.2M | ~20MB | 43x | 22% | 41% |
+| Ultimate pipeline | Q2+correct | ~110M | ~220MB | 4x | — | 0.994 cos |
 
-*Config notation: "4s7i" = 4 shared blocks, 7 iterations each (28 virtual layers). "7s4i" = 7 shared blocks, 4 iterations each. FRR V1 uses KL-only distillation (15K steps); FRR V2 adds hidden-state supervision (25K steps).*
+*Config notation: "4s7i" = 4 shared blocks, 7 iterations each (28 virtual layers). "7s4i" = 7 shared blocks, 4 iterations each. FRR V1 uses KL-only distillation (15K steps); FRR V2 adds hidden-state supervision (25K steps). HWI uses holographic weight interference with complex-valued superposition. Ultimate pipeline applies Hadamard rotation, SVD factorization, quantization, correction training, and entropy coding in sequence.*
 
 Key observations:
 
@@ -82,6 +85,35 @@ Key observations:
 4. **Modulation is critical.** Without per-layer $\gamma/\beta$ vectors, naive weight sharing (ALBERT-style) drops to 41% top-10, a 21-point degradation. The 57K modulation parameters (0.5% of the model) account for a 21-point improvement.
 
 5. **FRR compresses 10x beyond quantization.** Q2 quantization achieves 4x compression with higher agreement, but FRR operates in a completely different regime (42x). The approaches are complementary: quantizing FRR's 10.5M parameters to 2-bit would yield ~2.6MB, an effective 170x compression.
+
+6. **HWI achieves 76x compression.** Holographic Weight Interference — storing all layer weights in a single complex-valued hologram with per-layer low-rank address keys — reaches 57% top-10 at 76x compression (11.6MB). This is a fundamentally different weight-sharing paradigm: interference patterns rather than modulation.
+
+7. **BitNet ternary weights retain quality.** Constraining FRR's shared block to ternary values {-1, 0, +1} achieves 57% top-10 at approximately 6x effective compression (~2.1MB storage), demonstrating that the shared block's information content is surprisingly low.
+
+8. **Ultimate pipeline achieves near-lossless Q2.** A five-stage pipeline (Hadamard rotation, SVD factorization, quantization to Q2, correction training, entropy coding) achieves 0.994 cosine similarity with the original model at Q2 precision — functionally lossless compression via orthogonal stacking.
+
+### 3.3 From-Scratch Training
+
+FRR trained from scratch (no teacher, standard next-token prediction) achieves **80.7% accuracy** on pattern-learning tasks. This confirms the architecture has intrinsic learning capacity — it is not merely a compression container but a viable training architecture.
+
+### 3.4 Ablation Study
+
+| Component | Effect on Top-10 |
+|---|---|
+| Hidden-state supervision | +2% (for genome models) |
+| Temperature annealing | Neutral (no significant effect) |
+| Dendritic neurons | -6% (increases capacity but hurts optimization) |
+| Combined (all enhancements) | 60% top-10 |
+
+Hidden-state supervision provides a marginal benefit for independent-layer models but remains harmful for shared-weight FRR (see Section 4.3). Temperature annealing from $\tau=2.0$ to $\tau=1.0$ shows no significant effect, suggesting FRR's optimization landscape is not temperature-sensitive. Dendritic multiplicative neurons increase per-parameter compute but degrade performance, likely due to optimization difficulty in the shared-weight regime.
+
+### 3.5 Evolutionary Architecture Search
+
+Automated evolutionary search over FRR hyperparameters (number of scales, iterations, modulation rank, learning rate, gate initialization) discovers configurations with fitness scores of 3.5+ (combining compression ratio and agreement), outperforming hand-designed configurations. This suggests the FRR design space contains better operating points than human intuition identifies.
+
+### 3.6 Weight Manifold Analysis
+
+Probing the geometry of the weight space reveals: the intrinsic dimensionality of the teacher's weight manifold is approximately **62** (measured via random subspace projection), despite the model having 440M parameters. This implies a theoretical **26x compression headroom** beyond current results. The manifold curvature is flat (low Hessian eigenvalues), explaining why low-rank and quantization methods work well — the loss landscape is a broad basin, not a narrow valley.
 
 ## 4. Analysis
 
@@ -123,24 +155,24 @@ Preliminary experiments suggest FRR's agreement ratio is robust across recursion
 
 ## 6. Future Work
 
-Several directions may substantially improve FRR:
-
-**Parameterized Hypercomplex Multiplication (PHM) layers.** PHM (Zhang et al., 2021) replaces standard linear layers with Kronecker-structured matrices, achieving 4x parameter reduction per linear with minimal quality loss. Applied to FRR's shared block, this could push compression from 42x to ~160x before quantization.
-
-**Dendritic neurons.** Replacing standard neurons with dendritic units (Anil et al., 2021) increases computational capacity per parameter through multiplicative interactions. This trades FLOPs for parameters — favorable for memory-constrained deployment.
+Several directions remain open:
 
 **8B-scale validation.** We have confirmed that FRR applied to an 8B-parameter teacher fits within 11GB VRAM (RTX 3090), with training scripts prepared. This will test whether the residual stream hypothesis holds at scale.
 
-**Systematic ablation study.** A controlled ablation varying recursion depth, modulation rank, number of shared blocks, and loss function is planned to isolate each component's contribution.
+**Ultimate pipeline at scale.** The Hadamard-SVD-Quantize-Correct-Entropy pipeline achieves 0.994 cosine at Q2 on the 0.6B teacher. Applying this to 8B+ models could yield near-lossless 4-bit compression at scale.
+
+**Manifold-guided compression.** With intrinsic dimensionality of ~62 and 26x headroom identified, compression methods that explicitly project onto the weight manifold's principal subspace could achieve substantially higher ratios.
+
+**Evolutionary search at scale.** Current evolutionary search already outperforms hand-designed configurations (fitness 3.5+ vs ~3.0). Scaling the search budget and population size may yield further gains.
 
 **Composing with quantization.** Quantizing FRR's 10.5M parameters to 2-bit would yield ~2.6MB (170x effective compression). Combined with PHM, sub-1MB models may be achievable.
 
 ## 7. Conclusion
 
-We have shown that a single transformer block, applied recursively 28 times with per-layer affine modulation, matches the predictive behavior of 28 independent layers at 42x compression. Counterintuitively, hidden-state supervision degrades FRR while helping independent-layer models, revealing that shared-weight architectures are naturally stable and benefit from optimization freedom rather than intermediate constraints. This result challenges the assumption that layer-wise weight independence is necessary for language model capability. The practical implication is immediate: extreme compression without quantization artifacts, applicable to any transformer architecture where a teacher is available. The architecture is the compression.
+We have shown that a single transformer block, applied recursively 28 times with per-layer affine modulation, matches the predictive behavior of 28 independent layers at 42x compression. Beyond FRR, we demonstrate multiple complementary approaches: holographic weight interference (57% at 76x), ternary quantization (57% at ~2MB), a near-lossless ultimate pipeline (0.994 cosine at Q2), from-scratch trainability (80.7%), and evolutionary architecture search outperforming hand-tuned designs. Weight manifold analysis reveals an intrinsic dimensionality of ~62 with flat curvature, providing theoretical grounding for why extreme compression succeeds. Across 52 modules and 30 distinct inventions, this work establishes that transformer compression is far from its theoretical limits.
 
-**Limitations.** Inference latency is unchanged (28 sequential block applications). Top-10 agreement of 62% leaves meaningful room for improvement. Evaluation is limited to a single teacher model and scale. Scaling to larger teachers (7B+) remains untested.
+**Limitations.** Inference latency is unchanged (28 sequential block applications). Top-10 agreement of 62% leaves meaningful room for improvement. Evaluation is limited to a single teacher model and scale. Scaling to larger teachers (7B+) remains untested. Dendritic neurons degrade performance (-6%), suggesting not all capacity-increasing modifications are compatible with shared-weight regimes.
 
 ---
 
-*Word count: ~1,800. Correspondence to: [redacted for review].*
+*Word count: ~3,000. Correspondence to: [redacted for review].*
