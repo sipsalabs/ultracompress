@@ -312,19 +312,25 @@ class MiniTransformer:
             if "attn_q" in layer_weights:
                 self.layers.append(TransformerLayer(layer_weights, self.config))
 
-    def forward(self, token_ids: torch.Tensor, max_layers: int = None) -> torch.Tensor:
-        """Run forward pass, return logits."""
+    def forward(self, token_ids: torch.Tensor, max_layers: int = None,
+                return_hidden: bool = False) -> torch.Tensor:
+        """Run forward pass, return logits. If return_hidden, returns (logits, hidden_states)."""
         B, T = token_ids.shape
         positions = torch.arange(T, device=self.device)
 
         x = F.embedding(token_ids, self.embed_weight.to(self.device)).float()
+        hidden_states = [] if return_hidden else None
 
         n_layers = min(len(self.layers), max_layers or len(self.layers))
         for i in range(n_layers):
             x = self.layers[i](x, positions)
+            if return_hidden:
+                hidden_states.append(x)
 
         x = self.final_norm(x)
         logits = linear_forward(x, self.lm_head.to(self.device))
+        if return_hidden:
+            return logits, hidden_states
         return logits
 
     def generate(self, token_ids: torch.Tensor, max_new: int = 50, temperature: float = 0.7) -> list:

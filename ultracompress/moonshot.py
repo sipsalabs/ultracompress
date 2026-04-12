@@ -172,9 +172,10 @@ class FractalModel(nn.Module):
         adapter_params = sum(p.numel() for p in self.adapters.parameters())
         print(f"  Enabled LoRA adapters: {adapter_params:,} extra params ({adapter_params*2/1e6:.1f} MB)")
 
-    def forward(self, tokens, max_layers=None):
+    def forward(self, tokens, max_layers=None, return_hidden=False):
         x = self.embed(tokens).float()
         total = max_layers or self.total_layers
+        hidden_states = [] if return_hidden else None
 
         layer_count = 0
         for scale in range(self.n_scales):
@@ -189,10 +190,15 @@ class FractalModel(nn.Module):
                 # Apply per-layer LoRA adapter if enabled (V3)
                 if self.adapters is not None:
                     x = self.adapters[layer_count](x)
+                if return_hidden:
+                    hidden_states.append(x)
                 layer_count += 1
 
         x = self.norm(x)
-        return self.lm_head(x)
+        logits = self.lm_head(x)
+        if return_hidden:
+            return logits, hidden_states
+        return logits
 
     def fractal_params(self):
         """Just the fractal-specific params (block + modulation + adapters)."""
