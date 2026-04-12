@@ -1,12 +1,12 @@
 # One Block Is All You Need: Fractal Residual Recursion for Extreme Model Compression
 
-**Anonymous Authors**
+**Mounir**
 
 ---
 
 ## Abstract
 
-We present Fractal Residual Recursion (FRR), a method that compresses a 28-layer transformer into a single shared block applied recursively 28 times, augmented only by lightweight per-scale modulation vectors. Distilled from Qwen3-0.6B (440M parameters), our 10.5M-parameter fractal model achieves 62% top-10 token agreement with the teacher — within 1% of a 28-layer model using fully independent genome layers (63%). This 42x compression ratio is achieved purely through architecture, with no post-training quantization or pruning. Our key finding challenges a widespread assumption: despite cross-layer weight cosine similarity of 0.000 in the teacher (i.e., layers are statistically independent), a single shared weight matrix with per-layer affine modulation (~8K parameters) captures nearly all of the model's predictive behavior. Counterintuitively, hidden-state supervision — which improves independent-layer models — *hurts* FRR performance (56% vs 62% top-10), suggesting that shared-weight architectures are naturally stable and that intermediate constraints over-regularize their iterative refinement dynamics. The architecture *is* the compression.
+We present Fractal Residual Recursion (FRR), a method that compresses a 28-layer transformer into a single shared block applied recursively 28 times, augmented only by lightweight per-scale modulation vectors. Distilled from Qwen3-0.6B (440M layer parameters), our 7.35M-parameter fractal model achieves **63% top-10 token agreement** with the teacher at **60x compression** — purely through architecture, with no quantization or pruning. When composed with our 5-stage quantization pipeline (Hadamard rotation, SVD manifold projection, Q2 quantization, residual correction, entropy coding), total compression reaches **959x with only 1.5% quality degradation**, proven end-to-end. Our key finding challenges a widespread assumption: despite cross-layer weight cosine similarity of 0.000 (layers are statistically independent in weight space), CKA functional similarity exceeds 0.9 — layers perform the same *type* of computation on different feature spaces. A single shared block with per-layer affine modulation (~8K parameters) captures this shared function space. We find that training duration, not architecture capacity, is the primary quality bottleneck: extending training from 10K to 50K steps improves top-10 agreement from 55% to 63%, with quality still climbing. Multi-block variants (2-3 specialized blocks, 11x more parameters) show no quality improvement, confirming the single-block design is optimal. No existing method achieves architectural compression beyond 2-4x; FRR operates at 60x, in genuinely novel territory.
 
 ## 1. Introduction
 
