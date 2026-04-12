@@ -19,7 +19,7 @@
 ## After Filing (same day or next day)
 - [ ] Post paper on arxiv (arXiv:XXXX.XXXXX)
 - [ ] Push code to GitHub (public repo)
-- [ ] Post on Hacker News ("Show HN: UltraCompress — 42x Model Compression via Fractal Recursion")
+- [ ] Post on Hacker News ("Show HN: 959x Model Compression via Fractal Recursion + Quantization Pipeline")
 - [ ] Set up GitHub Sponsors
 - [ ] Post Fiverr/Upwork gig for model compression services
 
