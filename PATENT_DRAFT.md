@@ -538,6 +538,26 @@ wherein a flat loss basin with low intrinsic dimensionality (e.g., approximately
 
 wherein the evolutionary search discovers operating points in the compression design space that outperform human-designed configurations.
 
+**Claim 24.** A method for accelerating neural network inference using a compressed draft model, the method comprising:
+
+(a) generating a compressed draft model from a target neural network using Fractal Residual Recursion as described in Claim 1, wherein the draft model's shared block fits within a GPU L2 cache (typically less than 100 megabytes);
+
+(b) during inference, using the compressed draft model to autoregressively generate a sequence of K draft tokens (where K is typically 2-5) for each decoding step;
+
+(c) verifying all K draft tokens against the target model in a single parallel forward pass, accepting tokens where the draft model's probability distribution is consistent with the target model's distribution;
+
+(d) for rejected tokens, sampling from an adjusted distribution that corrects for the draft model's bias, ensuring the overall generation is mathematically equivalent to sampling from the target model;
+
+wherein the method achieves approximately 1.5-2.5x wall-clock inference speedup with zero quality degradation relative to standard autoregressive generation from the target model, and wherein the draft model's small size enables it to reside in GPU cache memory, making draft token generation nearly free in terms of memory bandwidth.
+
+**Claim 25.** A method for Parameterized Hypercomplex Multiplication (PHM) within the shared transformer block of Claim 1, the method comprising:
+
+(a) replacing standard linear layers in the shared block with hypercomplex multiplication using n-component factorization (typically n=4), reducing per-layer parameters by a factor of n;
+
+(b) achieving approximately 239x compression ratio while maintaining at least 53% top-10 token agreement, compared to 60x compression with standard linear layers;
+
+wherein the PHM variant provides an additional 4x parameter reduction on top of the FRR architectural compression with minimal quality degradation.
+
 ---
 
 ## EXPERIMENTAL RESULTS
