@@ -1,0 +1,25 @@
+============================================================
+APPROACH A: Quantized weights + genome correction
+Keep original weights at low precision, genome fixes errors
+============================================================
+
+  Q2 alone: Top1=0% Top10=0%
+    Step 0: loss=8.299
+    Step 1000: loss=0.945
+    Step 2000: loss=1.089
+Traceback (most recent call last):
+  File "C:\Users\sip\Desktop\Projects\ultracompress\run_sweep.py", line 148, in <module>
+    t1_qc, t10_qc = quick_eval(qc_forward)
+                    ~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\sip\Desktop\Projects\ultracompress\run_sweep.py", line 54, in quick_eval
+    gl = forward_fn(t)
+  File "C:\Users\sip\Desktop\Projects\ultracompress\run_sweep.py", line 142, in qc_forward
+    x_q = q_model.layers[li](x, positions)
+  File "C:\Users\sip\Desktop\Projects\ultracompress\ultracompress\inference.py", line 254, in __call__
+    attn_out = self.attention(self.attn_norm(x), positions)
+  File "C:\Users\sip\Desktop\Projects\ultracompress\ultracompress\inference.py", line 210, in attention
+    q_rope = rope_embed(q_rope, positions, config.rope_theta)
+  File "C:\Users\sip\Desktop\Projects\ultracompress\ultracompress\inference.py", line 143, in rope_embed
+    out_r = x_r * cos_a - x_i * sin_a
+            ~~~~^~~~~~~
+RuntimeError: The size of tensor a (16) must match the size of tensor b (32) at non-singleton dimension 2

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Model weights (too large for git)
+*.pt
+*.safetensors
+*.gguf
+*.bin
+*.ucz
+
+# Logs (regeneratable)
+*_output.log
+*.log
+
+# Results (regeneratable)
+*_results.json
+results_knowledge_base.json
+
+# Temp files
+.claude/
+.playwright-mcp/
+instagram_*.png
+instagram_*.md
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+full_chat_transcript.jsonl

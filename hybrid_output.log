@@ -1,52 +1,16 @@
-=== HYBRID: Progressive init + long cached training ===
-Phase 1: Progressive per-layer init (1000 steps/layer)
-Phase 2: Cache teacher outputs
-Phase 3: Long cached fine-tuning (50K steps)
+Loading Qwen3-0.6B...
+Weights: 440,401,920 (1761.6 MB)
+Norms: 64,512 (verbatim)
 
-Genome: 11,934,720 params (23.9 MB), BPW=0.4336
-Progressive: 1000 steps/layer + 2000 joint
 
-  Layer 0/28: loss=0.0463
-  Layer 7/28: loss=0.0327
-  Layer 14/28: loss=0.0353
-  Layer 21/28: loss=1.6486
-  Layer 27/28: loss=6.9111
+======================================================================
+HYBRID: Hybrid-Q80-r16 (DCT Q80 + correction rank=16)
+======================================================================
+Stage 1: DCT compression...
+  DCT Q80: 4.5x compression, 389.4 MB effective
+  Reconstructing DCT model...
+  DCT-only: Top1=0% Top10=0% at 389.4MB (4.5x)
 
-Joint fine-tuning (2000 steps)...
-  Joint step 0: loss=4.190
-  Joint step 500: loss=0.767
-  Joint step 1000: loss=0.647
-  Joint step 1500: loss=1.191
-
-Final: Top1=20% Top10=53%
-Time: 1228s
-
-After progressive: Top1=20% Top10=53%
-Building cache: 10000 samples...
-  0/10000
-  800/10000
-  1600/10000
-  2400/10000
-  3200/10000
-  4000/10000
-  4800/10000
-  5600/10000
-  6400/10000
-  7200/10000
-  8000/10000
-  8800/10000
-  9600/10000
-Cache built: 10000 samples
-
-Phase 3: Cached fine-tuning (50K steps from progressive init)...
-  Step     0: loss=0.821 [4.8 steps/s]
-  Step 10000: loss=0.184 [11.9 steps/s]
-  Step 20000: loss=0.088 [12.4 steps/s]
-  Step 30000: loss=0.047 [12.2 steps/s]
-  Step 40000: loss=0.026 [12.2 steps/s]
-
-============================================================
-  HYBRID RESULT: Top1=27% Top10=46%
-  Genome: 23.9 MB (37x compression)
-  Total time: 4118s (69min)
-============================================================
+Stage 2: Training correction (10000 steps)...
+  Correction network: 1,376,284 params (2.8 MB)
+    Step 0: loss=8.1785 lr=0.000000 (0s)

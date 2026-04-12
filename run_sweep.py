@@ -137,9 +137,10 @@ for quant_bits in [2, 4]:
 
     # Eval quantized + correction
     def qc_forward(tokens):
+        pos = torch.arange(tokens.shape[1], device=tokens.device)
         x = F.embedding(tokens, embed).float()
         for li in range(28):
-            x_q = q_model.layers[li](x, positions)
+            x_q = q_model.layers[li](x, pos)
             x = x_q + correction[li](x) * 0.1
         var = x.float().pow(2).mean(-1, keepdim=True)
         xn = x.float() * torch.rsqrt(var + 1e-6) * norm_w
@@ -233,6 +234,7 @@ for attn_bits in [16, 4]:
             sys.stdout.flush()
 
     def b_forward(tokens):
+        pos = torch.arange(tokens.shape[1], device=tokens.device)
         x = F.embedding(tokens, embed).float()
         for li in range(28):
             tw = {}
@@ -241,7 +243,7 @@ for attn_bits in [16, 4]:
                 if key in attn_weights:
                     tw[wtype] = attn_weights[key]
             layer = TransformerLayer(tw, config)
-            attn_out = layer.attention(layer.attn_norm(x), positions)
+            attn_out = layer.attention(layer.attn_norm(x), pos)
             if attn_out.shape == x.shape:
                 h = x + attn_out
             else:
