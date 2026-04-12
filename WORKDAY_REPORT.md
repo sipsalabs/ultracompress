@@ -108,8 +108,21 @@ T1 at 49% is best ever. Finishing ~12:30 PM.
 ### 1.7B 100K LAUNCHED on GPU 1 — targeting 70%+ T10
 Both GPUs now running 100K training. 1.7B 100K is the overnight experiment.
 
-### 8B Model Downloading
-Qwen3-8B downloading for next scaling milestone. 8B script ready.
+### 8B Model CACHED (16 GB FP16)
+Ready for next scaling test. Needs both GPUs free (deferred to after 1.7B).
+
+### SPEED BENCHMARK PROVEN: 3.1-3.4x FASTER
+| Seq | Teacher | FRR | Speedup |
+|-----|---------|-----|---------|
+| 32 | 613 tok/s | 2,073 tok/s | 3.38x |
+| 128 | 2,624 tok/s | 8,041 tok/s | 3.06x |
+| 256 | 5,223 tok/s | 16,403 tok/s | 3.14x |
+
+FRR block (14.7 MB) fits in L2 cache. Teacher (3 GB) doesn't.
+
+### Controller Test RUNNING on GPU 0
+Testing input-dependent modulation (Ouroboros V2 style) vs static gamma/beta.
+3 configs, results in ~1.5 hours.
 
 ## What to Do Tonight
 1. ~~Review 100K and 1.7B-50K final results~~ DONE: 66% record!
