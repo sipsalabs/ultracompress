@@ -65,8 +65,18 @@ FRR distillation -> compress block with pipeline -> decompress -> measure qualit
 
 **Verdict: Quant-aware training HURTS.** The Q2 penalty distorts weights without making them genuinely Q2-friendly. Normal training + pipeline quantization (E2E proof approach) works much better.
 
-### 6. Real Text Training (RUNNING)
-FRR with FineWeb-Edu streaming data instead of random tokens. Launched at ~2:20 AM. Expected to show +5-15% quality improvement. Results will be in `real_text_output.log`.
+### 6. Real Text Training (COMPLETE — both configs)
+
+| Config | T1 | T10 | Notes |
+|--------|-----|------|-------|
+| v1 (n_heads=8, ff_mult=2, 20K steps) | 29% | 46% | Wrong config |
+| v2 (n_heads=16, ff_mult=1, 15K steps) | 18% | 41% | Correct config |
+| Random-token baseline (same as v2) | ~36% | ~56% | Reference |
+
+**Verdict: Real text training scores LOWER on random-token eval (-15% T10).** This is an eval metric mismatch — the model learns real language patterns but our eval measures random-token prediction. Need a proper text-based eval (perplexity on held-out text) to see the actual benefit.
+
+### 7. Combo Winners (RUNNING)
+LoRA on n_heads=16, ff_mult=1 config (the best architecture). Running baseline + LoRA-16 + LoRA-32. Finishing ~4:50 AM.
 
 ## Key Findings
 
@@ -76,8 +86,9 @@ FRR with FineWeb-Edu streaming data instead of random tokens. Launched at ~2:20 
 4. **Multi-block doesn't help:** The quality ceiling is NOT from block capacity.
 5. **Intermediate matching needs real text:** No improvement with random tokens.
 6. **Quant-aware training backfires:** Normal train + pipeline Q2 is better.
-7. **The bottleneck is training data**, not architecture.
+7. **Real text training hurts random-token eval** — need proper text-based eval metric.
 8. **Single shared block is optimal** — more blocks = more params for same quality.
+9. **MEGA used n_heads=8 config** — absolute T10 numbers would be ~6% higher with n_heads=16, ff_mult=1.
 
 ## Next Steps (Priority Order)
 
