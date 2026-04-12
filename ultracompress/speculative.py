@@ -67,8 +67,9 @@ class SpeculativeDecoder:
 
             # Step 3: Accept/reject each draft token
             n_accepted = 0
+            orig_len = tokens.shape[1]  # length BEFORE accepting any drafts
             for i, (draft_tok, draft_p) in enumerate(zip(draft_tokens, draft_probs)):
-                pos = tokens.shape[1] + i - 1  # position in target logits
+                pos = orig_len + i - 1  # position in target logits (fixed reference)
                 target_p = F.softmax(target_logits[:, pos] / self.temperature, dim=-1)
                 target_prob = target_p[0, draft_tok[0, 0]].item()
 
