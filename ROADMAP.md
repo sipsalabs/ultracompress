@@ -1,62 +1,52 @@
-# UltraCompress Roadmap
+# UltraCompress Roadmap (Updated April 12, 2026)
 
-## PROVEN (tested, results in hand)
-- [x] FRR V1: 62% top-10 at 42x (one shared block)
-- [x] FRR V2: 62% top-10 at 42x (7-scale + hidden supervision matches V1)
-- [x] Genome: 63% top-10 at 37x (baseline)
-- [x] Product CLI with .ucz format (working)
-- [x] 8B analysis (zero cross-layer redundancy confirmed)
-- [x] Grad-level LLM research (info-theoretic floor = 1.5 bit/weight)
+## PROVEN RESULTS
+- [x] FRR 0.6B: 63% T10 at 60x (50K steps)
+- [x] FRR 1.7B: **66% T10 at 48x** (50K steps) — ALL-TIME BEST
+- [x] FRR + Q2 E2E: 53% T10 at 959x (proven end-to-end)
+- [x] PHM variant: 53% T10 at 239x (4x fewer params)
+- [x] Scaling confirmed: 1.7B > 0.6B quality
+- [x] MEGA test: 15 modules tested, PredCoding (+7%), PHM (4x efficiency)
+- [x] Multi-block: does NOT help (same quality, 11x more params)
+- [x] Entropy coding: 6x lossless on Q2 weights
+- [x] L2 cache inference advantage: 60x fewer VRAM reads
 
 ## RUNNING NOW
-- [ ] Ablation study: PHM vs Dendritic vs LoRA vs HiddenSup vs TempAnneal (on FRR)
-- [ ] HWI moonshot (holographic weight interference)
-- [ ] FRR text generation demo
-- [ ] Breakers (Swarm + Program, fixed)
+- [ ] 0.6B 100K training (step 70K/100K, 64% T10, finishing ~12:45 PM)
+- [ ] **1.7B 100K training** (step 10K/100K, targeting **70%+ T10**)
+- [ ] 8B model cached and ready (16 GB FP16)
 
-## BUILT, READY TO TEST
-- [ ] FRR V3 with LoRA adapters (run_frr_v3.py)
-- [ ] 8B FRR streaming distillation (run_8b_frr.py, confirmed fits in 11GB)
-- [ ] Tensor Train embedding compression (tensor_train.py)
+## READY TO RUN (scripts built)
+- [ ] 8B dual-GPU FRR (run_8b_dual_gpu.py — teacher GPU 0, student GPU 1)
+- [ ] Controller hypernetwork test (input-dependent modulation)
+- [ ] MoL test (Mixture of LoRA experts, token-conditional routing)
+- [ ] Optimized training (2x batch, 1.5x LR, T warmup)
+- [ ] Born-again distillation (3 generations, +2-4% quality)
+- [ ] Speed benchmark (FRR vs teacher inference latency)
+- [ ] Speculative decoding benchmark (measure 2x speedup)
+- [ ] Standard eval (WikiText-2 perplexity, HellaSwag accuracy)
+- [ ] FRR from scratch v2 (real LM training on FineWeb-Edu)
 
-## RESEARCHED, NEED TO BUILD
-- [ ] Thalamic query-biasing (from TRC2 paper — modulate Q stream)
-- [ ] TRN divisive competition (sparse competitive modulation)
-- [ ] Surprise-gated pathway (dynamic modulation based on input novelty)
-- [ ] Activation sparsity integration (ProSparse — 89% sparse, 4.5x speedup)
-- [ ] Predictive coding training (MDL objective — inherently compressed)
-- [ ] PRISM phase-based networks (complex-valued, fewer params)
-- [ ] FRR with DendriticFractalBlock replacing standard block
-- [ ] FRR with PHMFractalBlock replacing standard block
-- [ ] FRR with HyperbolicFractalBlock for Q/K projections
-- [ ] Combined: FRR + PHM + LoRA + activation sparsity (the mega-stack)
+## NEAR-TERM (this week)
+- [ ] File provisional patent Monday ($80) — 25 claims
+- [ ] 8B scaling test (projected 70%+ T10)
+- [ ] Submit arxiv paper (after 8B results)
+- [ ] Post Show HN (after patent + paper)
+- [ ] Upload compressed models to HuggingFace
+- [ ] Deploy Gradio demo to HF Spaces
+- [ ] Run lm-eval benchmarks (MMLU, HellaSwag, ARC)
 
-## PRODUCT TRACK
-- [ ] Test product CLI on 8B model
-- [ ] Add Tensor Train to embedding compression stage
-- [ ] Add TurboQuant-style sparse+VQ to product pipeline
-- [ ] Build pre-compressed model zoo
-- [ ] Launch open-source CLI on GitHub
-- [ ] Write product landing page
+## MID-TERM (this month)
+- [ ] 70B scaling test (NF4 teacher + CPU offload)
+- [ ] llama.cpp fork with FRR architecture support
+- [ ] Speculative decoding product (2x inference speedup)
+- [ ] First paying customer (Fiverr/direct)
+- [ ] GitHub public launch + GitHub Sponsors
+- [ ] pip install ultracompress on PyPI
 
-## MOONSHOT TRACK
-- [ ] 8B FRR distillation (the scaling proof)
-- [ ] FRR + PHM (168x theoretical compression)
-- [ ] FRR + PHM + activation sparsity (756x theoretical)
-- [ ] FRR + PHM + sparsity + 2-bit quant (6000x theoretical)
-- [ ] New architecture trained from scratch (not distilled)
-- [ ] Publish FRR paper on arxiv
-
-## NEUROSCIENCE TRACK
-- [ ] Dendritic FRR block (more compute per param)
-- [ ] Cortical column routing (thalamic from TRC2)
-- [ ] Predictive coding training paradigm
-- [ ] Oscillatory binding (phase-based information)
-- [ ] Astrocyte modulation network (meta-network controlling main)
-
-## BUSINESS TRACK  
-- [ ] Market: $3-5B by 2027, our moat = architectural compression
-- [ ] Open-source CLI + paper for credibility
-- [ ] Paid API: compression-as-a-service
-- [ ] Enterprise: $50-200K/yr contracts
-- [ ] Pre-compressed model marketplace
+## LONG-TERM (Q2-Q3 2026)
+- [ ] YC S26 application (deadline TBD)
+- [ ] From-scratch FRR training at 1B+ scale
+- [ ] 100T model compression demonstration
+- [ ] Enterprise API (compression-as-a-service)
+- [ ] Series A fundraise ($20-25M at $60-120M)
