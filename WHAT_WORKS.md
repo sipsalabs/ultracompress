@@ -63,14 +63,19 @@ Match per-layer hidden states during distillation.
 ### 8. Sparse30, NeuroFractal, Seed Architecture
 - All dead (0-4% T10). Too aggressive or unstable.
 
+## MARGINAL (tested, small gain)
+
+1. **MoL (Mixture of LoRAs)** — 58% T10 at 47x (+3% over baseline 55% at 60x). Trades compression for quality. Stable unlike controller but not a breakthrough.
+
 ## UNTESTED BUT PROMISING
 
-1. **MoL (Mixture of LoRAs)** — token-conditional routing, different from controller
+1. **8B scaling** — cached, script ready, auto-launching ~5 PM
 2. **Born-again distillation** — +2-4% per generation, literature-backed
-3. **8B scaling** — cached, script ready, needs both GPUs
-4. **Optimized training** — 2x batch, 1.5x LR, should converge faster
-5. **Speculative decoding** — FRR as draft model, 2x speedup, zero quality loss
-6. **Prelude/Coda** — keep first/last layers untied, share middle only
+3. **Dual-objective** (Sip's idea) — split T10/T1 optimization across recursion depth
+4. **Top-1 focused loss** — CE on teacher's argmax + margin ranking
+5. **Optimized training** — 2x batch, 1.5x LR, should converge faster
+6. **Speculative decoding** — FRR as draft model, 2x speedup, zero quality loss
+7. **Prelude/Coda** — keep first/last layers untied, share middle only
 
 ## THE FORMULA
 
