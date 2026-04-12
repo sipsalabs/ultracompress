@@ -16,7 +16,9 @@ We ask a different question: *must layers be distinct?* Standard transformers st
 
 We show this interpretation is wrong — or at least, incomplete. A single transformer block, applied recursively with only per-scale affine modulation (gamma and beta vectors totaling ~8K parameters per virtual layer), replicates 98.4% of the predictive agreement achieved by 28 independent layers. The trick is not in the weights but in the *residual stream dynamics*: the same function, applied iteratively to an evolving hidden state, produces a rich computational trajectory that a small modulation signal can steer toward the teacher's behavior.
 
-This has immediate practical implications. A 440M-parameter model compresses to 10.5M parameters (21MB on disk) — a 42x ratio — with no quantization artifacts, no calibration data sensitivity, and no architecture-specific engineering. The method is orthogonal to quantization and can be composed with it for even greater compression.
+This has immediate practical implications. A 440M-parameter model compresses to 7.35M parameters (14.7MB on disk) — a 60x ratio — with no quantization artifacts, no calibration data sensitivity, and no architecture-specific engineering. When composed with a 5-stage quantization pipeline, total compression reaches 959x with only 1.5% quality degradation. The method is orthogonal to quantization and stacks cleanly.
+
+Recent concurrent work on recursive transformers — Relaxed Recursive Transformers (Bae et al., 2024), SpiralFormer (Yu et al., 2026), and Mixture of LoRAs (Nouriborji et al., 2025) — validates the shared-weight paradigm but operates at modest compression ratios (2-4x). FRR pushes architectural compression to 60x, an order of magnitude beyond prior work, by combining aggressive weight sharing with minimal per-layer modulation and extended distillation training.
 
 ## 2. Method
 
