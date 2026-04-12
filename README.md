@@ -21,6 +21,13 @@ Q2 quantization on the FRR block drops only 1.5% top-10 quality. The full pipeli
 
 **Inference speed (RTX 5090):** FRR is **3.1-3.4x faster** than the teacher across all sequence lengths (613 -> 2,073 tok/s at seq=32, up to 5,223 -> 16,403 tok/s at seq=256).
 
+**Real benchmarks (0.6B, 60x compression):**
+
+| Benchmark | Teacher | FRR 60x | Drop |
+|-----------|---------|---------|------|
+| WikiText-2 PPL | 1202.8 | 1521.1 | +26% |
+| HellaSwag | 29.0% | 26.5% | **-2.5%** |
+
 Pipeline: `Hadamard (lossless) -> SVD (lossless w/ residual) -> Quantize (lossy) -> Correct -> Entropy (lossless)`
 
 ---
