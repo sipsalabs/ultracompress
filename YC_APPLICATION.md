@@ -10,7 +10,7 @@
 
 ## 1. What does your company do? (one sentence)
 
-UltraCompress makes AI models 60-960x smaller by replacing all their layers with a single shared block that runs recursively, then compressing that block with a 5-stage pipeline -- achieving compression ratios an order of magnitude beyond any existing method, proven end-to-end.
+UltraCompress makes AI models 60x smaller AND 2x faster by replacing all layers with a single shared recursive block -- which doubles as a speculative decoding draft that accelerates inference on the original model with zero quality loss.
 
 ---
 
