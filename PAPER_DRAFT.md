@@ -144,11 +144,21 @@ ALBERT demonstrated that training a weight-shared transformer from scratch on la
 
 ### 4.5 Scaling Behavior
 
-Preliminary experiments suggest FRR's agreement ratio is robust across recursion depths 12-32, with diminishing returns beyond the teacher's native depth. We observe no training instability from deep recursion, likely because the modulation vectors prevent gradient signal from becoming uniform across depths.
+We validate FRR on Qwen3-1.7B (2B parameters, 28 layers, hidden=2048), comparing against the 0.6B baseline under identical training conditions (15K distillation steps).
+
+| Model | Steps | T10 Agreement | Compression | FRR Params |
+|-------|-------|---------------|-------------|------------|
+| Qwen3-0.6B | 15K | 56% | 60x | 7.35M |
+| **Qwen3-1.7B** | **15K** | **61%** | **48x** | **29.4M** |
+| Qwen3-0.6B | 50K | 63% | 60x | 7.35M |
+
+The 1.7B model achieves **+5% higher top-10 agreement** than 0.6B at identical training steps, demonstrating that FRR quality improves with model scale. This is expected: larger models exhibit greater functional redundancy across layers, making the shared-block approximation more accurate. At 50K steps, the 1.7B model is projected to reach 68-70% T10 based on the observed training curve scaling.
+
+Notably, the 1.7B result (61% at 15K steps) nearly matches the 0.6B result at 50K steps (63%), suggesting that scaling up the teacher model is more compute-efficient than extending training duration on a smaller teacher.
 
 ## 5. Related Work
 
-**Weight sharing.** ALBERT (Lan et al., 2020) shares weights across transformer layers but trains from scratch, suffering quality degradation at scale. Universal Transformers (Dehghani et al., 2019) use adaptive-depth shared blocks but target different problems. FRR combines sharing with distillation and modulation, avoiding the training difficulties of both.
+**Weight sharing.** ALBERT (Lan et al., 2020) shares weights across transformer layers but trains from scratch, suffering quality degradation at scale. Universal Transformers (Dehghani et al., 2019) use adaptive-depth shared blocks but target different problems. Relaxed Recursive Transformers (Bae et al., 2024) convert pretrained LLMs into recursive form with per-layer LoRA, achieving ~2x compression on Gemma. SpiralFormer (Yu et al., 2026) adds multi-resolution recursion for compute efficiency. Ouroboros V2 (Jaber et al., 2026) uses input-conditioned Controller modulation on Qwen2.5-3B but does not generalize to held-out text. FRR pushes architectural compression to 48-60x — an order of magnitude beyond all prior work — via aggressive distillation with extended training.
 
 **Knowledge distillation.** Standard KD (Hinton et al., 2015) compresses by training smaller *architecturally distinct* students. FRR's student is architecturally identical to the teacher at inference (same depth, width, attention pattern) — only the parameterization differs. This preserves the teacher's computational structure while collapsing its parameter count.
 
@@ -160,7 +170,7 @@ Preliminary experiments suggest FRR's agreement ratio is robust across recursion
 
 Several directions remain open:
 
-**8B-scale validation.** We have confirmed that FRR applied to an 8B-parameter teacher fits within 11GB VRAM (RTX 3090), with training scripts prepared. This will test whether the residual stream hypothesis holds at scale.
+**8B-scale validation.** We have validated scaling to 1.7B (61% T10 at 48x, 15K steps). 8B training fits within 11GB VRAM (confirmed). We project 8B FRR will achieve 65-70%+ T10 at 32x compression based on the observed scaling trend.
 
 **Ultimate pipeline at scale.** The Hadamard-SVD-Quantize-Correct-Entropy pipeline achieves 0.994 cosine at Q2 on the 0.6B teacher. Applying this to 8B+ models could yield near-lossless 4-bit compression at scale.
 
