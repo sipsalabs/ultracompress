@@ -11,6 +11,7 @@ import subprocess, time, os, sys
 
 scripts = [
     ('SPEC DECODE BENCH', 'run_spec_decode_bench.py', 'spec_decode_output.log', 0.5),
+    ('4D BLOCK TEST (Sips idea)', 'run_4d_block_test.py', '4d_block_output.log', 1.5),
     ('STANDARD EVAL', 'run_standard_eval.py', 'standard_eval_output.log', 0.5),
     ('MOL TEST', 'run_mol_test.py', 'mol_output.log', 2.0),
 ]
