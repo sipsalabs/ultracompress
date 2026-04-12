@@ -60,6 +60,7 @@ except Exception as e:
 
 def get_real_batch(batch_size=8, seq_len=64):
     """Get a batch of real tokenized text."""
+    global ds_iter
     if not USE_REAL_TEXT:
         return torch.randint(100, 50000, (batch_size, seq_len), device=device)
 
@@ -77,8 +78,6 @@ def get_real_batch(batch_size=8, seq_len=64):
                     tokens_list.append(toks[:seq_len])
                     break
             except StopIteration:
-                # Restart iterator
-                global ds_iter
                 ds_iter = iter(ds)
     return torch.stack(tokens_list).to(device)
 
