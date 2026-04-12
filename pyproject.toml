@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "ultracompress"
+version = "0.2.0"
+description = "Extreme model compression via Fractal Residual Recursion (60-960x)"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Mounir", email = "mounnar@users.noreply.github.com"},
+]
+keywords = ["model-compression", "llm", "transformer", "fractal", "distillation", "speculative-decoding"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0",
+    "numpy>=1.24",
+    "transformers>=4.40",
+]
+
+[project.optional-dependencies]
+eval = ["lm-eval>=0.4", "datasets>=2.0"]
+serve = ["fastapi>=0.100", "uvicorn>=0.20"]
+all = ["lm-eval>=0.4", "datasets>=2.0", "fastapi>=0.100", "uvicorn>=0.20", "scipy>=1.10", "matplotlib>=3.7"]
+
+[project.urls]
+Homepage = "https://github.com/mounnar/ultracompress"
+Repository = "https://github.com/mounnar/ultracompress"
+Issues = "https://github.com/mounnar/ultracompress/issues"
+
+[project.scripts]
+ultracompress = "ultracompress_cli:main"
+
+[tool.setuptools.packages.find]
+include = ["ultracompress*", "lib*"]
