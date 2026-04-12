@@ -3,14 +3,14 @@
 **Batch:** S26
 **Company:** UltraCompress (a product of Athena AGI)
 **Founder:** Sip, 22, Solo Technical Founder
-**Website:** https://github.com/athena-agi/ultracompress
+**Website:** https://github.com/mounnar/ultracompress
 **Stage:** Pre-launch, working prototype with proven results
 
 ---
 
 ## 1. What does your company do? (one sentence)
 
-UltraCompress makes AI models 42x smaller by replacing all their layers with a single shared block that runs recursively -- a fundamentally new compression approach that goes far beyond what quantization or pruning can achieve.
+UltraCompress makes AI models 60-960x smaller by replacing all their layers with a single shared block that runs recursively, then compressing that block with a 5-stage pipeline -- achieving compression ratios an order of magnitude beyond any existing method, proven end-to-end.
 
 ---
 
