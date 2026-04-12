@@ -52,9 +52,9 @@ Note: MEGA used n_heads=8 config. Absolute T10 would be ~6% higher with n_heads=
 | 25K | 37% | 59% | +2% |
 | 30K | 37% | 60% | +1% |
 | 35K | **44%** | **61%** | **+1%** |
-| 50K | running... | | still climbing |
+| **50K** | **44%** | **63%** | **+1% — NEW ALL-TIME RECORD** |
 
-**TRAINING TIME IS THE BOTTLENECK.** Quality keeps improving well past 10K steps. 61% T10 at 35K matches our all-time best (62%) — WITH NO ENHANCEMENTS. Just plain baseline + more steps. Projected 63-65% at 50K.
+**TRAINING TIME IS THE BOTTLENECK.** Plain baseline FRR hits 63% T10 at 50K steps — **beating our previous best (62%) with zero enhancements.** Just more training. Still climbing at 50K — 100K+ steps would go higher.
 
 ### 4. Multi-Block FRR (COMPLETE)
 
@@ -106,7 +106,7 @@ Note: MEGA used n_heads=8 config. Absolute T10 would be ~6% higher with n_heads=
 
 ## What to Do Today (Priority Order)
 
-1. **Keep long-training running** — see where 50K steps lands (currently 57% at 20K)
+1. **Run 100K+ steps** — 50K hit 63% and was still climbing. 100K could reach 65-70%
 2. **Build proper text-based eval** — perplexity on held-out text, not random tokens
 3. **Try 100K+ steps** — if quality keeps climbing, this is the cheapest quality lever
 4. **1.7B scaling test** — downloaded, ready. Does FRR work better on bigger models?
