@@ -148,6 +148,14 @@ def main():
               f"{format_size(r['frr_size_fp16']):>10} "
               f"{format_size(r['frr_size_fp16']/16):>10} "
               f"{format_size(r['frr_size_fp16']/96):>10}")
+
+        print(f"\n  WARNING: These are THEORETICAL MAXIMUMS assuming quality holds.")
+        print(f"  Actual quality depends on training. Proven results so far:")
+        print(f"    0.6B: 63% T10 at 60x (50K steps) -- PROVEN")
+        print(f"    1.7B: 60% T10 at 48x (20K steps) -- PROVEN, still climbing")
+        print(f"    E2E:  53% T10 at 959x -- PROVEN end-to-end")
+        print(f"    8B+:  NOT YET TESTED -- quality unknown at this scale")
+        print(f"  The compression ratio math is real. The quality at scale is NOT proven.")
         return
 
     r = calc(total, layers, hidden, phm=args.phm)
