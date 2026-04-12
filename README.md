@@ -103,6 +103,17 @@ python run_e2e_proof.py
 
 ---
 
+## Scaling: Bigger Models Compress Better
+
+| Model | Steps | T10 | Compression | FRR Params |
+|-------|-------|------|-------------|------------|
+| Qwen3-0.6B | 15K | 56% | 60x | 7.35M |
+| **Qwen3-1.7B** | **15K** | **61%** | **48x** | **29.4M** |
+| Qwen3-0.6B | 50K | 63% | 60x | 7.35M |
+| Qwen3-1.7B | 50K | ~68% (projected) | 48x | 29.4M |
+
+**1.7B gives +5% better quality than 0.6B at the same training steps.** FRR works better on bigger models because larger models have more functional redundancy across layers.
+
 ## 100T Model Projections
 
 For models at 100T+ scale, embeddings are ~0.003% of total params. FRR compression applies to nearly everything:
