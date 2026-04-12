@@ -64,7 +64,9 @@ Training uses a small calibration corpus (WikiText-2, 512-token sequences). No t
 | Model | Config | Params | Size | Compression | Top-1 | Top-10 |
 |---|---|---|---|---|---|---|
 | Qwen3-0.6B (teacher) | — | 440M | 880MB | 1x | 100% | 100% |
-| **FRR 50K (ours)** | **4s7i, 50K steps** | **7.35M** | **14.7MB** | **60x** | **44%** | **63%** |
+| **FRR 100K (ours)** | **4s7i, 100K steps** | **7.35M** | **14.7MB** | **60x** | **48%** | **65%** |
+| FRR 50K | 4s7i, 50K steps | 7.35M | 14.7MB | 60x | 44% | 63% |
+| **FRR 1.7B (ours)** | **Qwen3-1.7B, 50K** | **29.4M** | **58.8MB** | **48x** | **37%** | **66%** |
 | **FRR + Q2 E2E (ours)** | **FRR + pipeline** | **7.35M** | **1.8MB** | **959x** | **35%** | **53%** |
 | **FRR-PHM (ours)** | **PHM n=4** | **1.85M** | **3.7MB** | **239x** | **32%** | **53%** |
 | FRR 10K | 4s7i, 10K steps | 7.35M | 14.7MB | 60x | 37% | 55% |
