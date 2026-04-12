@@ -131,7 +131,7 @@ For models at 100T+ scale, embeddings are ~0.003% of total params. FRR compressi
 ## Repository Structure
 
 ```
-ultracompress/                  # Core library (73 modules)
+ultracompress/                  # Core library (81 modules)
   moonshot.py                   # FRR + GWE architectures
   inference.py                  # Model loading and inference
   ultimate_pipeline.py          # 5-stage compression pipeline
