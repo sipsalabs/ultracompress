@@ -126,9 +126,21 @@ Testing input-dependent modulation (Ouroboros V2 style) vs static gamma/beta.
 
 ## What to Do Tonight
 1. ~~Review 100K and 1.7B-50K final results~~ DONE: 66% record!
-2. Review 0.6B 100K final when it finishes (~12:30 PM)
-3. Run speculative decoding benchmark (prove the speedup)
-4. Run controller test (input-dependent modulation)
-5. Run MoL test (token-conditional LoRA routing)
-6. Plan patent filing for Monday
-7. Monitor 1.7B 100K overnight (targeting 70%+)
+2. ~~Review 0.6B 100K final~~ DONE: 65% T10, 48% T1, saved frr_100k_best.pt
+3. ~~Speed benchmark~~ DONE: **3.1-3.4x faster** (L2 cache confirmed!)
+4. ~~Controller test~~ DONE: NaN (static modulation wins)
+5. Speculative decode bench — AUTO-LAUNCHING when controller finishes
+6. Standard eval (WikiText-2, HellaSwag) — AUTO-LAUNCHING after spec decode
+7. MoL test — AUTO-LAUNCHING after standard eval
+8. 4D block test — queued (Sip's cross-depth attention idea)
+9. Plan patent filing for Monday ($80, 25 claims)
+10. Monitor 1.7B 100K overnight (64% at step 60K, targeting 70%+)
+11. 8B test when both GPUs free (cached, script ready)
+
+## Final Stats
+- **82 commits today** (124 total)
+- **80 modules** in ultracompress/
+- **42,122 lines of Python**
+- **197 .py files**
+- **20 documentation files**
+- Both GPUs active all day
