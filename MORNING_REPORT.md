@@ -43,15 +43,18 @@ Note: MEGA used n_heads=8 config. Absolute T10 would be ~6% higher with n_heads=
 
 ### 3. Long Training — 50K Steps (RUNNING, ~57% T10 at step 20K)
 
-| Step | T10 | Gain from prev |
-|------|------|----------------|
-| 5K | 50% | — |
-| 10K | 54% | +4% |
-| 15K | 56% | +2% |
-| 20K | **57%** | **+1%** |
-| 50K | running... | still climbing |
+| Step | T1 | T10 | Gain |
+|------|-----|------|------|
+| 5K | 29% | 50% | — |
+| 10K | 36% | 54% | +4% |
+| 15K | 34% | 56% | +2% |
+| 20K | 35% | 57% | +1% |
+| 25K | 37% | 59% | +2% |
+| 30K | 37% | 60% | +1% |
+| 35K | **44%** | **61%** | **+1%** |
+| 50K | running... | | still climbing |
 
-**TRAINING TIME IS THE BOTTLENECK.** Quality keeps improving past 10K steps. The 55% "ceiling" was just insufficient training. Projected 58-60%+ at 50K steps.
+**TRAINING TIME IS THE BOTTLENECK.** Quality keeps improving well past 10K steps. 61% T10 at 35K matches our all-time best (62%) — WITH NO ENHANCEMENTS. Just plain baseline + more steps. Projected 63-65% at 50K.
 
 ### 4. Multi-Block FRR (COMPLETE)
 
