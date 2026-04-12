@@ -108,11 +108,11 @@ python run_e2e_proof.py
 | Model | Steps | T10 | Compression | FRR Params |
 |-------|-------|------|-------------|------------|
 | Qwen3-0.6B | 15K | 56% | 60x | 7.35M |
-| **Qwen3-1.7B** | **15K** | **61%** | **48x** | **29.4M** |
+| Qwen3-1.7B | 15K | 61% | 48x | 29.4M |
 | Qwen3-0.6B | 50K | 63% | 60x | 7.35M |
-| Qwen3-1.7B | 50K | ~68% (projected) | 48x | 29.4M |
+| **Qwen3-1.7B** | **40K** | **64%** | **48x** | **29.4M** |
 
-**1.7B gives +5% better quality than 0.6B at the same training steps.** FRR works better on bigger models because larger models have more functional redundancy across layers.
+**1.7B gives better quality than 0.6B.** At 40K steps, 1.7B reaches 64% T10 at 48x — beating 0.6B's best (63% at 50K steps at 60x). FRR works better on bigger models: more functional redundancy across layers = easier to share.
 
 ## 100T Model Projections
 
