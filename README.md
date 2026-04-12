@@ -170,15 +170,18 @@ PAPER_DRAFT.md                  # Arxiv paper draft
 
 ## Competitive Position
 
-| Method | Compression | Approach |
-|--------|-------------|----------|
-| GPTQ/AWQ | 4-8x | Post-training quantization |
-| SparseGPT | 2-4x | Unstructured pruning |
-| MobileLLM | 2x | Block-wise weight sharing |
-| Ouroboros | 2x | Cross-layer sharing + gated recurrence |
-| **UltraCompress FRR** | **42-959x** | **Fractal recursive shared block + pipeline** |
+| Method | Compression | Approach | Scale |
+|--------|-------------|----------|-------|
+| GPTQ/AWQ | 4-8x | Post-training quantization | Any |
+| SparseGPT | 2-4x | Unstructured pruning | Any |
+| MobileLLM | 2x | Block-wise weight sharing | 125M-1B |
+| Relaxed Recursive (Google) | ~2x | Shared block + LoRA | Gemma 1B-2B |
+| Ouroboros V2 (Apr 2026) | ~2x | Controller hypernetwork + gated recurrence | Qwen 3B |
+| SpiralFormer (Feb 2026) | ~1x (efficiency) | Multi-resolution looped transformer | 160M-1.4B |
+| **UltraCompress FRR** | **60-959x** | **Fractal recursive shared block + pipeline** | **0.6B (1.7B testing)** |
+| **UltraCompress PHM** | **239x** | **PHM + FRR** | **0.6B** |
 
-No other published method achieves architectural compression beyond 2-4x. FRR at 42x (or 959x with full pipeline) is novel territory.
+No other published method achieves architectural compression beyond 2-4x. FRR at 60x (or 959x with full pipeline, or 239x with PHM) operates an order of magnitude beyond all competitors.
 
 ---
 
