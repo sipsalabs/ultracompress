@@ -17,7 +17,9 @@ Tested on Qwen3-0.6B (28 layers, 751M params, 1.5 GB FP16):
 | FRR + Q4 pipeline | 32% | 56% | +0.8% | 479x | 7 MB |
 | **FRR + Q2 pipeline** | **35%** | **53%** | **-1.5%** | **959x** | **1.8 MB** |
 
-Q2 quantization on the FRR block drops only 1.5% top-10 quality. The full pipeline (Hadamard rotation -> SVD manifold projection -> quantization -> residual correction -> entropy coding) preserves FRR quality at extreme compression.
+Q2 quantization on the FRR block drops only 1.5% top-10 quality. The full pipeline preserves FRR quality at extreme compression.
+
+**Inference speed (RTX 5090):** FRR is **3.1-3.4x faster** than the teacher across all sequence lengths (613 -> 2,073 tok/s at seq=32, up to 5,223 -> 16,403 tok/s at seq=256).
 
 Pipeline: `Hadamard (lossless) -> SVD (lossless w/ residual) -> Quantize (lossy) -> Correct -> Entropy (lossless)`
 
