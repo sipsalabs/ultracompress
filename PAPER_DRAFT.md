@@ -64,15 +64,16 @@ Training uses a small calibration corpus (WikiText-2, 512-token sequences). No t
 | Model | Config | Params | Size | Compression | Top-1 | Top-10 |
 |---|---|---|---|---|---|---|
 | Qwen3-0.6B (teacher) | — | 440M | 880MB | 1x | 100% | 100% |
-| Q2 quantization (GPTQ) | — | ~110M | ~220MB | 4x | 71% | 89% |
+| **FRR 50K (ours)** | **4s7i, 50K steps** | **7.35M** | **14.7MB** | **60x** | **44%** | **63%** |
+| **FRR + Q2 E2E (ours)** | **FRR + pipeline** | **7.35M** | **1.8MB** | **959x** | **35%** | **53%** |
+| **FRR-PHM (ours)** | **PHM n=4** | **1.85M** | **3.7MB** | **239x** | **32%** | **53%** |
+| FRR 10K | 4s7i, 10K steps | 7.35M | 14.7MB | 60x | 37% | 55% |
 | Genome (indep. layers) | 28 layers | 12.4M | 23.9MB | 37x | 44% | 63% |
-| **FRR V1 (ours)** | **4s7i** | **10.5M** | **21MB** | **42x** | **44%** | **62%** |
-| **HWI (holographic)** | **rank-16** | **5.8M** | **11.6MB** | **76x** | **—** | **57%** |
+| HWI (holographic) | rank-16 | 5.8M | 11.6MB | 76x | — | 57% |
+| PredCoding FRR | + pred coding | 14.2M | — | — | 28% | 57% |
 | BitNet ternary | FRR+ternary | 10.5M | ~2.1MB | 6x eff. | — | 57% |
-| FRR V2 (+ hidden supv.) | 4s7i | 10.5M | 21MB | 42x | 39% | 56% |
-| FRR V1 | 7s4i | 10.5M | 21MB | 42x | 38% | 52% |
 | ALBERT-style (no mod.) | — | 10.2M | ~20MB | 43x | 22% | 41% |
-| Ultimate pipeline | Q2+correct | ~110M | ~220MB | 4x | — | 0.994 cos |
+| Multi-block (3 blocks) | 3 blocks | 92.1M | 184MB | 4.8x | 34% | 57% |
 
 *Config notation: "4s7i" = 4 shared blocks, 7 iterations each (28 virtual layers). "7s4i" = 7 shared blocks, 4 iterations each. FRR V1 uses KL-only distillation (15K steps); FRR V2 adds hidden-state supervision (25K steps). HWI uses holographic weight interference with complex-valued superposition. Ultimate pipeline applies Hadamard rotation, SVD factorization, quantization, correction training, and entropy coding in sequence.*
 
