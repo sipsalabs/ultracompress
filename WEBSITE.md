@@ -4,11 +4,11 @@
 
 ## HERO SECTION
 
-### Run 10-Trillion-Parameter Models on a Laptop.
+### Run 100-Trillion-Parameter Models on One GPU.
 
-UltraCompress shrinks LLMs by **42x** using Fractal Residual Recursion -- a new compression paradigm that replaces every transformer layer with one shared block.
+UltraCompress shrinks LLMs by **60-960x** using Fractal Residual Recursion -- one shared transformer block replaces all layers, then a 5-stage pipeline compresses it further. **959x end-to-end compression, proven on real weights.**
 
-Not quantization. Not pruning. A fundamentally new way to represent neural networks.
+Not just quantization. A fundamentally new way to represent neural networks. And it's **faster** too -- the shared block fits in GPU L2 cache.
 
 **[Star on GitHub]**  |  **[Try the CLI]**  |  **[Read the Paper]**
 
