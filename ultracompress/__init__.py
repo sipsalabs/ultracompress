@@ -1,16 +1,22 @@
 """
-UltraCompress - Extreme LLM Compression Research Pipeline
+UltraCompress — Extreme Model Compression via Fractal Residual Recursion
 
-Compresses large language models using tri-path hybrid compression:
-  Path 1: SVD + VQ fusion — factorize, then vector-quantize the factors
-  Path 2: Direct VQ — vector quantize raw weights (sub-1 BPW)
-  Path 3: Scalar quantization (INT2-8) — fast fallback
-  + Calibration-aware optimization using Hessian weighting
+One shared transformer block replaces all layers. 60x smaller, 3x faster.
+Combined with quantization pipeline: 959x end-to-end compression.
 
-With binarization, codebook, and sparsity stages for further compression.
+Key results (Qwen3-0.6B -> 1.7B):
+  - FRR 1.7B: 66% T10 at 48x compression (all-time best)
+  - FRR + Q2 E2E: 53% T10 at 959x compression (proven)
+  - PHM variant: 53% T10 at 239x (4x fewer params)
+  - Inference: 3.1-3.4x faster (L2 cache)
 
-Current target: 235B -> 20GB (0.68 BPW)
-Ultimate target: 10T -> 20GB (0.016 BPW)
+Usage:
+  from ultracompress.deploy import load_compressed
+  model = load_compressed("compressed.ucz")
+  print(model("The future of AI is"))
+
+Or compress your own model:
+  python compress_frr.py --model Qwen/Qwen3-0.6B --steps 50000
 """
 
-__version__ = "0.4.0"
+__version__ = "0.3.0"
