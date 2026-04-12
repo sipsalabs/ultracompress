@@ -55,7 +55,12 @@ FineWeb-Edu training.
 Match per-layer hidden states during distillation.
 - **No T10 improvement** with random tokens. +4% T1 only.
 
-### 7. Sparse30, NeuroFractal, Seed Architecture
+### 7. 4D Cross-Depth Attention (Sip's idea)
+- Collapsed at step 4K -> NaN. Same instability pattern as controller.
+- **Pattern: any dynamic computation in the shared block is unstable.**
+- Needs: warmup from static, gradient scaling, or late-phase-only activation.
+
+### 8. Sparse30, NeuroFractal, Seed Architecture
 - All dead (0-4% T10). Too aggressive or unstable.
 
 ## UNTESTED BUT PROMISING
