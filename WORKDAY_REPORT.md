@@ -96,9 +96,26 @@ The 14.7MB draft model in L2 cache enables 1.8-2.2x speculative decoding
 speedup with ZERO quality loss. "Drop in this 15MB file and your model
 runs 2x faster" is a better product pitch than "compress your model 60x."
 
+## Late Results (while you were at work)
+
+### 1.7B 50K FINAL: 66% T10 at 48x — NEW ALL-TIME RECORD
+Beats all previous results. Bigger models compress better.
+Model saved: `frr_1.7b_50k_best.pt`
+
+### 0.6B 100K step 60K: 64% T10, 49% T1 (RUNNING, 40K steps left)
+T1 at 49% is best ever. Finishing ~12:30 PM.
+
+### 1.7B 100K LAUNCHED on GPU 1 — targeting 70%+ T10
+Both GPUs now running 100K training. 1.7B 100K is the overnight experiment.
+
+### 8B Model Downloading
+Qwen3-8B downloading for next scaling milestone. 8B script ready.
+
 ## What to Do Tonight
-1. Review 100K and 1.7B-50K final results
-2. Run speculative decoding benchmark (prove the speedup)
-3. Run controller test (input-dependent modulation)
-4. Run MoL test (token-conditional LoRA routing)
-5. Plan patent filing for Monday
+1. ~~Review 100K and 1.7B-50K final results~~ DONE: 66% record!
+2. Review 0.6B 100K final when it finishes (~12:30 PM)
+3. Run speculative decoding benchmark (prove the speedup)
+4. Run controller test (input-dependent modulation)
+5. Run MoL test (token-conditional LoRA routing)
+6. Plan patent filing for Monday
+7. Monitor 1.7B 100K overnight (targeting 70%+)
