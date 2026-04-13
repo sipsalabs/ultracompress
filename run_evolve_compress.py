@@ -32,7 +32,7 @@ device = 'cuda'
 DISTILL_STEPS = 10000    # Phase 1: distill from teacher
 CONTINUE_STEPS = 10000   # Phase 2: continue on real text
 N_GENERATIONS = 3        # How many compress→grow cycles
-USE_COMPILE = True       # torch.compile for 2-3x speed
+USE_COMPILE = False      # torch.compile fails on Windows (Triton)
 USE_AMP = True           # BF16 mixed precision
 
 print("=" * 60)
