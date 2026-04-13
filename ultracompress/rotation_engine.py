@@ -103,8 +103,16 @@ class RotationEngine(nn.Module):
         self.scales = nn.Parameter(torch.ones(n_cycles, hidden_dim))
         self.shifts = nn.Parameter(torch.zeros(n_cycles, hidden_dim))
 
-        # Cross-position mixing (without attention!)
-        # Simple: shift tokens left/right and add (like a 1D convolution with kernel=3)
+        # Cross-position mixing V2 (without attention!)
+        # Global hub: every position writes to a tiny shared summary,
+        # summary broadcasts back. ALL positions connected through hub.
+        # Bottlenecked to keep it tiny: D -> 32 -> D
+        hub_dim = 32
+        self.hub_write = nn.Linear(hidden_dim, hub_dim, bias=False)  # position -> hub
+        self.hub_read = nn.Linear(hub_dim, hidden_dim, bias=False)   # hub -> position
+        nn.init.zeros_(self.hub_read.weight)  # Start as no-op
+
+        # Also keep local neighbor mixing (short-range)
         self.mix_weight = nn.Parameter(torch.tensor([0.1, 0.8, 0.1]))
 
         # Norms for stability
@@ -126,13 +134,19 @@ class RotationEngine(nn.Module):
         x = self.embed(tokens).float()
 
         for i in range(self.n_cycles):
-            # Cross-position mixing (replaces attention)
-            # Weighted sum of [left neighbor, self, right neighbor]
+            # Cross-position mixing V2: local + global hub
+            # Local: left/right neighbors
             left = F.pad(x[:, :-1, :], (0, 0, 1, 0))
             right = F.pad(x[:, 1:, :], (0, 0, 0, 1))
-            x_mixed = (self.mix_weight[0] * left +
+            x_local = (self.mix_weight[0] * left +
                       self.mix_weight[1] * x +
                       self.mix_weight[2] * right)
+
+            # Global: hub collects from all positions, broadcasts back
+            hub = self.hub_write(x).mean(dim=1, keepdim=True)  # (B, 1, D)
+            x_global = self.hub_read(hub)  # (B, 1, D) broadcasts to (B, S, D)
+
+            x_mixed = x_local + x_global
 
             # Rotate in high-dimensional space (replaces attention projection)
             x_rot = self.rotations[i](x_mixed)
