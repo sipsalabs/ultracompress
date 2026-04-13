@@ -1,4 +1,4 @@
-# UltraCompress — Status (Updated 2026-04-13 session 2)
+# UltraCompress — Status (Updated 2026-04-13 morning)
 
 **Goal:** 100T+ models → sub 50GB (one GPU), close to zero degradation. Scalable. Both new AND existing models.
 **Hardware:** 2x RTX 5090 32GB (GPU 0 air cooled, GPU 1 liquid cooled), Ryzen 9 9950X3D, 64GB DDR5
@@ -117,9 +117,28 @@ This means FRR compression applies to nearly everything:
 6. Evolutionary compression — self-improving across generations
 7. Attention+scan block — Mamba-style selective scan replaces FFN
 
-### CURRENTLY RUNNING (overnight)
-1. **FRR from scratch vs standard transformer** — is weight sharing BETTER? (GPU 0)
-2. **Evolutionary compression** — distill→real text→repeat across 3 generations (GPU 1)
+### COMPLETED OVERNIGHT (after Sip went to bed)
+| Experiment | Key Result |
+|---|---|
+| **1.7B real text 50K** | **T1=46% T10=62% at 52x** — best T1 ever, half the steps |
+| **Benchmark suite 100K FRR** | **83.3% HellaSwag, FRR BEATS teacher on PPL** |
+| **FRR vs Standard from scratch** | 25.5% vs 26.5% HellaSwag — FRR 5.5x more param-efficient |
+| **Evolutionary 3 generations** | PPL improves (1460→128) but T10 diverges from teacher |
+| Real text vs random tokens | +13% real T10, +18% T1 — training signal was bottleneck |
+| Attn+rotation hybrid | 45% T10 at 103x — rotation partially replaces FFN (79% quality) |
+| Growing rotation | 16→176 planes, 10 growths, self-assembly confirmed |
+| Wave engine | PPL 485M→444, concept works but needs stability fix |
+
+### ALL-TIME RECORDS (updated)
+| Record | Value | How |
+|---|---|---|
+| Best T1 (1.7B) | **46%** | 1.7B real text 50K steps |
+| Best T10 (1.7B) | 67% | 1.7B random tokens 100K steps |
+| Best HellaSwag retention | **83.3%** | 0.6B FRR 100K, 300-sample eval |
+| Best PPL vs teacher | **FRR WINS** | FRR 1614 < teacher 2404 on WikiText-2 |
+| Best param efficiency | **5.5x** | FRR 25.5% HellaSwag at 7.3M vs Standard 26.5% at 42M |
+| Best compression ratio | 959x | E2E pipeline (FRR + Q2 + entropy), -1.5% T10 |
+| Most self-growth | 16→176 planes | 10 autonomous growth events in 30K steps |
 
 ### WHAT'S NEXT (priority order)
 1. **Real text distillation at 1.7B scale, 100K steps** — should push to 75%+ real T10
