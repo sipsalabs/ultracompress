@@ -81,16 +81,8 @@ class UpdateRule(nn.Module):
         local = activated.sum(dim=-1)  # (B, S, D)
         combined = torch.tanh(local + mix_signal)
 
-        # Project back (tiny projection)
-        # Take mean across state_dim, project through rule_dim -> state_dim
-        rule_state = combined.mean(dim=-1)  # (B, S)
-        if rule_state.shape[-1] < self.rule_dim:
-            rule_state = F.pad(rule_state, (0, self.rule_dim - rule_state.shape[-1]))
-        else:
-            rule_state = rule_state[..., :self.rule_dim]
-        output = self.project(rule_state)  # (B, S, state_dim)
-
-        return state + output  # Residual update
+        # Simple residual: combined already has shape (B, S, D), scale it down
+        return state + combined * 0.1  # Small residual update
 
 
 class Organism(nn.Module):
