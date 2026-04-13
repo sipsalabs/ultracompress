@@ -32,6 +32,8 @@ device = 'cuda'
 DISTILL_STEPS = 10000    # Phase 1: distill from teacher
 CONTINUE_STEPS = 10000   # Phase 2: continue on real text
 N_GENERATIONS = 3        # How many compress→grow cycles
+USE_COMPILE = True       # torch.compile for 2-3x speed
+USE_AMP = True           # BF16 mixed precision
 
 print("=" * 60)
 print("EVOLUTIONARY COMPRESSION — Self-improving through generations")
@@ -147,6 +149,12 @@ for gen in range(N_GENERATIONS):
     # Build fresh FRR
     model = FractalModel(1024, 16, 4, 7, 151936, 1,
                          embed_weight=embed_w, lm_head_weight=lm_head_w, norm_weight=norm_w).to(device)
+    if USE_COMPILE and gen == 0:
+        try:
+            model = torch.compile(model, mode='reduce-overhead')
+            print("  torch.compile enabled (2-3x speedup)")
+        except Exception as e:
+            print(f"  torch.compile failed: {e}, continuing without")
 
     # If we have a previous generation, initialize from it
     if prev_model is not None:
@@ -162,18 +170,22 @@ for gen in range(N_GENERATIONS):
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, DISTILL_STEPS)
     t0 = time.time()
 
+    scaler = torch.amp.GradScaler('cuda', enabled=USE_AMP)
     for step in range(DISTILL_STEPS):
         torch.manual_seed(step * 7 + gen * 100000)
-        tokens = torch.randint(100, 50000, (4, 32), device=device)
+        tokens = torch.randint(100, 50000, (8, 48), device=device)  # bigger batch + seq
         with torch.no_grad():
             tl = current_teacher_fn(tokens)
-        sl = model(tokens)
-        T = max(2.0, 5.0 * (1 - step / DISTILL_STEPS))
-        loss = F.kl_div(F.log_softmax(sl / T, dim=-1), F.softmax(tl / T, dim=-1),
-                       reduction='batchmean') * T * T
-        opt.zero_grad(); loss.backward()
+        with torch.amp.autocast('cuda', dtype=torch.bfloat16, enabled=USE_AMP):
+            sl = model(tokens)
+            T = max(2.0, 5.0 * (1 - step / DISTILL_STEPS))
+            loss = F.kl_div(F.log_softmax(sl / T, dim=-1), F.softmax(tl / T, dim=-1),
+                           reduction='batchmean') * T * T
+        opt.zero_grad()
+        scaler.scale(loss).backward()
+        scaler.unscale_(opt)
         torch.nn.utils.clip_grad_norm_(params, 1.0)
-        opt.step(); sched.step()
+        scaler.step(opt); scaler.update(); sched.step()
 
         if step % 5000 == 0:
             t1, t10 = eval_vs_original(model, n=50)
@@ -192,15 +204,19 @@ for gen in range(N_GENERATIONS):
     opt2 = torch.optim.AdamW(all_params, lr=1e-4, weight_decay=0.01)
     sched2 = torch.optim.lr_scheduler.CosineAnnealingLR(opt2, CONTINUE_STEPS)
 
+    scaler2 = torch.amp.GradScaler('cuda', enabled=USE_AMP)
     for step in range(CONTINUE_STEPS):
-        batch = get_real_batch(batch_size=4, seq_len=64)
+        batch = get_real_batch(batch_size=8, seq_len=64)
         inputs = batch[:, :-1]
         targets = batch[:, 1:]
-        logits = model(inputs)
-        loss = F.cross_entropy(logits.reshape(-1, logits.shape[-1]), targets.reshape(-1))
-        opt2.zero_grad(); loss.backward()
+        with torch.amp.autocast('cuda', dtype=torch.bfloat16, enabled=USE_AMP):
+            logits = model(inputs)
+            loss = F.cross_entropy(logits.reshape(-1, logits.shape[-1]), targets.reshape(-1))
+        opt2.zero_grad()
+        scaler2.scale(loss).backward()
+        scaler2.unscale_(opt2)
         torch.nn.utils.clip_grad_norm_(all_params, 1.0)
-        opt2.step(); sched2.step()
+        scaler2.step(opt2); scaler2.update(); sched2.step()
 
         if step % 5000 == 0:
             ppl_now = math.exp(min(loss.item(), 20))
