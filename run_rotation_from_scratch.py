@@ -85,17 +85,7 @@ for step in range(STEPS):
 
     if step % 5000 == 0 or step == STEPS - 1:
         ppl = math.exp(min(loss.item(), 20))
-        # Generate sample
-        prompt = tokenizer.encode("The future of", return_tensors='pt').to(device)
-        with torch.no_grad():
-            gen = prompt.clone()
-            for _ in range(20):
-                logits_gen = model(gen)
-                next_tok = logits_gen[0, -1].argmax().unsqueeze(0).unsqueeze(0)
-                gen = torch.cat([gen, next_tok], dim=1)
-            text = tokenizer.decode(gen[0], skip_special_tokens=True)
         print(f"  Step {step}: loss={loss.item():.4f} ppl={ppl:.1f} ({time.time()-t0:.0f}s)")
-        print(f"    Gen: {text[:120]}")
 
 print(f"\nFINAL loss: {loss.item():.4f} ppl={math.exp(min(loss.item(), 20)):.1f}")
 print(f"Trained {STEPS} steps on real text with NO teacher.")
