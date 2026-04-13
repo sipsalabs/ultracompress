@@ -60,29 +60,22 @@ class UpdateRule(nn.Module):
         """state: (B, S, D) -> updated state: (B, S, D)"""
         B, S, D = state.shape
 
-        # Local interaction: each position looks at nearby positions
-        # Using circular convolution (every position interacts with rule_dim neighbors)
-        # Pad and unfold to get local neighborhoods
-        k = self.rule_dim
-        padded = F.pad(state, (0, 0, k//2, k//2), mode='constant', value=0)
+        # Global signal: mean across all positions
+        global_sig = state.mean(dim=1, keepdim=True)  # (B, 1, D)
 
-        # Extract neighborhoods: (B, S, D, k)
-        neighborhoods = padded.unfold(1, k, 1)  # (B, S, D, k)
+        # Rule application: element-wise transform using kernel as learned gate
+        # kernel: (rule_dim,) -> broadcast to D via modular indexing
+        gate = torch.sigmoid(self.kernel.repeat(D // self.rule_dim + 1)[:D])  # (D,)
+        gated = state * gate  # (B, S, D)
 
-        # Apply kernel (element-wise rule application)
-        # kernel: (k,) broadcasts across (B, S, D, k)
-        activated = neighborhoods * self.kernel  # (B, S, D, k)
+        # Mix local (gated per-position) with global (mean of all positions)
+        mix_gate = torch.sigmoid(self.mix.repeat(D // self.rule_dim + 1)[:D])
+        combined = gated * (1 - mix_gate) + global_sig * mix_gate
 
-        # Mix with global state mean
-        global_signal = state.mean(dim=1, keepdim=True)  # (B, 1, D)
-        mix_signal = (global_signal.unsqueeze(-1) * self.mix).sum(dim=-1)  # (B, 1, D)
+        # Nonlinear activation
+        update = torch.tanh(combined) - state
 
-        # Combine local + global
-        local = activated.sum(dim=-1)  # (B, S, D)
-        combined = torch.tanh(local + mix_signal)
-
-        # Simple residual: combined already has shape (B, S, D), scale it down
-        return state + combined * 0.1  # Small residual update
+        return state + update * 0.1  # Small residual
 
 
 class Organism(nn.Module):
