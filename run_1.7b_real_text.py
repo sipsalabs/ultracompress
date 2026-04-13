@@ -90,7 +90,8 @@ def get_real_batch(batch_size=4, seq_len=64):
 model = FractalModel(hidden, n_heads, 4, 7, vocab_size, 1,
                      embed_weight=embed_w, lm_head_weight=lm_head_w, norm_weight=norm_w).to(device)
 trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
-total_teacher = sum(p.numel() for p in teacher.layers[0].parameters()) * n_layers
+# Estimate teacher layer params from known architecture
+total_teacher = n_layers * (4 * hidden * hidden + 3 * hidden * hidden * 3)  # attn + ffn
 compression = total_teacher / trainable
 print(f"FRR: {trainable:,} ({compression:.1f}x)")
 
