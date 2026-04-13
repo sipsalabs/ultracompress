@@ -558,6 +558,26 @@ wherein the method achieves approximately 1.5-2.5x wall-clock inference speedup 
 
 wherein the PHM variant provides an additional 4x parameter reduction on top of the FRR architectural compression with minimal quality degradation.
 
+**Claim 26.** A method for neural computation via recursive high-dimensional rotation, the method comprising:
+
+(a) representing model computation as a sequence of learned Givens rotations in high-dimensional space (typically 1024+ dimensions), where each rotation is defined by a set of rotation angles (typically 64-256 angles per cycle);
+
+(b) applying said rotations recursively across N cycles (typically 28), with per-cycle learned scale and shift parameters for nonlinear activation;
+
+(c) enabling cross-position communication via a global hub mechanism that aggregates position information through a low-dimensional bottleneck (typically 32 dimensions) and broadcasts the aggregated signal back to all positions;
+
+wherein the rotation-based architecture achieves at least 44% top-10 token agreement using approximately 87,000 learned parameters (5,000x compression ratio), replacing the attention mechanism and feed-forward network of standard transformer architectures with pure geometric transformations that are inherently compact, recursively applicable, and GPU cache-friendly.
+
+**Claim 27.** A method for process-based neural computation using evolved update rules, the method comprising:
+
+(a) defining a set of K learned update rules (typically 4-16 rules), each parameterized by fewer than 1,000 parameters, that transform a hidden state through element-wise gating and global mixing;
+
+(b) applying said rules in a learned schedule across N cycles, where a soft routing mechanism selects which rules to activate at each cycle;
+
+(c) optionally evolving said rules through evolutionary optimization rather than gradient descent, using task correctness as the fitness function rather than teacher model agreement;
+
+wherein intelligence emerges from the recursive application of tiny rules rather than from stored weight matrices, analogous to how biological intelligence emerges from DNA-encoded growth rules rather than explicit neural connection storage.
+
 ---
 
 ## EXPERIMENTAL RESULTS
