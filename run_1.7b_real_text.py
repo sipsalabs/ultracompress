@@ -20,7 +20,7 @@ from ultracompress.moonshot import FractalModel
 from transformers import AutoTokenizer
 
 device = 'cuda'
-STEPS = 50000
+STEPS = 100000
 
 print("=" * 60)
 print("1.7B REAL TEXT DISTILLATION — Path to 90%+ HellaSwag")
