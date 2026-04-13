@@ -68,8 +68,9 @@ hf_to_gguf = {
     'mlp.gate_proj.weight': 'ffn_gate.weight', 'mlp.up_proj.weight': 'ffn_up.weight',
     'mlp.down_proj.weight': 'ffn_down.weight',
 }
-# Build gd dict — keep as FP16 on teacher GPU to save memory (8B in FP32 = 32GB, won't fit)
-print(f"Building teacher on {TEACHER_DEVICE} (FP16 to save GPU memory)...")
+# Build gd dict — FP16 on teacher GPU (16GB fits alongside Ollama on GPU 1)
+# MiniTransformer's linear_forward casts to float32 during forward pass
+print(f"Building teacher on {TEACHER_DEVICE} (FP16 — 16GB, forward casts to FP32)...")
 gd = {}
 gd['token_embd.weight'] = wd['model.embed_tokens.weight'].half().to(TEACHER_DEVICE)
 gd['output_norm.weight'] = wd.get('model.norm.weight', torch.ones(hidden_size)).half().to(TEACHER_DEVICE)
@@ -104,9 +105,9 @@ teacher_layer_params = sum(v.numel() for k, v in gd.items() if k.startswith('blk
 # Build FRR student on GPU 1
 from ultracompress.moonshot import FractalModel
 
-embed_w = gd['token_embd.weight'].to(STUDENT_DEVICE)
-norm_w = gd['output_norm.weight'].to(STUDENT_DEVICE)
-lm_head_w = gd['output.weight'].to(STUDENT_DEVICE)
+embed_w = gd['token_embd.weight'].float().to(STUDENT_DEVICE)
+norm_w = gd['output_norm.weight'].float().to(STUDENT_DEVICE)
+lm_head_w = gd['output.weight'].float().to(STUDENT_DEVICE)
 
 print(f"Building FRR student on {STUDENT_DEVICE}...")
 model = FractalModel(
