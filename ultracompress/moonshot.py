@@ -126,19 +126,26 @@ class FractalModel(nn.Module):
     """
     def __init__(self, hidden_dim, n_heads, n_scales=4, iters_per_scale=8,
                  vocab_size=151936, ff_mult=2,
-                 embed_weight=None, lm_head_weight=None, norm_weight=None):
+                 embed_weight=None, lm_head_weight=None, norm_weight=None,
+                 per_layer_mod=False):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.n_scales = n_scales
         self.iters_per_scale = iters_per_scale
         self.total_layers = n_scales * iters_per_scale
+        self.per_layer_mod = per_layer_mod
 
         # Shared block (THE core — reused everywhere)
         self.block = FractalBlock(hidden_dim, n_heads, ff_mult)
 
-        # Per-scale modulation (tiny — just gamma + beta vectors)
-        self.scale_gamma = nn.Parameter(torch.ones(n_scales, hidden_dim))
-        self.scale_beta = nn.Parameter(torch.zeros(n_scales, hidden_dim))
+        if per_layer_mod:
+            # Per-layer modulation — individual gamma/beta for each virtual layer
+            self.layer_gamma = nn.Parameter(torch.ones(self.total_layers, hidden_dim))
+            self.layer_beta = nn.Parameter(torch.zeros(self.total_layers, hidden_dim))
+        else:
+            # Per-scale modulation (tiny — just gamma + beta vectors)
+            self.scale_gamma = nn.Parameter(torch.ones(n_scales, hidden_dim))
+            self.scale_beta = nn.Parameter(torch.zeros(n_scales, hidden_dim))
 
         # Per-iteration modulation within scale (even tinier)
         self.iter_scale = nn.Parameter(torch.ones(n_scales, iters_per_scale))
@@ -179,12 +186,16 @@ class FractalModel(nn.Module):
 
         layer_count = 0
         for scale in range(self.n_scales):
-            gamma = self.scale_gamma[scale]
-            beta = self.scale_beta[scale]
+            if not self.per_layer_mod:
+                gamma = self.scale_gamma[scale]
+                beta = self.scale_beta[scale]
             for it in range(self.iters_per_scale):
                 if layer_count >= total:
                     break
-                # Apply shared block with scale modulation
+                if self.per_layer_mod:
+                    gamma = self.layer_gamma[layer_count]
+                    beta = self.layer_beta[layer_count]
+                # Apply shared block with modulation
                 iter_s = self.iter_scale[scale, it]
                 x = x + (self.block(x, gamma, beta) - x) * iter_s
                 # Apply per-layer LoRA adapter if enabled (V3)
@@ -202,9 +213,12 @@ class FractalModel(nn.Module):
 
     def fractal_params(self):
         """Just the fractal-specific params (block + modulation + adapters)."""
-        total = (sum(p.numel() for p in self.block.parameters()) +
-                self.scale_gamma.numel() + self.scale_beta.numel() +
-                self.iter_scale.numel())
+        total = sum(p.numel() for p in self.block.parameters())
+        if self.per_layer_mod:
+            total += self.layer_gamma.numel() + self.layer_beta.numel()
+        else:
+            total += self.scale_gamma.numel() + self.scale_beta.numel()
+        total += self.iter_scale.numel()
         if self.adapters is not None:
             total += sum(p.numel() for p in self.adapters.parameters())
         return total

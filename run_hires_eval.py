@@ -62,12 +62,15 @@ def load_frr_model(checkpoint_path: str, teacher_config: dict, device: str = "cu
 
     hidden = teacher_config["hidden_size"]
     ff_mult = 1  # conservative default
+    per_layer_mod = False  # detect from checkpoint
     for key, tensor in state.items():
         if "ffn" in key.lower() or "ff" in key.lower():
             max_dim = max(tensor.shape)
             if max_dim > hidden:
                 ff_mult = max_dim // hidden
             break
+    if "layer_gamma" in state:
+        per_layer_mod = True
 
     model = FractalModel(
         hidden_dim=hidden,
@@ -76,6 +79,7 @@ def load_frr_model(checkpoint_path: str, teacher_config: dict, device: str = "cu
         iters_per_scale=7,
         vocab_size=teacher_config["vocab_size"],
         ff_mult=ff_mult,
+        per_layer_mod=per_layer_mod,
     ).to(device)
 
     model.load_state_dict(state)

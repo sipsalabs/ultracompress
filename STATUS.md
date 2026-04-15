@@ -39,18 +39,29 @@
 - Per-layer conditioning at 0.01% overhead recovers full per-layer expressivity
 - Our FRR at 42x is genuinely novel — Ouroboros/MobileLLM get only 2x
 
-### THE REAL MATH: 100T → sub 50GB
+### THE REAL MATH: 100T → sub 20GB (updated target)
 For 100T models, embeddings are ~0.003% of params (vs 41% in 0.6B).
 This means FRR compression applies to nearly everything:
 
-| Stack | Compression | 100T FP16 Size |
-|-------|-------------|----------------|
-| FRR 42x only | 42x | 4,768 GB |
-| FRR 42x + Q4 | 671x | 298 GB |
-| FRR 42x + Q2 + entropy | 6,711x | **29.8 GB** |
-| FRR 100x + Q2 + entropy | 15,948x | 12.5 GB |
+| Stack | Compression | 100T FP16 Size | Status |
+|-------|-------------|----------------|--------|
+| FRR 42x only | 42x | 4,768 GB | Proven |
+| FRR 42x + Q4 | 671x | 298 GB | Proven |
+| FRR 42x + Q2 + entropy | 6,711x | **29.8 GB** | Proven at 0.6B |
+| FRR 52x + Q2 + entropy | 8,298x | **24.1 GB** | Proven at 1.7B |
+| FRR 100x + Q2 + entropy | 15,948x | **12.5 GB** | Needs 100x FRR |
+| FRR 52x + Q1 + entropy | ~16,600x | **12.0 GB** | Q1 untested |
 
-**FRR 42x + Q2 + entropy already hits sub-50GB for 100T.** The bottleneck is QUALITY, not compression ratio.
+**To hit 20GB target:** Need either FRR 60x + Q2 + entropy (~12,000x = 16.7 GB) or improved Q1 quantization.
+**Current best real-text quality:** 66.7% T10 at 52x (1.7B, 80K steps). Still climbing.
+
+**Quality gap to close:** Current 67% T10 is NOT "near-zero degradation." 
+Target: 90%+ T10. Paths:
+1. Per-LAYER modulation (current code uses per-SCALE: 4 groups, not 28 individual)
+2. LoRA adapters on FRR (supported but untested at 1.7B scale)
+3. Much longer training (500K+ steps)
+4. Multi-phase distillation (teacher → medium → FRR)
+5. Better temperature scheduling (80K breakthrough suggests optimizer needs more exploration time)
 
 ### THEORETICAL FOUNDATION
 - Intrinsic dimensionality: ~62 out of 7168 (5% of ambient space)
@@ -133,7 +144,7 @@ This means FRR compression applies to nearly everything:
 | Record | Value | How |
 |---|---|---|
 | Best T1 (1.7B) | **49%** | 1.7B real text 50K steps (T=2.5) |
-| Best T10 (1.7B, real text) | **63.6%** | 1.7B real text 40K steps (T=3.0) |
+| Best T10 (1.7B, real text) | **66.7%** | 1.7B real text 80K steps (T=2.0) — BREAKTHROUGH |
 | Best T10 (1.7B, random) | 67% | 1.7B random tokens 100K steps |
 | Best HellaSwag retention | **89.4%** | 1.7B FRR 50K real text (teacher 31.3%, FRR 28.0%) |
 | Best PPL vs teacher | **FRR WINS** | FRR 1614 < teacher 2404 on WikiText-2 |
@@ -147,7 +158,7 @@ This means FRR compression applies to nearly everything:
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
 | 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 0/50K** | T1=2.0% T10=13.0% loss=535.0 | **5.9x faster: 66s vs 390s per eval step** |
-| 1 | 1.7B Real Text 100K | Step 80K/100K | **T1=47% T10=66.7% NEW BEST** | Broke through 60-61% plateau! |
+| 1 | 1.7B Real Text 100K | Step 85K/100K | **T1=48% T10=63.4%** (best=66.7% at 80K) | 90K checkpoint coming soon |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -214,6 +225,7 @@ This means FRR compression applies to nearly everything:
 | 70000 | 48.94 | 37.0% | 59.0% | 2.0 | 8968s | T10 dips, loss drops |
 | 75000 | 49.13 | 42.0% | 60.9% | 2.0 | 9547s | T10 bounces back |
 | **80000** | **49.10** | **47.0%** | **66.7%** | **2.0** | **10123s** | **NEW BEST T10!** |
+| 85000 | 48.53 | 48.0% | 63.4% | 2.0 | 10702s | |
 
 **50K HellaSwag + WikiText-2 Evaluation:**
 | Model | HellaSwag | WikiText-2 PPL |

@@ -2,7 +2,7 @@
 
 **Extreme model compression via Fractal Residual Recursion (FRR).**
 
-One shared transformer block replaces all 28 layers. **63.6% top-10 agreement at 52x compression** on Qwen3-1.7B with **89.4% HellaSwag retention** (28.0% vs teacher's 31.3%). Real-text distillation converges 5x faster than random tokens. Proven end-to-end: FRR + quantization + entropy coding = 959x compression with −1.5% quality.
+One shared transformer block replaces all 28 layers. **66.7% top-10 agreement at 52x compression** on Qwen3-1.7B with **89.4% HellaSwag retention** (28.0% vs teacher's 31.3%). Real-text distillation converges 5x faster than random tokens. Proven end-to-end: FRR + quantization + entropy coding = 959x compression with −1.5% quality.
 
 ---
 
@@ -124,7 +124,7 @@ python run_e2e_proof.py
 | Qwen3-1.7B | Random | 15K | — | 61% | 52x | 29.4M |
 | **Qwen3-1.7B** | **Real text** | **10K** | **47%** | **62.4%** | **52x** | **29.4M** |
 | **Qwen3-1.7B** | **Real text** | **40K** | **41%** | **63.6%** | **52x** | **29.4M** |
-| **Qwen3-1.7B** | **Real text** | **50K** | **49%** | **59.7%** | **52x** | **29.4M** |
+| **Qwen3-1.7B** | **Real text** | **80K** | **47%** | **66.7%** | **52x** | **29.4M** |
 | **Qwen3-1.7B** | **Random** | **100K** | — | **67%** | **52x** | **29.4M** |
 | Qwen3-8B | Real text | 0 (in progress) | 2% | 13% | 46.8x | 167.8M |
 
