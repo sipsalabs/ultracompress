@@ -146,8 +146,8 @@ This means FRR compression applies to nearly everything:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | Selective Student (3 experiments) | **ALL COMPLETE** | Exp 3 FINAL: T1=42% T10=56.5% | Pure KL still best, GPU FREE |
-| 1 | 1.7B Real Text 100K | Step 55K/100K | T1=40% T10=62.4% | HellaSwag **89.4% retention** NEW RECORD! |
+| 0 | **8B Real Text 50K (streaming)** | **Step 0/50K** | T1=2.0% T10=13.4% loss=523.8 | **167.8M params (46.8x), 12.66 GB VRAM** |
+| 1 | 1.7B Real Text 100K | Step 60K/100K | T1=28% T10=61.0% | T at minimum 2.0, loss rising |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -209,6 +209,7 @@ This means FRR compression applies to nearly everything:
 | 45000 | 42.10 | 33.0% | 61.8% | 2.8 | 5818s | |
 | **50000** | **44.41** | **49.0%** | 59.7% | 2.5 | 6440s | **NEW BEST T1!** |
 | 55000 | 47.50 | 40.0% | 62.4% | 2.2 | 7142s | |
+| 60000 | 49.74 | 28.0% | 61.0% | 2.0 | 7746s | T at minimum |
 
 **50K HellaSwag + WikiText-2 Evaluation:**
 | Model | HellaSwag | WikiText-2 PPL |
@@ -222,6 +223,18 @@ This means FRR compression applies to nearly everything:
 **UPDATE (45K):** T10=61.8% at step 45K (T=2.8) — down from 63.6% but within noise range (±9.5% CI). Loss jumped from 38.83→42.10, likely from temperature drop 3.0→2.8 making targets harder. T1 dropped to 33% — also noise-consistent. **HellaSwag eval at 50K is the next critical milestone.**
 
 **UPDATE (40K)**: **NEW BEST** T10=63.6% at step 40K (T=3.0) — breaks the 62.4% record from step 10K. Suggests T≈3.0 may be the sweet spot for T10 evaluation accuracy. Bootstrap analysis (eval_statistical.py) shows 100-sample evals have ±9.5% CI width — the 63.6% could be noise but it's the second data point above 62%, supporting genuine improvement.
+
+### 8B REAL TEXT DISTILLATION — Progress (Started 2026-04-15 14:43)
+**Config:** Qwen3-8B teacher (streaming), 167.8M FRR params (46.8x compression)
+**Batch:** 2x64, LR: 0.0003, CosineAnnealingLR
+**Streaming:** embed+LM head on GPU (4.98 GB), 36 layers streamed one at a time
+**GPU:** cuda:0, 12.66 GB VRAM used
+
+| Step | Loss | T1 | T10 | Temp | Elapsed | Note |
+|------|------|-----|-----|------|---------|------|
+| 0 | 523.83 | 2.0% | 13.4% | 5.0 | 390s | First step (includes init+eval overhead) |
+
+**Step 0 analysis:** Lower initial loss than 1.7B (523.8 vs 561.9) but lower initial T10 (13.4% vs 21.4%). 8B teacher has richer distribution — harder to match initially but more information to learn from. First step took 390s due to streaming overhead + 50-sample eval. Expect ~7-10s/step for non-eval steps.
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)

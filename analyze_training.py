@@ -47,7 +47,7 @@ class Experiment:
 # ---------------------------------------------------------------------------
 
 def get_1_7b_real_text() -> Experiment:
-    """1.7B real text 100K training data (through 55K)."""
+    """1.7B real text 100K training data (through 60K)."""
     exp = Experiment(name="1.7B Real Text 100K", total_steps=100_000, params=29_380_636)
     data = [
         (0, 561.92, 5.0, 21.4, 5.0, 12),
@@ -62,6 +62,7 @@ def get_1_7b_real_text() -> Experiment:
         (45000, 42.10, 33.0, 61.8, 2.8, 5818),
         (50000, 44.41, 49.0, 59.7, 2.5, 6440),
         (55000, 47.50, 40.0, 62.4, 2.2, 7142),
+        (60000, 49.74, 28.0, 61.0, 2.0, 7746),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
@@ -110,6 +111,17 @@ def get_selective_curriculum() -> Experiment:
         (9000, 45.28, 44.0, 59.9, None, 1314),
         (12000, 25.28, 55.0, 61.3, None, 1679),
         (14999, 6.02, 51.0, 58.3, None, 2084),
+    ]
+    for step, loss, t1, t10, temp, elapsed in data:
+        exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
+    return exp
+
+
+def get_8b_real_text() -> Experiment:
+    """8B real text 50K training data (streaming teacher). IN PROGRESS."""
+    exp = Experiment(name="8B Real Text 50K", total_steps=50_000, params=167_813_156)
+    data = [
+        (0, 523.83, 2.0, 13.4, 5.0, 390),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
@@ -611,7 +623,7 @@ def main():
     experiments: list[Experiment] = []
 
     if args.builtin:
-        experiments = [get_1_7b_real_text(), get_selective_baseline(), get_selective_trustgate(), get_selective_curriculum()]
+        experiments = [get_1_7b_real_text(), get_8b_real_text(), get_selective_baseline(), get_selective_trustgate(), get_selective_curriculum()]
     elif args.log:
         experiments = [parse_log_file(args.log)]
 

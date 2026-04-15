@@ -3,13 +3,16 @@
   "date": "2026-04-15",
   "active_training": {
     "gpu0": {
-      "experiment": "Selective Student — ALL COMPLETE",
-      "status": "complete",
-      "step": "15K/15K",
-      "teacher": "0.6B",
-      "exp3_final_t1": 42.0,
-      "exp3_final_t10": 56.5,
-      "conclusion": "Pure KL still best. Curriculum peaked at 12K (+1.5%) then degraded under full NTP."
+      "experiment": "8B Real Text 50K (streaming)",
+      "status": "running",
+      "step": "~0/50K",
+      "teacher": "8B",
+      "frr_params": 167813156,
+      "compression": "46.8x",
+      "latest_t10": 13.4,
+      "latest_step": 0,
+      "gpu_memory_gb": 12.66,
+      "first_step_time_s": 390
     },
     "gpu1": {
       "experiment": "1.7B Real Text 100K",
@@ -18,8 +21,8 @@
       "teacher": "1.7B",
       "best_t10": 63.6,
       "best_t10_step": 40000,
-      "latest_t10": 62.4,
-      "latest_step": 55000,
+      "latest_t10": 61.0,
+      "latest_step": 60000,
       "best_t1": 49.0,
       "best_t1_step": 50000,
       "hellaswag_50k": {
