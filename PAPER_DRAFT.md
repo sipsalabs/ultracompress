@@ -293,7 +293,7 @@ Several directions remain open:
 
 ## 7. Conclusion
 
-We have shown that a single transformer block, applied recursively 28 times with per-layer affine modulation, matches the predictive behavior of 28 independent layers at 52-60x compression. FRR scales to 1.7B (63.6% T10 at 52x with real text, 67% with random tokens) and real-text distillation accelerates convergence by 5x over random tokens. On HellaSwag, the 1.7B FRR retains **89.4% of teacher accuracy** at 52x compression — near-perfect commonsense reasoning retention with a 49% top-1 match rate. A learned position-gating mechanism (TrustGate) that blends KL distillation with next-token prediction shows a dramatic trajectory (−8.7% to +2.4% relative to baseline) but the gate collapses to pure KL at convergence, confirming that standard KL distillation is optimal for shared-weight architectures. Beyond FRR, we demonstrate multiple complementary approaches: holographic weight interference (57% at 76x), ternary quantization (57% at ~2MB), a near-lossless ultimate pipeline (0.994 cosine at Q2), from-scratch trainability (80.7%), and evolutionary architecture search outperforming hand-tuned designs. Weight manifold analysis reveals an intrinsic dimensionality of ~62 with flat curvature, providing theoretical grounding for why extreme compression succeeds. Across 52 modules and 30 distinct inventions, this work establishes that transformer compression is far from its theoretical limits.
+We have shown that a single transformer block, applied recursively 28 times with per-layer affine modulation, matches the predictive behavior of 28 independent layers at 52-60x compression. FRR scales to 1.7B (63.6% T10 at 52x with real text, 67% with random tokens) and real-text distillation accelerates convergence by 5x over random tokens. On HellaSwag, the 1.7B FRR retains **89.4% of teacher accuracy** at 52x compression — near-perfect commonsense reasoning retention with a 49% top-1 match rate. Extended training to 70K steps reveals a stable convergence plateau: T10 oscillates around ~60-61% once temperature annealing completes ($T=2.0$), while loss shows non-monotonic behavior, suggesting the model has reached its capacity limit for this compression ratio. A learned position-gating mechanism (TrustGate) that blends KL distillation with next-token prediction shows a dramatic trajectory (−8.7% to +2.4% relative to baseline) but the gate collapses to pure KL at convergence, confirming that standard KL distillation is optimal for shared-weight architectures. Beyond FRR, we demonstrate multiple complementary approaches: holographic weight interference (57% at 76x), ternary quantization (57% at ~2MB), a near-lossless ultimate pipeline (0.994 cosine at Q2), from-scratch trainability (80.7%), and evolutionary architecture search outperforming hand-tuned designs. Weight manifold analysis reveals an intrinsic dimensionality of ~62 with flat curvature, providing theoretical grounding for why extreme compression succeeds. Across 52 modules and 30 distinct inventions, this work establishes that transformer compression is far from its theoretical limits.
 
 **Limitations.** Inference latency is unchanged (28 sequential block applications). Top-10 agreement of 67% leaves meaningful room for improvement. Evaluation is primarily on Qwen3 models (0.6B and 1.7B). 8B distillation is in progress (46.8x compression, 167.8M params, results pending). Dendritic neurons degrade performance (−6%), suggesting not all capacity-increasing modifications are compatible with shared-weight regimes.
 
@@ -305,20 +305,20 @@ We have shown that a single transformer block, applied recursively 28 times with
 
 ### A.1 FRR Architecture
 
-| Parameter | 0.6B Config | 1.7B Config |
-|-----------|-------------|-------------|
-| Shared block hidden size | 1024 | 2048 |
-| Attention heads | 16 | 16 |
-| KV heads (GQA) | 8 | 8 |
-| Head dimension | 128 | 128 |
-| Intermediate (FFN) size | 3072 | 8960 |
-| Vocabulary size | 151,936 | 151,936 |
-| Number of scales | 4 | 4 |
-| Iterations per scale | 7 | 7 |
-| Total virtual layers | 28 | 28 |
-| Modulation parameters | 57,344 | 114,688 |
-| Total FRR parameters | 7.35M | 29.38M |
-| Compression ratio | 60x | 52x |
+| Parameter | 0.6B Config | 1.7B Config | 8B Config |
+|-----------|-------------|-------------|-----------|
+| Shared block hidden size | 1024 | 2048 | 4096 |
+| Attention heads | 16 | 16 | 32 |
+| KV heads (GQA) | 8 | 8 | 8 |
+| Head dimension | 128 | 128 | 128 |
+| Intermediate (FFN) size | 3072 | 8960 | 12288 |
+| Vocabulary size | 151,936 | 151,936 | 151,936 |
+| Number of scales | 4 | 4 | 4 |
+| Iterations per scale | 7 | 7 | 9 |
+| Total virtual layers | 28 | 28 | 36 |
+| Modulation parameters | 57,344 | 114,688 | 294,912 |
+| Total FRR parameters | 7.35M | 29.38M | 167.8M |
+| Compression ratio | 60x | 52x | 46.8x |
 
 ### A.2 Training Configuration
 
