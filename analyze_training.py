@@ -47,7 +47,7 @@ class Experiment:
 # ---------------------------------------------------------------------------
 
 def get_1_7b_real_text() -> Experiment:
-    """1.7B real text 100K training data (through 95K)."""
+    """1.7B real text 100K training data (COMPLETE — all 100K steps)."""
     exp = Experiment(name="1.7B Real Text 100K", total_steps=100_000, params=29_380_636)
     data = [
         (0, 561.92, 5.0, 21.4, 5.0, 12),
@@ -70,6 +70,7 @@ def get_1_7b_real_text() -> Experiment:
         (85000, 48.53, 48.0, 63.4, 2.0, 10702),
         (90000, 48.77, 38.0, 65.6, 2.0, 11277),
         (95000, 49.52, 38.0, 64.6, 2.0, 11852),
+        (99999, 48.68, 44.0, 65.6, 2.0, 12425),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))

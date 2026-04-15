@@ -146,7 +146,8 @@ Target: 90%+ T10. Paths:
 | Best T1 (1.7B) | **49%** | 1.7B real text 50K steps (T=2.5) |
 | Best T10 (1.7B, real text) | **66.7%** | 1.7B real text 80K steps (T=2.0) — BREAKTHROUGH |
 | Best T10 (1.7B, random) | 67% | 1.7B random tokens 100K steps |
-| Best HellaSwag retention | **89.4%** | 1.7B FRR 50K real text (teacher 31.3%, FRR 28.0%) |
+| Best HellaSwag retention | **90.4%** | 1.7B FRR 100K real text (teacher 31.3%, FRR 28.3%) **NEW** |
+| Best WikiText-2 PPL (1.7B) | **1271.7** | 1.7B FRR 100K real text (teacher 670.7) **NEW** |
 | Best PPL vs teacher | **FRR WINS** | FRR 1614 < teacher 2404 on WikiText-2 |
 | Best param efficiency | **5.5x** | FRR 25.5% HellaSwag at 7.3M vs Standard 26.5% at 42M |
 | Best compression ratio | 959x | E2E pipeline (FRR + Q2 + entropy), -1.5% T10 |
@@ -158,7 +159,7 @@ Target: 90%+ T10. Paths:
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
 | 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 0/50K** | T1=2.0% T10=13.0% loss=535.0 | **5.9x faster: 66s vs 390s per eval step** |
-| 1 | 1.7B Real Text 100K | Step 95K/100K | **T1=38% T10=64.6%** (best=66.7% at 80K) | 99999 final eval coming! |
+| 1 | 1.7B Real Text 100K | **COMPLETE** | T10=65.6% (best=66.7% at 80K), HS=90.4% | 3.5 hours total |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -228,15 +229,23 @@ Target: 90%+ T10. Paths:
 | 85000 | 48.53 | 48.0% | 63.4% | 2.0 | 10702s | |
 | 90000 | 48.77 | 38.0% | 65.6% | 2.0 | 11277s | Higher basin confirmed |
 | 95000 | 49.52 | 38.0% | 64.6% | 2.0 | 11852s | Stable in new basin |
+| **99999** | **48.68** | **44.0%** | **65.6%** | **2.0** | **12425s** | **FINAL — Training complete** |
 
 **50K HellaSwag + WikiText-2 Evaluation:**
 | Model | HellaSwag | WikiText-2 PPL |
 |---|---|---|
 | Teacher (Qwen3-1.7B) | 31.3% | 670.7 |
-| FRR (1.7B, 50K real text) | **28.0%** | 1322.2 |
-| **Retention** | **89.4%** | — |
+| FRR (1.7B, 50K real text) | 28.0% | 1322.2 |
+| **Retention (50K)** | **89.4%** | — |
 
-**HellaSwag retention 89.4% is a NEW ALL-TIME RECORD** (prev: 83.3% on 0.6B at 100K). The 1.7B FRR retains nearly 90% of teacher HellaSwag at 52x compression, **in only 50K steps**. WikiText-2 PPL is ~2x teacher (1322 vs 671) — teacher is much stronger than 0.6B so harder to match, but reasonable.
+**100K HellaSwag + WikiText-2 Evaluation (FINAL):**
+| Model | HellaSwag | WikiText-2 PPL |
+|---|---|---|
+| Teacher (Qwen3-1.7B) | 31.3% | 670.7 |
+| **FRR (1.7B, 100K real text)** | **28.3%** | **1271.7** |
+| **Retention (100K)** | **90.4% (NEW RECORD)** | — |
+
+**Final 200-sample evaluation: T1=43.0%, T10=64.0%. Best T10: 66.7% (step 80K). Training time: 3.5 hours.**
 
 **UPDATE (45K):** T10=61.8% at step 45K (T=2.8) — down from 63.6% but within noise range (±9.5% CI). Loss jumped from 38.83→42.10, likely from temperature drop 3.0→2.8 making targets harder. T1 dropped to 33% — also noise-consistent. **HellaSwag eval at 50K is the next critical milestone.**
 
