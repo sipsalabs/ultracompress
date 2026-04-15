@@ -47,7 +47,7 @@ class Experiment:
 # ---------------------------------------------------------------------------
 
 def get_1_7b_real_text() -> Experiment:
-    """1.7B real text 100K training data (through 35K)."""
+    """1.7B real text 100K training data (through 45K)."""
     exp = Experiment(name="1.7B Real Text 100K", total_steps=100_000, params=29_380_636)
     data = [
         (0, 561.92, 5.0, 21.4, 5.0, 12),
@@ -58,6 +58,8 @@ def get_1_7b_real_text() -> Experiment:
         (25000, 37.94, 40.0, 57.2, 3.8, 3226),
         (30000, 38.49, 37.0, 61.4, 3.5, 3874),
         (35000, 38.94, 42.0, 61.3, 3.2, 4532),
+        (40000, 38.83, 41.0, 63.6, 3.0, 5174),
+        (45000, 42.10, 33.0, 61.8, 2.8, 5818),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
@@ -81,7 +83,7 @@ def get_selective_baseline() -> Experiment:
 
 
 def get_selective_trustgate() -> Experiment:
-    """Selective Student Exp 2 — TrustGate (0.6B)."""
+    """Selective Student Exp 2 — TrustGate (0.6B). COMPLETE."""
     exp = Experiment(name="TrustGate (Selective)", total_steps=15_000, params=7_350_621)
     data = [
         (0, 9.84, 5.0, 19.6, None, 10),
@@ -89,6 +91,7 @@ def get_selective_trustgate() -> Experiment:
         (6000, 1.19, 43.0, 55.2, None, 1337),
         (9000, 0.94, 49.0, 59.1, None, 1962),
         (12000, 1.01, 43.0, 62.2, None, 2515),
+        (14999, 0.84, 51.0, 60.6, None, 3116),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
@@ -386,6 +389,142 @@ def plot_trustgate_trajectory(baseline: Experiment, trustgate: Experiment, outpu
     plt.close()
 
 
+def plot_temperature_analysis(exp: Experiment, output: Path) -> None:
+    """Plot T10 vs Temperature and T10 vs Step with temp overlay — key paper figure."""
+    if not HAS_MPL:
+        return
+
+    points_with_temp = [p for p in exp.points if p.temp is not None and p.step > 0]
+    if not points_with_temp:
+        return
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    fig.suptitle("Temperature–Accuracy Analysis (1.7B Real Text)", fontsize=13, fontweight="bold")
+
+    # Left: T10 vs Temperature (scatter)
+    temps = [p.temp for p in points_with_temp]
+    t10s = [p.t10 for p in points_with_temp]
+    steps = [p.step for p in points_with_temp]
+
+    scatter = ax1.scatter(temps, t10s, c=steps, cmap="viridis", s=100, edgecolors="black",
+                          linewidth=0.8, zorder=3)
+    ax1.plot(temps, t10s, "--", color="gray", alpha=0.5, linewidth=1)
+    cbar = plt.colorbar(scatter, ax=ax1)
+    cbar.set_label("Training Step")
+
+    # Mark best
+    best_idx = max(range(len(t10s)), key=lambda i: t10s[i])
+    ax1.annotate(f"Best: {t10s[best_idx]:.1f}%\nT={temps[best_idx]:.1f}",
+                 xy=(temps[best_idx], t10s[best_idx]),
+                 xytext=(temps[best_idx] + 0.3, t10s[best_idx] + 1.5),
+                 arrowprops=dict(arrowstyle="->", color="red"),
+                 fontsize=9, fontweight="bold", color="red")
+
+    ax1.set_xlabel("Distillation Temperature", fontsize=11)
+    ax1.set_ylabel("Top-10 Agreement (%)", fontsize=11)
+    ax1.set_title("T10 vs Temperature")
+    ax1.grid(True, alpha=0.3)
+    ax1.invert_xaxis()  # Lower temp = later training
+
+    # Right: T10 and Temp on dual axis
+    steps_arr = [p.step / 1000 for p in points_with_temp]
+    ax2.plot(steps_arr, t10s, "o-", color="#2196F3", linewidth=2, markersize=7, label="T10 (%)")
+    ax2.set_xlabel("Training Step (K)", fontsize=11)
+    ax2.set_ylabel("Top-10 Agreement (%)", fontsize=11, color="#2196F3")
+    ax2.tick_params(axis="y", labelcolor="#2196F3")
+    ax2.set_ylim(50, 70)
+
+    # Plateau band
+    plateau_mean = float(np.mean(t10s))
+    ax2.axhspan(plateau_mean - 2, plateau_mean + 2, alpha=0.1, color="#2196F3")
+    ax2.axhline(plateau_mean, color="#2196F3", linestyle=":", alpha=0.5, label=f"Mean: {plateau_mean:.1f}%")
+
+    ax2_twin = ax2.twinx()
+    ax2_twin.plot(steps_arr, temps, "s--", color="#FF5722", linewidth=1.5, markersize=5, label="Temp")
+    ax2_twin.set_ylabel("Temperature", fontsize=11, color="#FF5722")
+    ax2_twin.tick_params(axis="y", labelcolor="#FF5722")
+
+    # Combined legend
+    lines1, labels1 = ax2.get_legend_handles_labels()
+    lines2, labels2 = ax2_twin.get_legend_handles_labels()
+    ax2.legend(lines1 + lines2, labels1 + labels2, loc="lower left", fontsize=9)
+    ax2.set_title("Training Progress with Temperature Annealing")
+    ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(output, dpi=150, bbox_inches="tight")
+    print(f"Saved plot: {output}")
+    plt.close()
+
+
+def plot_noise_analysis(exp: Experiment, output: Path) -> None:
+    """Demonstrate that T10 oscillation is consistent with eval noise at n=100."""
+    if not HAS_MPL:
+        return
+
+    rng = np.random.default_rng(42)
+    points = [p for p in exp.points if p.step > 0]
+    if len(points) < 3:
+        return
+
+    # True plateau parameters
+    observed_t10 = np.array([p.t10 for p in points])
+    plateau_mean = float(np.mean(observed_t10))
+    n_eval = 100  # eval sample size
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    fig.suptitle("Evaluation Noise Analysis (n=100 samples)", fontsize=13, fontweight="bold")
+
+    # Left: Simulated eval noise vs observed oscillation
+    n_sims = 200
+    steps = np.array([p.step / 1000 for p in points])
+
+    # Simulate: if true accuracy is plateau_mean, what would n=100 evals look like?
+    simulated = rng.binomial(n_eval, plateau_mean / 100, size=(n_sims, len(steps))) / n_eval * 100
+    sim_low = np.percentile(simulated, 2.5, axis=0)
+    sim_high = np.percentile(simulated, 97.5, axis=0)
+    sim_median = np.median(simulated, axis=0)
+
+    # Plot simulation envelope
+    ax1.fill_between(steps, sim_low, sim_high, alpha=0.2, color="#4CAF50", label="95% CI (simulated)")
+    ax1.plot(steps, sim_median, "--", color="#4CAF50", alpha=0.5)
+
+    # Plot 5 random simulation traces
+    for i in range(5):
+        ax1.plot(steps, simulated[i], "-", color="gray", alpha=0.2, linewidth=0.8)
+
+    # Plot observed
+    ax1.plot(steps, observed_t10, "o-", color="#2196F3", linewidth=2, markersize=7,
+             label=f"Observed (mean={plateau_mean:.1f}%)", zorder=5)
+    ax1.axhline(plateau_mean, color="black", linestyle=":", alpha=0.5)
+
+    ax1.set_xlabel("Training Step (K)", fontsize=11)
+    ax1.set_ylabel("Top-10 Agreement (%)", fontsize=11)
+    ax1.set_title("Observed vs Simulated Noise")
+    ax1.legend(fontsize=9)
+    ax1.grid(True, alpha=0.3)
+
+    # Right: Distribution of oscillation amplitude vs noise expectation
+    observed_range = float(np.max(observed_t10) - np.min(observed_t10))
+    sim_ranges = np.max(simulated, axis=1) - np.min(simulated, axis=1)
+
+    ax2.hist(sim_ranges, bins=30, color="#4CAF50", alpha=0.6, edgecolor="black",
+             linewidth=0.5, label="Simulated range (n=100)")
+    ax2.axvline(observed_range, color="#FF5722", linewidth=2, linestyle="--",
+                label=f"Observed range: {observed_range:.1f}%")
+    pct = float(np.mean(sim_ranges >= observed_range) * 100)
+    ax2.set_xlabel("Max − Min T10 (%)", fontsize=11)
+    ax2.set_ylabel("Count", fontsize=11)
+    ax2.set_title(f"Range Distribution (p={pct:.0f}% simulated ≥ observed)")
+    ax2.legend(fontsize=9)
+    ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(output, dpi=150, bbox_inches="tight")
+    print(f"Saved plot: {output}")
+    plt.close()
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -472,6 +611,10 @@ def main():
         baseline = get_selective_baseline()
         trustgate = get_selective_trustgate()
         plot_trustgate_trajectory(baseline, trustgate, args.output_dir / "trustgate_trajectory.png")
+        # Temperature analysis (1.7B only)
+        exp_1_7b = get_1_7b_real_text()
+        plot_temperature_analysis(exp_1_7b, args.output_dir / "temperature_analysis.png")
+        plot_noise_analysis(exp_1_7b, args.output_dir / "noise_analysis.png")
 
     # JSON output
     if args.json:

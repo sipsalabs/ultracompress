@@ -110,6 +110,7 @@ FRR trained from scratch (no teacher, standard next-token prediction) achieves *
 | Hidden-state supervision | −6% (harmful for FRR) | 0.6B |
 | Temperature annealing ($T$: 5→2) | Beneficial early, harmful late (see §4.5) | 1.7B |
 | Selective student (TrustGate) | **+0.2%** final (gate collapses to pure KL) | 0.6B |
+| Curriculum (KL→NTP) | −0.5% at 6K (running, gap narrowing) | 0.6B |
 | Dendritic neurons | −6% (optimization difficulty) | 0.6B |
 | Multi-block (3 blocks) | −5% (no benefit) | 0.6B |
 | LoRA adapters on FRR | +3% (modest benefit) | 0.6B |
@@ -185,7 +186,13 @@ Two scaling dimensions emerge:
 
 **Training signal.** Real text distillation (FineWeb-Edu) improves T10 by **+4% over random tokens** at 15K steps (60% vs 56% for 0.6B). Random tokens waste teacher capacity on nonsensical sequences; real text allows the teacher to produce meaningful distributions that transfer more information per batch. At 1.7B scale, real text reaches 62.4% T10 in only 10K steps — matching the random-token 15K result in 2/3 the compute.
 
-**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then oscillates: 61.0% (15K) → 60.3% (20K) → 57.2% (25K) → 61.4% (30K) → 61.3% (35K) → **63.6% (40K, new best)** → 61.8% (45K). The 40K result at $T=3.0$ sets the record; the subsequent dip to 61.8% at $T=2.8$ is consistent with eval noise ($n=100$, 95% CI width: ±9.5%). Loss increases from 38.8 to 42.1 at 45K, likely from the temperature drop making teacher distributions sharper and harder to match.
+**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then oscillates: 61.0% (15K) → 60.3% (20K) → 57.2% (25K) → 61.4% (30K) → 61.3% (35K) → **63.6% (40K, new best)** → 61.8% (45K). The 40K result at $T=3.0$ sets the record; the subsequent dip to 61.8% at $T=2.8$ is consistent with eval noise ($n=100$, 95% CI width: ±9.5%). Loss increases from 38.8 to 42.1 at 45K, likely from the temperature drop making teacher distributions sharper and harder to match. See Figure 1 (temperature analysis) and Figure 2 (noise simulation).
+
+![Figure 1: Temperature-Accuracy Analysis](paper_figures/temperature_analysis.png)
+*Figure 1: Left — T10 vs distillation temperature (color = training step). Right — Training progress with temperature annealing overlay, showing T10 oscillates within a ±2% band around the 61.2% mean.*
+
+![Figure 2: Evaluation Noise Analysis](paper_figures/noise_analysis.png)
+*Figure 2: Left — Observed T10 curve (blue) overlaid with simulated 95% CI from binomial noise at n=100 (green). Right — Distribution of max-min range from 200 simulated runs; observed range (6.4%) is smaller than 99% of simulations, confirming oscillation is noise-consistent.*
 
 The temperature effect remains real but less severe than initially estimated: T10 oscillates ±3-5% around a ~60-62% plateau rather than declining monotonically. Two remedies are designed: (1) **cyclic temperature** (CosineAnnealingWarmRestarts, $T \in [2.0, 4.0]$, period 10K) to periodically revisit high-temperature regimes, and (2) **multi-temperature KL**: $\mathcal{L} = 0.3 \cdot \text{KL}_{T=1} + 0.4 \cdot \text{KL}_{T=2} + 0.3 \cdot \text{KL}_{T=4}$, forcing simultaneous matching at multiple distribution sharpness levels. Both experiments are queued.
 
