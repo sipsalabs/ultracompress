@@ -109,7 +109,7 @@ FRR trained from scratch (no teacher, standard next-token prediction) achieves *
 | Real text vs random tokens | **+4%** at 15K steps | 0.6B, 1.7B |
 | Hidden-state supervision | −6% (harmful for FRR) | 0.6B |
 | Temperature annealing ($T$: 5→2) | Beneficial early, harmful late (see §4.5) | 1.7B |
-| Selective student (TrustGate) | **−8.7%** at 3K, −1.9% at 6K | 0.6B |
+| Selective student (TrustGate) | **+2.4%** at 12K (slow start: −8.7% at 3K) | 0.6B |
 | Dendritic neurons | −6% (optimization difficulty) | 0.6B |
 | Multi-block (3 blocks) | −5% (no benefit) | 0.6B |
 | LoRA adapters on FRR | +3% (modest benefit) | 0.6B |
@@ -120,7 +120,7 @@ FRR trained from scratch (no teacher, standard next-token prediction) achieves *
 
 **Temperature annealing** at 0.6B scale showed minimal effect, but at 1.7B scale reveals metric-objective misalignment: T10 peaks at 10K steps (62.4%) then declines to 57.2% at 25K despite loss monotonically decreasing. As $T$ drops from 5.0 to 3.8, KL focus shifts from broad distribution matching (favorable for T10) to sharp top-token matching. This identifies temperature scheduling as a key open problem for scaled distillation (see §4.5).
 
-**Selective student (TrustGate).** We tested a learned gating mechanism that blends KL distillation with next-token prediction (NTP) loss per-position, using student entropy, teacher entropy, and top-1 agreement as gate inputs. The hypothesis was that selectively weighting positions would break the accuracy ceiling. Results show a dramatic trajectory: T10=49.7% at 3K steps vs baseline 58.4% (−8.7%), recovering to 55.2% at 6K vs 57.1% (−1.9%), then **surpassing baseline** at 9K: 59.1% vs 57.5% (+1.6%). The gate suffers an initial learning penalty but gradually discovers which positions benefit from NTP vs KL. The 15K final result will determine whether this slow-start approach ultimately breaks the pure-KL ceiling.
+**Selective student (TrustGate).** We tested a learned gating mechanism that blends KL distillation with next-token prediction (NTP) loss per-position, using student entropy, teacher entropy, and top-1 agreement as gate inputs. The hypothesis was that selectively weighting positions would break the accuracy ceiling. Results show a dramatic trajectory: T10=49.7% at 3K steps vs baseline 58.4% (−8.7%), recovering to 55.2% at 6K vs 57.1% (−1.9%), surpassing baseline at 9K: 59.1% vs 57.5% (+1.6%), and **extending its lead** at 12K: 62.2% vs 59.8% (+2.4%). The gate suffers an initial learning penalty but gradually discovers which positions benefit from NTP vs KL. At 12K the TrustGate model achieves the highest T10 of any 0.6B experiment (62.2%), though given the ±9.5% CI at $n=100$ samples, this advantage requires high-resolution evaluation to confirm (see §7, Statistical note). The 15K final result will determine whether this slow-start approach ultimately breaks the pure-KL ceiling.
 
 **Hidden-state supervision** improves independent-layer models (+2% for genome baselines) but *degrades* FRR by 6 points. The shared weights receive conflicting gradient signals from 28 different hidden-state targets (see §4.3).
 
@@ -175,6 +175,7 @@ We validate FRR on Qwen3-1.7B (2B parameters, 28 layers, hidden=2048), comparing
 | Qwen3-1.7B | Real text | 20K | 33% | 60.3% | 52x | 29.4M |
 | Qwen3-1.7B | Real text | 25K | 40% | 57.2% | 52x | 29.4M |
 | Qwen3-1.7B | Real text | 30K | 37% | 61.4% | 52x | 29.4M |
+| Qwen3-1.7B | Real text | 35K | 42% | 61.3% | 52x | 29.4M |
 
 Two scaling dimensions emerge:
 
@@ -182,7 +183,7 @@ Two scaling dimensions emerge:
 
 **Training signal.** Real text distillation (FineWeb-Edu) improves T10 by **+4% over random tokens** at 15K steps (60% vs 56% for 0.6B). Random tokens waste teacher capacity on nonsensical sequences; real text allows the teacher to produce meaningful distributions that transfer more information per batch. At 1.7B scale, real text reaches 62.4% T10 in only 10K steps — matching the random-token 15K result in 2/3 the compute.
 
-**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then oscillates: 61.0% (15K) → 60.3% (20K) → 57.2% (25K) → 61.4% (30K). The 25K dip was initially attributed to temperature annealing, but the 30K recovery (+4.2%) reveals **high eval variance** (100-sample eval) rather than systematic degradation. Loss shows a similar non-monotonic pattern (37.2 → 37.9 → 38.5), likely from the interaction between cosine LR decay and temperature annealing ($T$ drops from 5.0 to 3.5 over 30K steps).
+**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then oscillates: 61.0% (15K) → 60.3% (20K) → 57.2% (25K) → 61.4% (30K) → 61.3% (35K). Bootstrap analysis (§7, Statistical note) confirms this ±3-5% oscillation is **fully consistent with eval noise** at $n=100$ samples (95% CI width: ±9.5%). The true underlying T10 likely stabilizes around 60-62% after 10K steps, with observed fluctuations reflecting sampling variance rather than training instability. Loss shows a similar non-monotonic pattern (37.2 → 37.9 → 38.5 → 38.9), likely from the interaction between cosine LR decay and temperature annealing ($T$ drops from 5.0 to 3.2 over 35K steps).
 
 The temperature effect remains real but less severe than initially estimated: T10 oscillates ±3-5% around a ~60-62% plateau rather than declining monotonically. Two remedies are designed: (1) **cyclic temperature** (CosineAnnealingWarmRestarts, $T \in [2.0, 4.0]$, period 10K) to periodically revisit high-temperature regimes, and (2) **multi-temperature KL**: $\mathcal{L} = 0.3 \cdot \text{KL}_{T=1} + 0.4 \cdot \text{KL}_{T=2} + 0.3 \cdot \text{KL}_{T=4}$, forcing simultaneous matching at multiple distribution sharpness levels. Both experiments are queued.
 
@@ -241,7 +242,9 @@ Several directions remain open:
 
 We have shown that a single transformer block, applied recursively 28 times with per-layer affine modulation, matches the predictive behavior of 28 independent layers at 52-60x compression. FRR scales to 1.7B (67% T10 at 52x) and real-text distillation accelerates convergence by 5x over random tokens. Beyond FRR, we demonstrate multiple complementary approaches: holographic weight interference (57% at 76x), ternary quantization (57% at ~2MB), a near-lossless ultimate pipeline (0.994 cosine at Q2), from-scratch trainability (80.7%), and evolutionary architecture search outperforming hand-tuned designs. Weight manifold analysis reveals an intrinsic dimensionality of ~62 with flat curvature, providing theoretical grounding for why extreme compression succeeds. Across 52 modules and 30 distinct inventions, this work establishes that transformer compression is far from its theoretical limits.
 
-**Limitations.** Inference latency is unchanged (28 sequential block applications). Top-10 agreement of 67% leaves meaningful room for improvement. Evaluation is primarily on Qwen3 models (0.6B and 1.7B). Scaling to 8B+ teachers is pending (verified feasible, not yet completed). Temperature annealing during distillation introduces mid-training metric regression that requires further study. Dendritic neurons degrade performance (-6%), suggesting not all capacity-increasing modifications are compatible with shared-weight regimes.
+**Limitations.** Inference latency is unchanged (28 sequential block applications). Top-10 agreement of 67% leaves meaningful room for improvement. Evaluation is primarily on Qwen3 models (0.6B and 1.7B). Scaling to 8B+ teachers is pending (verified feasible, not yet completed). Dendritic neurons degrade performance (-6%), suggesting not all capacity-increasing modifications are compatible with shared-weight regimes.
+
+**Statistical note on evaluation.** Our token agreement metrics (T1, T10) use 100-sample evaluations. Bootstrap analysis reveals 95% confidence intervals of ±9.5% at 60% accuracy, meaning a reported 60% could range from 50% to 70%. The ±3-5% T10 oscillation observed during 1.7B training is fully consistent with evaluation noise from a stable underlying accuracy. Detecting a true 3% difference between methods requires ~4,000 paired evaluation samples (power=0.80, α=0.05). Current 100-sample evals can only reliably detect >10% differences. We report point estimates throughout but caution against over-interpreting small differences between configurations. Trends across multiple checkpoints are more reliable than individual comparisons. Extended evaluation with larger sample sizes is planned for the camera-ready version.
 
 ---
 

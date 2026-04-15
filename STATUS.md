@@ -146,7 +146,7 @@ This means FRR compression applies to nearly everything:
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
 | 0 | Selective Student (3 experiments) | **Exp 2 (TrustGate) running** | Exp 1 FINAL: T1=41% T10=59.4% | Exp 3 (Curriculum) queued |
-| 1 | 1.7B Real Text 100K | Step 15K/100K | T1=41% T10=61.0% | Best=62.4% at 10K |
+| 1 | 1.7B Real Text 100K | Step 35K/100K | T1=42% T10=61.3% | Best=62.4% at 10K, plateau ~61% |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -166,13 +166,16 @@ This means FRR compression applies to nearly everything:
 - Step 3000: loss=0.86, T1=44%, T10=49.7%
 - Step 6000: loss=1.19, T1=43%, T10=55.2%
 - Step 9000: loss=0.94, T1=49%, T10=59.1%
+- Step 12000: loss=1.01, T1=43%, T10=62.2%
 - 7,350,621 params (+321 from TrustGate)
-- **SURPRISING REVERSAL**: TrustGate went from −8.7% behind (3K) to **+1.6% ahead** (9K)
+- **SURPRISING REVERSAL**: TrustGate went from −8.7% behind (3K) to **+2.8% ahead** (12K)
 - At 3K: T10=49.7% vs baseline 58.4% (−8.7%)
 - At 6K: T10=55.2% vs baseline 57.1% (−1.9%)
-- At 9K: T10=59.1% vs baseline 57.5% (**+1.6%**)
+- At 9K: T10=59.1% vs baseline 57.5% (+1.6%)
+- At 12K: T10=62.2% vs baseline 59.8% (**+2.4%**)
 - The gate needed time to learn WHEN to trust — early training is penalty phase
-- **Hypothesis REOPENED**: TrustGate may break the barrier at convergence. 15K final result is DECISIVE.
+- **TrustGate now LEADING at every step since 9K.** 15K final result is DECISIVE.
+- NOTE: +2.4% is within ±9.5% CI of 100-sample evals — need hires eval to confirm.
 
 ### 1.7B REAL TEXT 100K — Progress
 | Step | Loss | T1 | T10 | Temp | Elapsed |
@@ -184,8 +187,9 @@ This means FRR compression applies to nearly everything:
 | 20000 | 37.23 | 33.0% | 60.3% | 4.0 | 2582s |
 | 25000 | 37.94 | 40.0% | 57.2% | 3.8 | 3226s |
 | 30000 | 38.49 | 37.0% | 61.4% | 3.5 | 3874s |
+| 35000 | 38.94 | 42.0% | 61.3% | 3.2 | 4532s |
 
-**UPDATE (30K)**: T10 **bounced back** from 57.2% to 61.4% (+4.2%). The 25K dip was likely eval noise (100-sample eval with high variance), not monotonic degradation. Loss also increased (37.9→38.5) suggesting the cosine LR schedule is interacting with temperature. Best checkpoint still at 10K (62.4%). Pattern: T10 oscillates ±3-5% around ~60-62% rather than steadily declining.
+**UPDATE (35K)**: T10=61.3% confirms stable ~61% plateau. Bootstrap analysis (eval_statistical.py) shows 100-sample evals have ±9.5% CI width — the entire 57-62% oscillation is consistent with eval noise from a stable ~61% true accuracy. Current evals can only reliably detect >10% differences. Need ~4,000 paired samples for 3% sensitivity.
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)

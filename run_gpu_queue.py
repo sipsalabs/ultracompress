@@ -101,6 +101,13 @@ EXPERIMENTS = {
         description="Multi-temperature KL from scratch, 50K steps",
         estimated_hours=6,
     ),
+    "hires-eval-1.7b": Experiment(
+        name="hires-eval-1.7b",
+        script="run_hires_eval.py",
+        args=["--all-checkpoints", "checkpoints_1.7b_real_text/", "--teacher", "1.7b", "--n-samples", "500"],
+        description="High-res eval (500 samples, paired CI) on all 1.7B checkpoints",
+        estimated_hours=0.5,
+    ),
 }
 
 

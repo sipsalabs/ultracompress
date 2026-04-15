@@ -9,20 +9,20 @@ tags:
 pipeline_tag: text-generation
 ---
 
-# mounnar/qwen3-1.7b-frr-48x
+# mounnar/qwen3-1.7b-frr-52x
 
-**48x compressed** version of [Qwen/Qwen3-1.7B](https://huggingface.co/Qwen/Qwen3-1.7B) using Fractal Residual Recursion (FRR).
+**52x compressed** version of [Qwen/Qwen3-1.7B](https://huggingface.co/Qwen/Qwen3-1.7B) using Fractal Residual Recursion (FRR).
 
 ## Model Details
 
 | Property | Value |
 |----------|-------|
 | Base model | Qwen/Qwen3-1.7B |
-| Compression | **48x** |
-| Parameters | 29,380,636 (vs 751,632,384 original) |
-| Top-10 agreement | 66% |
-| Top-1 agreement | 37% |
-| Training steps | 50,000 |
+| Compression | **52x** |
+| Parameters | 29,380,636 (vs 1,530,000,000 original) |
+| Top-10 agreement | 67% (random tokens 100K) / 62.4% (real text 10K) |
+| Top-1 agreement | 47% (real text 10K) |
+| Training data | FineWeb-Edu (real text) or random tokens |
 | Method | Fractal Residual Recursion (FRR) |
 
 ## How It Works
@@ -44,9 +44,9 @@ This model uses FRR only (architectural compression). For maximum compression, a
 
 | Stack | Quality | Compression |
 |-------|---------|-------------|
-| FRR only | 66% T10 | 48x |
-| FRR + Q4 | ~64% T10 | ~384x |
-| FRR + Q2 + entropy | ~63% T10 | ~768x |
+| FRR only | 67% T10 | 52x |
+| FRR + Q4 | ~65% T10 | ~416x |
+| FRR + Q2 + entropy | ~64% T10 | ~959x |
 
 ## Citation
 
