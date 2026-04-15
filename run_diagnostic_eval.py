@@ -352,7 +352,7 @@ def main():
     print(f"  Student mean entropy: {s_ent_mean:.2f}")
     print(f"  Student/Teacher entropy ratio: {s_ent_mean/t_ent_mean:.2f}x")
     print(f"  T1 when teacher confident (entropy<2): {t1_confident*100:.1f}% ({n_confident} tokens)")
-    print(f"  T1 when teacher uncertain (entropy≥2): {t1_uncertain*100:.1f}% ({n_uncertain} tokens)")
+    print(f"  T1 when teacher uncertain (entropy>=2): {t1_uncertain*100:.1f}% ({n_uncertain} tokens)")
     print()
 
     results['teacher_entropy'] = t_ent_mean

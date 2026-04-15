@@ -53,8 +53,7 @@ def load_teacher(scale: str, device: str = "cuda:0"):
 
 def load_frr_model(checkpoint_path: str, teacher_config: dict, device: str = "cuda:0"):
     """Load FRR model from checkpoint."""
-    sys_path_hack()
-    from frr_model import FractalModel
+    from ultracompress.moonshot import FractalModel
 
     model = FractalModel(
         vocab_size=teacher_config["vocab_size"],
