@@ -11,12 +11,21 @@
     "gpu1": {
       "experiment": "1.7B Real Text 100K",
       "status": "running",
-      "step": "~47K/100K",
+      "step": "~52K/100K",
       "teacher": "1.7B",
       "best_t10": 63.6,
       "best_t10_step": 40000,
-      "latest_t10": 61.8,
-      "latest_step": 45000
+      "latest_t10": 59.7,
+      "latest_step": 50000,
+      "best_t1": 49.0,
+      "best_t1_step": 50000,
+      "hellaswag_50k": {
+        "teacher": 31.3,
+        "frr": 28.0,
+        "retention": 89.4,
+        "wikitext2_teacher_ppl": 670.7,
+        "wikitext2_frr_ppl": 1322.2
+      }
     }
   },
   "completed_experiments": {
@@ -34,8 +43,8 @@
   },
   "all_time_records": {
     "best_t1_1.7b": {
-      "value": 47.0,
-      "how": "1.7B real text 10K steps"
+      "value": 49.0,
+      "how": "1.7B real text 50K steps (T=2.5)"
     },
     "best_t10_1.7b_real": {
       "value": 63.6,
@@ -46,8 +55,8 @@
       "how": "1.7B random tokens 100K steps"
     },
     "best_hellaswag": {
-      "value": 83.3,
-      "how": "0.6B FRR 100K, 300-sample"
+      "value": 89.4,
+      "how": "1.7B FRR 50K real text (teacher 31.3%, FRR 28.0%)"
     },
     "best_compression": {
       "value": 959,
