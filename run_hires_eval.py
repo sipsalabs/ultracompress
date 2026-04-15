@@ -56,13 +56,11 @@ def load_frr_model(checkpoint_path: str, teacher_config: dict, device: str = "cu
     from ultracompress.moonshot import FractalModel
 
     model = FractalModel(
-        vocab_size=teacher_config["vocab_size"],
-        hidden_size=teacher_config["hidden_size"],
-        num_heads=teacher_config["num_heads"],
-        ffn_hidden=teacher_config["ffn_hidden"],
-        num_scales=4,
+        hidden_dim=teacher_config["hidden_size"],
+        n_heads=teacher_config["num_heads"],
+        n_scales=4,
         iters_per_scale=7,
-        max_seq_len=512,
+        vocab_size=teacher_config["vocab_size"],
     ).to(device)
 
     state = torch.load(checkpoint_path, map_location=device, weights_only=True)
