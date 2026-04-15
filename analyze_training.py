@@ -47,7 +47,7 @@ class Experiment:
 # ---------------------------------------------------------------------------
 
 def get_1_7b_real_text() -> Experiment:
-    """1.7B real text 100K training data (through 45K)."""
+    """1.7B real text 100K training data (through 55K)."""
     exp = Experiment(name="1.7B Real Text 100K", total_steps=100_000, params=29_380_636)
     data = [
         (0, 561.92, 5.0, 21.4, 5.0, 12),
@@ -60,6 +60,8 @@ def get_1_7b_real_text() -> Experiment:
         (35000, 38.94, 42.0, 61.3, 3.2, 4532),
         (40000, 38.83, 41.0, 63.6, 3.0, 5174),
         (45000, 42.10, 33.0, 61.8, 2.8, 5818),
+        (50000, 44.41, 49.0, 59.7, 2.5, 6440),
+        (55000, 47.50, 40.0, 62.4, 2.2, 7142),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
@@ -92,6 +94,22 @@ def get_selective_trustgate() -> Experiment:
         (9000, 0.94, 49.0, 59.1, None, 1962),
         (12000, 1.01, 43.0, 62.2, None, 2515),
         (14999, 0.84, 51.0, 60.6, None, 3116),
+    ]
+    for step, loss, t1, t10, temp, elapsed in data:
+        exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
+    return exp
+
+
+def get_selective_curriculum() -> Experiment:
+    """Selective Student Exp 3 — Curriculum KL->NTP (0.6B). COMPLETE."""
+    exp = Experiment(name="Curriculum (KL->NTP)", total_steps=15_000, params=7_350_300)
+    data = [
+        (0, 571.14, 2.0, 12.5, None, 10),
+        (3000, 76.10, 41.0, 55.3, None, 528),
+        (6000, 60.19, 40.0, 56.6, None, 916),
+        (9000, 45.28, 44.0, 59.9, None, 1314),
+        (12000, 25.28, 55.0, 61.3, None, 1679),
+        (14999, 6.02, 51.0, 58.3, None, 2084),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
@@ -525,6 +543,52 @@ def plot_noise_analysis(exp: Experiment, output: Path) -> None:
     plt.close()
 
 
+def plot_selective_comparison(
+    baseline: Experiment,
+    trustgate: Experiment,
+    curriculum: Experiment,
+    output: Path,
+) -> None:
+    """Compare all 3 selective student experiments: T10 and T1 trajectories."""
+    if not HAS_MPL:
+        return
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    colors = {"Baseline": "#2196F3", "TrustGate": "#FF9800", "Curriculum": "#4CAF50"}
+
+    for exp, label in [(baseline, "Baseline"), (trustgate, "TrustGate"), (curriculum, "Curriculum")]:
+        steps = [p.step for p in exp.points]
+        t10 = [p.t10 for p in exp.points]
+        t1 = [p.t1 for p in exp.points]
+        c = colors[label]
+
+        axes[0].plot(steps, t10, "o-", color=c, label=label, linewidth=2, markersize=5)
+        axes[1].plot(steps, t1, "s-", color=c, label=label, linewidth=2, markersize=5)
+
+    axes[0].set_xlabel("Step", fontsize=11)
+    axes[0].set_ylabel("Top-10 Match (%)", fontsize=11)
+    axes[0].set_title("Top-10 Token Agreement", fontsize=12, fontweight="bold")
+    axes[0].legend(fontsize=10)
+    axes[0].grid(True, alpha=0.3)
+    axes[0].axhline(y=59.4, color="#2196F3", linestyle="--", alpha=0.4, label="Baseline FINAL")
+
+    axes[1].set_xlabel("Step", fontsize=11)
+    axes[1].set_ylabel("Top-1 Match (%)", fontsize=11)
+    axes[1].set_title("Top-1 Token Agreement", fontsize=12, fontweight="bold")
+    axes[1].legend(fontsize=10)
+    axes[1].grid(True, alpha=0.3)
+
+    fig.suptitle(
+        "Selective Student: Baseline vs TrustGate vs Curriculum (0.6B, 15K steps)",
+        fontsize=13, fontweight="bold",
+    )
+    plt.tight_layout()
+    plt.savefig(output, dpi=150, bbox_inches="tight")
+    print(f"Saved plot: {output}")
+    plt.close()
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -547,7 +611,7 @@ def main():
     experiments: list[Experiment] = []
 
     if args.builtin:
-        experiments = [get_1_7b_real_text(), get_selective_baseline(), get_selective_trustgate()]
+        experiments = [get_1_7b_real_text(), get_selective_baseline(), get_selective_trustgate(), get_selective_curriculum()]
     elif args.log:
         experiments = [parse_log_file(args.log)]
 
@@ -615,6 +679,9 @@ def main():
         exp_1_7b = get_1_7b_real_text()
         plot_temperature_analysis(exp_1_7b, args.output_dir / "temperature_analysis.png")
         plot_noise_analysis(exp_1_7b, args.output_dir / "noise_analysis.png")
+        # Selective student 3-way comparison
+        curriculum = get_selective_curriculum()
+        plot_selective_comparison(baseline, trustgate, curriculum, args.output_dir / "selective_comparison.png")
 
     # JSON output
     if args.json:

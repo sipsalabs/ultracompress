@@ -110,7 +110,7 @@ FRR trained from scratch (no teacher, standard next-token prediction) achieves *
 | Hidden-state supervision | −6% (harmful for FRR) | 0.6B |
 | Temperature annealing ($T$: 5→2) | Beneficial early, harmful late (see §4.5) | 1.7B |
 | Selective student (TrustGate) | **+0.2%** final (gate collapses to pure KL) | 0.6B |
-| Curriculum (KL→NTP) | −0.5% at 6K (running, gap narrowing) | 0.6B |
+| Curriculum (KL→NTP) | −2.9% final (−1.5% peak at 12K, degraded under full NTP) | 0.6B |
 | Dendritic neurons | −6% (optimization difficulty) | 0.6B |
 | Multi-block (3 blocks) | −5% (no benefit) | 0.6B |
 | LoRA adapters on FRR | +3% (modest benefit) | 0.6B |
@@ -354,6 +354,7 @@ We have shown that a single transformer block, applied recursively 28 times with
 | **40K** | **38.83** | **41%** | **63.6%** | **3.0** | **5174s** | **New best T10** |
 | 45K | 42.10 | 33% | 61.8% | 2.8 | 5818s | |
 | **50K** | **44.41** | **49%** | 59.7% | 2.5 | 6440s | **New best T1** |
+| 55K | 47.50 | 40% | 62.4% | 2.2 | 7142s | T10 rebounds |
 
 **HellaSwag at 50K: FRR 28.0% vs Teacher 31.3% = 89.4% retention. WikiText-2 PPL: FRR 1322.2 vs Teacher 670.7.**
 

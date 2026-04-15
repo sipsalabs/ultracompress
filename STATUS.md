@@ -146,8 +146,8 @@ This means FRR compression applies to nearly everything:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | Selective Student (3 experiments) | **Exp 2 DONE, Exp 3 running** | Exp 2 FINAL: T1=42.5% T10=59.6% | Gate collapsed → pure KL |
-| 1 | 1.7B Real Text 100K | Step 50K/100K | T1=**49% NEW BEST** T10=59.7% | HellaSwag **89.4% retention** NEW RECORD! |
+| 0 | Selective Student (3 experiments) | **ALL COMPLETE** | Exp 3 FINAL: T1=42% T10=56.5% | Pure KL still best, GPU FREE |
+| 1 | 1.7B Real Text 100K | Step 55K/100K | T1=40% T10=62.4% | HellaSwag **89.4% retention** NEW RECORD! |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -181,13 +181,18 @@ This means FRR compression applies to nearly everything:
   offers no benefit because the shared-weight architecture needs consistent full-distribution
   matching at every position to learn the universal transformation.
 
-### SELECTIVE STUDENT — Experiment 3 (Curriculum KL→NTP) RUNNING
+### SELECTIVE STUDENT — Experiment 3 (Curriculum KL→NTP) **COMPLETE**
 - Step 0: loss=571.14, T1=2%, T10=12.5%
 - Step 3000: loss=76.10, T1=41%, T10=55.3% (vs baseline 58.4% = −3.1%)
 - Step 6000: loss=60.19, T1=40%, T10=56.6% (vs baseline 57.1% = −0.5%)
 - Step 9000: loss=45.28, T1=44%, T10=59.9% (vs baseline 57.5% = **+2.4%**)
+- Step 12000: loss=25.28, T1=55%, T10=61.3% (vs baseline 59.8% = **+1.5%**)
+- Step 14999: loss=6.02, T1=51%, T10=58.3% (vs baseline 58.9% = −0.6%)
+- **FINAL: T1=42.0%, T10=56.5% (vs baseline 59.4% = −2.9%)**
 - Starts with pure KL, linearly transitions to NTP over 15K steps
-- **Convergence pattern**: gap narrowing from −3.1% (3K) → −0.5% (6K) → **+2.4% (9K)**! Curriculum has SURPASSED baseline!
+- **Pattern**: Peaked at 12K (+1.5%) when NTP weight was ~80%, then degraded as NTP dominated
+- **Conclusion**: Partial NTP transition helps mid-training but full NTP is worse than pure KL
+- **Pure KL remains optimal** for FRR distillation
 
 ### 1.7B REAL TEXT 100K — Progress
 | Step | Loss | T1 | T10 | Temp | Elapsed |
@@ -203,6 +208,7 @@ This means FRR compression applies to nearly everything:
 | **40000** | **38.83** | **41.0%** | **63.6%** | **3.0** | **5174s** | **NEW BEST** |
 | 45000 | 42.10 | 33.0% | 61.8% | 2.8 | 5818s | |
 | **50000** | **44.41** | **49.0%** | 59.7% | 2.5 | 6440s | **NEW BEST T1!** |
+| 55000 | 47.50 | 40.0% | 62.4% | 2.2 | 7142s | |
 
 **50K HellaSwag + WikiText-2 Evaluation:**
 | Model | HellaSwag | WikiText-2 PPL |

@@ -3,20 +3,23 @@
   "date": "2026-04-15",
   "active_training": {
     "gpu0": {
-      "experiment": "Selective Student Exp 3 (Curriculum KL\u2192NTP)",
-      "status": "running",
-      "step": "~3K/15K",
-      "teacher": "0.6B"
+      "experiment": "Selective Student — ALL COMPLETE",
+      "status": "complete",
+      "step": "15K/15K",
+      "teacher": "0.6B",
+      "exp3_final_t1": 42.0,
+      "exp3_final_t10": 56.5,
+      "conclusion": "Pure KL still best. Curriculum peaked at 12K (+1.5%) then degraded under full NTP."
     },
     "gpu1": {
       "experiment": "1.7B Real Text 100K",
       "status": "running",
-      "step": "~52K/100K",
+      "step": "~55K/100K",
       "teacher": "1.7B",
       "best_t10": 63.6,
       "best_t10_step": 40000,
-      "latest_t10": 59.7,
-      "latest_step": 50000,
+      "latest_t10": 62.4,
+      "latest_step": 55000,
       "best_t1": 49.0,
       "best_t1_step": 50000,
       "hellaswag_50k": {
