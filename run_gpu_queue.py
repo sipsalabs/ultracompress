@@ -87,6 +87,20 @@ EXPERIMENTS = {
         description="Resume 1.7B best with cyclic temp (2.0↔4.0), 50K steps",
         estimated_hours=6,
     ),
+    "multi-temp-1.7b": Experiment(
+        name="multi-temp-1.7b",
+        script="run_1.7b_multi_temp.py",
+        args=["--resume", "checkpoints_1.7b_real_text/frr_1.7b_best.pt", "--steps", "30000"],
+        description="Multi-temperature KL (T=1,2,4 simultaneous) from best checkpoint, 30K steps",
+        estimated_hours=4,
+    ),
+    "multi-temp-1.7b-fresh": Experiment(
+        name="multi-temp-1.7b-fresh",
+        script="run_1.7b_multi_temp.py",
+        args=["--steps", "50000"],
+        description="Multi-temperature KL from scratch, 50K steps",
+        estimated_hours=6,
+    ),
 }
 
 

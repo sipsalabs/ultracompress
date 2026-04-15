@@ -163,7 +163,7 @@ This means FRR compression applies to nearly everything:
 
 ### SELECTIVE STUDENT — Experiment 2 (TrustGate) RUNNING
 - Step 0: loss=9.84, T1=5%, T10=19.6% (lower initial loss = blended KL+NTP)
-- Step 3000: loss=0.86, T1=44%, T10=49.7% 
+- Step 3000: loss=0.86, T1=44%, T10=49.7%
 - 7,350,621 params (+321 from TrustGate)
 - **Key finding: TrustGate HURTS T10 by −8.7% at 3K (49.7% vs baseline 58.4%)**
 - The trust gate learns to mix KL and NTP per position, but spending ANY capacity on NTP dilutes the KL signal
@@ -178,8 +178,13 @@ This means FRR compression applies to nearly everything:
 | 10000 | 37.56 | **47.0%** | **62.4%** | 4.5 | 1276s |
 | 15000 | 37.44 | 41.0% | 61.0% | 4.2 | 1928s |
 | 20000 | 37.23 | 33.0% | 60.3% | 4.0 | 2582s |
+| 25000 | 37.94 | 40.0% | 57.2% | 3.8 | 3226s |
 
-**Observation:** Best T10=62.4% at 10K, now declining to 60.3% at 20K despite loss still decreasing. Temperature annealing (5.0→4.0) shifts KL focus from broad distribution to top tokens, which may explain the T10 regression. T1 variance is high (eval n=100, last-token only). Loss curve still healthy. The 1.7B random-token run also peaked later (67% at 100K), so recovery is possible. Best checkpoint saved at 10K.
+**⚠️ SIGNIFICANT DECLINE**: T10 dropped from 62.4% (10K) to 57.2% (25K) = **−5.2% in 15K steps**.
+Loss also ticked up (37.2→37.9) at step 25K. Temperature now at 3.8.
+- The temp annealing → KL sharpening → broad distribution matching breakdown is confirmed
+- Best checkpoint (10K) is saved. The cyclic-temp experiment is designed to test if cycling fixes this.
+- Random-token 1.7B reached 67% at 100K with similar schedule — recovery IS possible in constant-T phase (T=2.0 after 60K)
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)
