@@ -74,6 +74,19 @@ EXPERIMENTS = {
         description="Full eval on best 1.7B checkpoint",
         estimated_hours=0.5,
     ),
+    "diag-1.7b-best": Experiment(
+        name="diag-1.7b-best",
+        script="run_diagnostic_eval.py",
+        args=["checkpoints_1.7b_real_text/frr_1.7b_best.pt", "--teacher", "1.7b", "--samples", "500"],
+        description="Deep diagnostic (500 samples, all positions, entropy) on best 1.7B",
+        estimated_hours=0.3,
+    ),
+    "cyclic-1.7b": Experiment(
+        name="cyclic-1.7b",
+        script="run_1.7b_cyclic_temp.py",
+        description="Resume 1.7B best with cyclic temp (2.0↔4.0), 50K steps",
+        estimated_hours=6,
+    ),
 }
 
 
