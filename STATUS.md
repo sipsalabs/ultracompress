@@ -145,19 +145,26 @@ This means FRR compression applies to nearly everything:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | Selective Student (3 experiments) | Exp 1 at ~14K/15K | T1=53% T10=59.8% at 12K | Exp 2 (TrustGate) + 3 (Curriculum) queued |
-| 1 | 1.7B Real Text 100K | Step 10K/100K | T1=47% T10=62.4% | Checkpoint saved, new best |
+| 0 | Selective Student (3 experiments) | **Exp 2 (TrustGate) running** | Exp 1 FINAL: T1=41% T10=59.4% | Exp 3 (Curriculum) queued |
+| 1 | 1.7B Real Text 100K | Step 15K/100K | T1=41% T10=61.0% | Best=62.4% at 10K |
 
-### SELECTIVE STUDENT — Experiment 1 Progress (0.6B, 15K steps)
+### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
 |------|------|-----|-----|---------|
 | 0 | 606.58 | 4.0% | 18.7% | 11s |
 | 3000 | 56.33 | 47.0% | 58.4% | 420s |
 | 6000 | 54.26 | 42.0% | 57.1% | 918s |
 | 9000 | 69.40 | 39.0% | 57.5% | 1360s |
-| 12000 | 58.13 | **53.0%** | **59.8%** | 1919s |
+| 12000 | 58.13 | 53.0% | 59.8% | 1919s |
+| 14999 | 48.16 | 42.0% | 58.9% | 2566s |
+| **FINAL** | — | **41.0%** | **59.4%** | 2585s |
 
-**Observation:** T1 spiking late (53% at 12K vs 39% at 9K). Late-stage recovery pattern — cosine schedule warmth + distribution convergence.
+**Baseline established: T1=41%, T10=59.4%** — Exp 2 (TrustGate) must beat this.
+
+### SELECTIVE STUDENT — Experiment 2 (TrustGate) RUNNING
+- Step 0: loss=9.84, T1=5%, T10=19.6% (lower initial loss = blended KL+NTP)
+- 7,350,621 params (+321 from TrustGate)
+- **Key question: Does selective_loss > standard KL at 15K steps?**
 
 ### 1.7B REAL TEXT 100K — Progress
 | Step | Loss | T1 | T10 | Elapsed |
@@ -165,8 +172,9 @@ This means FRR compression applies to nearly everything:
 | 0 | 561.92 | 5.0% | 21.4% | 12s |
 | 5000 | 41.33 | 32.0% | 61.4% | 644s |
 | 10000 | 37.56 | **47.0%** | **62.4%** | 1276s |
+| 15000 | 37.44 | 41.0% | 61.0% | 1928s |
 
-**Observation:** Already matching T1 record (46%) at step 10K! First checkpoint saved. T10 growing steadily. On track to beat 67% T10 record.
+**Observation:** Best T10=62.4% at 10K. Step 15K shows eval variance (T1 41% vs 47%). Loss still decreasing. Model still learning, need to wait for 20K+ to see trend.
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)
@@ -177,6 +185,8 @@ This means FRR compression applies to nearly everything:
   - Real text from FineWeb-Edu, checkpoints, HellaSwag eval
   - 50K steps default, configurable device for when GPU frees up
 - **run_stable_wave_test.py** — Wave engine stability fix (committed, waiting for GPU)
+- **plot_results.py** — Training log parser + publication-quality visualization
+- **Qwen3-8B model downloaded** — 5 shards, ~16GB, ready for 8B experiments
 
 ### ALL-TIME RECORDS (updated)
 | Record | Value | How |
