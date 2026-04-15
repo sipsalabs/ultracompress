@@ -60,7 +60,7 @@ COLORS = {
 # DATA (from actual experiments — verified results)
 # ══════════════════════════════════════════════════════════════════════
 
-# Training curves: (step, T10%) 
+# Training curves: (step, T10%)
 curves_t10 = {
     '0.6B Random': {
         'steps': [0, 10_000, 15_000, 25_000, 50_000, 100_000],

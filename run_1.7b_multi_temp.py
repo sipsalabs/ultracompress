@@ -177,7 +177,7 @@ def eval_vs_teacher(model: nn.Module, n: int = 200) -> tuple[float, float]:
 
 def multi_temp_kl_loss(student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
     """Multi-temperature KL divergence.
-    
+
     Computes weighted sum of KL at multiple temperatures.
     The student must match the teacher's distribution at ALL temperatures,
     preventing sharp/soft distribution forgetting.
