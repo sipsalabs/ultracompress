@@ -11,10 +11,12 @@
     "gpu1": {
       "experiment": "1.7B Real Text 100K",
       "status": "running",
-      "step": "~42K/100K",
+      "step": "~47K/100K",
       "teacher": "1.7B",
       "best_t10": 63.6,
-      "best_t10_step": 40000
+      "best_t10_step": 40000,
+      "latest_t10": 61.8,
+      "latest_step": 45000
     }
   },
   "completed_experiments": {

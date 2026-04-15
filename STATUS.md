@@ -147,7 +147,7 @@ This means FRR compression applies to nearly everything:
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
 | 0 | Selective Student (3 experiments) | **Exp 2 DONE, Exp 3 running** | Exp 2 FINAL: T1=42.5% T10=59.6% | Gate collapsed → pure KL |
-| 1 | 1.7B Real Text 100K | Step 40K/100K | T1=41% T10=**63.6% NEW BEST** | Best=63.6% at 40K (T=3.0) |
+| 1 | 1.7B Real Text 100K | Step 45K/100K | T1=33% T10=61.8% | Best=63.6% at 40K. HellaSwag @ 50K! |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -199,6 +199,9 @@ This means FRR compression applies to nearly everything:
 | 30000 | 38.49 | 37.0% | 61.4% | 3.5 | 3874s |
 | 35000 | 38.94 | 42.0% | 61.3% | 3.2 | 4532s |
 | **40000** | **38.83** | **41.0%** | **63.6%** | **3.0** | **5174s** | **NEW BEST** |
+| 45000 | 42.10 | 33.0% | 61.8% | 2.8 | 5818s | |
+
+**UPDATE (45K):** T10=61.8% at step 45K (T=2.8) — down from 63.6% but within noise range (±9.5% CI). Loss jumped from 38.83→42.10, likely from temperature drop 3.0→2.8 making targets harder. T1 dropped to 33% — also noise-consistent. **HellaSwag eval at 50K is the next critical milestone.**
 
 **UPDATE (40K)**: **NEW BEST** T10=63.6% at step 40K (T=3.0) — breaks the 62.4% record from step 10K. Suggests T≈3.0 may be the sweet spot for T10 evaluation accuracy. Bootstrap analysis (eval_statistical.py) shows 100-sample evals have ±9.5% CI width — the 63.6% could be noise but it's the second data point above 62%, supporting genuine improvement.
 

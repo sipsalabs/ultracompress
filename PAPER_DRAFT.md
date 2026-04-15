@@ -177,6 +177,7 @@ We validate FRR on Qwen3-1.7B (2B parameters, 28 layers, hidden=2048), comparing
 | Qwen3-1.7B | Real text | 30K | 37% | 61.4% | 52x | 29.4M |
 | Qwen3-1.7B | Real text | 35K | 42% | 61.3% | 52x | 29.4M |
 | **Qwen3-1.7B** | **Real text** | **40K** | **41%** | **63.6%** | **52x** | **29.4M** |
+| Qwen3-1.7B | Real text | 45K | 33% | 61.8% | 52x | 29.4M |
 
 Two scaling dimensions emerge:
 
@@ -184,7 +185,7 @@ Two scaling dimensions emerge:
 
 **Training signal.** Real text distillation (FineWeb-Edu) improves T10 by **+4% over random tokens** at 15K steps (60% vs 56% for 0.6B). Random tokens waste teacher capacity on nonsensical sequences; real text allows the teacher to produce meaningful distributions that transfer more information per batch. At 1.7B scale, real text reaches 62.4% T10 in only 10K steps — matching the random-token 15K result in 2/3 the compute.
 
-**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then oscillates: 61.0% (15K) → 60.3% (20K) → 57.2% (25K) → 61.4% (30K) → 61.3% (35K) → **63.6% (40K, new best)**. The 40K result at $T=3.0$ sets a new record, suggesting the optimal temperature regime for T10 evaluation may be around $T \approx 3.0$. Bootstrap analysis (§7, Statistical note) confirms that earlier ±3-5% oscillation is **fully consistent with eval noise** at $n=100$ samples (95% CI width: ±9.5%). However, the 40K result exceeds the previous best by 1.2 points, lending cautious support to continued improvement. Loss shows a similar non-monotonic pattern (37.2 → 37.9 → 38.5 → 38.9 → 38.8), likely from the interaction between cosine LR decay and temperature annealing ($T$ drops from 5.0 to 3.0 over 40K steps).
+**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then oscillates: 61.0% (15K) → 60.3% (20K) → 57.2% (25K) → 61.4% (30K) → 61.3% (35K) → **63.6% (40K, new best)** → 61.8% (45K). The 40K result at $T=3.0$ sets the record; the subsequent dip to 61.8% at $T=2.8$ is consistent with eval noise ($n=100$, 95% CI width: ±9.5%). Loss increases from 38.8 to 42.1 at 45K, likely from the temperature drop making teacher distributions sharper and harder to match.
 
 The temperature effect remains real but less severe than initially estimated: T10 oscillates ±3-5% around a ~60-62% plateau rather than declining monotonically. Two remedies are designed: (1) **cyclic temperature** (CosineAnnealingWarmRestarts, $T \in [2.0, 4.0]$, period 10K) to periodically revisit high-temperature regimes, and (2) **multi-temperature KL**: $\mathcal{L} = 0.3 \cdot \text{KL}_{T=1} + 0.4 \cdot \text{KL}_{T=2} + 0.3 \cdot \text{KL}_{T=4}$, forcing simultaneous matching at multiple distribution sharpness levels. Both experiments are queued.
 
@@ -341,6 +342,7 @@ We have shown that a single transformer block, applied recursively 28 times with
 | 30K | 38.49 | 37% | 61.4% | 3.5 | 3874s | |
 | 35K | 38.94 | 42% | 61.3% | 3.2 | 4532s | |
 | **40K** | **38.83** | **41%** | **63.6%** | **3.0** | **5174s** | **New best T10** |
+| 45K | 42.10 | 33% | 61.8% | 2.8 | 5818s | |
 
 *Training ongoing. HellaSwag eval scheduled at 50K and 100K.*
 
