@@ -186,6 +186,7 @@ We validate FRR on Qwen3-1.7B (2B parameters, 28 layers, hidden=2048), comparing
 | Qwen3-1.7B | Real text | 60K | 28% | 61.0% | 52x | 29.4M |
 | Qwen3-1.7B | Real text | 65K | 38% | 61.0% | 52x | 29.4M |
 | Qwen3-1.7B | Real text | 70K | 37% | 59.0% | 52x | 29.4M |
+| Qwen3-1.7B | Real text | 75K | 42% | 60.9% | 52x | 29.4M |
 
 Two scaling dimensions emerge:
 
@@ -376,6 +377,7 @@ We have shown that a single transformer block, applied recursively 28 times with
 | 60K | 49.74 | 28% | 61.0% | 2.0 | 7746s | T at minimum |
 | 65K | 50.40 | 38% | 61.0% | 2.0 | 8356s | T10 plateau |
 | 70K | 48.94 | 37% | 59.0% | 2.0 | 8968s | T10 dips, loss drops |
+| 75K | 49.13 | 42% | 60.9% | 2.0 | 9547s | T10 bounces back |
 
 **HellaSwag at 50K: FRR 28.0% vs Teacher 31.3% = 89.4% retention. WikiText-2 PPL: FRR 1322.2 vs Teacher 670.7.**
 

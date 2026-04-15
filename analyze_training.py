@@ -65,6 +65,7 @@ def get_1_7b_real_text() -> Experiment:
         (60000, 49.74, 28.0, 61.0, 2.0, 7746),
         (65000, 50.40, 38.0, 61.0, 2.0, 8356),
         (70000, 48.94, 37.0, 59.0, 2.0, 8968),
+        (75000, 49.13, 42.0, 60.9, 2.0, 9547),
     ]
     for step, loss, t1, t10, temp, elapsed in data:
         exp.points.append(TrainingPoint(step, loss, t1, t10, temp, elapsed))
