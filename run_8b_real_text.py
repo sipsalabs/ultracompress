@@ -176,7 +176,8 @@ def teacher_layer_forward(
 
 
 # ── Streaming weight loading ─────────────────────────────────────────
-def load_layer_weights(layer_idx: int, target_device: str) -> dict:
+def load_layer_weights_from_disk(layer_idx: int, target_device: str) -> dict:
+    """Load layer weights from safetensors on disk (slow, used for initial preload)."""
     prefix = f"model.layers.{layer_idx}."
     suffixes = [
         "input_layernorm.weight", "post_attention_layernorm.weight",
@@ -199,6 +200,41 @@ def load_layer_weights(layer_idx: int, target_device: str) -> dict:
             for full_name, suffix in keys:
                 weights[suffix] = f.get_tensor(full_name).float()
     return weights
+
+
+# Pre-loaded layer cache (CPU RAM) — populated once, used every step
+_CPU_LAYER_CACHE: list[dict[str, torch.Tensor]] = []
+
+
+def preload_all_layers_to_cpu():
+    """Load all 36 teacher layers into CPU RAM for fast GPU transfer."""
+    global _CPU_LAYER_CACHE
+    print(f"\nPre-loading all {N_LAYERS} teacher layers to CPU RAM...")
+    t0 = time.time()
+    _CPU_LAYER_CACHE = []
+    for i in range(N_LAYERS):
+        layer_w = load_layer_weights_from_disk(i, "cpu")
+        # Pin memory for faster CPU->GPU transfer
+        pinned = {}
+        for k, v in layer_w.items():
+            pinned[k] = v.pin_memory()
+        _CPU_LAYER_CACHE.append(pinned)
+        if (i + 1) % 12 == 0 or i == N_LAYERS - 1:
+            ram_gb = sum(
+                sum(v.numel() * v.element_size() for v in d.values())
+                for d in _CPU_LAYER_CACHE
+            ) / 1e9
+            print(f"  Loaded {i + 1}/{N_LAYERS} layers ({ram_gb:.1f} GB CPU RAM)")
+    elapsed = time.time() - t0
+    print(f"  All layers pre-loaded in {elapsed:.1f}s")
+
+
+def load_layer_weights(layer_idx: int, target_device: str) -> dict:
+    """Get layer weights on GPU — from CPU cache (fast) or disk (fallback)."""
+    if _CPU_LAYER_CACHE:
+        return {k: v.to(target_device, non_blocking=True)
+                for k, v in _CPU_LAYER_CACHE[layer_idx].items()}
+    return load_layer_weights_from_disk(layer_idx, target_device)
 
 
 def load_special_weights(target_device: str) -> dict:
@@ -350,6 +386,9 @@ print(f"  lm_head: {special_weights['lm_head'].shape} ({head_mb:.0f} MB)")
 print(f"  norm: {special_weights['norm'].shape}")
 if torch.cuda.is_available():
     print(f"  GPU used: {torch.cuda.memory_allocated(DEVICE) / 1e9:.2f} GB")
+
+# ── Pre-load all teacher layers to CPU RAM ────────────────────────────
+preload_all_layers_to_cpu()
 
 # ── Build FRR Student ─────────────────────────────────────────────────
 print("\nBuilding FRR student (8B scale)...")
