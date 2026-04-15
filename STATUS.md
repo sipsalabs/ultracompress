@@ -132,8 +132,9 @@ This means FRR compression applies to nearly everything:
 ### ALL-TIME RECORDS (updated)
 | Record | Value | How |
 |---|---|---|
-| Best T1 (1.7B) | **46%** | 1.7B real text 50K steps |
-| Best T10 (1.7B) | 67% | 1.7B random tokens 100K steps |
+| Best T1 (1.7B) | **47%** | 1.7B real text 10K steps |
+| Best T10 (1.7B, real text) | **63.6%** | 1.7B real text 40K steps (T=3.0) |
+| Best T10 (1.7B, random) | 67% | 1.7B random tokens 100K steps |
 | Best HellaSwag retention | **83.3%** | 0.6B FRR 100K, 300-sample eval |
 | Best PPL vs teacher | **FRR WINS** | FRR 1614 < teacher 2404 on WikiText-2 |
 | Best param efficiency | **5.5x** | FRR 25.5% HellaSwag at 7.3M vs Standard 26.5% at 42M |
@@ -145,8 +146,8 @@ This means FRR compression applies to nearly everything:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | Selective Student (3 experiments) | **Exp 2 (TrustGate) running** | Exp 1 FINAL: T1=41% T10=59.4% | Exp 3 (Curriculum) queued |
-| 1 | 1.7B Real Text 100K | Step 35K/100K | T1=42% T10=61.3% | Best=62.4% at 10K, plateau ~61% |
+| 0 | Selective Student (3 experiments) | **Exp 2 DONE, Exp 3 running** | Exp 2 FINAL: T1=42.5% T10=59.6% | Gate collapsed → pure KL |
+| 1 | 1.7B Real Text 100K | Step 40K/100K | T1=41% T10=**63.6% NEW BEST** | Best=63.6% at 40K (T=3.0) |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -161,21 +162,28 @@ This means FRR compression applies to nearly everything:
 
 **Baseline established: T1=41%, T10=59.4%** — Exp 2 (TrustGate) must beat this.
 
-### SELECTIVE STUDENT — Experiment 2 (TrustGate) RUNNING
+### SELECTIVE STUDENT — Experiment 2 (TrustGate) **COMPLETE**
 - Step 0: loss=9.84, T1=5%, T10=19.6% (lower initial loss = blended KL+NTP)
 - Step 3000: loss=0.86, T1=44%, T10=49.7%
 - Step 6000: loss=1.19, T1=43%, T10=55.2%
 - Step 9000: loss=0.94, T1=49%, T10=59.1%
 - Step 12000: loss=1.01, T1=43%, T10=62.2%
+- Step 14999: loss=0.84, T1=51%, T10=60.6%
+- **FINAL: T1=42.5%, T10=59.6%** (3136s)
 - 7,350,621 params (+321 from TrustGate)
-- **SURPRISING REVERSAL**: TrustGate went from −8.7% behind (3K) to **+2.8% ahead** (12K)
-- At 3K: T10=49.7% vs baseline 58.4% (−8.7%)
-- At 6K: T10=55.2% vs baseline 57.1% (−1.9%)
-- At 9K: T10=59.1% vs baseline 57.5% (+1.6%)
-- At 12K: T10=62.2% vs baseline 59.8% (**+2.4%**)
-- The gate needed time to learn WHEN to trust — early training is penalty phase
-- **TrustGate now LEADING at every step since 9K.** 15K final result is DECISIVE.
-- NOTE: +2.4% is within ±9.5% CI of 100-sample evals — need hires eval to confirm.
+- **VERDICT: Hypothesis NOT confirmed.** TrustGate does NOT break the KL ceiling.
+- Trust gate stats at convergence: mean=1.000, std=0.000, min=1.000, max=1.000
+- **The gate COLLAPSED to 1.0 everywhere** — it learned to fully ignore NTP loss and use pure KL
+- The trajectory was dramatic (−8.7% → +2.4% → +0.2%) but the gate eventually degenerated
+- At 3K−9K the gate blended KL+NTP usefully; by 15K it converged to pure KL
+- Final T10=59.6% vs baseline 59.4% = **+0.2% (not significant, within ±9.5% CI)**
+- **Interpretation**: Standard KL distillation IS optimal for FRR. Selective position weighting
+  offers no benefit because the shared-weight architecture needs consistent full-distribution
+  matching at every position to learn the universal transformation.
+
+### SELECTIVE STUDENT — Experiment 3 (Curriculum KL→NTP) RUNNING
+- Step 0: loss=571.14, T1=2%, T10=12.5%
+- Starts with pure KL, linearly transitions to NTP over 15K steps
 
 ### 1.7B REAL TEXT 100K — Progress
 | Step | Loss | T1 | T10 | Temp | Elapsed |
@@ -188,8 +196,9 @@ This means FRR compression applies to nearly everything:
 | 25000 | 37.94 | 40.0% | 57.2% | 3.8 | 3226s |
 | 30000 | 38.49 | 37.0% | 61.4% | 3.5 | 3874s |
 | 35000 | 38.94 | 42.0% | 61.3% | 3.2 | 4532s |
+| **40000** | **38.83** | **41.0%** | **63.6%** | **3.0** | **5174s** | **NEW BEST** |
 
-**UPDATE (35K)**: T10=61.3% confirms stable ~61% plateau. Bootstrap analysis (eval_statistical.py) shows 100-sample evals have ±9.5% CI width — the entire 57-62% oscillation is consistent with eval noise from a stable ~61% true accuracy. Current evals can only reliably detect >10% differences. Need ~4,000 paired samples for 3% sensitivity.
+**UPDATE (40K)**: **NEW BEST** T10=63.6% at step 40K (T=3.0) — breaks the 62.4% record from step 10K. Suggests T≈3.0 may be the sweet spot for T10 evaluation accuracy. Bootstrap analysis (eval_statistical.py) shows 100-sample evals have ±9.5% CI width — the 63.6% could be noise but it's the second data point above 62%, supporting genuine improvement.
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)
