@@ -126,6 +126,7 @@ python run_e2e_proof.py
 | **Qwen3-1.7B** | **Real text** | **40K** | **41%** | **63.6%** | **52x** | **29.4M** |
 | **Qwen3-1.7B** | **Real text** | **50K** | **49%** | **59.7%** | **52x** | **29.4M** |
 | **Qwen3-1.7B** | **Random** | **100K** | — | **67%** | **52x** | **29.4M** |
+| Qwen3-8B | Real text | 0 (in progress) | 2% | 13% | 46.8x | 167.8M |
 
 **Key findings:**
 - **89.4% HellaSwag retention:** FRR at 52x compression retains 89.4% of teacher's reasoning ability (28.0% vs 31.3%), proving quality scales with model size
