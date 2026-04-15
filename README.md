@@ -125,6 +125,7 @@ python run_e2e_proof.py
 | **Qwen3-1.7B** | **Real text** | **10K** | **47%** | **62.4%** | **52x** | **29.4M** |
 | **Qwen3-1.7B** | **Real text** | **40K** | **41%** | **63.6%** | **52x** | **29.4M** |
 | **Qwen3-1.7B** | **Real text** | **80K** | **47%** | **66.7%** | **52x** | **29.4M** |
+| Qwen3-1.7B | Real text | 90K | 38% | 65.6% | 52x | 29.4M |
 | **Qwen3-1.7B** | **Random** | **100K** | — | **67%** | **52x** | **29.4M** |
 | Qwen3-8B | Real text | 0 (in progress) | 2% | 13% | 46.8x | 167.8M |
 
@@ -144,7 +145,9 @@ For models at 100T+ scale, embeddings are ~0.003% of total params. FRR compressi
 |-------|----------------|-------------|
 | FRR 42x (FP16) | 4,768 GB | 42x |
 | FRR 42x + Q4 | 298 GB | 671x |
-| FRR 42x + Q2 + entropy | **29.8 GB** | **6,711x** |
+| FRR 42x + Q2 + entropy | 29.8 GB | 6,711x |
+| **FRR 52x + Q2 + entropy** | **24.1 GB** | **8,298x** |
+| FRR 100x + Q2 + entropy | 12.5 GB | 15,948x |
 
 *Projections based on proven per-component results. Full end-to-end at scale not yet validated.*
 
