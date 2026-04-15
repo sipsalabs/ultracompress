@@ -52,26 +52,37 @@ def load_teacher(scale: str, device: str = "cuda:0"):
 
 
 def load_frr_model(checkpoint_path: str, teacher_config: dict, device: str = "cuda:0"):
-    """Load FRR model from checkpoint."""
+    """Load FRR model from checkpoint, inferring ff_mult from weight shapes."""
     from ultracompress.moonshot import FractalModel
 
+    # Infer ff_mult from checkpoint weights
+    state = torch.load(checkpoint_path, map_location=device, weights_only=True)
+    if "model_state_dict" in state:
+        state = state["model_state_dict"]
+
+    hidden = teacher_config["hidden_size"]
+    ff_mult = 1  # conservative default
+    for key, tensor in state.items():
+        if "ffn" in key.lower() or "ff" in key.lower():
+            max_dim = max(tensor.shape)
+            if max_dim > hidden:
+                ff_mult = max_dim // hidden
+            break
+
     model = FractalModel(
-        hidden_dim=teacher_config["hidden_size"],
+        hidden_dim=hidden,
         n_heads=teacher_config["num_heads"],
         n_scales=4,
         iters_per_scale=7,
         vocab_size=teacher_config["vocab_size"],
+        ff_mult=ff_mult,
     ).to(device)
 
-    state = torch.load(checkpoint_path, map_location=device, weights_only=True)
-    if "model_state_dict" in state:
-        model.load_state_dict(state["model_state_dict"])
-    else:
-        model.load_state_dict(state)
+    model.load_state_dict(state)
     model.eval()
 
     n_params = sum(p.numel() for p in model.parameters())
-    print(f"  FRR loaded: {n_params:,} params from {checkpoint_path}")
+    print(f"  FRR loaded: {n_params:,} params from {checkpoint_path} (ff_mult={ff_mult})")
     return model
 
 
