@@ -140,11 +140,61 @@ This means FRR compression applies to nearly everything:
 | Best compression ratio | 959x | E2E pipeline (FRR + Q2 + entropy), -1.5% T10 |
 | Most self-growth | 16→176 planes | 10 autonomous growth events in 30K steps |
 
+## Day 4: Active Training (2026-04-15)
+
+### CURRENTLY RUNNING
+| GPU | Experiment | Status | Latest | Notes |
+|-----|-----------|--------|--------|-------|
+| 0 | Selective Student (3 experiments) | Exp 1 at ~14K/15K | T1=53% T10=59.8% at 12K | Exp 2 (TrustGate) + 3 (Curriculum) queued |
+| 1 | 1.7B Real Text 100K | Step 10K/100K | T1=47% T10=62.4% | Checkpoint saved, new best |
+
+### SELECTIVE STUDENT — Experiment 1 Progress (0.6B, 15K steps)
+| Step | Loss | T1 | T10 | Elapsed |
+|------|------|-----|-----|---------|
+| 0 | 606.58 | 4.0% | 18.7% | 11s |
+| 3000 | 56.33 | 47.0% | 58.4% | 420s |
+| 6000 | 54.26 | 42.0% | 57.1% | 918s |
+| 9000 | 69.40 | 39.0% | 57.5% | 1360s |
+| 12000 | 58.13 | **53.0%** | **59.8%** | 1919s |
+
+**Observation:** T1 spiking late (53% at 12K vs 39% at 9K). Late-stage recovery pattern — cosine schedule warmth + distribution convergence.
+
+### 1.7B REAL TEXT 100K — Progress
+| Step | Loss | T1 | T10 | Elapsed |
+|------|------|-----|-----|---------|
+| 0 | 561.92 | 5.0% | 21.4% | 12s |
+| 5000 | 41.33 | 32.0% | 61.4% | 644s |
+| 10000 | 37.56 | **47.0%** | **62.4%** | 1276s |
+
+**Observation:** Already matching T1 record (46%) at step 10K! First checkpoint saved. T10 growing steadily. On track to beat 67% T10 record.
+
+### NEW TOOLS BUILT (CPU prep while GPUs busy)
+- **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)
+  - Works with both 0.6B and 1.7B teacher checkpoints
+  - `--low-memory` mode, `--device` selection, saves JSON results
+- **run_8b_real_text.py** — 8B teacher distillation script (ready to launch)
+  - Streaming teacher inference (one layer at a time, ~9GB peak VRAM)
+  - Real text from FineWeb-Edu, checkpoints, HellaSwag eval
+  - 50K steps default, configurable device for when GPU frees up
+- **run_stable_wave_test.py** — Wave engine stability fix (committed, waiting for GPU)
+
+### ALL-TIME RECORDS (updated)
+| Record | Value | How |
+|---|---|---|
+| Best T1 (1.7B) | **47%** ← TIED | 1.7B real text 10K steps (**only 10K!**, prev was 46% at 50K) |
+| Best T10 (1.7B) | 67% | 1.7B random tokens 100K steps |
+| Best HellaSwag retention | **83.3%** | 0.6B FRR 100K, 300-sample eval |
+| Best PPL vs teacher | **FRR WINS** | FRR 1614 < teacher 2404 on WikiText-2 |
+| Best param efficiency | **5.5x** | FRR 25.5% HellaSwag at 7.3M vs Standard 26.5% at 42M |
+| Best compression ratio | 959x | E2E pipeline (FRR + Q2 + entropy), -1.5% T10 |
+| Most self-growth | 16→176 planes | 10 autonomous growth events in 30K steps |
+
 ### WHAT'S NEXT (priority order)
-1. **Real text distillation at 1.7B scale, 100K steps** — should push to 75%+ real T10
-2. **HellaSwag on 100K real-text FRR** — prove 90%+ real-world retention
-3. **Scale to 8B teacher** — bigger models compress better
-4. **Fix wave engine stability** — the concept works, needs architectural fixes
-5. File patent Monday ($80)
-6. Publish arxiv paper
-7. Push to GitHub + Show HN
+1. ~~**Real text distillation at 1.7B scale, 100K steps**~~ **RUNNING** ← GPU 1
+2. **HellaSwag on 100K real-text FRR** — auto-evaluates at step 50K and 100K
+3. **Selective student results** — Exp 1 finishing, Exps 2+3 auto-queue ← GPU 0
+4. **Scale to 8B teacher** — script ready (`run_8b_real_text.py`), needs free GPU
+5. **Fix wave engine stability** — script ready (`run_stable_wave_test.py`), needs free GPU
+6. File patent ($80)
+7. Publish arxiv paper
+8. Push to GitHub + Show HN
