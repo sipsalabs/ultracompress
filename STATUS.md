@@ -147,7 +147,7 @@ This means FRR compression applies to nearly everything:
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
 | 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 0/50K** | T1=2.0% T10=13.0% loss=535.0 | **5.9x faster: 66s vs 390s per eval step** |
-| 1 | 1.7B Real Text 100K | Step 75K/100K | T1=42% T10=60.9% | T10 plateau ~60-61% at T=2.0 |
+| 1 | 1.7B Real Text 100K | Step 80K/100K | **T1=47% T10=66.7% NEW BEST** | Broke through 60-61% plateau! |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -213,6 +213,7 @@ This means FRR compression applies to nearly everything:
 | 65000 | 50.40 | 38.0% | 61.0% | 2.0 | 8356s | T10 stable plateau |
 | 70000 | 48.94 | 37.0% | 59.0% | 2.0 | 8968s | T10 dips, loss drops |
 | 75000 | 49.13 | 42.0% | 60.9% | 2.0 | 9547s | T10 bounces back |
+| **80000** | **49.10** | **47.0%** | **66.7%** | **2.0** | **10123s** | **NEW BEST T10!** |
 
 **50K HellaSwag + WikiText-2 Evaluation:**
 | Model | HellaSwag | WikiText-2 PPL |
