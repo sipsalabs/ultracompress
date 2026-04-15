@@ -81,8 +81,12 @@ curves_t10 = {
         'style': '--',
     },
     '1.7B Real Text': {
-        'steps': [0, 5_000, 10_000, 15_000, 20_000],
-        't10':   [21, 61.4,  62.4,   61.0,   60.3],
+        'steps': [0, 5_000, 10_000, 15_000, 20_000, 25_000, 30_000, 35_000,
+                  40_000, 45_000, 50_000, 55_000, 60_000, 65_000, 70_000,
+                  75_000, 80_000, 85_000, 90_000],
+        't10':   [21.4, 61.4, 62.4, 61.0, 60.3, 57.2, 61.4, 61.3,
+                  63.6, 61.8, 59.7, 62.4, 61.0, 61.0, 59.0,
+                  60.9, 66.7, 63.4, 65.6],
         'color': COLORS['1.7b_real'],
         'style': '-',
         'marker': 'o',
@@ -130,12 +134,21 @@ def fig1_training_curves():
             label=name,
         )
 
-    # Annotate the T10 peak and decline for 1.7B real text
+    # Annotate the 80K breakthrough for 1.7B real text
     ax.annotate(
-        '62.4% peak\n(10K steps)',
-        xy=(10, 62.4), xytext=(25, 58),
+        '66.7% best\n(80K steps)',
+        xy=(80, 66.7), xytext=(60, 70),
         fontsize=9, ha='center',
         arrowprops=dict(arrowstyle='->', color='gray', lw=1.2),
+    )
+
+    # Show the plateau region
+    ax.axhspan(59, 63, alpha=0.08, color='orange', label='_nolegend_')
+    ax.annotate(
+        '~61% plateau\n(25K-75K)',
+        xy=(50, 61), xytext=(35, 55),
+        fontsize=8, ha='center', color='gray',
+        arrowprops=dict(arrowstyle='->', color='lightgray', lw=1),
     )
 
     ax.set_xlabel('Training Steps (×1000)')
@@ -300,10 +313,18 @@ def fig5_temperature():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.5))
 
     # 1.7B real text data: step, T10, temperature
-    steps = [0, 5000, 10000, 15000, 20000]
-    t10 = [21.4, 61.4, 62.4, 61.0, 60.3]
-    temps = [5.0, 4.8, 4.5, 4.2, 4.0]
-    loss = [561.9, 41.3, 37.6, 37.4, 37.2]
+    steps = [0, 5000, 10000, 15000, 20000, 25000, 30000, 35000,
+             40000, 45000, 50000, 55000, 60000, 65000, 70000,
+             75000, 80000, 85000, 90000]
+    t10 = [21.4, 61.4, 62.4, 61.0, 60.3, 57.2, 61.4, 61.3,
+           63.6, 61.8, 59.7, 62.4, 61.0, 61.0, 59.0,
+           60.9, 66.7, 63.4, 65.6]
+    temps = [5.0, 4.8, 4.5, 4.2, 4.0, 3.8, 3.5, 3.2,
+             3.0, 2.8, 2.5, 2.2, 2.0, 2.0, 2.0,
+             2.0, 2.0, 2.0, 2.0]
+    loss = [561.9, 41.3, 37.6, 37.4, 37.2, 37.9, 38.5, 38.9,
+            38.8, 42.1, 44.4, 47.5, 49.7, 50.4, 48.9,
+            49.1, 49.1, 48.5, 48.8]
 
     # Left: T10 and temperature vs steps
     color_t10 = COLORS['1.7b_real']
@@ -322,22 +343,27 @@ def fig5_temperature():
     ax1.tick_params(axis='y', labelcolor=color_t10)
     ax1_twin.tick_params(axis='y', labelcolor=color_temp)
 
-    # Mark the peak
-    ax1.annotate('Peak: 62.4%', xy=(10, 62.4), xytext=(15, 65),
+    # Mark the 80K breakthrough
+    ax1.annotate('Best: 66.7%\n(80K)', xy=(80, 66.7), xytext=(65, 70),
                  fontsize=9, ha='center',
                  arrowprops=dict(arrowstyle='->', color='gray', lw=1))
+    # Mark T at minimum
+    ax1.axvline(x=60, color='gray', linestyle=':', alpha=0.4, lw=1)
+    ax1.annotate('T=2.0 min', xy=(60, 55), fontsize=7, color='gray', ha='center')
 
     # Add legend combining both axes
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax1_twin.get_legend_handles_labels()
     ax1.legend(lines1 + lines2, labels1 + labels2, loc='lower right', fontsize=9)
 
-    # Right: Loss vs T10 (showing misalignment)
+    # Right: Loss vs T10 (showing misalignment) — skip step 0 (outlier)
     ax2.scatter(loss[1:], t10[1:], c=[temps[i] for i in range(1, len(temps))],
-                cmap='RdYlBu', s=100, edgecolors='black', linewidths=0.5, zorder=5)
+                cmap='RdYlBu', s=80, edgecolors='black', linewidths=0.5, zorder=5)
+    # Only label every 4th point to avoid clutter
     for i in range(1, len(steps)):
-        ax2.annotate(f'{steps[i]//1000}K', xy=(loss[i], t10[i]),
-                     xytext=(5, 5), textcoords='offset points', fontsize=8)
+        if i % 4 == 0 or steps[i] == 80000:
+            ax2.annotate(f'{steps[i]//1000}K', xy=(loss[i], t10[i]),
+                         xytext=(5, 5), textcoords='offset points', fontsize=7)
 
     ax2.set_xlabel('Training Loss')
     ax2.set_ylabel('T10 Agreement (%)')
