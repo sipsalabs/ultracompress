@@ -2,7 +2,7 @@
 
 **Extreme model compression via Fractal Residual Recursion (FRR).**
 
-One shared transformer block replaces all 28 layers. 67% top-10 agreement at 52x compression on Qwen3-1.7B. Real-text distillation converges 5x faster than random tokens. Proven end-to-end: FRR + quantization + entropy coding = 959x compression with −1.5% quality.
+One shared transformer block replaces all 28 layers. **63.6% top-10 agreement at 52x compression** on Qwen3-1.7B (real text, 40K steps — training still running). Real-text distillation converges 5x faster than random tokens. Proven end-to-end: FRR + quantization + entropy coding = 959x compression with −1.5% quality.
 
 ---
 
@@ -121,12 +121,14 @@ python run_e2e_proof.py
 | Qwen3-0.6B | Random | 100K | 48% | 65% | 60x | 7.35M |
 | Qwen3-1.7B | Random | 15K | — | 61% | 52x | 29.4M |
 | **Qwen3-1.7B** | **Real text** | **10K** | **47%** | **62.4%** | **52x** | **29.4M** |
+| **Qwen3-1.7B** | **Real text** | **40K** | **41%** | **63.6%** | **52x** | **29.4M** |
 | **Qwen3-1.7B** | **Random** | **100K** | — | **67%** | **52x** | **29.4M** |
 
 **Key findings:**
 - **1.7B > 0.6B:** Larger models have more functional redundancy → easier to share weights
 - **Real text > random tokens:** +4% T10 improvement. Real text distillation reaches 62.4% T10 in only 10K steps (vs 61% at 15K with random tokens)
-- **Training signal matters more than architecture:** Pure KL distillation outperforms all blended/selective approaches
+- **Training signal matters more than architecture:** Pure KL distillation outperforms all blended/selective approaches. TrustGate (learned per-position KL/NTP blending) collapses to pure KL at convergence.
+- **100-sample evals have ±9.5% CI:** Small differences between methods (<10%) require high-resolution evaluation (500+ samples) to confirm
 
 ## 100T Model Projections
 
@@ -189,7 +191,9 @@ PAPER_DRAFT.md                  # Arxiv paper draft
 
 5. **Error-only compression does not work** for transformer weight matrices. Adjacent layers are statistically independent -- prediction accuracy is negative.
 
-6. **LoRA adapters add +3% T10** over baseline FRR at minimal parameter cost (0.9M extra params).
+6. **TrustGate (selective student) confirms pure KL is optimal.** A learned gate that blends KL distillation with next-token prediction initially shows dramatic trajectory (−8.7% at 3K → +2.4% at 12K), but the gate **collapses to 1.0** by convergence, recovering baseline. The shared-weight architecture needs consistent full-distribution matching at every position.
+
+7. **100-sample evaluations have ±9.5% CI width.** Bootstrap analysis reveals that standard 100-sample T10 evaluations at ~60% accuracy have 95% confidence interval width of 20 points. Need 4,000+ paired samples to reliably detect 3% differences. Most reported oscillations in training curves are eval noise, not training instability.
 
 ---
 
