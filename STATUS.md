@@ -158,7 +158,7 @@ Target: 90%+ T10. Paths:
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
 | 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 0/50K** | T1=2.0% T10=13.0% loss=535.0 | **5.9x faster: 66s vs 390s per eval step** |
-| 1 | 1.7B Real Text 100K | Step 90K/100K | **T1=38% T10=65.6%** (best=66.7% at 80K) | 95K + 100K final coming soon |
+| 1 | 1.7B Real Text 100K | Step 95K/100K | **T1=38% T10=64.6%** (best=66.7% at 80K) | 99999 final eval coming! |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -227,6 +227,7 @@ Target: 90%+ T10. Paths:
 | **80000** | **49.10** | **47.0%** | **66.7%** | **2.0** | **10123s** | **NEW BEST T10!** |
 | 85000 | 48.53 | 48.0% | 63.4% | 2.0 | 10702s | |
 | 90000 | 48.77 | 38.0% | 65.6% | 2.0 | 11277s | Higher basin confirmed |
+| 95000 | 49.52 | 38.0% | 64.6% | 2.0 | 11852s | Stable in new basin |
 
 **50K HellaSwag + WikiText-2 Evaluation:**
 | Model | HellaSwag | WikiText-2 PPL |
