@@ -183,7 +183,9 @@ This means FRR compression applies to nearly everything:
 
 ### SELECTIVE STUDENT — Experiment 3 (Curriculum KL→NTP) RUNNING
 - Step 0: loss=571.14, T1=2%, T10=12.5%
+- Step 3000: loss=76.10, T1=41%, T10=55.3% (vs baseline 58.4% = −3.1%)
 - Starts with pure KL, linearly transitions to NTP over 15K steps
+- Early results: behind baseline but not as severely as TrustGate was at 3K
 
 ### 1.7B REAL TEXT 100K — Progress
 | Step | Loss | T1 | T10 | Temp | Elapsed |
