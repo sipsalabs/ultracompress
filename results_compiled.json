@@ -3,26 +3,27 @@
   "date": "2026-04-15",
   "active_training": {
     "gpu0": {
-      "experiment": "8B Real Text 50K (streaming)",
+      "experiment": "8B Real Text 50K (RAM-preloaded streaming)",
       "status": "running",
       "step": "~0/50K",
       "teacher": "8B",
       "frr_params": 167813156,
       "compression": "46.8x",
-      "latest_t10": 13.4,
+      "latest_t10": 13.0,
       "latest_step": 0,
       "gpu_memory_gb": 12.66,
-      "first_step_time_s": 390
+      "first_step_time_s": 66,
+      "speedup_vs_disk": "5.9x"
     },
     "gpu1": {
       "experiment": "1.7B Real Text 100K",
       "status": "running",
-      "step": "~55K/100K",
+      "step": "~65K/100K",
       "teacher": "1.7B",
       "best_t10": 63.6,
       "best_t10_step": 40000,
       "latest_t10": 61.0,
-      "latest_step": 60000,
+      "latest_step": 65000,
       "best_t1": 49.0,
       "best_t1_step": 50000,
       "hellaswag_50k": {

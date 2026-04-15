@@ -368,6 +368,7 @@ We have shown that a single transformer block, applied recursively 28 times with
 | **50K** | **44.41** | **49%** | 59.7% | 2.5 | 6440s | **New best T1** |
 | 55K | 47.50 | 40% | 62.4% | 2.2 | 7142s | T10 rebounds |
 | 60K | 49.74 | 28% | 61.0% | 2.0 | 7746s | T at minimum |
+| 65K | 50.40 | 38% | 61.0% | 2.0 | 8356s | T10 plateau |
 
 **HellaSwag at 50K: FRR 28.0% vs Teacher 31.3% = 89.4% retention. WikiText-2 PPL: FRR 1322.2 vs Teacher 670.7.**
 

@@ -146,8 +146,8 @@ This means FRR compression applies to nearly everything:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | **8B Real Text 50K (streaming)** | **Step 0/50K** | T1=2.0% T10=13.4% loss=523.8 | **167.8M params (46.8x), 12.66 GB VRAM** |
-| 1 | 1.7B Real Text 100K | Step 60K/100K | T1=28% T10=61.0% | T at minimum 2.0, loss rising |
+| 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 0/50K** | T1=2.0% T10=13.0% loss=535.0 | **5.9x faster: 66s vs 390s per eval step** |
+| 1 | 1.7B Real Text 100K | Step 65K/100K | T1=38% T10=61.0% | T at minimum 2.0, stable plateau |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -210,6 +210,7 @@ This means FRR compression applies to nearly everything:
 | **50000** | **44.41** | **49.0%** | 59.7% | 2.5 | 6440s | **NEW BEST T1!** |
 | 55000 | 47.50 | 40.0% | 62.4% | 2.2 | 7142s | |
 | 60000 | 49.74 | 28.0% | 61.0% | 2.0 | 7746s | T at minimum |
+| 65000 | 50.40 | 38.0% | 61.0% | 2.0 | 8356s | T10 stable plateau |
 
 **50K HellaSwag + WikiText-2 Evaluation:**
 | Model | HellaSwag | WikiText-2 PPL |
@@ -232,9 +233,9 @@ This means FRR compression applies to nearly everything:
 
 | Step | Loss | T1 | T10 | Temp | Elapsed | Note |
 |------|------|-----|-----|------|---------|------|
-| 0 | 523.83 | 2.0% | 13.4% | 5.0 | 390s | First step (includes init+eval overhead) |
+| 0 | 535.04 | 2.0% | 13.0% | 5.0 | 66s | **5.9x faster with RAM preloading** (was 390s) |
 
-**Step 0 analysis:** Lower initial loss than 1.7B (523.8 vs 561.9) but lower initial T10 (13.4% vs 21.4%). 8B teacher has richer distribution — harder to match initially but more information to learn from. First step took 390s due to streaming overhead + 50-sample eval. Expect ~7-10s/step for non-eval steps.
+**Step 0 analysis:** 5.9x speedup from RAM preloading (66s vs 390s with disk streaming). Previously ~140h estimated, now ~20-30h. GPU utilization jumped from 16% to 90%. Per non-eval training step should be ~1-2s (vs ~7-10s before).
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)
