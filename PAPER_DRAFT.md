@@ -236,15 +236,15 @@ At 52x compression after 100K steps, the 1.7B FRR retains **90.4% of teacher Hel
 
 ### 4.7 Diagnostic Analysis (Best 1.7B Checkpoint, 500 Samples)
 
-Deep evaluation on the best 1.7B checkpoint (step 40K, T=3.0) with 500 samples reveals several insights:
+Deep evaluation on the best 1.7B checkpoint (step 80K, T=2.0, T10=66.7%) with 500 samples reveals several insights:
 
-**Per-position agreement.** T10 increases from 48.2% at early positions (0–9) to 66.9% at late positions (54–63), a 0.72x early/late ratio. This confirms FRR improves with context length as the shared block accumulates information through iterations.
+**Per-position agreement.** T10 increases from 49.9% at early positions (0–9) to 67.9% at late positions (54–63), a 0.73x early/late ratio. This confirms FRR improves with context length as the shared block accumulates information through iterations.
 
-**Top-K agreement spectrum.** Agreement rises steeply with K: T1=35.0%, T3=49.2%, T5=57.0%, T10=66.3%, T20=70.9%. The 70.9% at K=20 indicates FRR captures the bulk of the probability mass distribution, even when exact rank ordering differs.
+**Top-K agreement spectrum.** Agreement rises steeply with K: T1=39.0%, T3=51.0%, T5=58.2%, T10=67.5%, T20=71.7%. The 71.7% at K=20 indicates FRR captures the bulk of the probability mass distribution, even when exact rank ordering differs.
 
-**KL divergence vs temperature.** At T=1.0 (hard targets), KL=70.67; at T=3.0 (training temperature), KL=4.57; at T=10.0, KL=0.35. The dramatic drop from T=1 to T=3 confirms that FRR's distribution matching is strongest at the temperature scale used during training.
+**KL divergence vs temperature.** At T=1.0 (hard targets), KL=63.62; at T=3.0 (training temperature), KL=4.38; at T=10.0, KL=0.34. The dramatic drop from T=1 to T=3 confirms that FRR's distribution matching is strongest at the temperature scale used during training.
 
-**Entropy analysis.** Student entropy (6.41) is 1.16x higher than teacher (5.52), indicating slightly more uncertain predictions — consistent with the information-theoretic cost of 52x compression. When the teacher is confident (entropy < 2), T1 drops to 29.6%, suggesting FRR struggles most on tokens where the teacher has strong preferences.
+**Entropy analysis.** Student entropy (6.03) is 1.09x higher than teacher (5.52), indicating slightly more uncertain predictions — consistent with the information-theoretic cost of 52x compression. When the teacher is confident (entropy < 2), T1 drops to 36.3%, suggesting FRR struggles most on tokens where the teacher has strong preferences. Compared to the earlier 40K checkpoint (entropy ratio 1.16x), the 80K best checkpoint produces substantially tighter distributions, confirming continued training improves distributional alignment.
 
 ### 4.8 Inference Speed
 
