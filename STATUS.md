@@ -163,18 +163,23 @@ This means FRR compression applies to nearly everything:
 
 ### SELECTIVE STUDENT — Experiment 2 (TrustGate) RUNNING
 - Step 0: loss=9.84, T1=5%, T10=19.6% (lower initial loss = blended KL+NTP)
+- Step 3000: loss=0.86, T1=44%, T10=49.7% 
 - 7,350,621 params (+321 from TrustGate)
-- **Key question: Does selective_loss > standard KL at 15K steps?**
+- **Key finding: TrustGate HURTS T10 by −8.7% at 3K (49.7% vs baseline 58.4%)**
+- The trust gate learns to mix KL and NTP per position, but spending ANY capacity on NTP dilutes the KL signal
+- This suggests pure KL distillation is already optimal for maximizing teacher agreement
+- **Hypothesis DISPROVEN at current training**: learning when to trust does NOT break the barrier
 
 ### 1.7B REAL TEXT 100K — Progress
-| Step | Loss | T1 | T10 | Elapsed |
-|------|------|-----|-----|---------|
-| 0 | 561.92 | 5.0% | 21.4% | 12s |
-| 5000 | 41.33 | 32.0% | 61.4% | 644s |
-| 10000 | 37.56 | **47.0%** | **62.4%** | 1276s |
-| 15000 | 37.44 | 41.0% | 61.0% | 1928s |
+| Step | Loss | T1 | T10 | Temp | Elapsed |
+|------|------|-----|-----|------|---------|
+| 0 | 561.92 | 5.0% | 21.4% | 5.0 | 12s |
+| 5000 | 41.33 | 32.0% | 61.4% | 4.8 | 644s |
+| 10000 | 37.56 | **47.0%** | **62.4%** | 4.5 | 1276s |
+| 15000 | 37.44 | 41.0% | 61.0% | 4.2 | 1928s |
+| 20000 | 37.23 | 33.0% | 60.3% | 4.0 | 2582s |
 
-**Observation:** Best T10=62.4% at 10K. Step 15K shows eval variance (T1 41% vs 47%). Loss still decreasing. Model still learning, need to wait for 20K+ to see trend.
+**Observation:** Best T10=62.4% at 10K, now declining to 60.3% at 20K despite loss still decreasing. Temperature annealing (5.0→4.0) shifts KL focus from broad distribution to top tokens, which may explain the T10 regression. T1 variance is high (eval n=100, last-token only). Loss curve still healthy. The 1.7B random-token run also peaked later (67% at 100K), so recovery is possible. Best checkpoint saved at 10K.
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)
@@ -186,6 +191,10 @@ This means FRR compression applies to nearly everything:
   - 50K steps default, configurable device for when GPU frees up
 - **run_stable_wave_test.py** — Wave engine stability fix (committed, waiting for GPU)
 - **plot_results.py** — Training log parser + publication-quality visualization
+- **run_gpu_queue.py** — Automated sequential experiment execution
+  - Registry: wave, 8b, 8b-long, eval-1.7b-10k, eval-1.7b-best
+  - Auto git commit after each experiment completes
+  - Usage: `python run_gpu_queue.py --device cuda:0 --queue wave,8b`
 - **Qwen3-8B model downloaded** — 5 shards, ~16GB, ready for 8B experiments
 
 ### ALL-TIME RECORDS (updated)
