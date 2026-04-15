@@ -102,15 +102,18 @@ def load_teacher(teacher_name: str, device: str):
 
 def load_student(checkpoint_path: str, cfg: dict, embed_w, norm_w, lm_head_w, device: str):
     """Load FRR student from checkpoint."""
+    state = torch.load(checkpoint_path, map_location=device, weights_only=True)
+    per_layer_mod = "layer_gamma" in state
     model = FractalModel(
         cfg['hidden'], cfg['n_heads'], 4, 7, cfg['vocab_size'], cfg['ff_mult'],
         embed_weight=embed_w, lm_head_weight=lm_head_w, norm_weight=norm_w,
+        per_layer_mod=per_layer_mod,
     ).to(device)
-    state = torch.load(checkpoint_path, map_location=device, weights_only=True)
     model.load_state_dict(state)
     model.eval()
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Student: {trainable:,} trainable params")
+    mod_type = "per-layer" if per_layer_mod else "per-scale"
+    print(f"Student: {trainable:,} trainable params ({mod_type} modulation)")
     return model
 
 
