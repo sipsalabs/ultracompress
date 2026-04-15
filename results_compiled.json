@@ -1,0 +1,420 @@
+{
+  "compiled_at": "2026-04-15T13:44:32.252785",
+  "project_root": "C:\\Users\\scamd\\ultracompress",
+  "checkpoints": [
+    {
+      "path": "checkpoints_1.7b_real_text\\frr_1.7b_best.pt",
+      "directory": "checkpoints_1.7b_real_text",
+      "filename": "frr_1.7b_best.pt",
+      "size_mb": 2486.1,
+      "step": "best"
+    },
+    {
+      "path": "checkpoints_1.7b_real_text\\frr_1.7b_step10000.pt",
+      "directory": "checkpoints_1.7b_real_text",
+      "filename": "frr_1.7b_step10000.pt",
+      "size_mb": 2486.1,
+      "step": 10000
+    },
+    {
+      "path": "checkpoints_1.7b_real_text\\frr_1.7b_step20000.pt",
+      "directory": "checkpoints_1.7b_real_text",
+      "filename": "frr_1.7b_step20000.pt",
+      "size_mb": 2486.1,
+      "step": 20000
+    },
+    {
+      "path": "checkpoints_1.7b_real_text\\frr_1.7b_step30000.pt",
+      "directory": "checkpoints_1.7b_real_text",
+      "filename": "frr_1.7b_step30000.pt",
+      "size_mb": 2486.1,
+      "step": 30000
+    }
+  ],
+  "training_logs": [
+    {
+      "experiment": "1.7b_real_text_100k",
+      "log_file": "1.7b_real_text_100k_output.log",
+      "n_entries": 7,
+      "best_t10": 62.4,
+      "best_t1": 47.0,
+      "entries": [
+        {
+          "step": 0,
+          "total_steps": 100000,
+          "loss": 561.9219,
+          "t1": 5.0,
+          "t10": 21.4
+        },
+        {
+          "step": 5000,
+          "total_steps": 100000,
+          "loss": 41.3256,
+          "t1": 32.0,
+          "t10": 61.4
+        },
+        {
+          "step": 10000,
+          "total_steps": 100000,
+          "loss": 37.5616,
+          "t1": 47.0,
+          "t10": 62.4
+        },
+        {
+          "step": 15000,
+          "total_steps": 100000,
+          "loss": 37.4366,
+          "t1": 41.0,
+          "t10": 61.0
+        },
+        {
+          "step": 20000,
+          "total_steps": 100000,
+          "loss": 37.2344,
+          "t1": 33.0,
+          "t10": 60.3
+        },
+        {
+          "step": 25000,
+          "total_steps": 100000,
+          "loss": 37.9441,
+          "t1": 40.0,
+          "t10": 57.2
+        },
+        {
+          "step": 30000,
+          "total_steps": 100000,
+          "loss": 38.4923,
+          "t1": 37.0,
+          "t10": 61.4
+        }
+      ]
+    },
+    {
+      "experiment": "selective_student_test",
+      "log_file": "selective_student_test_output.log",
+      "n_entries": 11,
+      "best_t10": 59.8,
+      "best_t1": 53.0,
+      "entries": [
+        {
+          "step": 0,
+          "total_steps": 15000,
+          "loss": 606.5797,
+          "t1": 4.0,
+          "t10": 18.7
+        },
+        {
+          "step": 3000,
+          "total_steps": 15000,
+          "loss": 56.3334,
+          "t1": 47.0,
+          "t10": 58.4
+        },
+        {
+          "step": 6000,
+          "total_steps": 15000,
+          "loss": 54.2635,
+          "t1": 42.0,
+          "t10": 57.1
+        },
+        {
+          "step": 9000,
+          "total_steps": 15000,
+          "loss": 69.3983,
+          "t1": 39.0,
+          "t10": 57.5
+        },
+        {
+          "step": 12000,
+          "total_steps": 15000,
+          "loss": 58.1278,
+          "t1": 53.0,
+          "t10": 59.8
+        },
+        {
+          "step": 14999,
+          "total_steps": 15000,
+          "loss": 48.1599,
+          "t1": 42.0,
+          "t10": 58.9
+        },
+        {
+          "step": "final",
+          "t1": 41.0,
+          "t10": 59.4
+        },
+        {
+          "step": 0,
+          "total_steps": 15000,
+          "loss": 9.8434,
+          "t1": 5.0,
+          "t10": 19.6
+        },
+        {
+          "step": 3000,
+          "total_steps": 15000,
+          "loss": 0.8617,
+          "t1": 44.0,
+          "t10": 49.7
+        },
+        {
+          "step": 6000,
+          "total_steps": 15000,
+          "loss": 1.1874,
+          "t1": 43.0,
+          "t10": 55.2
+        },
+        {
+          "step": 9000,
+          "total_steps": 15000,
+          "loss": 0.9434,
+          "t1": 49.0,
+          "t10": 59.1
+        }
+      ]
+    }
+  ],
+  "known_results": {
+    "scaling_experiments": [
+      {
+        "teacher": "Qwen3-0.6B",
+        "data": "random",
+        "steps": 15000,
+        "t1": 44,
+        "t10": 56,
+        "compression": "60x",
+        "frr_params": "7.35M"
+      },
+      {
+        "teacher": "Qwen3-0.6B",
+        "data": "random",
+        "steps": 50000,
+        "t10": 63,
+        "compression": "60x",
+        "frr_params": "7.35M"
+      },
+      {
+        "teacher": "Qwen3-0.6B",
+        "data": "random",
+        "steps": 100000,
+        "t1": 48,
+        "t10": 65,
+        "compression": "60x",
+        "frr_params": "7.35M"
+      },
+      {
+        "teacher": "Qwen3-0.6B",
+        "data": "real_text",
+        "steps": 15000,
+        "t10": 60,
+        "compression": "60x",
+        "frr_params": "7.35M"
+      },
+      {
+        "teacher": "Qwen3-1.7B",
+        "data": "random",
+        "steps": 15000,
+        "t10": 61,
+        "compression": "52x",
+        "frr_params": "29.4M"
+      },
+      {
+        "teacher": "Qwen3-1.7B",
+        "data": "random",
+        "steps": 100000,
+        "t10": 67,
+        "compression": "52x",
+        "frr_params": "29.4M"
+      },
+      {
+        "teacher": "Qwen3-1.7B",
+        "data": "real_text",
+        "steps": 10000,
+        "t1": 47,
+        "t10": 62.4,
+        "compression": "52x",
+        "frr_params": "29.4M",
+        "note": "best real-text result, 5x faster than random"
+      }
+    ],
+    "e2e_compression": [
+      {
+        "pipeline": "FRR only (FP32)",
+        "t1": 36,
+        "t10": 55,
+        "compression": "60x",
+        "size_mb": 29
+      },
+      {
+        "pipeline": "FRR + Q8",
+        "t1": 36,
+        "t10": 55,
+        "compression": "240x",
+        "size_mb": 12,
+        "quality_drop": "-0.2%"
+      },
+      {
+        "pipeline": "FRR + Q4",
+        "t1": 32,
+        "t10": 56,
+        "compression": "479x",
+        "size_mb": 7,
+        "quality_drop": "+0.8%"
+      },
+      {
+        "pipeline": "FRR + Q2 + entropy",
+        "t1": 35,
+        "t10": 53,
+        "compression": "959x",
+        "size_mb": 1.8,
+        "quality_drop": "-1.5%"
+      }
+    ],
+    "benchmarks": {
+      "teacher_0.6b": {
+        "wikitext2_ppl": 1202.8,
+        "hellaswag": 29.0
+      },
+      "frr_100k_60x": {
+        "wikitext2_ppl": 1521.1,
+        "hellaswag": 26.5,
+        "hellaswag_retention": 91.4
+      },
+      "frr_100k_300sample": {
+        "hellaswag": 25.0,
+        "hellaswag_retention": 83.3,
+        "note": "300-sample eval, more reliable"
+      }
+    },
+    "inference_speed": {
+      "device": "RTX 5090",
+      "results": [
+        {
+          "seq_len": 32,
+          "teacher_tps": 613,
+          "frr_tps": 2073,
+          "speedup": 3.38
+        },
+        {
+          "seq_len": 128,
+          "teacher_tps": 2624,
+          "frr_tps": 8041,
+          "speedup": 3.06
+        },
+        {
+          "seq_len": 256,
+          "teacher_tps": 5223,
+          "frr_tps": 16403,
+          "speedup": 3.14
+        }
+      ]
+    },
+    "ablation": {
+      "per_layer_modulation": "+21% T10 (41% \u2192 62%)",
+      "real_text_vs_random": "+4% T10 at 15K steps",
+      "hidden_state_supervision": "-6% T10 (harmful for FRR)",
+      "temperature_annealing": "oscillation \u00b13-5% at 1.7B, partially noise",
+      "selective_student_trustgate": "-8.7% at 3K, -1.9% at 6K (harmful)",
+      "dendritic_neurons": "-6% T10",
+      "multi_block_3": "-5% T10, no benefit over single block",
+      "lora_adapters": "+3% T10"
+    },
+    "all_approaches": [
+      {
+        "name": "FRR (1 shared block)",
+        "t1": 44,
+        "t10": 62,
+        "compression": "42x"
+      },
+      {
+        "name": "FRR + Q2 E2E",
+        "t1": 35,
+        "t10": 53,
+        "compression": "959x"
+      },
+      {
+        "name": "HWI (holographic)",
+        "t1": 35,
+        "t10": 57,
+        "compression": "76x"
+      },
+      {
+        "name": "Swarm (16 experts)",
+        "t1": 32,
+        "t10": 52
+      },
+      {
+        "name": "Program synthesis",
+        "t1": 38,
+        "t10": 58
+      },
+      {
+        "name": "Genome + hidden sup",
+        "t1": 44,
+        "t10": 63,
+        "compression": "37x"
+      },
+      {
+        "name": "FRR from scratch",
+        "accuracy": 80.7
+      },
+      {
+        "name": "BitNet ternary",
+        "t1": 36,
+        "t10": 57,
+        "compression": "6x"
+      },
+      {
+        "name": "PHM (hypercomplex)",
+        "t1": 30,
+        "t10": 50,
+        "compression": "168x"
+      },
+      {
+        "name": "Ultimate pipeline",
+        "cosine_sim": 0.994,
+        "compression": "Q2"
+      }
+    ],
+    "records": {
+      "best_t1_1.7b": {
+        "value": 47,
+        "how": "1.7B real text 10K steps"
+      },
+      "best_t10_1.7b": {
+        "value": 67,
+        "how": "1.7B random tokens 100K steps"
+      },
+      "best_t10_0.6b": {
+        "value": 65,
+        "how": "0.6B random tokens 100K steps"
+      },
+      "best_hellaswag_retention": {
+        "value": 83.3,
+        "how": "0.6B FRR 100K, 300-sample"
+      },
+      "best_compression": {
+        "value": "959x",
+        "how": "FRR + Q2 + entropy"
+      },
+      "best_param_efficiency": {
+        "value": "5.5x",
+        "how": "FRR 25.5% HS at 7.3M vs Standard 26.5% at 42M"
+      }
+    }
+  },
+  "summary": {
+    "total_checkpoints": 4,
+    "total_logs": 2,
+    "best_t10_overall": 67,
+    "best_compression": "959x",
+    "teachers_tested": [
+      "Qwen3-0.6B",
+      "Qwen3-1.7B"
+    ],
+    "teachers_ready": [
+      "Qwen3-8B"
+    ]
+  }
+}

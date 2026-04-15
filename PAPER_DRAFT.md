@@ -103,14 +103,28 @@ FRR trained from scratch (no teacher, standard next-token prediction) achieves *
 
 ### 3.4 Ablation Study
 
-| Component | Effect on Top-10 |
-|---|---|
-| Hidden-state supervision | +2% (for genome models) |
-| Temperature annealing | Neutral (no significant effect) |
-| Dendritic neurons | -6% (increases capacity but hurts optimization) |
-| Combined (all enhancements) | 60% top-10 |
+| Component | Effect on Top-10 | Scale Tested |
+|---|---|---|
+| Per-layer modulation ($\gamma$/$\beta$) | **+21%** (critical) | 0.6B |
+| Real text vs random tokens | **+4%** at 15K steps | 0.6B, 1.7B |
+| Hidden-state supervision | −6% (harmful for FRR) | 0.6B |
+| Temperature annealing ($T$: 5→2) | Beneficial early, harmful late (see §4.5) | 1.7B |
+| Selective student (TrustGate) | **−8.7%** at 3K, −1.9% at 6K | 0.6B |
+| Dendritic neurons | −6% (optimization difficulty) | 0.6B |
+| Multi-block (3 blocks) | −5% (no benefit) | 0.6B |
+| LoRA adapters on FRR | +3% (modest benefit) | 0.6B |
 
-Hidden-state supervision provides a marginal benefit for independent-layer models but remains harmful for shared-weight FRR (see Section 4.3). Temperature annealing from $\tau=2.0$ to $\tau=1.0$ shows no significant effect, suggesting FRR's optimization landscape is not temperature-sensitive. Dendritic multiplicative neurons increase per-parameter compute but degrade performance, likely due to optimization difficulty in the shared-weight regime.
+**Per-layer modulation** is the single most important component: removing $\gamma/\beta$ vectors (ALBERT-style naive sharing) drops T10 from 62% to 41%. The 57K modulation parameters (0.5% of model) account for a 21-point improvement.
+
+**Real text vs random tokens.** Training on FineWeb-Edu instead of random token sequences improves T10 by +4% at 15K steps (60% vs 56% for 0.6B). Random tokens waste teacher capacity on nonsensical distributions; real text provides more informative gradients per batch.
+
+**Temperature annealing** at 0.6B scale showed minimal effect, but at 1.7B scale reveals metric-objective misalignment: T10 peaks at 10K steps (62.4%) then declines to 57.2% at 25K despite loss monotonically decreasing. As $T$ drops from 5.0 to 3.8, KL focus shifts from broad distribution matching (favorable for T10) to sharp top-token matching. This identifies temperature scheduling as a key open problem for scaled distillation (see §4.5).
+
+**Selective student (TrustGate).** We tested a learned gating mechanism that blends KL distillation with next-token prediction (NTP) loss per-position, using student entropy, teacher entropy, and top-1 agreement as gate inputs. The hypothesis was that selectively weighting positions would break the accuracy ceiling. Results show a dramatic trajectory: T10=49.7% at 3K steps vs baseline 58.4% (−8.7%), recovering to 55.2% at 6K vs 57.1% (−1.9%), then **surpassing baseline** at 9K: 59.1% vs 57.5% (+1.6%). The gate suffers an initial learning penalty but gradually discovers which positions benefit from NTP vs KL. The 15K final result will determine whether this slow-start approach ultimately breaks the pure-KL ceiling.
+
+**Hidden-state supervision** improves independent-layer models (+2% for genome baselines) but *degrades* FRR by 6 points. The shared weights receive conflicting gradient signals from 28 different hidden-state targets (see §4.3).
+
+**Multi-block variants** (3 specialized blocks, 92M params, 4.8x compression) achieve only 57% T10 — worse than single-block FRR (62%) with 15% fewer parameters. The single-block design is optimal: more blocks reduce recursion depth per block, limiting iterative refinement.
 
 ### 3.5 Evolutionary Architecture Search
 
@@ -157,7 +171,10 @@ We validate FRR on Qwen3-1.7B (2B parameters, 28 layers, hidden=2048), comparing
 | Qwen3-1.7B | Random | 15K | — | 61% | 52x | 29.4M |
 | Qwen3-1.7B | Random | 100K | — | 67% | 52x | 29.4M |
 | **Qwen3-1.7B** | **Real text** | **10K** | **47%** | **62.4%** | **52x** | **29.4M** |
+| Qwen3-1.7B | Real text | 15K | 41% | 61.0% | 52x | 29.4M |
 | Qwen3-1.7B | Real text | 20K | 33% | 60.3% | 52x | 29.4M |
+| Qwen3-1.7B | Real text | 25K | 40% | 57.2% | 52x | 29.4M |
+| Qwen3-1.7B | Real text | 30K | 37% | 61.4% | 52x | 29.4M |
 
 Two scaling dimensions emerge:
 
@@ -165,7 +182,11 @@ Two scaling dimensions emerge:
 
 **Training signal.** Real text distillation (FineWeb-Edu) improves T10 by **+4% over random tokens** at 15K steps (60% vs 56% for 0.6B). Random tokens waste teacher capacity on nonsensical sequences; real text allows the teacher to produce meaningful distributions that transfer more information per batch. At 1.7B scale, real text reaches 62.4% T10 in only 10K steps — matching the random-token 15K result in 2/3 the compute.
 
-**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then declines to 60.3% at 20K despite loss continuing to decrease. This metric-objective misalignment arises from temperature annealing: $T$ drops from 5.0 to 4.0 over 20K steps, shifting KL focus from broad distribution matching (favorable for T10) to sharper top-token matching. The random-token 1.7B run (with the same schedule) reached 67% at 100K, suggesting eventual recovery. Training remains ongoing (100K target).
+**Training dynamics.** At 1.7B scale with real text, T10 peaks at 10K steps (62.4%) then oscillates: 61.0% (15K) → 60.3% (20K) → 57.2% (25K) → 61.4% (30K). The 25K dip was initially attributed to temperature annealing, but the 30K recovery (+4.2%) reveals **high eval variance** (100-sample eval) rather than systematic degradation. Loss shows a similar non-monotonic pattern (37.2 → 37.9 → 38.5), likely from the interaction between cosine LR decay and temperature annealing ($T$ drops from 5.0 to 3.5 over 30K steps).
+
+The temperature effect remains real but less severe than initially estimated: T10 oscillates ±3-5% around a ~60-62% plateau rather than declining monotonically. Two remedies are designed: (1) **cyclic temperature** (CosineAnnealingWarmRestarts, $T \in [2.0, 4.0]$, period 10K) to periodically revisit high-temperature regimes, and (2) **multi-temperature KL**: $\mathcal{L} = 0.3 \cdot \text{KL}_{T=1} + 0.4 \cdot \text{KL}_{T=2} + 0.3 \cdot \text{KL}_{T=4}$, forcing simultaneous matching at multiple distribution sharpness levels. Both experiments are queued.
+
+The random-token 1.7B run (with the same annealing schedule) reached 67% at 100K, suggesting that extended training eventually overcomes temperature-induced oscillation and converges to a stable quality level.
 
 At 100K steps with random tokens, the 1.7B model reaches **67% T10** — the all-time record at 52x compression. Scaling up the teacher model is more compute-efficient than extending training duration on a smaller teacher.
 

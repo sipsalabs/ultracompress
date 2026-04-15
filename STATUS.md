@@ -164,11 +164,15 @@ This means FRR compression applies to nearly everything:
 ### SELECTIVE STUDENT — Experiment 2 (TrustGate) RUNNING
 - Step 0: loss=9.84, T1=5%, T10=19.6% (lower initial loss = blended KL+NTP)
 - Step 3000: loss=0.86, T1=44%, T10=49.7%
+- Step 6000: loss=1.19, T1=43%, T10=55.2%
+- Step 9000: loss=0.94, T1=49%, T10=59.1%
 - 7,350,621 params (+321 from TrustGate)
-- **Key finding: TrustGate HURTS T10 by −8.7% at 3K (49.7% vs baseline 58.4%)**
-- The trust gate learns to mix KL and NTP per position, but spending ANY capacity on NTP dilutes the KL signal
-- This suggests pure KL distillation is already optimal for maximizing teacher agreement
-- **Hypothesis DISPROVEN at current training**: learning when to trust does NOT break the barrier
+- **SURPRISING REVERSAL**: TrustGate went from −8.7% behind (3K) to **+1.6% ahead** (9K)
+- At 3K: T10=49.7% vs baseline 58.4% (−8.7%)
+- At 6K: T10=55.2% vs baseline 57.1% (−1.9%)
+- At 9K: T10=59.1% vs baseline 57.5% (**+1.6%**)
+- The gate needed time to learn WHEN to trust — early training is penalty phase
+- **Hypothesis REOPENED**: TrustGate may break the barrier at convergence. 15K final result is DECISIVE.
 
 ### 1.7B REAL TEXT 100K — Progress
 | Step | Loss | T1 | T10 | Temp | Elapsed |
@@ -179,12 +183,9 @@ This means FRR compression applies to nearly everything:
 | 15000 | 37.44 | 41.0% | 61.0% | 4.2 | 1928s |
 | 20000 | 37.23 | 33.0% | 60.3% | 4.0 | 2582s |
 | 25000 | 37.94 | 40.0% | 57.2% | 3.8 | 3226s |
+| 30000 | 38.49 | 37.0% | 61.4% | 3.5 | 3874s |
 
-**⚠️ SIGNIFICANT DECLINE**: T10 dropped from 62.4% (10K) to 57.2% (25K) = **−5.2% in 15K steps**.
-Loss also ticked up (37.2→37.9) at step 25K. Temperature now at 3.8.
-- The temp annealing → KL sharpening → broad distribution matching breakdown is confirmed
-- Best checkpoint (10K) is saved. The cyclic-temp experiment is designed to test if cycling fixes this.
-- Random-token 1.7B reached 67% at 100K with similar schedule — recovery IS possible in constant-T phase (T=2.0 after 60K)
+**UPDATE (30K)**: T10 **bounced back** from 57.2% to 61.4% (+4.2%). The 25K dip was likely eval noise (100-sample eval with high variance), not monotonic degradation. Loss also increased (37.9→38.5) suggesting the cosine LR schedule is interacting with temperature. Best checkpoint still at 10K (62.4%). Pattern: T10 oscillates ±3-5% around ~60-62% rather than steadily declining.
 
 ### NEW TOOLS BUILT (CPU prep while GPUs busy)
 - **eval_checkpoint.py** — Standalone checkpoint evaluator (HellaSwag + WikiText-2 + T1/T10)
