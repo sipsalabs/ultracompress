@@ -82,13 +82,13 @@ class PerLayerLoRAFRR(nn.Module):
         self.iter_scale = nn.Parameter(torch.ones(n_scales, iters_per_scale))
 
         # Per-layer LoRA: [L, H, r] and [L, r, H]
-        # init: down ~ Kaiming small, up = 0 (so LoRA starts as zero transform)
+        # Standard LoRA init: down ~ Kaiming small, up = 0
+        # W_up=0 means forward output=0 but gradient for W_up = (x @ W_down).T @ d_out
+        # which is NONZERO since W_down is random. W_up learns freely.
         self.lora_down = nn.Parameter(
             torch.randn(self.total_layers, hidden_dim, lora_rank) / math.sqrt(hidden_dim)
         )
         self.lora_up = nn.Parameter(torch.zeros(self.total_layers, lora_rank, hidden_dim))
-        # Per-layer scalar scale (also starts at zero → total zero init)
-        self.lora_alpha = nn.Parameter(torch.zeros(self.total_layers))
 
         if embed_weight is not None:
             self.embed = nn.Embedding.from_pretrained(embed_weight, freeze=True)
@@ -114,12 +114,10 @@ class PerLayerLoRAFRR(nn.Module):
                 # Shared block
                 block_out = self.block(x, gamma, beta)
 
-                # Per-layer LoRA contribution (x @ down @ up * alpha)
+                # Per-layer LoRA contribution: x @ W_down @ W_up
                 Wd = self.lora_down[layer_idx]        # (H, r)
                 Wu = self.lora_up[layer_idx]          # (r, H)
-                a = self.lora_alpha[layer_idx]
-                lora_out = (x @ Wd) @ Wu              # (B, T, H)
-                lora_out = lora_out * a
+                lora_out = (x @ Wd) @ Wu              # (B, T, H), zero at init
 
                 # Combine: residual of (block + LoRA)
                 x = x + (block_out - x) * iter_s + lora_out
@@ -129,8 +127,7 @@ class PerLayerLoRAFRR(nn.Module):
         return self.lm_head(x)
 
     def n_lora_params(self):
-        return (self.lora_down.numel() + self.lora_up.numel()
-                + self.lora_alpha.numel())
+        return self.lora_down.numel() + self.lora_up.numel()
 
 
 # ── Teacher load ──────────────────────────────────────────────────────
@@ -279,7 +276,7 @@ print(f"{'='*70}")
 
 block_params = list(model.block.parameters())
 mod_params = [model.layer_gamma, model.layer_beta, model.iter_scale]
-lora_params = [model.lora_down, model.lora_up, model.lora_alpha]
+lora_params = [model.lora_down, model.lora_up]
 opt = torch.optim.AdamW([
     {'params': block_params, 'lr': LR_BLOCK, 'weight_decay': WD_BLOCK},
     {'params': mod_params, 'lr': LR_MOD, 'weight_decay': WD_MOD},
@@ -327,9 +324,14 @@ for step in range(TOTAL_STEPS):
         avg_loss = sum(loss_history[-500:]) / min(len(loss_history), 500)
 
         with torch.no_grad():
-            alpha_mean = model.lora_alpha.abs().mean().item()
-            alpha_max = model.lora_alpha.abs().max().item()
-            lora_up_norm = model.lora_up.norm(dim=(1,2)).mean().item()
+            up_norms = model.lora_up.norm(dim=(1, 2))  # (L,)
+            down_norms = model.lora_down.norm(dim=(1, 2))
+            up_norm_mean = up_norms.mean().item()
+            up_norm_max = up_norms.max().item()
+            # Effective LoRA impact: ||W_down @ W_up||_F approximates influence
+            eff = torch.einsum('lhr,lrk->lhk', model.lora_down, model.lora_up).norm(dim=(1,2))
+            eff_mean = eff.mean().item()
+            eff_max = eff.max().item()
 
         print(
             f"  Step {step:>6d}/{TOTAL_STEPS}: KL={avg_loss:.4f} "
@@ -340,8 +342,8 @@ for step in range(TOTAL_STEPS):
             f"best_last={best_t10_last*100:.1f}%"
         )
         print(
-            f"    LoRA: |α|mean={alpha_mean:.4f} |α|max={alpha_max:.4f} "
-            f"up_norm_mean={lora_up_norm:.4f}"
+            f"    LoRA: up_norm mean={up_norm_mean:.4f} max={up_norm_max:.4f}  "
+            f"eff_delta mean={eff_mean:.4f} max={eff_max:.4f}"
         )
 
     if step > 0 and step % CHECKPOINT_INTERVAL == 0:
