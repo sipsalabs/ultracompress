@@ -298,10 +298,52 @@ class ResonantFRR(nn.Module):
 
 # ── Load teacher ──────────────────────────────────────────────────────
 print("\nLoading Qwen3-1.7B teacher...")
-teacher = MiniTransformer.from_pretrained("Qwen/Qwen3-1.7B", device=DEVICE)
-cfg = teacher.config
-print(f"  Hidden: {cfg.hidden_size}, Heads: {cfg.num_heads}, "
-      f"HeadDim: {cfg.head_dim}, Vocab: {cfg.vocab_size}")
+wd = torch.load('qwen3_1.7b_cache.pt', weights_only=True)
+hf_to_gguf = {
+    'self_attn.q_proj.weight': 'attn_q.weight',
+    'self_attn.k_proj.weight': 'attn_k.weight',
+    'self_attn.v_proj.weight': 'attn_v.weight',
+    'self_attn.o_proj.weight': 'attn_output.weight',
+    'self_attn.q_norm.weight': 'attn_q_norm.weight',
+    'self_attn.k_norm.weight': 'attn_k_norm.weight',
+    'input_layernorm.weight': 'attn_norm.weight',
+    'post_attention_layernorm.weight': 'ffn_norm.weight',
+    'mlp.gate_proj.weight': 'ffn_gate.weight',
+    'mlp.up_proj.weight': 'ffn_up.weight',
+    'mlp.down_proj.weight': 'ffn_down.weight',
+}
+gd = {}
+gd['token_embd.weight'] = wd['model.embed_tokens.weight'].float()
+gd['output_norm.weight'] = wd.get('model.norm.weight', torch.ones(2048)).float()
+gd['output.weight'] = wd.get('lm_head.weight', gd['token_embd.weight']).float()
+for li in range(N_TEACHER_LAYERS):
+    for h, g in hf_to_gguf.items():
+        k = f'model.layers.{li}.{h}'
+        if k in wd:
+            gd[f'blk.{li}.{g}'] = wd[k].float()
+del wd
+
+hidden = gd['token_embd.weight'].shape[1]
+n_heads = 16
+head_dim = hidden // n_heads
+vocab_size = gd['token_embd.weight'].shape[0]
+print(f"  Hidden: {hidden}, Heads: {n_heads}, HeadDim: {head_dim}, Vocab: {vocab_size}")
+
+cfg = ModelConfig(
+    n_layers=N_TEACHER_LAYERS, n_heads=n_heads, n_kv_heads=8,
+    hidden_size=hidden, intermediate_size=hidden * 3,
+    vocab_size=vocab_size, head_dim=head_dim,
+)
+teacher = MiniTransformer(cfg, DEVICE)
+teacher.load_weights(gd)
+teacher.embed_weight = teacher.embed_weight.to(DEVICE)
+if teacher.lm_head is not None:
+    teacher.lm_head = teacher.lm_head.to(DEVICE)
+
+embed_w = gd['token_embd.weight'].to(DEVICE)
+norm_w = gd['output_norm.weight'].to(DEVICE)
+lm_head_w = gd['output.weight'].to(DEVICE)
+del gd
 
 # ── Load pre-tokenized data ──────────────────────────────────────────
 DATA_PATH = 'fineweb_edu_100M_tokens.pt'
@@ -325,17 +367,17 @@ def get_real_batch():
 # ── Build model ───────────────────────────────────────────────────────
 print(f"\nBuilding Resonant FRR (K={K_DIRECTIONS} directions, {MEMORY_DIM}D memory)...")
 model = ResonantFRR(
-    hidden_dim=cfg.hidden_size,
-    n_heads=cfg.num_heads,
+    hidden_dim=hidden,
+    n_heads=n_heads,
     n_scales=4,
     iters_per_scale=7,
-    vocab_size=cfg.vocab_size,
+    vocab_size=vocab_size,
     ff_mult=1,  # 1.7B uses ff_mult=1
     k_directions=K_DIRECTIONS,
     memory_dim=MEMORY_DIM,
-    embed_weight=teacher.embed.weight.data.clone(),
-    lm_head_weight=teacher.lm_head.weight.data.clone(),
-    norm_weight=teacher.norm.weight.data.clone(),
+    embed_weight=embed_w,
+    lm_head_weight=lm_head_w,
+    norm_weight=norm_w,
 ).to(DEVICE)
 
 # ── Load pre-trained block weights ────────────────────────────────────
@@ -356,26 +398,21 @@ print(f"  Loaded modulation: scale_gamma, scale_beta, iter_scale")
 # ── Verify baseline ──────────────────────────────────────────────────
 @torch.no_grad()
 def eval_vs_teacher(mdl, n: int = 100) -> tuple[float, float]:
+    """Eval matching multi-block metric: random samples, overlap fraction."""
     mdl.eval()
-    t1_hits = t10_hits = total = 0
+    t1_hits, t10_hits = 0, 0
     for _ in range(n):
-        tokens = get_real_batch()
-        tl = teacher.forward(tokens, max_layers=N_TEACHER_LAYERS)
-        sl = mdl(tokens)
-        teacher_top = tl[:, -1, :].topk(10).indices
-        student_rank = sl[:, -1, :].argsort(descending=True)
-        for b in range(tokens.shape[0]):
-            top1_t = teacher_top[b, 0]
-            top10_t = set(teacher_top[b].tolist())
-            top1_s = student_rank[b, 0]
-            top10_s = set(student_rank[b, :10].tolist())
-            if top1_s == top1_t:
-                t1_hits += 1
-            if len(top10_s & top10_t) > 0:
-                t10_hits += 1
-            total += 1
+        starts = torch.randint(0, all_tokens.numel() - SEQ_LEN, (1,))
+        tokens = all_tokens[starts[0]:starts[0] + SEQ_LEN].unsqueeze(0).long().to(DEVICE)
+        with torch.no_grad():
+            tl = teacher.forward(tokens, max_layers=N_TEACHER_LAYERS)
+            sl = mdl(tokens)
+        t_top = tl[0, -1].topk(10).indices
+        s_top = sl[0, -1].topk(10).indices
+        t1_hits += int(s_top[0] == t_top[0])
+        t10_hits += len(set(t_top.tolist()) & set(s_top.tolist())) / 10
     mdl.train()
-    return t1_hits / total, t10_hits / total
+    return t1_hits / n, t10_hits / n
 
 
 print("\nVerifying baseline (all novel mechanisms at zero)...")
@@ -385,8 +422,8 @@ print(f"  Baseline: T1={t1_base*100:.1f}%, T10={t10_base*100:.1f}%")
 novel_p = model.novel_params()
 fractal_p = model.fractal_params()
 teacher_layer_params = N_TEACHER_LAYERS * (
-    4 * cfg.hidden_size * cfg.hidden_size +
-    3 * cfg.hidden_size * cfg.hidden_size * 1  # ff_mult approx
+    4 * hidden * hidden +
+    3 * hidden * hidden * 1  # ff_mult approx
 )
 print(f"\n  Block: {sum(p.numel() for p in model.block.parameters()):,} params")
 print(f"  Novel mechanisms: {novel_p:,} params ({novel_p/fractal_p*100:.1f}% of total)")
