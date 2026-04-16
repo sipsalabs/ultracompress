@@ -2,8 +2,9 @@
 1.7B SPECTRAL ATTENTION STEERING (SAS) v2
 
 FIXES FROM v1 (which had QKmag explosion: 0.07 → 11.5 in 2500 steps):
-  1. BOUNDED DELTAS: Normalize Q/K deltas to match original magnitude,
-     then scale by learnable sigmoid-gated alpha (max 30% modification)
+  1. BOUNDED DELTAS: Sigmoid-gated per-layer alpha (max 30%) controls
+     delta contribution. No normalization (causes gradient dead zone with
+     zero-init up-projections due to 1/eps amplification + grad clipping).
   2. CKA-INFORMED ROUTING: Initialize route_logits biased toward distinct
      modes for different layer groups (from CKA eigenspectrum analysis)
   3. DELTA REGULARIZATION: Explicit L2 penalty on raw delta magnitude
@@ -77,10 +78,12 @@ class SpectralAttentionSteering(nn.Module):
     Spectral Attention Steering v2 — with bounded deltas.
 
     Changes from v1:
-    - Per-layer sigmoid-gated alpha bounds delta contribution
-    - Delta normalized to match Q/K magnitude (direction-only learning)
-    - CKA-informed routing initialization
+    - Per-layer sigmoid-gated alpha bounds delta contribution (max 30%)
+    - CKA-informed routing initialization (4 layer groups)
+    - Delta regularization in loss (L2 on raw deltas)
     - Returns raw delta norms for regularization loss
+    - No normalization: zero-init q_up with normalization creates gradient
+      dead zone (1/eps amplification → grad clipping kills signal)
     """
     def __init__(self, n_heads: int, head_dim: int,
                  n_modes: int = 4, rank: int = 8, n_layers: int = 28,
@@ -143,20 +146,13 @@ class SpectralAttentionSteering(nn.Module):
         # Regularization: L2 norm of raw deltas
         delta_reg = q_delta.pow(2).mean() + k_delta.pow(2).mean()
 
-        # ★ BOUNDED DELTA: normalize to Q/K scale, then apply sigmoid gate ★
-        # Step 1: Normalize delta direction to match Q/K per-token magnitude
-        q_ref_norm = q.detach().norm(dim=-1, keepdim=True).clamp(min=1e-8)
-        k_ref_norm = k.detach().norm(dim=-1, keepdim=True).clamp(min=1e-8)
-        q_delta_norm = q_delta.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-        k_delta_norm = k_delta.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-
-        q_delta_normalized = q_delta / q_delta_norm * q_ref_norm
-        k_delta_normalized = k_delta / k_delta_norm * k_ref_norm
-
-        # Step 2: Sigmoid-bounded per-layer scaling
+        # ★ BOUNDED DELTA: sigmoid-gated alpha controls contribution ★
+        # NOTE: Removed normalization from v2.0 — it creates a gradient dead zone
+        # when q_up is initialized at zero (amplification by 1/eps kills gradients
+        # via grad clipping). Alpha gating + delta_reg + weight_decay is sufficient.
         alpha = torch.sigmoid(self.delta_logit[layer_idx]) * self.max_delta_ratio
 
-        return q + alpha * q_delta_normalized, k + alpha * k_delta_normalized, delta_reg
+        return q + alpha * q_delta, k + alpha * k_delta, delta_reg
 
     def param_count(self) -> int:
         return sum(p.numel() for p in self.parameters())
