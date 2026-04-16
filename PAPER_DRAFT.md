@@ -117,6 +117,7 @@ FRR trained from scratch (no teacher, standard next-token prediction) achieves *
 | Temperature annealing ($T$: 5→2) | Beneficial early, harmful late (see §4.5) | 1.7B |
 | Selective student (TrustGate) | **+0.2%** final (gate collapses to pure KL) | 0.6B |
 | Curriculum (KL→NTP) | −2.9% final (−1.5% peak at 12K, degraded under full NTP) | 0.6B |
+| Per-layer modulation (28 γ/β) | **−2.1%** vs per-scale (7× more mod params, worse) | 1.7B |
 | Dendritic neurons | −6% (optimization difficulty) | 0.6B |
 | Multi-block (3 blocks) | −5% (no benefit) | 0.6B |
 | LoRA adapters on FRR | +3% (modest benefit) | 0.6B |
@@ -132,6 +133,8 @@ FRR trained from scratch (no teacher, standard next-token prediction) achieves *
 **Hidden-state supervision** improves independent-layer models (+2% for genome baselines) but *degrades* FRR by 6 points. The shared weights receive conflicting gradient signals from 28 different hidden-state targets (see §4.3).
 
 **Multi-block variants** (3 specialized blocks, 92M params, 4.8x compression) achieve only 57% T10 — worse than single-block FRR (62%) with 15% fewer parameters. The single-block design is optimal: more blocks reduce recursion depth per block, limiting iterative refinement.
+
+**Per-layer modulation.** Replacing per-scale modulation (4 shared γ/β groups, ~16K params) with per-layer modulation (28 individual γ/β pairs, ~114K params) yields a best T10 of 64.6% vs per-scale's 66.7%, HellaSwag retention of 86.2% vs 90.4%, and WikiText-2 PPL of 1498.9 vs 1271.7 — all worse despite 7× more modulation parameters. The per-scale grouping structure provides beneficial regularization: forcing iterations within a scale to share modulation prevents overfitting to individual layer targets and promotes the learning of a more robust universal transformation.
 
 ### 3.5 Evolutionary Architecture Search
 
@@ -295,7 +298,7 @@ FRR's modulation vectors resemble the bias terms in BitFit (Zaken et al., 2022) 
 
 Several directions remain open:
 
-**8B-scale validation (in progress).** We have validated scaling to 1.7B (67% T10 at 52x). 8B distillation is currently running: 167.8M FRR parameters (46.8x compression of ~7.85B teacher layer parameters) using 4 scales × 9 iterations (36 virtual layers matching 8B teacher depth). The 8B teacher is streamed layer-by-layer with all 36 layers pre-loaded to CPU pinned memory (27.8 GB), achieving 5.9x speedup over naive disk-streaming (66s vs 390s per evaluation step). Initial GPU memory usage is 12.66 GB — well within a single RTX 5090's 32 GB. Results will be available in the camera-ready version.
+**8B-scale validation (in progress).** We have validated scaling to 1.7B (67% T10 at 52x). 8B distillation is running: 167.8M FRR parameters (46.8x compression of ~7.85B teacher layer parameters) using 4 scales × 9 iterations (36 virtual layers). At step 15K/50K, T10 peaked at 40.4% (step 7.5K) with current T10=37.4%. The learning curve is slower and noisier than 1.7B, likely due to the larger teacher distribution being harder to compress. GPU memory is stable at 12.66 GB. Full results will be available in the camera-ready version.
 
 **Ultimate pipeline at scale.** The Hadamard-SVD-Quantize-Correct-Entropy pipeline achieves 0.994 cosine at Q2 on the 0.6B teacher. Applying this to 8B+ models could yield near-lossless 4-bit compression at scale.
 
@@ -303,7 +306,7 @@ Several directions remain open:
 
 **Evolutionary search at scale.** Current evolutionary search already outperforms hand-designed configurations (fitness 3.5+ vs ~3.0). Scaling the search budget and population size may yield further gains.
 
-**Per-layer modulation.** Current FRR uses per-scale modulation (4 γ/β pairs shared across 7 iterations each, plus 28 per-iteration scalars = ~8K params). Upgrading to per-layer modulation — individual γ/β vectors for each virtual layer — would add 28 × 2 × d parameters (~57K for 0.6B, ~114K for 1.7B) while keeping compression ratio virtually unchanged. This could significantly improve quality by giving each iteration its own steering signal rather than sharing within scale groups.
+**Per-layer modulation (completed).** We tested per-layer modulation — individual γ/β vectors for each of 28 virtual layers (~114K params, +0.3% to total FRR) vs the default per-scale modulation (~16K params). Despite a +5.8% T10 advantage at initialization, per-layer modulation underperformed: best T10 = 64.6% vs per-scale's 66.7%, HellaSwag retention 86.2% vs 90.4%, WikiText-2 PPL 1498.9 vs 1271.7 — all with 7× more modulation parameters. This suggests the per-scale weight sharing acts as beneficial regularization, and the grouping structure is not merely a simplification but an integral part of FRR's effectiveness.
 
 **Composing with quantization.** Quantizing FRR's 10.5M parameters to 2-bit would yield ~2.6MB (170x effective compression). Combined with PHM, sub-1MB models may be achievable.
 

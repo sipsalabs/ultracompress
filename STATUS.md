@@ -55,7 +55,7 @@ This means FRR compression applies to nearly everything:
 **To hit 20GB target:** Need either FRR 60x + Q2 + entropy (~12,000x = 16.7 GB) or improved Q1 quantization.
 **Current best real-text quality:** 66.7% T10 at 52x (1.7B, 80K steps). Still climbing.
 
-**Quality gap to close:** Current 67% T10 is NOT "near-zero degradation." 
+**Quality gap to close:** Current 67% T10 is NOT "near-zero degradation."
 Target: 90%+ T10. Paths:
 1. Per-LAYER modulation (current code uses per-SCALE: 4 groups, not 28 individual)
 2. LoRA adapters on FRR (supported but untested at 1.7B scale)
@@ -158,8 +158,8 @@ Target: 90%+ T10. Paths:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 0/50K** | T1=2.0% T10=13.0% loss=535.0 | **5.9x faster: 66s vs 390s per eval step** |
-| 1 | 1.7B Real Text 100K | **COMPLETE** | T10=65.6% (best=66.7% at 80K), HS=90.4% | 3.5 hours total |
+| 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 15000/50K** | T10=40.4% best (7.5K), T10=37.4% at 15K | **~1.8s/step, 27K sec elapsed** |
+| 1 | 1.7B Per-Layer Mod 100K | **COMPLETE** | Best T10=64.6% at 80K, HS=86.2% | **Per-scale WINS** (66.7% > 64.6%) |
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |
@@ -252,6 +252,46 @@ Target: 90%+ T10. Paths:
 **UPDATE (40K)**: **NEW BEST** T10=63.6% at step 40K (T=3.0) — breaks the 62.4% record from step 10K. Suggests T≈3.0 may be the sweet spot for T10 evaluation accuracy. Bootstrap analysis (eval_statistical.py) shows 100-sample evals have ±9.5% CI width — the 63.6% could be noise but it's the second data point above 62%, supporting genuine improvement.
 
 ### 8B REAL TEXT DISTILLATION — Progress (Started 2026-04-15 14:43)
+
+### 1.7B PER-LAYER MODULATION — COMPLETE (3.5 hours)
+**Config:** 28 individual γ/β pairs (114,716 mod params vs per-scale's 16,412)
+**Result: Per-scale modulation WINS.** Per-layer best T10=64.6% vs per-scale's 66.7%.
+**Interpretation:** Per-scale's weight sharing within groups acts as beneficial regularization. The initial +5.8% T10 advantage at step 0 did NOT persist — per-scale overtook by 40K.
+
+| Step | Loss | T1 | T10 | Temp | Elapsed | Note |
+|------|------|-----|-----|------|---------|------|
+| 0 | 546.50 | 3% | 27.2% | 5.0 | 8s | +5.8% vs per-scale init |
+| 5K | 41.46 | 33% | 60.5% | 4.8 | 591s | (per-scale: 61.4%) |
+| 10K | 37.63 | 49% | 60.1% | 4.5 | 1176s | (per-scale: 62.4%) |
+| 15K | 38.55 | 44% | 59.9% | 4.2 | 1760s | |
+| 20K | 39.14 | 37% | 58.2% | 4.0 | 2340s | |
+| 25K | 39.53 | 42% | 56.2% | 3.8 | 2924s | |
+| 30K | 40.24 | 32% | 60.0% | 3.5 | 3507s | |
+| 35K | 41.57 | 30% | 57.8% | 3.2 | 4091s | |
+| 40K | 41.75 | 41% | 60.6% | 3.0 | 4681s | **Best until 80K** |
+| 45K | 45.81 | 36% | 59.7% | 2.8 | 5272s | |
+| 50K | 49.12 | 36% | 57.1% | 2.5 | 5854s | HS=87.2%, PPL=1703.8 |
+| 55K | 52.82 | 35% | 59.5% | 2.2 | 6588s | |
+| 60K | 55.15 | 31% | 59.5% | 2.0 | 7259s | |
+| 65K | 56.05 | 31% | 59.8% | 2.0 | 7932s | |
+| 70K | 54.47 | 33% | 56.4% | 2.0 | 8602s | |
+| 75K | 54.44 | 37% | 59.2% | 2.0 | 9275s | |
+| **80K** | **54.20** | **43%** | **64.6%** | **2.0** | **9951s** | **Best T10** |
+| 85K | 53.57 | 43% | 61.5% | 2.0 | 10632s | |
+| 90K | 54.01 | 33% | 63.7% | 2.0 | 11302s | |
+| 95K | 54.88 | 33% | 59.9% | 2.0 | 11960s | |
+| **99999** | **53.92** | **45%** | **63.4%** | **2.0** | **12617s** | HS=86.2%, PPL=1498.9 |
+
+**Per-layer vs Per-scale comparison:**
+| Metric | Per-Scale | Per-Layer | Winner |
+|--------|-----------|-----------|--------|
+| Best T10 | **66.7%** (80K) | 64.6% (80K) | Per-scale |
+| Final T10 | **65.6%** | 63.4% | Per-scale |
+| HellaSwag 100K | **90.4%** | 86.2% | Per-scale |
+| WikiText-2 PPL | **1271.7** | 1498.9 | Per-scale |
+| Mod params | 16,412 | 114,716 | Per-scale (7x fewer!) |
+
+### 8B REAL TEXT DISTILLATION — Progress (Started 2026-04-15 14:43)
 **Config:** Qwen3-8B teacher (streaming), 167.8M FRR params (46.8x compression)
 **Batch:** 2x64, LR: 0.0003, CosineAnnealingLR
 **Streaming:** embed+LM head on GPU (4.98 GB), 36 layers streamed one at a time
@@ -260,6 +300,14 @@ Target: 90%+ T10. Paths:
 | Step | Loss | T1 | T10 | Temp | Elapsed | Note |
 |------|------|-----|-----|------|---------|------|
 | 0 | 535.04 | 2.0% | 13.0% | 5.0 | 66s | **5.9x faster with RAM preloading** (was 390s) |
+| **2500** | **69.09** | **22.0%** | **36.4%** | **4.8** | **4321s** | **First real data! +23.4% T10** |
+| 5000 | 65.11 | 38.0% | 39.6% | 4.5 | 8544s | |
+| 7500 | 64.04 | 24.0% | 40.4% | 4.2 | 12929s | **Best T10 so far** |
+| 10000 | 64.03 | 16.0% | 36.2% | 4.0 | 17407s | |
+| 12500 | 68.24 | 20.0% | 35.6% | 3.8 | 22173s | |
+| 15000 | 69.75 | 28.0% | 37.4% | 3.5 | 27184s | |
+
+**Step 15K analysis:** 8B learning curve is slower and noisier than 1.7B. T10 peaked at 40.4% (step 7500) then fluctuated 35-38%. Loss NOT decreasing — 64→69 range. T1 very noisy (16-38%). ~1.8s/step. The temperature annealing may be hurting — similar to 1.7B's mid-training dip at comparable T values. ETA for 50K: ~17 more hours from step 15K.
 
 **Step 0 analysis:** 5.9x speedup from RAM preloading (66s vs 390s with disk streaming). Previously ~140h estimated, now ~20-30h. GPU utilization jumped from 16% to 90%. Per non-eval training step should be ~1-2s (vs ~7-10s before).
 
@@ -279,23 +327,26 @@ Target: 90%+ T10. Paths:
   - Usage: `python run_gpu_queue.py --device cuda:0 --queue wave,8b`
 - **Qwen3-8B model downloaded** — 5 shards, ~16GB, ready for 8B experiments
 
-### ALL-TIME RECORDS (updated)
+### ALL-TIME RECORDS (updated — see also top-level records table above)
 | Record | Value | How |
 |---|---|---|
 | Best T1 (1.7B) | **49%** | 1.7B real text 50K steps (T=2.5) |
-| Best T10 (1.7B) | 67% | 1.7B random tokens 100K steps |
-| Best HellaSwag retention | **89.4%** | 1.7B FRR 50K real text (teacher 31.3%, FRR 28.0%) |
+| Best T10 (1.7B, real text) | **66.7%** | 1.7B real text 80K steps (T=2.0) — BREAKTHROUGH |
+| Best T10 (1.7B, random) | 67% | 1.7B random tokens 100K steps |
+| Best HellaSwag retention | **90.4%** | 1.7B FRR 100K real text (teacher 31.3%, FRR 28.3%) **NEW** |
+| Best WikiText-2 PPL (1.7B) | **1271.7** | 1.7B FRR 100K real text (teacher 670.7) **NEW** |
 | Best PPL vs teacher | **FRR WINS** | FRR 1614 < teacher 2404 on WikiText-2 |
 | Best param efficiency | **5.5x** | FRR 25.5% HellaSwag at 7.3M vs Standard 26.5% at 42M |
 | Best compression ratio | 959x | E2E pipeline (FRR + Q2 + entropy), -1.5% T10 |
 | Most self-growth | 16→176 planes | 10 autonomous growth events in 30K steps |
 
 ### WHAT'S NEXT (priority order)
-1. ~~**Real text distillation at 1.7B scale, 100K steps**~~ **RUNNING** ← GPU 1
-2. **HellaSwag on 100K real-text FRR** — auto-evaluates at step 50K and 100K
-3. **Selective student results** — Exp 1 finishing, Exps 2+3 auto-queue ← GPU 0
-4. **Scale to 8B teacher** — script ready (`run_8b_real_text.py`), needs free GPU
-5. **Fix wave engine stability** — script ready (`run_stable_wave_test.py`), needs free GPU
-6. File patent ($80)
-7. Publish arxiv paper
-8. Push to GitHub + Show HN
+1. ~~**Real text distillation at 1.7B scale, 100K steps**~~ **COMPLETE** — HS=90.4%, T10=66.7% best
+2. ~~**HellaSwag on 100K real-text FRR**~~ **COMPLETE** — 90.4% retention
+3. ~~**Selective student results**~~ **COMPLETE** — Pure KL is optimal
+4. **8B real text distillation** — **RUNNING** ← GPU 0, step 2500/50K
+5. **Per-layer modulation 1.7B** — **RUNNING** ← GPU 1, step 0+/100K
+6. **Run hires eval** on best 80K checkpoint (when GPU available)
+7. File patent ($80)
+8. Publish arxiv paper
+9. Push to GitHub + Show HN
