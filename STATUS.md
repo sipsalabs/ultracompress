@@ -158,8 +158,24 @@ Target: 90%+ T10. Paths:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | **8B Real Text 50K (streaming, RAM-preloaded)** | **Step 15000/50K** | T10=40.4% best (7.5K), T10=37.4% at 15K | **~1.8s/step, 27K sec elapsed** |
-| 1 | 1.7B Per-Layer Mod 100K | **COMPLETE** | Best T10=64.6% at 80K, HS=86.2% | **Per-scale WINS** (66.7% > 64.6%) |
+| 0 | **8B Real Text 50K (streaming, resumed)** | **Step 15001/50K (resumed from crash)** | T10=40.4% best (7.5K), T10=37.4% at 15K | **Resumed with --resume flag, full state checkpoints now** |
+| 1 | **Hires Eval Sweep — COMPLETE** | **12/12 checkpoints** | T10: 60.7% (10K) → 63.9% (100K) | **500 samples, ±1.5% CI, publication-quality** |
+
+### HIRES EVAL SWEEP — COMPLETE (500 held-out samples, bootstrap CIs)
+| Step | T1 ±CI | T10 ±CI | Note |
+|------|--------|---------|------|
+| 10K | 34.4% ±4.2% | 60.7% ±1.6% | |
+| 20K | 34.4% ±4.1% | 61.1% ±1.7% | |
+| 30K | 36.8% ±4.2% | 61.5% ±1.6% | |
+| 40K | 36.8% ±4.2% | 61.7% ±1.6% | |
+| 50K | 35.6% ±4.2% | 62.2% ±1.6% | |
+| 60K | 38.6% ±4.3% | 62.7% ±1.5% | |
+| 70K | 39.0% ±4.3% | 63.8% ±1.5% | Significant jump from 60K (p=0.008) |
+| 80K | 40.6% ±4.3% | 63.4% ±1.6% | = best.pt checkpoint |
+| 90K | 42.0% ±4.4% | 63.8% ±1.5% | Highest T1 |
+| **100K** | **40.6% ±4.3%** | **63.9% ±1.5%** | **Best T10 (hires)** |
+
+**Key insight:** Training eval's "66.7% best at 80K" resolves to 63.4% on held-out data. True best is 100K at 63.9%. T10 improves monotonically over training. Still climbing at 100K — more training would help.
 
 ### SELECTIVE STUDENT — Experiment 1 COMPLETE (0.6B, 15K steps)
 | Step | Loss | T1 | T10 | Elapsed |

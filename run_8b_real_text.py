@@ -54,6 +54,8 @@ parser.add_argument("--steps", type=int, default=50_000)
 parser.add_argument("--batch-size", type=int, default=2)
 parser.add_argument("--seq-len", type=int, default=64)
 parser.add_argument("--lr", type=float, default=3e-4)
+parser.add_argument("--resume", type=str, default=None,
+                    help="Path to checkpoint to resume from (or 'latest' to auto-detect)")
 args = parser.parse_args()
 
 DEVICE = args.device
@@ -418,14 +420,60 @@ t0 = time.time()
 best_t10 = 0.0
 best_step = 0
 loss_history = []
+start_step = 0
+
+# ── Resume from checkpoint ────────────────────────────────────────────
+if args.resume:
+    resume_path = args.resume
+    if resume_path == 'latest':
+        # Find the latest step checkpoint
+        import glob
+        ckpts = glob.glob(os.path.join(CHECKPOINT_DIR, 'frr_8b_step*.pt'))
+        if ckpts:
+            ckpts.sort(key=lambda p: int(p.split('step')[1].split('.')[0]))
+            resume_path = ckpts[-1]
+            print(f"  Auto-detected latest checkpoint: {resume_path}")
+        else:
+            print("  No checkpoints found to resume from!")
+            sys.exit(1)
+
+    print(f"  Resuming from: {resume_path}")
+    ckpt = torch.load(resume_path, map_location=DEVICE, weights_only=False)
+
+    if isinstance(ckpt, dict) and 'model_state_dict' in ckpt:
+        # Full training state saved
+        model.load_state_dict(ckpt['model_state_dict'])
+        opt.load_state_dict(ckpt['optimizer_state_dict'])
+        sched.load_state_dict(ckpt['scheduler_state_dict'])
+        start_step = ckpt['step'] + 1
+        best_t10 = ckpt.get('best_t10', 0.0)
+        best_step = ckpt.get('best_step', 0)
+        loss_history = ckpt.get('loss_history', [])
+        print(f"  Loaded full training state: resuming from step {start_step}")
+        print(f"  Best T10 so far: {best_t10*100:.1f}% at step {best_step}")
+    else:
+        # Legacy checkpoint: model weights only
+        state_dict = ckpt if isinstance(ckpt, dict) else ckpt
+        model.load_state_dict(state_dict, strict=False)
+        # Parse step from filename
+        bn = os.path.basename(resume_path)
+        if 'step' in bn:
+            start_step = int(bn.split('step')[1].split('.')[0]) + 1
+        print(f"  Loaded model weights (no optimizer state), resuming from step {start_step}")
+        print(f"  NOTE: Optimizer/scheduler re-initialized, fast-forwarding scheduler...")
+        for _ in range(start_step):
+            sched.step()
+        print(f"  LR at step {start_step}: {sched.get_last_lr()[0]:.6f}")
 
 print(f"\nTraining {STEPS:,} steps with REAL TEXT distillation (streaming 8B teacher)...")
 print(f"  Checkpoint interval: {CHECKPOINT_INTERVAL}")
 print(f"  Eval interval: {EVAL_INTERVAL}")
 print(f"  HellaSwag at: {HELLASWAG_STEPS}")
+if start_step > 0:
+    print(f"  Resuming from step {start_step} ({STEPS - start_step} steps remaining)")
 print()
 
-for step in range(STEPS):
+for step in range(start_step, STEPS):
     tokens = get_real_batch()
 
     # Streaming teacher forward (loads/frees each layer)
@@ -475,7 +523,16 @@ for step in range(STEPS):
     # ── Save Checkpoint ───────────────────────────────────────────
     if step > 0 and (step % CHECKPOINT_INTERVAL == 0 or step == STEPS - 1):
         ckpt_path = os.path.join(CHECKPOINT_DIR, f'frr_8b_step{step}.pt')
-        torch.save(model.state_dict(), ckpt_path)
+        ckpt_data = {
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': opt.state_dict(),
+            'scheduler_state_dict': sched.state_dict(),
+            'step': step,
+            'best_t10': best_t10,
+            'best_step': best_step,
+            'loss_history': loss_history[-5000:],
+        }
+        torch.save(ckpt_data, ckpt_path)
         print(f"  >> Saved checkpoint: {ckpt_path}")
         if t10 >= best_t10:
             best_path = os.path.join(CHECKPOINT_DIR, 'frr_8b_best.pt')
