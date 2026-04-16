@@ -159,30 +159,42 @@ Target: 90%+ T10. Paths:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | **8B Real Text 50K (streaming, resumed)** | **Step ~16K/50K** | T10=40.4% best (7.5K), fluctuating 35-38% | Resumed from crash, next eval ~17.5K |
-| 1 | **1.7B LoRA experiment (rank-16)** | **Phase 1 step 0/20K** | Baseline T10=65.2% (50-sample) | 20K LoRA-only → 30K joint, 48.9x compression |
+| 0 (cuda:0) | **8B Real Text 50K (streaming, resumed v2)** | **Step ~15K/50K** | T10=40.4% best (7.5K) | Restarted from step 15K checkpoint |
+| 1 (cuda:1) | **1.7B Deep Fractal Conditioning (DFC)** | **Step 0/100K** | Baseline T10=64.3% | NOVEL: internal block modulation |
 
-### EXTENDED TRAINING RESULTS (killed for LoRA — not enough improvement)
+### LORA RESULTS — KILLED (standard method, marginal results)
+| Step | T1 | T10 | Note |
+|------|-----|------|------|
+| 0 | 37.0% | 61.6% | LoRA phase 1 start |
+| 2500 | 35.0% | 61.8% | Loss INCREASED (33.8→51.9), flat T10 |
+| 5000 | 44.0% | 62.8% | Marginal +1.2% T10 from 1.8M extra params |
+
+**Verdict:** LoRA modifies OUTPUTS, not computation. Can't give layers different attention patterns. Killed for DFC.
+
+### EXTENDED TRAINING RESULTS — KILLED (flat T10)
 | Step (eff) | T1 | T10 | Note |
 |------------|-----|------|------|
 | 0 (100K) | 37.0% | 61.1% | Baseline from 100K checkpoint |
 | 5K (105K) | 41.0% | 63.1% | Slight improvement |
-| 10K (110K) | 31.0% | 62.7% | Flat — switched to LoRA experiment |
+| 10K (110K) | 31.0% | 62.7% | Flat — killed |
 
-**Verdict:** Extended training at LR=2e-4 gives marginal improvement (+0-2% T10). LoRA per-layer specialization is more promising path to close the gap to 90% T10.
+### DEEP FRACTAL CONDITIONING (DFC) — NOVEL ARCHITECTURE
+**The insight:** Standard FRR uses identical Q/K/V/FFN weights for all 28 virtual layers.
+Gamma/beta only scale inputs. This CANNOT produce qualitatively different attention patterns.
+Real transformers need early layers doing local/syntactic attention and late layers doing global/semantic.
+
+**The novel solution:** Modulate INSIDE the shared block's computation, not just I/O:
+1. **Per-layer attention temperature** (448 params) — controls sharpness per head per layer
+2. **Per-layer head gating** (448 params) — which heads matter at each depth
+3. **Per-layer FFN neuron gating** (57,344 params) — which feature detectors per layer
+
+Total DFC overhead: 58,240 params (0.2%). Compression: 51.9x (essentially unchanged).
+Each virtual layer now computes a QUALITATIVELY different function.
 
 ### DATA OPTIMIZATION
 - Pre-tokenized 100M FineWeb-Edu tokens into `fineweb_edu_100M_tokens.pt` (381 MB)
 - Eliminates streaming data I/O bottleneck — training now fully GPU-bound
 - Step time: ~0.13s (from 0.13-0.5s with streaming)
-
-### LORA EXPERIMENT DESIGN
-- Base: 100K checkpoint (63.9% T10 hires, 52x compression)
-- LoRA rank-16: +1.8M params (28 virtual layers × 2 × 2048 × 16)
-- Total: 31.2M trainable → 48.9x compression (still excellent)
-- Phase 1 (20K steps): LoRA-only, LR=1e-3, block frozen
-- Phase 2 (30K steps): Joint training, LR=1e-4
-- Hypothesis: Per-layer LoRA specialization lets virtual layers deviate from shared computation
 
 ### HIRES EVAL SWEEP — COMPLETE (500 held-out samples, bootstrap CIs)
 | Step | T1 ±CI | T10 ±CI | Note |

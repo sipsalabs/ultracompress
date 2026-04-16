@@ -87,7 +87,8 @@ class FractalBlock(nn.Module):
         self.norm1 = nn.RMSNorm(hidden_dim)
         self.norm2 = nn.RMSNorm(hidden_dim)
 
-    def forward(self, x, scale_gamma=None, scale_beta=None):
+    def forward(self, x, scale_gamma=None, scale_beta=None,
+                head_temps=None, head_gates=None, ffn_gates=None):
         B, T, D = x.shape
 
         # Scale-conditional modulation (if provided)
@@ -101,18 +102,29 @@ class FractalBlock(nn.Module):
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         attn = (q @ k.transpose(-2, -1)) / math.sqrt(self.head_dim)
+        # Deep conditioning: per-layer attention temperature per head
+        if head_temps is not None:
+            attn = attn / head_temps.view(1, -1, 1, 1).clamp(min=0.1)
         if T > 1:
             mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
             attn = attn.masked_fill(mask, float('-inf'))
         attn = F.softmax(attn, dim=-1)
-        out = (attn @ v).transpose(1, 2).reshape(B, T, D)
+        out = attn @ v  # [B, H, T, D]
+        # Deep conditioning: per-layer head gating
+        if head_gates is not None:
+            out = out * head_gates.view(1, -1, 1, 1)
+        out = out.transpose(1, 2).reshape(B, T, D)
         x = x + self.o_proj(out)
 
         # FFN with modulation
         h = self.norm2(x)
         if scale_gamma is not None:
             h = h * scale_gamma + (scale_beta if scale_beta is not None else 0)
-        x = x + self.down(F.silu(self.gate(h)) * self.up(h))
+        ffn_out = F.silu(self.gate(h)) * self.up(h)
+        # Deep conditioning: per-layer FFN neuron gating
+        if ffn_gates is not None:
+            ffn_out = ffn_out * ffn_gates
+        x = x + self.down(ffn_out)
 
         return x
 
@@ -127,13 +139,14 @@ class FractalModel(nn.Module):
     def __init__(self, hidden_dim, n_heads, n_scales=4, iters_per_scale=8,
                  vocab_size=151936, ff_mult=2,
                  embed_weight=None, lm_head_weight=None, norm_weight=None,
-                 per_layer_mod=False):
+                 per_layer_mod=False, deep_conditioning=False):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.n_scales = n_scales
         self.iters_per_scale = iters_per_scale
         self.total_layers = n_scales * iters_per_scale
         self.per_layer_mod = per_layer_mod
+        self.deep_conditioning = deep_conditioning
 
         # Shared block (THE core — reused everywhere)
         self.block = FractalBlock(hidden_dim, n_heads, ff_mult)
@@ -149,6 +162,17 @@ class FractalModel(nn.Module):
 
         # Per-iteration modulation within scale (even tinier)
         self.iter_scale = nn.Parameter(torch.ones(n_scales, iters_per_scale))
+
+        # Deep Fractal Conditioning (DFC) — modulates INSIDE the shared block
+        # Novel: changes attention patterns + FFN behavior per layer, not just I/O
+        if deep_conditioning:
+            ff_dim = hidden_dim * ff_mult
+            # Per-layer attention temperature (log-space, init=0 → temp=1.0)
+            self.head_log_temps = nn.Parameter(torch.zeros(self.total_layers, n_heads))
+            # Per-layer head gating (logit-space, init=3.0 → sigmoid≈0.95)
+            self.head_gate_logits = nn.Parameter(torch.full((self.total_layers, n_heads), 3.0))
+            # Per-layer FFN neuron gating (logit-space, init=3.0 → sigmoid≈0.95)
+            self.ffn_gate_logits = nn.Parameter(torch.full((self.total_layers, ff_dim), 3.0))
 
         # Optional: per-layer LoRA adapters (V3 enhancement)
         self.adapters = None  # Set via enable_adapters()
@@ -195,9 +219,15 @@ class FractalModel(nn.Module):
                 if self.per_layer_mod:
                     gamma = self.layer_gamma[layer_count]
                     beta = self.layer_beta[layer_count]
+                # Deep conditioning: per-layer internal modulation
+                head_temps = head_gates = ffn_gates = None
+                if self.deep_conditioning:
+                    head_temps = self.head_log_temps[layer_count].exp()
+                    head_gates = torch.sigmoid(self.head_gate_logits[layer_count])
+                    ffn_gates = torch.sigmoid(self.ffn_gate_logits[layer_count])
                 # Apply shared block with modulation
                 iter_s = self.iter_scale[scale, it]
-                x = x + (self.block(x, gamma, beta) - x) * iter_s
+                x = x + (self.block(x, gamma, beta, head_temps, head_gates, ffn_gates) - x) * iter_s
                 # Apply per-layer LoRA adapter if enabled (V3)
                 if self.adapters is not None:
                     x = self.adapters[layer_count](x)
@@ -212,13 +242,17 @@ class FractalModel(nn.Module):
         return logits
 
     def fractal_params(self):
-        """Just the fractal-specific params (block + modulation + adapters)."""
+        """Just the fractal-specific params (block + modulation + adapters + DFC)."""
         total = sum(p.numel() for p in self.block.parameters())
         if self.per_layer_mod:
             total += self.layer_gamma.numel() + self.layer_beta.numel()
         else:
             total += self.scale_gamma.numel() + self.scale_beta.numel()
         total += self.iter_scale.numel()
+        if self.deep_conditioning:
+            total += self.head_log_temps.numel()
+            total += self.head_gate_logits.numel()
+            total += self.ffn_gate_logits.numel()
         if self.adapters is not None:
             total += sum(p.numel() for p in self.adapters.parameters())
         return total
