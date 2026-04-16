@@ -144,10 +144,11 @@ Target: 90%+ T10. Paths:
 | Record | Value | How |
 |---|---|---|
 | Best T1 (1.7B) | **49%** | 1.7B real text 50K steps (T=2.5) |
-| Best T10 (1.7B, real text) | **66.7%** | 1.7B real text 80K steps (T=2.0) — BREAKTHROUGH |
+| Best T10 (hires, definitive) | **63.9% ±1.5%** | 1.7B 100K, 500 held-out samples |
+| Best T10 (training eval, noisy) | **66.7%** | 1.7B 80K, 100 samples |
 | Best T10 (1.7B, random) | 67% | 1.7B random tokens 100K steps |
-| Best HellaSwag retention | **90.4%** | 1.7B FRR 100K real text (teacher 31.3%, FRR 28.3%) **NEW** |
-| Best WikiText-2 PPL (1.7B) | **1271.7** | 1.7B FRR 100K real text (teacher 670.7) **NEW** |
+| Best HellaSwag retention | **90.4%** | 1.7B FRR 100K real text (teacher 31.3%, FRR 28.3%) |
+| Best WikiText-2 PPL (1.7B) | **1271.7** | 1.7B FRR 100K real text (teacher 670.7) |
 | Best PPL vs teacher | **FRR WINS** | FRR 1614 < teacher 2404 on WikiText-2 |
 | Best param efficiency | **5.5x** | FRR 25.5% HellaSwag at 7.3M vs Standard 26.5% at 42M |
 | Best compression ratio | 959x | E2E pipeline (FRR + Q2 + entropy), -1.5% T10 |
@@ -158,8 +159,30 @@ Target: 90%+ T10. Paths:
 ### CURRENTLY RUNNING
 | GPU | Experiment | Status | Latest | Notes |
 |-----|-----------|--------|--------|-------|
-| 0 | **8B Real Text 50K (streaming, resumed)** | **Step 15001/50K (resumed from crash)** | T10=40.4% best (7.5K), T10=37.4% at 15K | **Resumed with --resume flag, full state checkpoints now** |
-| 1 | **Hires Eval Sweep — COMPLETE** | **12/12 checkpoints** | T10: 60.7% (10K) → 63.9% (100K) | **500 samples, ±1.5% CI, publication-quality** |
+| 0 | **8B Real Text 50K (streaming, resumed)** | **Step ~16K/50K** | T10=40.4% best (7.5K), fluctuating 35-38% | Resumed from crash, next eval ~17.5K |
+| 1 | **1.7B LoRA experiment (rank-16)** | **Phase 1 step 0/20K** | Baseline T10=65.2% (50-sample) | 20K LoRA-only → 30K joint, 48.9x compression |
+
+### EXTENDED TRAINING RESULTS (killed for LoRA — not enough improvement)
+| Step (eff) | T1 | T10 | Note |
+|------------|-----|------|------|
+| 0 (100K) | 37.0% | 61.1% | Baseline from 100K checkpoint |
+| 5K (105K) | 41.0% | 63.1% | Slight improvement |
+| 10K (110K) | 31.0% | 62.7% | Flat — switched to LoRA experiment |
+
+**Verdict:** Extended training at LR=2e-4 gives marginal improvement (+0-2% T10). LoRA per-layer specialization is more promising path to close the gap to 90% T10.
+
+### DATA OPTIMIZATION
+- Pre-tokenized 100M FineWeb-Edu tokens into `fineweb_edu_100M_tokens.pt` (381 MB)
+- Eliminates streaming data I/O bottleneck — training now fully GPU-bound
+- Step time: ~0.13s (from 0.13-0.5s with streaming)
+
+### LORA EXPERIMENT DESIGN
+- Base: 100K checkpoint (63.9% T10 hires, 52x compression)
+- LoRA rank-16: +1.8M params (28 virtual layers × 2 × 2048 × 16)
+- Total: 31.2M trainable → 48.9x compression (still excellent)
+- Phase 1 (20K steps): LoRA-only, LR=1e-3, block frozen
+- Phase 2 (30K steps): Joint training, LR=1e-4
+- Hypothesis: Per-layer LoRA specialization lets virtual layers deviate from shared computation
 
 ### HIRES EVAL SWEEP — COMPLETE (500 held-out samples, bootstrap CIs)
 | Step | T1 ±CI | T10 ±CI | Note |
