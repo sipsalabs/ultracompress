@@ -209,7 +209,7 @@ for scale in range(4):
         model.layer_gamma.data[layer_idx] = scale_gamma[scale]
         model.layer_beta.data[layer_idx] = scale_beta[scale]
 model.iter_scale.data.copy_(ckpt['iter_scale'])
-print(f"  Loaded block + converted scale→layer modulation")
+print(f"  Loaded block + converted scale->layer modulation")
 
 # ── Eval ──────────────────────────────────────────────────────────────
 @torch.no_grad()

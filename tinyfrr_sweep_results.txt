@@ -1,0 +1,12 @@
+h1024	h_inner=1024	trainable=11544604	compression=40.7x	best_last_T10=68.70%	steps=8000
+h768	h_inner=768	trainable=7282204	compression=64.5x	best_last_T10=68.10%	steps=8000
+h512	h_inner=512	trainable=3937308	compression=119.3x	best_last_T10=69.60%	steps=8000
+h384	h_inner=384	trainable=2608924	compression=180.1x	best_last_T10=68.30%	steps=8000
+h256	h_inner=256	trainable=1509916	compression=311.1x	best_last_T10=66.70%	steps=8000
+h192	h_inner=192	trainable=1046428	compression=448.9x	best_last_T10=68.40%	steps=8000
+h128	h_inner=128	trainable=640284	compression=733.7x	best_last_T10=69.10%	steps=8000
+h96	h_inner=96	trainable=458716	compression=1024.1x	best_last_T10=65.55%	steps=8000
+h64	h_inner=64	trainable=291484	compression=1611.6x	best_last_T10=65.10%	steps=8000
+h48	h_inner=48	trainable=213244	compression=2202.9x	best_last_T10=65.10%	steps=8000
+h32	h_inner=32	trainable=138588	compression=3389.6x	best_last_T10=64.20%	steps=8000
+h16	h_inner=16	trainable=67516	compression=6957.8x	best_last_T10=63.80%	steps=8000
