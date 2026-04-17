@@ -32,7 +32,7 @@ args = ap.parse_args()
 
 R = args.r
 STEPS = args.steps
-BATCH = 4
+BATCH = 2
 SEQ_LEN = args.seq_len
 LR = 1e-4
 WARMUP = 500
@@ -108,6 +108,7 @@ Vt_r = Vt[:R, :].contiguous()
 asvd_proj_init = (Vt_r @ Linv).contiguous()
 asvd_out_init = (U_r * S_r.unsqueeze(0)).contiguous()
 del Mcov, Lchol, Linv, WL, U, S, Vt, U_r, S_r, Vt_r
+torch.cuda.empty_cache()
 
 # Sanity check
 with torch.no_grad():
@@ -116,7 +117,10 @@ with torch.no_grad():
     print(f"  ASVD r={R}: recon error = {err:.4f}")
 
 head_params = R * (vocab_size + H_OUTER)
-print(f"  Trainable: {head_params/1e6:.2f}M  (full head: {lm_head_w.numel()/1e6:.1f}M, {lm_head_w.numel()/head_params:.1f}x shrink)")
+full_head_numel = lm_head_w.numel()
+print(f"  Trainable: {head_params/1e6:.2f}M  (full head: {full_head_numel/1e6:.1f}M, {full_head_numel/head_params:.1f}x shrink)")
+del lm_head_w
+torch.cuda.empty_cache()
 
 # ==================== Trainable ASVD Head ====================
 asvd_proj = nn.Linear(H_OUTER, R, bias=False).to(DEVICE)
@@ -262,4 +266,4 @@ if t1 > best_top1:
                 'best_top10': best_top10, 'rank': R}, BEST)
 
 print(f"\nDONE {TAG}: top1={best_top1*100:.2f}%  top10={best_top10*100:.2f}%  ppl={ppl_ratio:.3f}")
-print(f"  params={head_params/1e6:.2f}M  vs full {lm_head_w.numel()/1e6:.1f}M ({lm_head_w.numel()/head_params:.1f}x shrink)")
+print(f"  params={head_params/1e6:.2f}M  vs full {full_head_numel/1e6:.1f}M ({full_head_numel/head_params:.1f}x shrink)")
