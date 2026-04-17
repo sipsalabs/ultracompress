@@ -57,4 +57,17 @@ for h in [128, 64]:
                           '--tag', f'h{h}_tied'], env=env)
     print(f"[wait_ptq] tied h={h} rc={rc}", flush=True)
 
+print("\n[wait_ptq] Running HQ training (80K steps, T-schedule, forward+reverse-KL) on h=128.", flush=True)
+rc = subprocess.call([sys.executable, 'run_1.7b_tinyfrr_hq.py',
+                      '--h', '128', '--steps', '80000',
+                      '--tag', 'h128_hq', '--device', 'cuda:0'], env=env)
+print(f"[wait_ptq] h128_hq rc={rc}", flush=True)
+
+print("\n[wait_ptq] Final quality benchmark on all best checkpoints.", flush=True)
+rc = subprocess.call([sys.executable, 'bench_tinyfrr_quality.py',
+                      '--tags', 'h128_hq', 'h128_long', 'h512', 'h48_long',
+                      'h16_long', 'h128_tied',
+                      '--n', '200', '--device', 'cuda:0'], env=env)
+print(f"[wait_ptq] final quality bench rc={rc}", flush=True)
+
 print("\n[wait_ptq] ALL POST-SWEEP WORK COMPLETE", flush=True)
