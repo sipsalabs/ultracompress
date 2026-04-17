@@ -4,7 +4,7 @@ HQ3 — Multi-layer distillation with longer sequences.
 Three improvements over HQ2:
   1. Longer sequences (128 tokens, 2x default) — captures more context
   2. Multi-layer teacher matching — match hidden states at layers 7, 14, 21, 28
-     (like TinyBERT), giving gradient signal at every virtual layer  
+     (like TinyBERT), giving gradient signal at every virtual layer
   3. Progressive training: start SEQ_LEN=64, ramp to 128 at 25% of training
      (avoids unstable start with long sequences)
 
@@ -184,7 +184,14 @@ teacher_params = N_TEACHER_LAYERS * 4 * H_OUTER * H_OUTER
 print(f"  trainable = {trainable/1e6:.2f}M  compression = {teacher_params/trainable:.1f}x")
 
 # ==================== Data / Opt ====================
-all_tokens = torch.load('fineweb_edu_100M_tokens.pt', weights_only=True)
+# Auto-detect larger dataset
+if os.path.exists('fineweb_edu_500M_tokens.pt'):
+    print("  Using 500M token dataset", flush=True)
+    all_tokens = torch.load('fineweb_edu_500M_tokens.pt', weights_only=True)
+else:
+    print("  Using 100M token dataset", flush=True)
+    all_tokens = torch.load('fineweb_edu_100M_tokens.pt', weights_only=True)
+print(f"  tokens: {all_tokens.numel()/1e6:.0f}M")
 opt = torch.optim.AdamW([p for p in student.parameters() if p.requires_grad],
                         lr=LR_MAX, betas=(0.9, 0.95), weight_decay=0.01)
 

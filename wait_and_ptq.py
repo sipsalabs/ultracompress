@@ -87,4 +87,80 @@ rc = subprocess.call([sys.executable, 'bench_tinyfrr_quality.py',
                       '--n', '200', '--device', 'cuda:0'], env=env)
 print(f"[wait_ptq] final quality bench rc={rc}", flush=True)
 
-print("\n[wait_ptq] ALL POST-SWEEP WORK COMPLETE", flush=True)
+# ==================== NEXT-GEN: Joint body+ASVD head ====================
+# These are the highest-impact experiments. GPU 0 does joint training,
+# the second GPU (if available) does HQ3 multi-layer matching.
+print("\n[wait_ptq] ===== NEXT-GEN PHASE 1 =====", flush=True)
+
+env1 = dict(os.environ); env1['CUDA_VISIBLE_DEVICES'] = '1'
+
+# GPU 0: Joint h=128, r=512
+print("[wait_ptq] GPU 0: Joint body+ASVD head h=128 r=512 (80K steps)", flush=True)
+p_joint = subprocess.Popen(
+    [sys.executable, 'run_1.7b_tinyfrr_joint.py',
+     '--h', '128', '--r', '512', '--steps', '80000', '--seq_len', '128',
+     '--tag', 'h128_r512_joint', '--device', 'cuda:0'],
+    env=env,
+    stdout=open('tinyfrr_h128_r512_joint.log', 'w'),
+    stderr=subprocess.STDOUT)
+print(f"  PID={p_joint.pid}", flush=True)
+
+# GPU 1: HQ3 multi-layer matching h=128
+print("[wait_ptq] GPU 1: HQ3 multi-layer h=128 (100K steps)", flush=True)
+p_hq3 = subprocess.Popen(
+    [sys.executable, 'run_1.7b_tinyfrr_hq3.py',
+     '--h', '128', '--steps', '100000',
+     '--tag', 'h128_hq3', '--device', 'cuda:0'],
+    env=env1,
+    stdout=open('tinyfrr_h128_hq3.log', 'w'),
+    stderr=subprocess.STDOUT)
+print(f"  PID={p_hq3.pid}", flush=True)
+
+for name, proc in [('h128_r512_joint', p_joint), ('h128_hq3', p_hq3)]:
+    rc = proc.wait()
+    print(f"  [{name}] rc={rc}", flush=True)
+
+# ==================== NEXT-GEN PHASE 2: More compression variants ====================
+print("\n[wait_ptq] ===== NEXT-GEN PHASE 2 =====", flush=True)
+
+# GPU 0: Joint h=128, r=256 (more head compression)
+print("[wait_ptq] GPU 0: Joint h=128 r=256 (80K steps)", flush=True)
+p2a = subprocess.Popen(
+    [sys.executable, 'run_1.7b_tinyfrr_joint.py',
+     '--h', '128', '--r', '256', '--steps', '80000', '--seq_len', '128',
+     '--tag', 'h128_r256_joint', '--device', 'cuda:0'],
+    env=env,
+    stdout=open('tinyfrr_h128_r256_joint.log', 'w'),
+    stderr=subprocess.STDOUT)
+print(f"  PID={p2a.pid}", flush=True)
+
+# GPU 1: Joint h=64, r=512 (more body compression)
+print("[wait_ptq] GPU 1: Joint h=64 r=512 (80K steps)", flush=True)
+p2b = subprocess.Popen(
+    [sys.executable, 'run_1.7b_tinyfrr_joint.py',
+     '--h', '64', '--r', '512', '--steps', '80000', '--seq_len', '128',
+     '--tag', 'h64_r512_joint', '--device', 'cuda:0'],
+    env=env1,
+    stdout=open('tinyfrr_h64_r512_joint.log', 'w'),
+    stderr=subprocess.STDOUT)
+print(f"  PID={p2b.pid}", flush=True)
+
+for name, proc in [('h128_r256_joint', p2a), ('h64_r512_joint', p2b)]:
+    rc = proc.wait()
+    print(f"  [{name}] rc={rc}", flush=True)
+
+# ==================== Final combined evaluation ====================
+print("\n[wait_ptq] Final combined evaluation (all variants).", flush=True)
+all_tags = [
+    'h128_r512_joint', 'h128_r256_joint', 'h64_r512_joint',
+    'h128_hq3', 'h128_hq2', 'h128_hq', 'h64_hq2',
+    'h128_long', 'h512', 'h48_long', 'h16_long', 'h128_tied',
+]
+existing = [t for t in all_tags
+            if os.path.exists(f'checkpoints_1.7b_tinyfrr_{t}/best.pt')]
+if existing:
+    rc = subprocess.call([sys.executable, 'eval_combined.py',
+                          '--tags'] + existing + ['--n', '200', '--device', 'cuda:0'], env=env)
+    print(f"[wait_ptq] combined eval rc={rc}", flush=True)
+
+print("\n[wait_ptq] ALL POST-SWEEP WORK COMPLETE (incl. next-gen)", flush=True)
