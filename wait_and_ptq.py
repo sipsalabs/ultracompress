@@ -63,10 +63,27 @@ rc = subprocess.call([sys.executable, 'run_1.7b_tinyfrr_hq.py',
                       '--tag', 'h128_hq', '--device', 'cuda:0'], env=env)
 print(f"[wait_ptq] h128_hq rc={rc}", flush=True)
 
+# HQ2: hidden-state matching on top of HQ. This is the real "match teacher
+# latent, not just token distribution" step. Warm-starts from h128_hq.
+print("\n[wait_ptq] Running HQ2 (hidden-state matching, 80K) on h=128.", flush=True)
+rc = subprocess.call([sys.executable, 'run_1.7b_tinyfrr_hq2.py',
+                      '--h', '128', '--steps', '80000',
+                      '--tag', 'h128_hq2', '--device', 'cuda:0'], env=env)
+print(f"[wait_ptq] h128_hq2 rc={rc}", flush=True)
+
+# Also try a smaller dim w/ hidden-state matching — if this tracks hq2
+# performance it means the representation-matching is doing the heavy lift
+# and inner-dim can drop much further.
+print("\n[wait_ptq] HQ2 on h=64 (test if hidden-state matching scales down).", flush=True)
+rc = subprocess.call([sys.executable, 'run_1.7b_tinyfrr_hq2.py',
+                      '--h', '64', '--steps', '60000',
+                      '--tag', 'h64_hq2', '--device', 'cuda:0'], env=env)
+print(f"[wait_ptq] h64_hq2 rc={rc}", flush=True)
+
 print("\n[wait_ptq] Final quality benchmark on all best checkpoints.", flush=True)
 rc = subprocess.call([sys.executable, 'bench_tinyfrr_quality.py',
-                      '--tags', 'h128_hq', 'h128_long', 'h512', 'h48_long',
-                      'h16_long', 'h128_tied',
+                      '--tags', 'h128_hq2', 'h128_hq', 'h64_hq2', 'h128_long',
+                      'h512', 'h48_long', 'h16_long', 'h128_tied',
                       '--n', '200', '--device', 'cuda:0'], env=env)
 print(f"[wait_ptq] final quality bench rc={rc}", flush=True)
 
