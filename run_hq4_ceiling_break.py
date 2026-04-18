@@ -151,8 +151,9 @@ class TinyFRR_HQ4(nn.Module):
         return logits
 
 
-# ==================== Warm-start from HQ3 best ====================
+# ==================== Warm-start from best available ====================
 WARM_CANDIDATES = [
+    f'checkpoints_1.7b_tinyfrr_hq4_h{H_INNER}/best.pt',
     f'checkpoints_1.7b_tinyfrr_hq3_h{H_INNER}/best.pt',
     f'checkpoints_1.7b_tinyfrr_h{H_INNER}_hq2/best.pt',
     f'checkpoints_1.7b_tinyfrr_h{H_INNER}_long/best.pt',
