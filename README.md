@@ -65,6 +65,33 @@ python demo.py --tag hq5_h128          # 734× model instead of 311×
 
 `r=1024` exceeds the user's 70% T1 / 90% T10 goal on head-only evaluation — see [docs/STATUS.md](docs/STATUS.md).
 
+### ⭐ End-to-end stack: FRR body + ASVD head combined (1000 samples, seed 42)
+
+Full end-to-end compression — the actual deployment artifact. FRR body (HQ5 h256) with its output projection replaced by a rank-reduced ASVD head, then fine-tuned.
+
+| Config                   | Params     | Compression | all-T1 | all-T10 | last-T10 | PPL ratio | Quality |
+|--------------------------|------------|-------------|--------|---------|----------|-----------|---------|
+| Teacher (Qwen3-1.7B body)| 1092.1 M   | 1.0×        | 100%   | 100%    | 100%     | 1.000     | 100%    |
+| HQ5 h256 + full head     | 312.67 M   | 3.5×        | 55.40% | 69.64%  | 64.24%   | 1.216     | 75.94%  |
+| HQ5 h256 + ASVD r=1024   | 159.19 M   | 6.9×        | 54.91% | 69.51%  | 64.03%   | 1.410     | 70.22%  |
+| HQ5 h256 + ASVD r=512    | 80.35 M    | 13.6×       | 54.46% | 68.98%  | 64.05%   | 2.400     | 55.33%  |
+| **HQ5 h256 + ASVD r=256**| **40.93 M**| **26.7×**   | **53.88%** | **68.32%** | **63.40%** | 3.172 | 49.92% |
+
+**Interpretation.** The FRR+ASVD end-to-end stack at 26.7× total compression still reproduces 68.32% of the teacher's top-10 next-token set — within 1.3 percentage points of the uncompressed-head baseline. This is the number to compare against GPTQ/AWQ/pruning in public benchmarks. Raw data: [combined_stack_results_hq5.json](combined_stack_results_hq5.json).
+
+---
+
+## Cross-model generality (scaling the method)
+
+The method is architecture-agnostic. This release includes:
+
+- **`scaling/teacher_loader.py`** — auto-detecting Qwen3-family loader. Point it at any cached Qwen3 state dict; it infers hidden size, layer count, head counts, and intermediate dim from the tensors.
+- **`run_frr_generic.py`** — generic trainer with `--teacher_cache` flag. Drop-in replacement for the hardcoded 1.7B trainer.
+- **`scale_eval.py`** — model-agnostic eval with bootstrap CIs.
+- **`tests/test_sanity.py`** — 6-test regression guard (teacher auto-detect on both 0.6B and 1.7B caches, forward determinism, flagship checkpoint reproducibility, random-init floor, ckpt roundtrip).
+
+Verified on both Qwen3-0.6B (hidden=1024) and Qwen3-1.7B (hidden=2048) state dicts. See [docs/SCALING_PLAN.md](docs/SCALING_PLAN.md) for the cross-scale experimental matrix and [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) for honest disclosures.
+
 ---
 
 ## How It Works
