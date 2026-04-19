@@ -153,6 +153,7 @@ class TinyFRR_HQ4(nn.Module):
 
 # ==================== Warm-start from best available ====================
 WARM_CANDIDATES = [
+    f'checkpoints_1.7b_tinyfrr_hq5_h{H_INNER}/best.pt',
     f'checkpoints_1.7b_tinyfrr_hq4_h{H_INNER}/best.pt',
     f'checkpoints_1.7b_tinyfrr_hq3_h{H_INNER}/best.pt',
     f'checkpoints_1.7b_tinyfrr_h{H_INNER}_hq2/best.pt',
