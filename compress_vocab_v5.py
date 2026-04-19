@@ -76,10 +76,12 @@ def group_quantize(w: torch.Tensor, bits: int, group_size: int):
     Returns: quantized tensor of same shape (as float but on the int grid).
     """
     *lead, last = w.shape
-    assert last % group_size == 0 or group_size >= last
-    g = min(group_size, last)
-    n_groups = last // g
-    w_g = w.reshape(*lead, n_groups, g)
+    if last % group_size == 0:
+        g = group_size
+        n_groups = last // g
+        w_g = w.reshape(*lead, n_groups, g)
+    else:
+        w_g = w.unsqueeze(-2)
     amax = w_g.abs().amax(dim=-1, keepdim=True).clamp(min=1e-8)
     q_max = (1 << (bits - 1)) - 1  # e.g. 7 for int4, 1 for int2
     scale = amax / q_max
