@@ -1,37 +1,41 @@
-# Show HN: 959x model compression via one shared recursive block + quantization pipeline
+# Show HN: UltraCompress — 311× compression of Qwen3-1.7B at 70% teacher quality
 
 **GitHub:** https://github.com/mounnar/ultracompress
-**Paper:** [PAPER_DRAFT.md](PAPER_DRAFT.md)
 
----
+TL;DR: A single shared transformer block, applied recursively in a fractal schedule, replaces all 28 blocks of Qwen3-1.7B. End result: **1.51 M trainable parameters** (a **311× compression of the transformer body**) at **70.0% teacher-agreement quality** and **55.1% top-1 / 70.0% top-10** on a held-out FineWeb-Edu set.
 
-UltraCompress replaces all 28 layers of a transformer with a single shared block applied recursively. Combined with a 5-stage quantization pipeline, we achieve **959x end-to-end compression with only 1.5% quality degradation**, proven on real weights.
+## What's new vs standard distillation
 
-**The approach:** Fractal Residual Recursion (FRR) exploits the fact that transformer layers are functionally similar (CKA similarity >0.9) despite having completely different weights (cosine similarity: 0.000). One shared block with lightweight per-layer modulation (~8K params) captures the shared function space. Compress that block with Hadamard rotation + SVD + Q2 + entropy coding, and total compression hits 959x.
+Standard KD objectives concentrate gradient on tokens where the teacher is confident. This caps student quality at a fixed plateau (~54% T1 in our setup) because the student saturates on the easy tokens and never learns the hard ones.
 
-**Proven results (Qwen3-0.6B, 1.5 GB baseline):**
+We **invert** the weighting:
 
-| Method | Top-10 | Size | Compression | Notes |
-|--------|--------|------|-------------|-------|
-| FRR (50K steps) | 63% | 14.7 MB | 60x | New: just needs more training |
-| FRR + Q2 pipeline (E2E) | 53% | 1.8 MB | 959x | Proven end-to-end |
-| FRR-PHM (hypercomplex) | 53% | 3.7 MB | 239x | 4x fewer params |
-| Standard quantization (Q2) | ~89% | 220 MB | 4x | For comparison |
+```
+hard_weight = (1 + H(teacher_logits)) ^ entropy_power
+```
 
-**Scaling evidence:** 1.7B FRR shows 51% T10 at step 3K (vs 46% for 0.6B at same step). Bigger models compress better because FRR compression = 1/n_layers, and bigger models have more layers.
+High-entropy (uncertain) teacher tokens get *more* gradient, not less. This single change pushed our T1 from 54.2% (HQ3 baseline) → 55.1% (HQ5 best, 57.0% peak) and quality from 67.7% → 70.0%. ENT_POW sweeps are monotone up to 1.5; HQ6 tests 2.0.
 
-**What makes this different from GPTQ/AWQ/etc:** Those quantize each layer independently (4-8x ceiling). FRR replaces all layers with ONE shared block (60x+). The two are composable.
+## Architecture
 
-**Honest caveats:**
+- One shared Qwen-style transformer block `B`.
+- Applied in a fractal schedule: 4 scales × 7 iterations = 28 effective applications.
+- Linear projections `2048 → h → 2048` bracket the fractal body (`h ∈ {128, 256}`).
+- Teacher's `final_norm` + `lm_head` are frozen and re-used.
 
-- 63% top-10 token agreement is not production quality for text generation. The model captures the right neighborhood but not always the exact token.
-- 959x compression drops quality to 53% T10 (from 63% pre-Q2). Usable for some applications, not all.
-- Tested on 0.6B and 1.7B. 8B+ results pending.
-- The quality gap vs the original model is real. This is extreme compression, not lossless.
-- No one else has validated this approach at scale. We may hit unexpected walls at 8B+.
+## Results (Qwen3-1.7B, 80K-step distillation, 500 M-token FineWeb-Edu)
 
-**What I believe is novel:** Google's Relaxed Recursive Transformers (Oct 2024) and Ouroboros V2 (Apr 2026) use similar shared-block + LoRA approaches but achieve only ~2x compression. We push to 60x (30x further) by combining aggressive parameter sharing with extended distillation training.
+| Variant      | Trainable | Body compression | Best T1 | Best T10 | Quality |
+|--------------|-----------|------------------|---------|----------|---------|
+| HQ5 h256     | 1.51 M    | **311×**         | **55.1%** (peak 57.0%) | **70.0%** | **70.0%** |
+| HQ5 h128     | 0.64 M    | **734×**         | 54.0%   | 68.4%    | 68.4%   |
 
-The codebase is 76 modules, 50K+ lines. Includes holographic encoding, tensor networks, immune system V-D-J recombination, predictive coding, hypercomplex multiplication, and 70 other approaches we tested. Research code, not a polished library.
+## Reproducibility
 
-22-year-old solo developer. Built in 48 hours. AMA.
+All code, checkpoints, and logs are in the repo. Two RTX 5090s, ~6 hours for a full 80K-step run. Detached launcher survives terminal / editor close — [launch_hq5_detached.py](https://github.com/mounnar/ultracompress/blob/master/launch_hq5_detached.py).
+
+## What's next
+
+HQ6 (entropy_power 2.0, h384 capacity test) is training now. Combined with ASVD head factorization, Q2 weights, and entropy coding, we project the full stack fits under 12 GB for 100T-equivalent models.
+
+Feedback welcome — the inverted-entropy idea feels general and probably applies to any distillation setup that's plateau-ed on easy tokens.

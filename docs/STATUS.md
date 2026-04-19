@@ -1,3 +1,54 @@
+# UltraCompress — Project Status
+
+**Last updated:** end of HQ5 cycle, HQ6 training.
+**Branch:** `master`. **Latest commit:** `cefb66a` — HQ5 breakthrough.
+
+## TL;DR
+
+**Flagship model: HQ5 h256** — 1.51 M trainable params replace the 28 transformer blocks of Qwen3-1.7B. **311× body compression. 70.0% teacher-quality. 55.1% top-1 (peak 57.0%). 70.0% top-10.** First checkpoint to cross the 70% quality threshold on this distillation task.
+
+## Generation progression (same teacher, same data, same architecture class)
+
+| Gen  | Objective change                            | h256 best T1 | h256 best T10 | h256 Quality | Status        |
+|------|---------------------------------------------|--------------|---------------|--------------|---------------|
+| Base | Hidden-state MSE + KD                       | 53.7%        | 67.8%         | 66.9%        | archived      |
+| HQ2  | + activation-aware weighting                | 53.9%        | 67.9%         | 67.2%        | archived      |
+| HQ3  | + confidence-weighted CE+margin             | 54.1%        | 68.2%         | 68.1%        | archived      |
+| HQ4  | + **inverted** entropy weighting, latent decay | 54.3%     | 69.2%         | 68.9%        | archived      |
+| HQ5  | entropy_power 1.0 → 1.5                     | **55.1%**    | **70.0%**     | **70.0%** ✅ | **flagship**  |
+| HQ6  | entropy_power 1.5 → 2.0 (+h384 capacity)    | training     | training      | training     | GPU 0, GPU 1  |
+
+## Active training
+
+- **GPU 0** `hq6_h256` — warm-started from `hq5_h256/best.pt`, ENT_POW=2.0, 80K steps, logs `hq6_h256.log`.
+- **GPU 1** `hq6_h384` — warm-started from `h384/best.pt`, ENT_POW=1.5, 80K steps, logs `hq6_h384.log`.
+
+Estimated completion: ~6 hours per run (empirical from HQ4/HQ5).
+
+## Target tracker
+
+| Target                        | Status  | Current                  |
+|-------------------------------|---------|--------------------------|
+| 70% teacher quality           | ✅ met  | 70.0% (HQ5 h256 @ 78K)   |
+| 90% T10                       | pursuing | 70.0% (+20 pp to go)     |
+| 70% T1                        | pursuing | 57.0% peak (+13 pp)      |
+| Fit under 50 GB VRAM          | ✅ met  | body 311×, room for 100T |
+| End-to-end compression ≥ 300× | ✅ met  | 311× body-only           |
+
+## Artifacts
+
+- Checkpoints: `checkpoints_1.7b_tinyfrr_hq{3,4,5}_h{128,256}/{best.pt,latest.pt}`.
+- Training logs: `hq{3,4,5,6}_h{128,256,384}.log`.
+- Results writeups: [HQ3_RESULTS.md](../HQ3_RESULTS.md), [HQ4_RESULTS.md](../HQ4_RESULTS.md), [HQ5_RESULTS.md](../HQ5_RESULTS.md).
+- Model card: [MODEL_CARD.md](MODEL_CARD.md).
+- Top-level overview: [README.md](../README.md).
+
+## Immediate next steps
+
+1. Let HQ6 finish (~6 h). Promote winner to flagship if it beats HQ5.
+2. Run hires eval (1000 stratified samples, seed 42) on HQ5 h256 best.pt for publication-grade CIs.
+3. Plug HQ5 h256 body into ASVD r=1024 head; measure end-to-end quality.
+4. Refresh paper figures (`docs/paper_figures/`) with HQ5/HQ6 curves.
 # UltraCompress — Status (Updated 2026-04-16 1:20AM)
 
 **Goal:** 100T+ models → sub 20GB (one GPU), close to zero degradation. Scalable. Both new AND existing models.

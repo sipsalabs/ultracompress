@@ -1,85 +1,56 @@
-# What Actually Works (and What Doesn't)
+# What Works — UltraCompress distillation recipe (as of HQ5)
 
-*Honest assessment after 2 days, 124 commits, 81 modules, 42K lines of code.*
+## Architecture
 
-## WORKS (proven with real numbers)
+- **FRR body**: one shared Qwen-style transformer block `B`, applied in a fractal schedule `FractalModel(n_scales=4, iters_per_scale=7)` — that is, 4 scales × 7 iterations = 28 effective applications, matching the teacher's 28-block depth with a single set of weights.
+- **Projections**: `proj_in: 2048 → h` before the body, `proj_out: h → 2048` after, where `h ∈ {128, 256, 384}`.
+- **Head**: teacher's `final_norm` + `lm_head` frozen and re-used unchanged.
+- Only `proj_in`, body block `B`, and `proj_out` are trainable: **0.64 M (h=128) / 1.51 M (h=256) / 2.61 M (h=384)**.
 
-### 1. FRR Single Shared Block
-One transformer block, applied 28 times with per-scale gamma/beta modulation.
-- **0.6B: 65% T10 at 60x** (100K steps)
-- **1.7B: 66% T10 at 48x** (50K steps, record)
-- Why: CKA functional similarity >0.9 between layers. Shared-weight transformers are Turing complete.
-- Key: more training steps = more quality. 10K->100K = 54%->65%.
+## Training objective (HQ5)
 
-### 2. FRR + Q2 Pipeline (End-to-End)
-Hadamard rotation -> SVD -> Q2 quantization -> residual correction -> entropy coding.
-- **959x compression at -1.5% quality drop** (proven E2E)
-- Entropy coding gives 6x free on Q2 weights.
+```
+hard_weight  = (1 + H(teacher_logits)) ^ entropy_power     # h256: 1.5, h128: 1.0
+fkl          = hard_weight · KL(T || S)
+rkl          = 0.3 · KL(S || T)
+latent       = latent_w(step) · MSE(S_hidden, T_hidden)    # 1.0 → 0.1 (h256) / 0.3 (h128)
+ce           = 0.5 · ce_ramp(step) · CE(teacher_argmax)    # 0.5 → 1.0
+margin       = 0.3 · ce_ramp · hard_weight · margin_loss
+total_loss   = fkl + rkl + latent + ce + margin
+```
 
-### 3. PHM (Hypercomplex Multiplication)
-Replace linear layers with 4-component hypercomplex multiplication.
-- **53% T10 at 239x compression** — 4x fewer params, -2% vs baseline.
+Key insight: the `hard_weight` **upweights** high-entropy (uncertain) teacher tokens rather than down-weighting them, which is the opposite of standard confidence weighting. This is what breaks the 54% T1 plateau.
 
-### 4. Inference Speed (L2 Cache)
-FRR block (14.7 MB) fits in GPU L2 cache. Teacher (3 GB) doesn't.
-- **3.1-3.4x faster inference** across all sequence lengths. Proven on RTX 5090.
+## Schedules
 
-### 5. Scaling
-Bigger models compress better with FRR.
-- 0.6B -> 1.7B: +3-5% T10 at same training steps.
-- Projected: 8B -> 70%+ T10.
+- `latent_w`: 1.0 → `latent_w_final` linearly over steps 20K → 50K.
+- `ce_ramp`: 0.5 → 1.0 linearly over steps 16K → 48K.
+- `T` (KD temperature): 2.0 → 1.0 linearly until step 64K.
+- LR: 2e-4 → 1e-5 cosine, 500-step warmup.
 
-## DOESN'T WORK (honest failures)
+## Hyperparameters (fixed)
 
-### 1. Error-Only Compression
-Predict layer N+1 from layer N, store only errors.
-- **-40% accuracy** on real weights. Layers are statistically independent (cosine ~0.000).
+- `SEQ_LEN=128`, `BATCH=4`, `ACCUM=2`, `STEPS=80 000`.
+- Data: `fineweb_edu_500M_tokens.pt` (500 M tokens).
+- Optimizer: AdamW, `weight_decay=0.01`.
+- Precision: bf16 autocast, fp32 params.
 
-### 2. Multi-Block FRR
-2-3 specialized shared blocks instead of 1.
-- **Same quality (57% T10), 11x more params.** Single block is already optimal.
+## Empirically verified
 
-### 3. Controller Hypernetwork
-Input-dependent modulation (Ouroboros V2 style).
-- **NaN at step 3K.** Unstable. Matches Ouroboros V2 paper finding.
+1. **Inverted entropy weighting scales.** ENT_POW 0 → 1.0 → 1.5 produced monotone gains in quality and peak T1. Extrapolation to 2.0 is HQ6's test.
+2. **Per-width latent floor matters.** h128 benefits from a higher latent floor (0.3) for stability; h256 prefers 0.1 for frontier performance.
+3. **Warm-starting cascades.** HQ5 warm-started from HQ4, which warm-started from HQ3. Each generation's best.pt is a strictly better starting point than random init for the next objective.
+4. **Detached launcher is reliable.** Both HQ4 and HQ5 completed unattended over ~6 h per run. No supervision required.
 
-### 4. Quant-Aware Training
-Train FRR with Q2 quantization penalty.
-- **6% T10 after Q2** (vs 53% with normal training + pipeline Q2). Backfires.
+## What did not work
 
-### 5. Real Text Training (on random-token eval)
-FineWeb-Edu training.
-- **41% T10** (vs 56% with random tokens). Eval metric mismatch, not a real failure.
+- **Standard confidence weighting** (ENT_POW = −1 or similar): plateaus at 54% T1 (HQ3 ceiling).
+- **Dropping latent loss entirely after warmup**: degrades ppl-ratio without improving T1/T10.
+- **Larger batches at shorter SEQ_LEN**: quality tracks effective-tokens-seen, not batch size.
 
-### 6. Intermediate Hidden State Matching
-Match per-layer hidden states during distillation.
-- **No T10 improvement** with random tokens. +4% T1 only.
+## Files
 
-### 7. 4D Cross-Depth Attention (Sip's idea)
-- Collapsed at step 4K -> NaN. Same instability pattern as controller.
-- **Pattern: any dynamic computation in the shared block is unstable.**
-- Needs: warmup from static, gradient scaling, or late-phase-only activation.
-
-### 8. Sparse30, NeuroFractal, Seed Architecture
-- All dead (0-4% T10). Too aggressive or unstable.
-
-## MARGINAL (tested, small gain)
-
-1. **MoL (Mixture of LoRAs)** — 58% T10 at 47x (+3% over baseline 55% at 60x). Trades compression for quality. Stable unlike controller but not a breakthrough.
-
-## UNTESTED BUT PROMISING
-
-1. **8B scaling** — cached, script ready, auto-launching ~5 PM
-2. **Born-again distillation** — +2-4% per generation, literature-backed
-3. **Dual-objective** (Sip's idea) — split T10/T1 optimization across recursion depth
-4. **Top-1 focused loss** — CE on teacher's argmax + margin ranking
-5. **Optimized training** — 2x batch, 1.5x LR, should converge faster
-6. **Speculative decoding** — FRR as draft model, 2x speedup, zero quality loss
-7. **Prelude/Coda** — keep first/last layers untied, share middle only
-
-## THE FORMULA
-
-Quality = f(model_size, training_steps)
-
-Nothing else matters as much. Architecture enhancements give marginal gains (+1-7%).
-Just train longer on a bigger teacher.
+- Training: [run_hq4_ceiling_break.py](../run_hq4_ceiling_break.py) (shared HQ4/5/6).
+- Launchers: [launch_hq4_detached.py](../launch_hq4_detached.py), [launch_hq5_detached.py](../launch_hq5_detached.py), [launch_hq6_detached.py](../launch_hq6_detached.py).
+- Data prep: `prepare_fineweb_edu_500M.py`.
+- Eval: inline `eval_loop()` inside the training script (100 seqs, matches hires protocol structure).

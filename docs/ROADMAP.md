@@ -1,52 +1,28 @@
-# UltraCompress Roadmap (Updated April 12, 2026)
+# Roadmap
 
-## PROVEN RESULTS
-- [x] FRR 0.6B: 63% T10 at 60x (50K steps)
-- [x] FRR 1.7B: **66% T10 at 48x** (50K steps) — ALL-TIME BEST
-- [x] FRR + Q2 E2E: 53% T10 at 959x (proven end-to-end)
-- [x] PHM variant: 53% T10 at 239x (4x fewer params)
-- [x] Scaling confirmed: 1.7B > 0.6B quality
-- [x] MEGA test: 15 modules tested, PredCoding (+7%), PHM (4x efficiency)
-- [x] Multi-block: does NOT help (same quality, 11x more params)
-- [x] Entropy coding: 6x lossless on Q2 weights
-- [x] L2 cache inference advantage: 60x fewer VRAM reads
+## Shipped
 
-## RUNNING NOW
-- [ ] 0.6B 100K training (step 70K/100K, 64% T10, finishing ~12:45 PM)
-- [ ] **1.7B 100K training** (step 10K/100K, targeting **70%+ T10**)
-- [ ] 8B model cached and ready (16 GB FP16)
+- **HQ5 h256** — 311× body compression, 70.0% teacher-quality on Qwen3-1.7B. Current flagship.
+- **HQ5 h128** — 734× body compression, 68.4% quality. Strongest small variant.
+- **HQ4** — broke the HQ3 ceiling via inverted entropy weighting + latent decay.
+- **HQ3** — 5-loss objective with confidence-weighted CE + margin.
+- **Detached training launcher** — survives VS Code / terminal close, dual-GPU.
 
-## READY TO RUN (scripts built)
-- [ ] 8B dual-GPU FRR (run_8b_dual_gpu.py — teacher GPU 0, student GPU 1)
-- [ ] Controller hypernetwork test (input-dependent modulation)
-- [ ] MoL test (Mixture of LoRA experts, token-conditional routing)
-- [ ] Optimized training (2x batch, 1.5x LR, T warmup)
-- [ ] Born-again distillation (3 generations, +2-4% quality)
-- [ ] Speed benchmark (FRR vs teacher inference latency)
-- [ ] Speculative decoding benchmark (measure 2x speedup)
-- [ ] Standard eval (WikiText-2 perplexity, HellaSwag accuracy)
-- [ ] FRR from scratch v2 (real LM training on FineWeb-Edu)
+## In progress
 
-## NEAR-TERM (this week)
-- [ ] File provisional patent Monday ($80) — 25 claims
-- [ ] 8B scaling test (projected 70%+ T10)
-- [ ] Submit arxiv paper (after 8B results)
-- [ ] Post Show HN (after patent + paper)
-- [ ] Upload compressed models to HuggingFace
-- [ ] Deploy Gradio demo to HF Spaces
-- [ ] Run lm-eval benchmarks (MMLU, HellaSwag, ARC)
+- **HQ6 h256** — entropy_power 2.0 extension (GPU 0, ~6 h).
+- **HQ6 h384** — capacity-headroom test, 180× body compression (GPU 1, ~6 h).
 
-## MID-TERM (this month)
-- [ ] 70B scaling test (NF4 teacher + CPU offload)
-- [ ] llama.cpp fork with FRR architecture support
-- [ ] Speculative decoding product (2x inference speedup)
-- [ ] First paying customer (Fiverr/direct)
-- [ ] GitHub public launch + GitHub Sponsors
-- [ ] pip install ultracompress on PyPI
+## Next
 
-## LONG-TERM (Q2-Q3 2026)
-- [ ] YC S26 application (deadline TBD)
-- [ ] From-scratch FRR training at 1B+ scale
-- [ ] 100T model compression demonstration
-- [ ] Enterprise API (compression-as-a-service)
-- [ ] Series A fundraise ($20-25M at $60-120M)
+1. **Hires eval** (1000 stratified samples, seed 42) on HQ5 h256 for publication CIs.
+2. **Combined stack**: plug HQ5 body into ASVD r=1024 head — end-to-end joint quality benchmark.
+3. **Q2 weight quantization** on HQ5 body for another +16× compression.
+4. **Entropy coding** on Q2 weights for an additional ~6×.
+5. **Extended token horizon** — 100T projection requires ~12 GB with FRR + Q2 + entropy coding.
+
+## Longer horizon
+
+- Port recipe to Qwen3-7B and Llama-3.1-8B teachers.
+- Structured sparsity on the single shared block for on-device inference.
+- Joint body+head HQ objective (currently head and body trained separately).
