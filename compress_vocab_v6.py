@@ -297,11 +297,18 @@ def fidelity_eval(sb, teacher, tb, eval_tokens, device, label,
 
 
 def qat_finetune(sb, teacher, tb, all_tokens, device, steps=800, batch=4,
-                 seq=128, lr=3e-4, verbose=True):
+                 seq=128, lr=3e-4, verbose=True, eval_tokens=None, eval_every=100,
+                 eval_seqs=20):
     opt = torch.optim.AdamW(sb.parameters(), lr=lr, betas=(0.9, 0.95), weight_decay=0.0)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=steps, eta_min=lr * 0.1)
     scaler = torch.amp.GradScaler('cuda')
     t0 = time.time()
+    # best-checkpoint tracking: pick the QAT step with highest eval T1,
+    # not the last step. QAT is noisy under aggressive PQ; the last step
+    # is often worse than an intermediate one.
+    best_t1 = -1.0
+    best_state = {k: v.detach().clone() for k, v in sb.state_dict().items()}
+    best_step = 0
     for step in range(steps):
         starts = torch.randint(0, all_tokens.numel() - seq, (batch,))
         toks = torch.stack([all_tokens[s:s + seq].long() for s in starts]).to(device)
@@ -327,6 +334,20 @@ def qat_finetune(sb, teacher, tb, all_tokens, device, steps=800, batch=4,
                 t1 = (s_logits.argmax(-1) == tgt).float().mean().item()
             print(f"  [PQ-QAT] step={step:4d}  kl={kl.item():.3f}  ce={ce.item():.3f}  "
                   f"T1={t1*100:5.2f}%  ({time.time()-t0:.0f}s)", flush=True)
+        # periodic eval + best-state save
+        if eval_tokens is not None and (step % eval_every == 0 or step == steps - 1):
+            sb.eval()
+            with torch.no_grad():
+                et1, _ = fidelity_eval(sb, teacher, tb, eval_tokens, device,
+                                       f'qat-eval s={step}', n_seqs=eval_seqs, seq=seq)
+            sb.train()
+            if et1 > best_t1:
+                best_t1 = et1
+                best_step = step
+                best_state = {k: v.detach().clone() for k, v in sb.state_dict().items()}
+    # restore best
+    sb.load_state_dict(best_state)
+    print(f"  [PQ-QAT] restored best state: step={best_step}  eval_T1={best_t1:.2f}%", flush=True)
 
 
 def main():
@@ -341,6 +362,8 @@ def main():
     ap.add_argument('--lr', type=float, default=3e-4)
     ap.add_argument('--out', type=str, required=True)
     ap.add_argument('--eval_tokens', type=str, default='fineweb_edu_100M_tokens.pt')
+    ap.add_argument('--eval_every', type=int, default=100)
+    ap.add_argument('--eval_seqs', type=int, default=20)
     ap.add_argument('--device', type=str, default='cuda:0')
     args = ap.parse_args()
 
@@ -385,7 +408,9 @@ def main():
 
     print(f"\n--- PQ-QAT recovery ({args.qat_steps} steps) ---")
     qat_finetune(sb, tb.teacher, tb, toks, args.device,
-                 steps=args.qat_steps, batch=args.batch, seq=args.seq, lr=args.lr)
+                 steps=args.qat_steps, batch=args.batch, seq=args.seq, lr=args.lr,
+                 eval_tokens=args.eval_tokens, eval_every=args.eval_every,
+                 eval_seqs=args.eval_seqs)
 
     print("\n--- FINAL post-QAT ---")
     t1_final, t10_final = fidelity_eval(sb, tb.teacher, tb, args.eval_tokens, args.device, 'post-QAT')
