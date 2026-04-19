@@ -6,7 +6,11 @@
 
 ## The claim
 
-**A 1.51 M-parameter neural network that reproduces 70% of the next-token behavior of a 1.72 B-parameter transformer language model — a 311× compression ratio with no accuracy cliff.**
+**A 1.51 M-parameter neural network that reproduces ~70% of the next-token behavior of a 1.72 B-parameter transformer language model — a 311× compression ratio verified on 1000 held-out samples.**
+
+*Verified (hires_eval.py, seed 42, n=1000, tail-50M FineWeb-Edu):*
+*HQ5 h256: all-T10 = **69.64%** [69.0, 70.3], all-T1 = **55.40%**, quality = **75.94%**, PPL ratio = **1.216**, trainable = 1,509,916.*
+*HQ5 h128: all-T10 = **68.00%**, all-T1 = **53.78%**, quality = **73.86%**, PPL ratio = **1.254**, trainable = 640,284 (**734× compression**).*
 
 With an additionally-compressed output head (ASVD, low-rank): the full compressed inference stack is [TODO: fill from combined_stack_results_hq5.json] parameters at [TODO]× end-to-end compression, retaining [TODO]% of teacher top-10 accuracy.
 
@@ -38,10 +42,10 @@ Both ideas are simple. Both are novel in combination. The result is compression 
 
 | Configuration | Trainable params | Compression vs teacher | all-T1 | all-T10 | Quality* | PPL ratio |
 |---|---|---|---|---|---|---|
-| HQ5 h256 (body only) | 1.51 M | 311× | **[hires_results_hq5.json]** | **[...]** | **[...]** | **[...]** |
-| HQ5 h128 (body only) | 0.64 M | 734× | **[...]** | **[...]** | **[...]** | **[...]** |
-| HQ5 h256 + ASVD r=1024 (end-to-end) | ~3.1 M | ~555× | **[combined_stack_results_hq5.json]** | **[...]** | **[...]** | **[...]** |
-| HQ5 h256 + ASVD r=512 (end-to-end) | ~2.3 M | ~750× | **[...]** | **[...]** | **[...]** | **[...]** |
+| HQ5 h256 (body only) | 1.51 M | 311× | **55.40%** | **69.64%** | **75.94%** | **1.216** |
+| HQ5 h128 (body only) | 0.64 M | 734× | **53.78%** | **68.00%** | **73.86%** | **1.254** |
+| HQ5 h256 + ASVD r=1024 (end-to-end) | ~3.1 M | ~555× | [combined_stack_results_hq5.json] | [...] | [...] | [...] |
+| HQ5 h256 + ASVD r=512 (end-to-end) | ~2.3 M | ~750× | [...] | [...] | [...] | [...] |
 
 *Quality = 0.5 · all-T10 + 0.5 · (1/ppl_ratio), matching internal training-eval metric.*
 

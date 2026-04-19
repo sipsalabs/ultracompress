@@ -120,8 +120,10 @@ At inference the trained body can be combined with the full teacher lm_head, or 
 
 | Inner width | Trainable params | Compression | all-T1 | all-T10 | quality | PPL ratio |
 |---|---|---|---|---|---|---|
-| 256 | 1.51 M | 311× | **[hires_results_hq5.json]** | **[...]** | **[...]** | **[...]** |
-| 128 | 0.64 M | 734× | **[...]** | **[...]** | **[...]** | **[...]** |
+| 256 | 1,509,916 | 311× | **55.40%** | **69.64%** | **75.94%** | **1.216** |
+| 128 | 640,284 | 734× | **53.78%** | **68.00%** | **73.86%** | **1.254** |
+
+*Evaluation protocol: 1000 samples, seed 42, SEQ_LEN = 128, eval starts drawn from tail 50 M tokens of FineWeb-Edu 500 M shard (least-touched region during training). Confidence intervals by 1000-iteration bootstrap.*
 
 With ASVD r=1024 compressed output head, combined end-to-end:
 
