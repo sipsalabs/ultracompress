@@ -1,4 +1,8 @@
-torch>=2.0
-numpy>=1.24
-transformers>=4.40
+# Pinned to the exact versions used to produce the verified held-out
+# numbers reported in the README. Newer torch/transformers should work
+# but have not been certified.
+torch==2.11.0+cu128
+transformers==4.57.2
+datasets==4.8.4
+numpy==2.2.6
 safetensors>=0.4

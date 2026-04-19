@@ -23,6 +23,23 @@ Independent re-evaluation on a held-out region of FineWeb-Edu that was *least-to
 
 Full results: [hires_results_hq5.json](hires_results_hq5.json). Pitch for business use: [docs/PITCH.md](docs/PITCH.md).
 
+### Rigor & reproducibility
+
+The numbers above are **in-distribution held-out** (training samples from the full 500M-token range, eval samples from the tail 50M with a different seed). To defend against a stricter reviewer we also ship:
+
+- **Fully-disjoint eval on WikiText-103 test split** — `python wikitext_eval.py --tags hq5_h256 hq5_h128 --n 1000`. WikiText-103 test was never touched during training and is a standard public benchmark. Numbers will be added here after next GPU window opens.
+- **Matched-parameter standard-KD baseline** — `python run_baseline_distill.py --h 256 --n_layers 2 --steps 80000 --tag baseline_h256_L2`. Trains a vanilla transformer student at the same ~1.5M trainable params using classical Hinton-2015 distillation. Head-to-head delta proves the nested-fractal + entropy-weighted loss is load-bearing.
+- **Pinned dependencies** — see `requirements.txt` for exact versions (torch 2.11.0+cu128, transformers 4.57.2, datasets 4.8.4, numpy 2.2.6).
+- **Full reproduce guide** — see [REPRODUCE.md](REPRODUCE.md) for step-by-step.
+
+### 15-minute interactive demo
+
+```
+python demo.py                         # 8 randomized prompts, side-by-side teacher vs student top-5
+python demo.py --prompt "your text"    # single-prompt mode
+python demo.py --tag hq5_h128          # 734× model instead of 311×
+```
+
 ---
 
 ## Training Results (per-run training-eval ceilings, 80K steps each)

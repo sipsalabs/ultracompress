@@ -31,13 +31,35 @@ from ultracompress.inference import ModelConfig, MiniTransformer
 from ultracompress.moonshot import FractalModel
 
 ap = argparse.ArgumentParser()
-ap.add_argument('--prompt', type=str,
-                default="The capital of France is")
+ap.add_argument('--prompt', type=str, default=None,
+                help='single prompt; if omitted, --n_prompts random prompts are evaluated')
+ap.add_argument('--n_prompts', type=int, default=8,
+                help='when --prompt is not set, evaluate this many randomized prompts')
 ap.add_argument('--tag', type=str, default='hq5_h256',
                 help='TinyFRR tag; hq5_h256 (311x) or hq5_h128 (734x)')
 ap.add_argument('--device', type=str, default='cuda:0')
 ap.add_argument('--topk', type=int, default=5)
+ap.add_argument('--seed', type=int, default=0,
+                help='random seed for prompt shuffling')
 args = ap.parse_args()
+
+# Fixed prompt bank chosen BEFORE seeing any model output (see demo.py
+# header comment). Covers factual, compositional, code, and natural-text
+# prompts so reviewers cannot accuse cherry-picking.
+DEFAULT_PROMPTS = [
+    "The capital of France is",
+    "The square root of 144 is",
+    "def fibonacci(n):\n    if n <= 1:\n        return",
+    "In the year 1969, humans landed on the",
+    "Shakespeare wrote the play Hamlet in the early",
+    "Water boils at a temperature of",
+    "The theory of general relativity was developed by",
+    "import numpy as np\narr = np.zeros(10)\narr[5] =",
+    "The mitochondrion is the powerhouse of the",
+    "A binary search tree has O(log n) lookup when it is",
+    "The Pacific Ocean is the largest ocean on",
+    "To make bread you need flour, water, yeast, and",
+]
 
 DEVICE = args.device
 N_TEACHER_LAYERS = 28
@@ -150,18 +172,20 @@ print(f"  compression ratio: {teacher_params / student_trainable:.0f}x (trainabl
 
 
 # ---------- run ----------
-if tok is not None:
-    ids = tok(args.prompt, return_tensors='pt').input_ids.to(DEVICE)
-else:
-    # fallback: byte-level
-    ids = torch.tensor([[ord(c) for c in args.prompt[:64]]], device=DEVICE)
+def eval_prompt(prompt):
+    if tok is not None:
+        ids = tok(prompt, return_tensors='pt').input_ids.to(DEVICE)
+    else:
+        ids = torch.tensor([[ord(c) for c in prompt[:64]]], device=DEVICE)
+    with torch.no_grad():
+        t_logits = teacher.forward(ids, max_layers=N_TEACHER_LAYERS)[0, -1]
+        s_logits = student(ids)[0, -1]
+    t_top10 = set(t_logits.topk(10).indices.tolist())
+    s_top10 = set(s_logits.topk(10).indices.tolist())
+    overlap = len(t_top10 & s_top10)
+    top1_match = int(t_logits.argmax() == s_logits.argmax())
+    return t_logits, s_logits, top1_match, overlap
 
-print(f"\nprompt: {args.prompt!r}")
-print(f"prompt tokens: {ids.shape[1]}")
-
-with torch.no_grad():
-    t_logits = teacher.forward(ids, max_layers=N_TEACHER_LAYERS)[0, -1]
-    s_logits = student(ids)[0, -1]
 
 def topk_table(logits, k):
     probs = F.softmax(logits.float(), dim=-1)
@@ -173,28 +197,49 @@ def topk_table(logits, k):
     return rows
 
 
-t_top = topk_table(t_logits, args.topk)
-s_top = topk_table(s_logits, args.topk)
+def show_one(prompt, show_table=True):
+    t_logits, s_logits, t1m, ov = eval_prompt(prompt)
+    if show_table:
+        t_top = topk_table(t_logits, args.topk)
+        s_top = topk_table(s_logits, args.topk)
+        print("\n" + "-" * 78)
+        print(f"prompt: {prompt!r}")
+        print(f"{'rank':<5} {'teacher Qwen3-1.7B':<38} {'student FRR ' + args.tag:<38}")
+        print("-" * 78)
+        for rank in range(args.topk):
+            ti, ts, tp = t_top[rank]
+            si, ss, sp = s_top[rank]
+            match = '  <<<' if ti == si else ''
+            print(f"{rank+1:<5} {ts:<18} {tp*100:>6.2f}%           "
+                  f"{ss:<18} {sp*100:>6.2f}%{match}")
+        print(f"  top-1 match: {'YES' if t1m else 'no'}   top-10 overlap: {ov}/10")
+    return t1m, ov
 
-print("\n" + "-" * 78)
-print(f"{'rank':<5} {'teacher Qwen3-1.7B':<38} {'student FRR ' + args.tag:<38}")
-print(f"{'':<5} {'(1.72 B params)':<38} {'(' + f'{student_trainable/1e6:.2f}' + ' M params)':<38}")
-print("-" * 78)
-for rank in range(args.topk):
-    ti, ts, tp = t_top[rank]
-    si, ss, sp = s_top[rank]
-    match = '  <<<' if ti == si else ''
-    print(f"{rank+1:<5} {ts:<18} {tp*100:>6.2f}%           "
-          f"{ss:<18} {sp*100:>6.2f}%{match}")
-print("-" * 78)
 
-# agreement summary
-t_top10 = set(t_logits.topk(10).indices.tolist())
-s_top10 = set(s_logits.topk(10).indices.tolist())
-overlap = len(t_top10 & s_top10)
-top1_match = int(t_logits.argmax() == s_logits.argmax())
-print(f"\ntop-1 agreement: {'YES' if top1_match else 'no'}")
-print(f"top-10 overlap:  {overlap}/10  ({overlap*10}%)")
+if args.prompt is not None:
+    # single-prompt mode
+    show_one(args.prompt, show_table=True)
+else:
+    # randomized multi-prompt mode -- the default when called with no args
+    import random
+    rng = random.Random(args.seed)
+    prompts = DEFAULT_PROMPTS.copy()
+    rng.shuffle(prompts)
+    prompts = prompts[:args.n_prompts]
+    print(f"\nRandomized multi-prompt demo: {len(prompts)} prompts (seed={args.seed})")
+    t1_hits = 0
+    ov_sum = 0
+    for p in prompts:
+        t1, ov = show_one(p, show_table=True)
+        t1_hits += t1
+        ov_sum += ov
+    print("\n" + "=" * 78)
+    print(f"SUMMARY  {len(prompts)} prompts  |  "
+          f"top-1 matches: {t1_hits}/{len(prompts)} ({t1_hits/len(prompts)*100:.0f}%)  |  "
+          f"avg top-10 overlap: {ov_sum/(len(prompts)*10)*100:.0f}%")
+    print("=" * 78)
+
 print(f"\nOn a 1000-sample held-out benchmark this student averages "
       f"{'55.40% all-T1 / 69.64% all-T10' if args.tag == 'hq5_h256' else '53.78% all-T1 / 68.00% all-T10'}.")
-print(f"See hires_results_hq5.json for the full protocol.")
+print(f"See hires_results_hq5.json (in-domain) and wikitext_results.json "
+      f"(fully-disjoint) for the full protocol.")
