@@ -139,6 +139,35 @@ of three 2048×2048 randomized Hadamards. Apply cost is O(n log n) via
 FWHT, cheaper than a dense I×I matmul. The rotation can be fused into the
 preceding normalization or permutation layer so inference cost is nil.
 
+### Claim 9 (NEW) — Row-Scale-Weighted Joint EM Refinement
+After any v8/v9/v10/v12 initialization of a shared residual product
+quantizer, iterate a Lloyd-style expectation-maximization alternation
+where the codebook update is WEIGHTED by the square of each row's
+row-scale `rs_i`. This directly minimizes the ORIGINAL weight-space MSE
+    ||W − W_q||_F² = Σ_i rs_i² · ||g_i − ĝ_i||² ,
+whereas plain k-means minimizes the normalized-subvector MSE. Because
+indices are re-assigned every iteration, the method escapes the
+fixed-assignment local optimum that a codebook-only fine-tune is trapped
+in (measured 0.4% gain from Adam on fixed indices vs 2.0% gain from joint
+EM). Converges in ~8 iterations; bits/weight unchanged.
+
+**Empirical validation** (whole Qwen3-1.7B body on top of v12,
+K1=2048, K2=256, D=8, 2.375 bits/w):
+
+| iter | rel-W mean | rel-W max |
+|------|-----------|-----------|
+| init (v12) | 0.0697 | 0.0780 |
+| 1  | 0.0696 | 0.0777 |
+| 2  | 0.0693 | 0.0773 |
+| 4  | 0.0688 | 0.0769 |
+| 6  | 0.0685 | 0.0766 |
+| 8  | **0.0683** | **0.0764** |
+
+Monotonic decrease at every iteration. Gain composes multiplicatively
+with Claim 8 rotation — stacking Claims 7 + 8 + 9 yields rel-W mean
+0.0683 at 2.375 bits/w, a 10.6% improvement over raw v10 (0.0764).
+
+
 
 ## Composite Pareto (Claim 6 — updated with v10 body)
 
@@ -193,6 +222,7 @@ Code:
 - `universal_v9.py` — Universal codebook across ANY weight matrices (Claim 5)
 - `compress_v10.py` — Residual PQ with shared codebooks (Claim 7)
 - `compress_v12.py` — Rotation-conditioned residual PQ (Claim 8)
+- `compress_v13.py` — Row-scale-weighted joint EM refinement (Claim 9)
 
 Checkpoints & reports:
 - `qwen3_1.7b_sb4_xtreme.pt` — 12.8 MB, T1≈75%
