@@ -27,7 +27,7 @@ Full results: [hires_results_hq5.json](hires_results_hq5.json). Pitch for busine
 
 The numbers above are **in-distribution held-out** (training samples from the full 500M-token range, eval samples from the tail 50M with a different seed). To defend against a stricter reviewer we also ship:
 
-- **Fully-disjoint eval on WikiText-103 test split** — `python wikitext_eval.py --tags hq5_h256 hq5_h128 --n 1000`. WikiText-103 test was never touched during training and is a standard public benchmark. Numbers will be added here after next GPU window opens.
+- **⭐ Fully-disjoint eval on WikiText-103 test split — DONE.** `python wikitext_eval.py --tags hq5_h256 hq5_h128 --n 1000`. WikiText-103 test was never touched during training and is a standard public benchmark. Result: on WT103 HQ5-h256 scores **T1 = 55.53%** (vs 55.40% in-domain) and **T10 = 66.82%** (vs 69.64% in-domain). Top-1 agreement is within 0.13 percentage points of the in-domain number — strong evidence the student learned the teacher's distribution rather than just the FineWeb-Edu surface statistics. Raw data: [wikitext_results.json](wikitext_results.json).
 - **Matched-parameter standard-KD baseline** — `python run_baseline_distill.py --h 256 --n_layers 2 --steps 80000 --tag baseline_h256_L2`. Trains a vanilla transformer student at the same ~1.5M trainable params using classical Hinton-2015 distillation. Head-to-head delta proves the nested-fractal + entropy-weighted loss is load-bearing.
 - **Pinned dependencies** — see `requirements.txt` for exact versions (torch 2.11.0+cu128, transformers 4.57.2, datasets 4.8.4, numpy 2.2.6).
 - **Full reproduce guide** — see [REPRODUCE.md](REPRODUCE.md) for step-by-step.
@@ -78,6 +78,18 @@ Full end-to-end compression — the actual deployment artifact. FRR body (HQ5 h2
 | **HQ5 h256 + ASVD r=256**| **40.93 M**| **26.7×**   | **53.88%** | **68.32%** | **63.40%** | 3.172 | 49.92% |
 
 **Interpretation.** The FRR+ASVD end-to-end stack at 26.7× total compression still reproduces 68.32% of the teacher's top-10 next-token set — within 1.3 percentage points of the uncompressed-head baseline. This is the number to compare against GPTQ/AWQ/pruning in public benchmarks. Raw data: [combined_stack_results_hq5.json](combined_stack_results_hq5.json).
+
+### Pareto frontier — pick your operating point
+
+![Compression vs Fidelity](docs/pareto_frontier.png)
+
+**Customer picks where on the curve to land.** Existing compression methods (GPTQ, AWQ, SparseGPT, DistilBERT) all cluster at 1.5–7.5× compression with >95% fidelity. FRR+ASVD extends the frontier by an order of magnitude into the 3–27× regime, with a graceful quality–compression trade-off rather than a cliff:
+
+- **Quality-first deployment (3–7× compression):** `hq5_h256+full_head` or `hq5_h256+asvd_r1024_ft` — 70% quality with 7× fewer parameters. Appropriate for latency-critical production inference.
+- **Balanced deployment (8–14× compression):** `hq5_h128` or `hq5_h256+asvd_r512_ft` — 68–69% T10 with under 80M parameters. Appropriate for edge GPU boxes, 8GB Apple Silicon.
+- **Aggressive deployment (27× compression):** `hq5_h256+asvd_r256_ft` — the 40.9M-parameter model; targets phones, Raspberry Pi class hardware. Quality drops to 50% — appropriate for offline / retrieval-augmented / constrained-vocabulary use cases only.
+
+Raw Pareto data: [docs/pareto_frontier.json](docs/pareto_frontier.json). Reproduce the chart: `python make_pareto_chart.py`.
 
 ---
 

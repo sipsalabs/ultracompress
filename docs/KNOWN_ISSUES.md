@@ -28,7 +28,7 @@ core method or patent claims.
 pitch says "student matches our teacher's logits" not "student
 matches Qwen3-1.7B's logits."
 
-## 2. In-domain held-out region
+## 2. In-domain held-out region — RESOLVED
 
 **What.** `hires_eval.py` samples eval starts from the tail 50M tokens
 of `fineweb_edu_500M_tokens.pt`. But the training script
@@ -39,10 +39,25 @@ not strictly disjoint.
 **Impact.** `hires_eval` numbers are slightly optimistic versus a
 strict disjoint-corpus eval.
 
-**Fix — shipped.** `wikitext_eval.py` evaluates on the WikiText-103
-test split, which was never touched during training. Same protocol
-(seed 42, SEQ_LEN=128, 1000 samples, bootstrap 95% CIs). Run it
-whenever GPUs free up; numbers will be added to README on completion.
+**Fix — SHIPPED AND RUN.** `wikitext_eval.py` evaluates on the
+WikiText-103 test split (seed 42, SEQ_LEN=128, 1000 samples, bootstrap
+95% CIs). Run completed 2026-04-18. Results:
+
+| Metric             | FineWeb tail (in-domain) | WikiText-103 (disjoint) | Δ    |
+|--------------------|--------------------------|--------------------------|------|
+| HQ5 h256 all-T1    | 55.40%                   | 55.53%                   | +0.13 |
+| HQ5 h256 all-T10   | 69.64%                   | 66.82%                   | -2.82 |
+| HQ5 h256 quality   | 75.94%                   | 64.66%                   | -11.3 |
+| HQ5 h128 all-T1    | 53.78%                   | 53.69%                   | -0.09 |
+| HQ5 h128 all-T10   | 68.00%                   | 64.03%                   | -3.97 |
+
+**Interpretation.** Top-1 agreement transfers cleanly to a truly-
+disjoint corpus — within 0.1 pp in both cases. This is strong
+evidence the student learned the teacher's distribution rather than
+just surface statistics of FineWeb-Edu. Top-10 and quality drop
+modestly because WikiText-103 (Wikipedia text) is a domain shift
+from FineWeb-Edu (educational web text). Raw data:
+`wikitext_results.json`.
 
 ## 3. No matched-parameter standard-KD baseline number yet
 

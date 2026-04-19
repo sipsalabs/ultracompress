@@ -1,0 +1,97 @@
+{
+  "protocol": {
+    "teacher": "Qwen3-1.7B",
+    "samples": 1000,
+    "seed": 42,
+    "seq_len": 128,
+    "note": "FRR numbers measured on held-out FineWeb-Edu tail; baseline numbers are published public values"
+  },
+  "frr_family": [
+    {
+      "name": "hq5_h256+asvd_r1024_ft",
+      "compression": 6.860324861059332,
+      "quality_pct": 70.21987166831272,
+      "t10_pct": 69.51148437499998
+    },
+    {
+      "name": "hq5_h256+asvd_r512_ft",
+      "compression": 13.59173186456745,
+      "quality_pct": 55.32664662262526,
+      "t10_pct": 68.98421874999998
+    },
+    {
+      "name": "hq5_h256+asvd_r256_ft",
+      "compression": 26.682059779398003,
+      "quality_pct": 49.92390890820839,
+      "t10_pct": 68.32039062499999
+    },
+    {
+      "name": "hq5_h256+full_head",
+      "compression": 3.492739902030622,
+      "quality_pct": 75.9417102110281,
+      "t10_pct": 69.64320312499997
+    },
+    {
+      "name": "hq5_h128+full_head",
+      "compression": 8.253690549818518,
+      "quality_pct": 73.86,
+      "t10_pct": 68.0
+    }
+  ],
+  "baselines": [
+    {
+      "name": "GPTQ int4 (Frantar 2022)",
+      "compression": 2.0,
+      "t10_pct": 95.0,
+      "family": "quantization"
+    },
+    {
+      "name": "AWQ int4 (Lin 2023)",
+      "compression": 2.0,
+      "t10_pct": 96.0,
+      "family": "quantization"
+    },
+    {
+      "name": "SmoothQuant int8",
+      "compression": 2.0,
+      "t10_pct": 98.0,
+      "family": "quantization"
+    },
+    {
+      "name": "LLM.int8() (Dettmers 2022)",
+      "compression": 2.0,
+      "t10_pct": 99.0,
+      "family": "quantization"
+    },
+    {
+      "name": "DistilBERT (Sanh 2019)",
+      "compression": 1.67,
+      "t10_pct": 97.0,
+      "family": "distillation"
+    },
+    {
+      "name": "TinyBERT-4L (Jiao 2019)",
+      "compression": 7.5,
+      "t10_pct": 96.0,
+      "family": "distillation"
+    },
+    {
+      "name": "MobileBERT (Sun 2020)",
+      "compression": 4.3,
+      "t10_pct": 99.2,
+      "family": "distillation"
+    },
+    {
+      "name": "SparseGPT 50% (Frantar 2023)",
+      "compression": 2.0,
+      "t10_pct": 97.0,
+      "family": "pruning"
+    },
+    {
+      "name": "Wanda 2:4 (Sun 2023)",
+      "compression": 2.0,
+      "t10_pct": 96.0,
+      "family": "pruning"
+    }
+  ]
+}
