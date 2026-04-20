@@ -56,6 +56,43 @@ from compress_v15 import beam_assign, index_entropy
 from compress_v16 import DEFAULT_ROLE_K, _chunked_argmin
 
 
+def _chunked_argmin_residual(G: torch.Tensor, cb1: torch.Tensor,
+                             idx1: torch.Tensor, cb2: torch.Tensor,
+                             bs: int = 300_000) -> torch.Tensor:
+    """Argmin over cb2 of ||(G - cb1[idx1]) - cb2[k]||^2, chunked."""
+    out = torch.empty(G.shape[0], dtype=torch.long, device=G.device)
+    C_nrm = (cb2 * cb2).sum(-1)
+    for s in range(0, G.shape[0], bs):
+        e = min(s + bs, G.shape[0])
+        r = G[s:e] - cb1[idx1[s:e]]
+        d = C_nrm.unsqueeze(0) - 2.0 * (r @ cb2.T) + (r * r).sum(-1, keepdim=True)
+        out[s:e] = d.argmin(1)
+        del r, d
+    return out
+
+
+def _weighted_cb_update_chunked(G: torch.Tensor, idx: torch.Tensor,
+                                w_sq: torch.Tensor, K: int, D: int,
+                                chunk: int = 20_000_000) -> torch.Tensor:
+    """Chunked version of compress_v14._weighted_cb_update."""
+    device = G.device
+    num = torch.zeros(K, D, device=device)
+    den = torch.zeros(K, device=device)
+    N = G.shape[0]
+    for s in range(0, N, chunk):
+        e = min(s + chunk, N)
+        w = w_sq[s:e]
+        num.index_add_(0, idx[s:e], G[s:e] * w.unsqueeze(1))
+        den.index_add_(0, idx[s:e], w)
+        del w
+    empty = den < 1e-8
+    if empty.any():
+        fill = G[torch.randperm(N, device=device)[:empty.sum().item()]]
+        num[empty] = fill
+        den[empty] = 1.0
+    return num / den.unsqueeze(1)
+
+
 def _key_to_cache(name: str) -> str:
     """Map compress_v14.collect_body_linears key ('layers.i.xxx') to HF key
     ('model.layers.i.xxx.weight')."""
@@ -121,36 +158,48 @@ def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
         rs = Wrot.abs().amax(1, keepdim=True).clamp(min=1e-6)
         g = (Wrot / rs).view(O, I // D, D).reshape(-1, D)
         rs_chunk = rs.expand(O, I // D).reshape(-1)
-        bank_g[role].append(g); bank_rs[role].append(rs_chunk)
+        # Move chunks to CPU to keep VRAM available (scaling to 7B+).
+        bank_g[role].append(g.cpu()); bank_rs[role].append(rs_chunk.cpu())
         per_tensor_meta.append((name, role, bank_offset[role], g.shape[0], O, I))
         bank_offset[role] += g.shape[0]
-        del W, W_scaled, Wrot
+        del W, W_scaled, Wrot, g, rs, rs_chunk
+        torch.cuda.empty_cache()
 
     banks: dict[str, dict] = {}
     for role in ROLE_PATTERNS:
         if not bank_g[role]:
             continue
-        G = torch.cat(bank_g[role], 0); RS = torch.cat(bank_rs[role], 0)
-        banks[role] = {"G": G, "RS": RS, "rs_sq": RS ** 2,
+        # Concatenate on CPU, keep on CPU; move to GPU per-role during EM.
+        G_cpu = torch.cat(bank_g[role], 0)
+        RS_cpu = torch.cat(bank_rs[role], 0)
+        bank_g[role] = []; bank_rs[role] = []
+        banks[role] = {"G_cpu": G_cpu, "RS_cpu": RS_cpu,
                        "K1": role_K[role][0], "K2": role_K[role][1]}
     del bank_g, bank_rs
     torch.cuda.empty_cache(); gc.collect()
 
     for role, b in banks.items():
-        G, K1, K2 = b["G"], b["K1"], b["K2"]
+        K1, K2 = b["K1"], b["K2"]
+        G = b["G_cpu"].to(device)
+        RS = b["RS_cpu"].to(device)
+        rs_sq = RS ** 2
         pool = min(pool_sz, G.shape[0])
         cb1 = kmeans_init(G[torch.randperm(G.shape[0], device=device)[:pool]],
                           K1, iters=kmeans_iters)
         idx1 = _chunked_argmin(G, cb1)
-        R1 = G - cb1[idx1]
-        cb2 = kmeans_init(R1[torch.randperm(R1.shape[0], device=device)[:pool]],
-                          K2, iters=kmeans_iters)
-        idx2 = _chunked_argmin(R1, cb2)
-        del R1
-        b["cb1"], b["cb2"], b["idx1"], b["idx2"] = cb1, cb2, idx1, idx2
+        # Chunked residual sampling for cb2 init (avoid full R1 materialization).
+        N = G.shape[0]
+        perm = torch.randperm(N, device=device)[:pool]
+        # materialize just the residual sample (size pool x D)
+        R1_samp = G[perm] - cb1[idx1[perm]]
+        cb2 = kmeans_init(R1_samp, K2, iters=kmeans_iters)
+        del R1_samp
+        idx2 = _chunked_argmin_residual(G, cb1, idx1, cb2)
+        del G, RS, rs_sq
         torch.cuda.empty_cache()
+        b["cb1"], b["cb2"], b["idx1"], b["idx2"] = cb1, cb2, idx1.cpu(), idx2.cpu()
         print(f"[v17] init role={role:10s}  K1={K1:>4d} K2={K2:>3d}  "
-              f"n_chunks={G.shape[0]:>10d}")
+              f"n_chunks={b['G_cpu'].shape[0]:>10d}")
 
     def eval_metric():
         """rel-W is computed on the ORIGINAL (unscaled) W for apples-to-apples
@@ -158,10 +207,19 @@ def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
         rws_all = []
         rws_by_role = {r: [] for r in banks}
         params_by_role = {r: 0 for r in banks}
+        # Move each role's indices + RS to GPU on-demand.
+        role_gpu = {}
+        for role, b in banks.items():
+            role_gpu[role] = {
+                "idx1": b["idx1"].to(device),
+                "idx2": b["idx2"].to(device),
+                "RS": b["RS_cpu"].to(device),
+                "cb1": b["cb1"], "cb2": b["cb2"],
+            }
         for name, role, off, n, O, I in per_tensor_meta:
-            b = banks[role]
-            gh = b["cb1"][b["idx1"][off:off + n]] + b["cb2"][b["idx2"][off:off + n]]
-            rs = b["RS"][off:off + n]
+            g = role_gpu[role]
+            gh = g["cb1"][g["idx1"][off:off + n]] + g["cb2"][g["idx2"][off:off + n]]
+            rs = g["RS"][off:off + n]
             s = s_col[name].to(device)
             Wq_rot_scaled = (gh.view(O, I // D, D).reshape(O, I)) \
                             * rs.view(O, I // D).repeat_interleave(D, dim=1)
@@ -172,6 +230,8 @@ def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
             rws_all.append(r); rws_by_role[role].append(r)
             params_by_role[role] += O * I
             del W, Wq, Wq_scaled, Wq_rot_scaled
+        del role_gpu
+        torch.cuda.empty_cache()
         return rws_all, rws_by_role, params_by_role
 
     rws0, _, params_by_role = eval_metric()
@@ -182,17 +242,39 @@ def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
     for it in range(iters):
         t = time.time()
         for role, b in banks.items():
+            tr = time.time()
             K1, K2 = b["K1"], b["K2"]
-            i1, i2, _ = beam_assign(b["G"], b["cb1"], b["cb2"], beam=beam)
-            b["idx1"], b["idx2"] = i1, i2
-            b["cb1"] = _weighted_cb_update(b["G"], b["idx1"], b["rs_sq"], K1, D)
-            R1 = b["G"] - b["cb1"][b["idx1"]]
-            b["cb2"] = _weighted_cb_update(R1, b["idx2"], b["rs_sq"], K2, D)
-            del R1
+            G = b["G_cpu"].to(device)
+            rs_sq = b["RS_cpu"].to(device).pow(2)
+            i1, i2, _ = beam_assign(G, b["cb1"], b["cb2"], beam=beam)
+            b["idx1"], b["idx2"] = i1.cpu(), i2.cpu()
+            # cb1 update (full G, chunked)
+            b["cb1"] = _weighted_cb_update_chunked(G, i1, rs_sq, K1, D)
+            # cb2 update from residuals, chunked to bound VRAM
+            num = torch.zeros(K2, D, device=device)
+            den = torch.zeros(K2, device=device)
+            N = G.shape[0]
+            chunk = 20_000_000
+            for s in range(0, N, chunk):
+                e = min(s + chunk, N)
+                r = G[s:e] - b["cb1"][i1[s:e]]
+                w = rs_sq[s:e]
+                num.index_add_(0, i2[s:e], r * w.unsqueeze(1))
+                den.index_add_(0, i2[s:e], w)
+                del r, w
+            empty = den < 1e-8
+            if empty.any():
+                fill = G[torch.randperm(N, device=device)[:empty.sum().item()]]
+                num[empty] = fill
+                den[empty] = 1.0
+            b["cb2"] = num / den.unsqueeze(1)
+            del G, rs_sq, i1, i2, num, den
+            torch.cuda.empty_cache()
+            print(f"[v17]  it{it+1} role={role:10s} {time.time()-tr:.0f}s", flush=True)
         rws, rws_by_role, _ = eval_metric()
         history.append(rws)
         print(f"[v17] iter {it+1}/{iters}: mean {sum(rws)/len(rws):.4f} "
-              f"max {max(rws):.4f} | {time.time()-t:.0f}s")
+              f"max {max(rws):.4f} | {time.time()-t:.0f}s", flush=True)
 
     N_total = sum(params_by_role.values())
     global_bpw = sum(

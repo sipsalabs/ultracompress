@@ -28,6 +28,7 @@ from compress_v14 import ROLE_PATTERNS
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--teacher", default="qwen3_1.7b_cache.pt")
+    ap.add_argument("--model_id", default="Qwen/Qwen3-1.7B")
     ap.add_argument("--tokens", default="wikitext103_test_qwen3.pt")
     ap.add_argument("--n_cal", type=int, default=32)
     ap.add_argument("--seq_len", type=int, default=512)
@@ -42,7 +43,7 @@ def main():
     all_tokens = torch.load(args.tokens, weights_only=True).to(torch.long)
 
     from transformers import AutoConfig, AutoModelForCausalLM
-    cfg = AutoConfig.from_pretrained("Qwen/Qwen3-1.7B", trust_remote_code=True)
+    cfg = AutoConfig.from_pretrained(args.model_id, trust_remote_code=True)
     model = AutoModelForCausalLM.from_config(cfg, torch_dtype=torch.float16,
                                              trust_remote_code=True)
     model.load_state_dict(teacher_sd, strict=False)

@@ -42,6 +42,7 @@ def make_dict(a_attn: float, a_mlp: float) -> dict[str, float]:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--teacher", default="qwen3_1.7b_cache.pt")
+    ap.add_argument("--model_id", default="Qwen/Qwen3-1.7B")
     ap.add_argument("--v17act", default="v17_activations.pt")
     ap.add_argument("--tokens", default="wikitext103_test_qwen3.pt")
     ap.add_argument("--configs", type=str, nargs="+",
@@ -71,9 +72,9 @@ def main():
     starts = torch.randint(0, all_tokens.numel() - args.seq_len - 1,
                            (args.n,), generator=g)
 
-    print("[sweep] building Qwen3-1.7B")
+    print(f"[sweep] building {args.model_id}")
     from transformers import AutoConfig, AutoModelForCausalLM
-    cfg = AutoConfig.from_pretrained("Qwen/Qwen3-1.7B", trust_remote_code=True)
+    cfg = AutoConfig.from_pretrained(args.model_id, trust_remote_code=True)
     model = AutoModelForCausalLM.from_config(cfg, torch_dtype=torch.float16,
                                              trust_remote_code=True)
     model.load_state_dict(teacher_sd, strict=False)
@@ -88,6 +89,8 @@ def main():
         a_attn, a_mlp = [float(x) for x in cfg_str.split(",")]
         alpha_per_role = make_dict(a_attn, a_mlp)
         print(f"\n[sweep] ======= attn={a_attn}  mlp={a_mlp} =======")
+        # Move HF model off GPU so v17_compress has full VRAM (needed for 8B+).
+        model.to("cpu"); gc.collect(); torch.cuda.empty_cache()
         t0 = time.time()
         r = v17_compress(args.teacher, args.v17act, DEFAULT_ROLE_K, args.D,
                          alpha=a_attn,  # fallback (unused)
@@ -96,6 +99,7 @@ def main():
                          device=device)
         wall_fit = time.time() - t0
         gc.collect(); torch.cuda.empty_cache()
+        model.to(device)
 
         v17 = {"banks": r["banks"], "s_col": r["s_col"],
                "alpha": a_attn,

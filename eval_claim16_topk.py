@@ -61,6 +61,7 @@ def measure_topk(model, tokens, starts, seq_len, device, teacher_topk=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--teacher", default="qwen3_1.7b_cache.pt")
+    ap.add_argument("--model_id", default="Qwen/Qwen3-1.7B")
     ap.add_argument("--tokens", default="wikitext103_test_qwen3.pt")
     ap.add_argument("--activations", default="v17_activations.pt")
     ap.add_argument("--n", type=int, default=500)
@@ -87,7 +88,7 @@ def main():
 
     print(f"[topk] building model on {device}")
     from transformers import AutoConfig, AutoModelForCausalLM
-    cfg = AutoConfig.from_pretrained("Qwen/Qwen3-1.7B", trust_remote_code=True)
+    cfg = AutoConfig.from_pretrained(args.model_id, trust_remote_code=True)
     model = AutoModelForCausalLM.from_config(cfg, torch_dtype=torch.float16,
                                              trust_remote_code=True)
     model.load_state_dict(teacher_sd, strict=False)
