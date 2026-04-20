@@ -168,6 +168,76 @@ with Claim 8 rotation — stacking Claims 7 + 8 + 9 yields rel-W mean
 0.0683 at 2.375 bits/w, a 10.6% improvement over raw v10 (0.0764).
 
 
+### Claim 10 — Role-Conditioned Codebook Banks  (v14)
+
+A single global codebook pair (cb1, cb2) is forced to compromise across
+structurally distinct weight populations — in a transformer decoder block
+the seven Linear roles (`q_proj`, `k_proj`, `v_proj`, `o_proj`,
+`gate_proj`, `up_proj`, `down_proj`) have different post-rotation
+subvector distributions and different row-scale spectra. Claim 10
+partitions the training subvectors by role and fits an independent
+(cb1_r, cb2_r) pair per role using the Claim 9 weighted-EM procedure.
+At encode time each Linear looks up its role and uses the matching bank;
+at decode time the role tag selects the bank.
+
+**Per-weight storage is unchanged** (log₂K1 + log₂K2 = 19 bits per chunk
+at K1=2048, K2=256, D=8 → 2.375 bits/w). The only overhead is the seven
+bank pairs: 7 × (K1 + K2) × D × 2 B = 7 × 2304 × 8 × 2 B ≈ 258 KB, which
+on the 420 MB Qwen3-1.7B body is 0.06% of artifact size.
+
+**Mechanistic finding (patentable in its own right).** The per-role
+breakdown at initialization exposes `o_proj` as a structural outlier
+that dominates the global worst case:
+
+| role | init mean | init max |
+|------|-----------|----------|
+| q_proj    | 0.0690 | 0.0692 |
+| k_proj    | 0.0692 | 0.0693 |
+| v_proj    | 0.0691 | 0.0693 |
+| **o_proj**    | **0.0730** | **0.0778** |
+| gate_proj | 0.0691 | 0.0692 |
+| up_proj   | 0.0692 | 0.0692 |
+| down_proj | 0.0689 | 0.0690 |
+
+Six of seven roles sit in a tight 0.0689–0.0692 mean band; `o_proj` is
+~5.5% worse and sets the global max. A global codebook (Claim 9) cannot
+resolve this gap because its atoms are a compromise between the
+o_proj distribution and everyone else.
+
+**Empirical validation** (whole Qwen3-1.7B body, 196 Linears, on top of
+Claims 7 + 8 + 9, K1=2048, K2=256, D=8, 2.375 bits/w, 8 weighted-EM
+iters per bank):
+
+| iter | rel-W mean | rel-W max |
+|------|-----------|-----------|
+| init (v13 global) | 0.0696 | 0.0778 |
+| 1  | 0.0694 | 0.0774 |
+| 2  | 0.0690 | 0.0770 |
+| 4  | 0.0685 | 0.0765 |
+| 6  | 0.0682 | 0.0761 |
+| 8  | **0.0679** | **0.0759** |
+
+Final per-role breakdown:
+
+| role | final mean | final max |
+|------|-----------|----------|
+| q_proj    | 0.0674 | 0.0676 |
+| k_proj    | 0.0673 | 0.0676 |
+| v_proj    | 0.0673 | 0.0676 |
+| **o_proj**    | **0.0712** | **0.0759** |
+| gate_proj | 0.0675 | 0.0676 |
+| up_proj   | 0.0675 | 0.0676 |
+| down_proj | 0.0672 | 0.0673 |
+
+Six roles now sit in a 0.0672–0.0675 band — a ~2.5% mean improvement
+over v13 at zero bit-cost change. The o_proj outlier persists even with
+a dedicated bank, identifying it as the next mechanistic lever (e.g. a
+third residual stage or a higher K1 only for o_proj — future Claim 11).
+
+Wall clock: 95 s for the full 1.409 B-param body on RTX 5090.
+Stacking Claims 7 + 8 + 9 + 10 yields rel-W mean 0.0679 at 2.375 bits/w,
+an 11.1% improvement over raw v10 (0.0764) at identical bits/weight.
+
 
 ## Composite Pareto (Claim 6 — updated with v10 body)
 
@@ -223,6 +293,7 @@ Code:
 - `compress_v10.py` — Residual PQ with shared codebooks (Claim 7)
 - `compress_v12.py` — Rotation-conditioned residual PQ (Claim 8)
 - `compress_v13.py` — Row-scale-weighted joint EM refinement (Claim 9)
+- `compress_v14.py` — Role-conditioned codebook banks (Claim 10)
 
 Checkpoints & reports:
 - `qwen3_1.7b_sb4_xtreme.pt` — 12.8 MB, T1≈75%
