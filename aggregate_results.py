@@ -9,6 +9,7 @@ import torch
 MODELS = [
     # (display_name, ppl_file, topk_file, params_B, family, body_linears, sigma_ratio)
     ("TinyLlama-1.1B",   "v17_tinyllama_ppl.pt", "topk_tinyllama_results.pt",  1.100, "Llama-2", 154, 1126),
+    ("OLMo-2-1B",        "v17_olmo2_ppl.pt",     "topk_olmo2_results.pt",      1.485, "Llama-2", 112, 20),
     ("SmolLM2-1.7B",     "v17_smollm2_ppl.pt",   "topk_smollm2_results.pt",    1.812, "Llama-2", 168, 779),
     ("Qwen3-1.7B",       "v17_ppl_results.pt",   "claim16_topk_results.pt",    1.7,   "Qwen3",   168, 120),
     ("Mistral-7B-v0.3",  "v17_mistral_ppl.pt",   "topk_mistral_results.pt",    7.248, "Mistral", 224, 2173),

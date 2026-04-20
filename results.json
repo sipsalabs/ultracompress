@@ -61,6 +61,28 @@
       "t10_retention": 91.72922948944576
     },
     {
+      "model": "OLMo-2-1B",
+      "family": "Llama-2",
+      "params_B": 1.485,
+      "body_linears": 112,
+      "sigma2_ratio_q": 20,
+      "alpha_attn": 0.25,
+      "alpha_mlp": 0.125,
+      "D": 8,
+      "ppl_fp16": 20.153715669712035,
+      "ppl_v17": 36.07110709851457,
+      "ratio": 1.789799344679847,
+      "bpw": 2.390625,
+      "t1_teacher": 44.0921875,
+      "t10_teacher": 73.6625,
+      "t1_v17": 36.4875,
+      "t10_v17": 66.90781249999999,
+      "t1_agreement": 62.75937499999999,
+      "t10_agreement": 93.0625,
+      "t1_retention": 82.752755235834,
+      "t10_retention": 90.83022229764127
+    },
+    {
       "model": "SmolLM2-1.7B",
       "family": "Llama-2",
       "params_B": 1.812,
@@ -158,7 +180,7 @@
     "bpw_max": 2.4017,
     "ratio_min": 1.3858971009183452,
     "ratio_max": 1.8988195846659353,
-    "t10_agreement_min": 93.2046875,
+    "t10_agreement_min": 93.0625,
     "t10_retention_min": 90.18227267992917
   }
 }
