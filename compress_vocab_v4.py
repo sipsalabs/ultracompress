@@ -154,7 +154,7 @@ class SemanticBasisV4(nn.Module):
         assert hot_ids.numel() == k_hot
         mask = torch.zeros(V, dtype=torch.bool); mask[hot_ids] = True
         cold_ids = torch.arange(V)[~mask]
-        new_to_old = torch.cat([hot_ids.long(), cold_ids.long()], dim=0)
+        new_to_old = torch.cat([hot_ids.long(), cold_ids.long().to(hot_ids.device)], dim=0)
         old_to_new = torch.empty(V, dtype=torch.long)
         old_to_new[new_to_old] = torch.arange(V)
         self.register_buffer('old_to_new', old_to_new, persistent=True)
@@ -374,3 +374,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

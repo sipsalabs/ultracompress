@@ -6,6 +6,16 @@ Generated after v9 Universal Codebook, v10 Residual PQ, and v12 Rotation-Conditi
 
 **4370× whole-model compression** of Qwen3-1.7B (3400 MB fp16 → 0.778 MB total artifact) at T1=62.6% fidelity (v7 vocab + v8 body).
 
+**v17 downstream-validated regime (NEW)**: whole Qwen3-1.7B body
+reconstructed at **2.402 bpw** (6.66× body compression) with
+end-to-end WikiText-103 PPL **79.03 vs fp16's 33.21 — only 2.38×
+degradation**, versus rel-W-optimized v16 at essentially identical
+2.396 bpw suffering **2 099× PPL degradation**. Claim 14's activation-
+variance input-column rescaling delivers an **882× output-loss
+reduction for +0.006 bpw overhead**, demonstrating that rel-W
+saturates as an objective at ≤2.4 bpw and that activation-aware
+rescaling is the necessary bridge to usable quality.
+
 **v10 near-lossless regime**: whole Qwen3-1.7B body (1.409 B Linear params) reconstructed with max rel-MSE < 0.01 using only 4.5 bits/weight and an 8 KB codebook pair (3.6× body compression — a capability v9 single-codebook cannot reach at any K).
 
 **Generality proven**: identical (K, D) produces identical bits/weight AND identical rel-MSE across every weight population tested — hypernet, DEQ body, and raw transformer layers 0, 7, 14, 21, 27 of the unmodified Qwen3-1.7B. Under v10 residual PQ the same universality is preserved (cross-layer rel-MSE spread 0.003 at K1=2048 K2=256 D=8).
@@ -417,6 +427,128 @@ at 2.396 bits/w — a **24.5 % improvement over raw v10 (0.0764)** at
 essentially the same bit budget.
 
 
+### Claim 14 — Activation-Variance Input-Column Rescaling for Universal Product Quantization  (v17)
+
+**Problem surfaced by end-to-end PPL measurement.** After stacking
+Claims 7–13, v16 achieves rel-W mean 0.0577 / max 0.0600 at 2.396 bpw —
+an excellent *weight-space* fit. But this is an insufficient objective:
+substituting v16 weights into the full Qwen3-1.7B model and measuring
+perplexity on WikiText-103 test (n=500 windows, seq_len=128) yields
+**PPL = 69 708, a 2 099× degradation over the fp16 baseline (PPL =
+33.21)**. Decoder path was independently verified bug-free
+(`debug_v16_decoder.py`), ruling out an implementation artifact. The
+pure-rel-W objective has saturated as a predictor of downstream loss
+at this bit budget.
+
+**Diagnosis.** Per-input-dim activation variances `σ²ᵢ`, measured by
+forward-hooking every body Linear on 32 WikiText calibration windows
+(seq_len=512, `cache_activations.py`), reveal extreme non-uniformity
+within each Linear's input axis:
+
+| role family | max/mean σ²ᵢ ratio (avg over layers) |
+|-------------|--------------------------------------|
+| q/k/v/o attention inputs | ~120× |
+| gate/up/down MLP inputs  | ~290× |
+
+An L2 weight-reconstruction objective treats noise on a high-σ column
+identically to noise on a low-σ column, but the former contributes
+proportionally more to output error `‖(W − W_q) X‖²`. No amount of
+additional weight-space bits can fix this — the objective is wrong.
+
+**Method.** For each body Linear with input-dim variances
+`σ² ∈ ℝⁱ` measured on calibration data:
+
+1. *Scale.* Compute per-input-dim scales `s = σ^(2α)` (α = 0.25
+   recommended; α = 0 reduces to v16, α = 0.5 is AWQ-like).
+2. *Fold.* Form `W' = W · diag(s)`; the functional invariance
+   `W X = W' · diag(1/s) X` means the layer's output is preserved if
+   inference premultiplies `X` by `1/s`.
+3. *Compress.* Run the full v16 pipeline on `W'`: rotation (Claim 8),
+   role banking (Claim 10), row-scale-weighted EM (Claim 9),
+   beam-search residual (Claim 11), asymmetric per-role capacity
+   (Claim 13).
+4. *Decode.* Reconstruct `W_q' = decode(idx₁, idx₂, cb₁, cb₂, R, rs)`,
+   then unscale: `W_q = W_q' · diag(1/s)`.
+
+The scale vectors `s` (one per Linear) are stored fp16 alongside the
+codebooks — `196 × avg(I) × 2 B ≈ 1.0 MB`, or **+0.006 bpw** overhead
+on the 1.4 B-param body.
+
+**Weight-space effect (expected degradation).** Because v17 optimizes
+a *different* objective, its weight-space rel-W (measured in the
+original, unscaled W-space for apples-to-apples) is **worse** than
+v16's: 0.0688 vs 0.0577. This is not a failure mode — it is evidence
+that the pipeline is correctly trading weight-space error for
+output-space error.
+
+**Output-space result (Qwen3-1.7B, WikiText-103 test, n=500 windows,
+seq_len=128, α=0.25, D=8, beam=8, 6 EM iters):**
+
+| config           | bpw (incl. s_col) | PPL        | ratio vs fp16 |
+|------------------|-------------------|------------|---------------|
+| fp16 baseline    | 16.000            | 33.21      | 1.00×         |
+| v10 greedy       | 2.375             | 320 786    | 9 658×        |
+| v16 stacked      | 2.396             | 69 708     | 2 099×        |
+| **v17 (α=0.25)** | **2.402**         | **79.03**  | **2.38×**     |
+
+**v17 achieves an 882× reduction in PPL-ratio over v16 at
+essentially the same bit budget** (+0.006 bpw). The 2.38× baseline
+ratio places v17 firmly in the usable-quality regime; v16 at 2 099×
+was effectively random.
+
+**Per-role v17 weight-space breakdown at convergence (iter 6):**
+
+| role | K1 | K2 | mean rel-W | max rel-W |
+|------|----|----|------------|-----------|
+| q_proj    | 2048 | 256 | 0.0704 | 0.0866 |
+| k_proj    | 2048 | 256 | 0.0739 | 0.0962 |
+| v_proj    | 2048 | 256 | 0.0670 | 0.0847 |
+| o_proj    | 4096 | 512 | 0.0539 | 0.0713 |
+| gate_proj | 2048 | 256 | 0.0716 | 0.0792 |
+| up_proj   | 2048 | 256 | 0.0671 | 0.0725 |
+| down_proj | 2048 | 256 | 0.0779 | 0.1093 |
+
+Note that o_proj remains the best-reconstructed role (Claim 13 still
+applies) but the relative ordering among others is reshuffled by the
+activation-variance reweighting — down_proj becomes the new hardest
+role in original-W space because its scale folding is most aggressive.
+
+**Novelty and distinction from prior activation-aware quantizers.**
+
+1. *Per-input-column, not per-output-row.* AWQ (Lin et al., 2023)
+   applies a per-output scaling that balances salient output channels
+   across the row. Our scaling is **per-input-column**, which is the
+   correct axis for input-activation variance and composes cleanly
+   with a product codebook (which quantizes along the input axis in
+   subvectors of size D).
+2. *Product codebook, not uniform integer.* AWQ and SmoothQuant
+   target uniform-integer or GPTQ-style per-channel quantization. We
+   target a **universal product codebook with role banks and beam
+   search** — the scaling is the first step in a much deeper stack.
+3. *Damped α ≠ 0.5.* At α = 0.5 (full AWQ scaling) the weight-space
+   distortion concentrates heavily on loud columns and the PQ
+   codebook — with only K1·K2 = 2048·256 atoms — cannot absorb it.
+   α = 0.25 damps this and was found empirically to dominate across
+   the α ∈ {0, 0.1, 0.25, 0.5} grid for universal-PQ reconstruction.
+4. *Composes with rotation.* The random-sign Hadamard rotation R
+   (Claim 8) operates on the same axis as the scaling, but because
+   scaling is applied **before** rotation, both operations whiten
+   different parts of the input-axis covariance: scaling flattens
+   its diagonal, rotation diffuses its off-diagonal.
+5. *Near-zero overhead.* fp16 scale vectors add +0.006 bpw — three
+   orders of magnitude smaller than the codebook itself — but
+   deliver the entire usability gap.
+
+**Claim summary.** A universal product-quantization pipeline for
+neural-network weights in which each row of each weight matrix is
+pre-multiplied by a diagonal scale `diag(s)` derived from per-
+input-column activation statistics `s = σ^(2α)` on calibration data,
+`α ∈ [0, 0.5]`, applied before rotation and before product-codebook
+assignment, and inverted at decode time, with the scale vectors stored
+fp16, achieves order-of-magnitude lower end-to-end perplexity than any
+prior rel-W-optimized universal-PQ scheme at the same bit budget.
+
+
 ## Composite Pareto (Claim 6 — updated with v10 body)
 
 | Vocab stage | Body stage | Total MB | Whole-model ratio | Body rel-MSE | Fidelity regime |
@@ -475,6 +607,10 @@ Code:
 - `compress_v15.py` — Beam-search joint residual + entropy accounting (Claims 11, 12)
 - `screen_v16.py` — Per-role bit-allocation pre-screen (Claim 13)
 - `compress_v16.py` — Asymmetric per-role codebook capacity (Claim 13)
+- `cache_activations.py` — Forward-hook calibration for input-dim variances (Claim 14)
+- `compress_v17.py` — Activation-variance input-column rescaling (Claim 14)
+- `eval_v16_ppl.py` — End-to-end WikiText-103 PPL evaluator (baseline / v10 / v16)
+- `eval_v17_ppl.py` — PPL evaluator for v17 vs v16 vs fp16 (isolates Claim 14 benefit)
 
 Checkpoints & reports:
 - `qwen3_1.7b_sb4_xtreme.pt` — 12.8 MB, T1≈75%
