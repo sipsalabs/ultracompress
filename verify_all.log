@@ -1,0 +1,71 @@
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\cuda\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776725166.736994    6956 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776725168.054267    6956 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+W0420 16:46:08.833000 4964 site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+`torch_dtype` is deprecated! Use `dtype` instead!
+
+==================== OLMo-2-1B ====================
+[verify] teacher -> olmo2_1b_cache.pt
+[verify] path A: original v17 fit
+  substituting 112 body Linears (v17 stack, alpha=?)
+[verify] path B: packed file -> pure decode
+  pure-decode substituting 112 body Linears
+[verify] PPL (original fit)   : 34.925690
+[verify] PPL (packed->decode) : 34.925690
+[verify] relative diff        : 0.0000%
+[verify_all] wrote verify_all_results.json (1 entries)
+
+==================== TinyLlama-1.1B ====================
+[verify] teacher -> tinyllama_1.1b_cache.pt
+[verify] path A: original v17 fit
+  substituting 154 body Linears (v17 stack, alpha=?)
+[verify] path B: packed file -> pure decode
+  pure-decode substituting 154 body Linears
+[verify] PPL (original fit)   : 32.127956
+[verify] PPL (packed->decode) : 32.124035
+[verify] relative diff        : 0.0122%
+[verify_all] wrote verify_all_results.json (2 entries)
+
+==================== SmolLM2-1.7B ====================
+[verify] teacher -> smollm2_1.7b_cache.pt
+[verify] path A: original v17 fit
+  substituting 168 body Linears (v17 stack, alpha=?)
+[verify] path B: packed file -> pure decode
+  pure-decode substituting 168 body Linears
+[verify] PPL (original fit)   : 39.837730
+[verify] PPL (packed->decode) : 39.818283
+[verify] relative diff        : 0.0488%
+[verify_all] wrote verify_all_results.json (3 entries)
+
+==================== Qwen3-1.7B ====================
+[verify] teacher -> qwen3_1.7b_cache.pt
+[verify] path A: original v17 fit
+  substituting 196 body Linears (v17 stack, alpha=?)
+[verify] path B: packed file -> pure decode
+  pure-decode substituting 196 body Linears
+[verify] PPL (original fit)   : 67.345687
+[verify] PPL (packed->decode) : 67.304595
+[verify] relative diff        : 0.0610%
+[verify_all] wrote verify_all_results.json (4 entries)
+
+==================== Mistral-7B ====================
+[verify] teacher -> mistral_7b_v0.3_cache.pt
+[verify] path A: original v17 fit
+  substituting 224 body Linears (v17 stack, alpha=?)
+[verify] path B: packed file -> pure decode
+  pure-decode substituting 224 body Linears
+[verify] PPL (original fit)   : 21.005826
+[verify] PPL (packed->decode) : 21.008390
+[verify] relative diff        : 0.0122%
+[verify_all] wrote verify_all_results.json (5 entries)
+[verify_all] skip Qwen3-8B
+
+==================== summary ====================
+  OLMo-2-1B         ppl_a=34.9257  ppl_b=34.9257  diff=0.0000%  (36.7s)
+  TinyLlama-1.1B    ppl_a=32.1280  ppl_b=32.1240  diff=0.0122%  (28.9s)
+  SmolLM2-1.7B      ppl_a=39.8377  ppl_b=39.8183  diff=0.0488%  (45.8s)
+  Qwen3-1.7B        ppl_a=67.3457  ppl_b=67.3046  diff=0.0610%  (42.3s)
+  Mistral-7B        ppl_a=21.0058  ppl_b=21.0084  diff=0.0122%  (194.4s)

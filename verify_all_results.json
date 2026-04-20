@@ -1,0 +1,42 @@
+[
+  {
+    "name": "OLMo-2-1B",
+    "model_id": "allenai/OLMo-2-0425-1B",
+    "wall_s": 36.7,
+    "ppl_original": 34.92568981422336,
+    "ppl_packed": 34.92568981422336,
+    "rel_diff": 0.0
+  },
+  {
+    "name": "TinyLlama-1.1B",
+    "model_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "wall_s": 28.9,
+    "ppl_original": 32.12795625553247,
+    "ppl_packed": 32.12403462523456,
+    "rel_diff": 0.00012206286222251125
+  },
+  {
+    "name": "SmolLM2-1.7B",
+    "model_id": "HuggingFaceTB/SmolLM2-1.7B",
+    "wall_s": 45.8,
+    "ppl_original": 39.83772999775124,
+    "ppl_packed": 39.818282729405404,
+    "rel_diff": 0.0004881620601106922
+  },
+  {
+    "name": "Qwen3-1.7B",
+    "model_id": "Qwen/Qwen3-1.7B",
+    "wall_s": 42.3,
+    "ppl_original": 67.34568733578504,
+    "ppl_packed": 67.30459533185208,
+    "rel_diff": 0.0006101653358748163
+  },
+  {
+    "name": "Mistral-7B",
+    "model_id": "mistralai/Mistral-7B-v0.3",
+    "wall_s": 194.4,
+    "ppl_original": 21.00582551411085,
+    "ppl_packed": 21.008389858307645,
+    "rel_diff": 0.00012207776338389823
+  }
+]

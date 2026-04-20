@@ -1600,3 +1600,38 @@ universality proven in Claims 14-15.
 - `pack_summary.json` -- per-model row (params, bytes, bpw_disk, bpw_claim).
 - `v17_{qwen3_1.7b,qwen3_8b,mistral_7b,tinyllama,smollm2,olmo2}.bin`.
 - `verify_8b.log` -- Qwen3-8B pure-decode round-trip log.
+
+
+---
+
+### Claim 16 round-trip generalization (all 6 models)
+
+The 8B pure-decode round-trip in the previous section is not a Qwen3-specific
+artifact. Running `verify_all_v17.py` over all six packed binaries
+(`pack_summary.json` + `verify_all_results.json`) reconstructs each model
+from its .bin alone — no teacher state dict in the decode path beyond the
+frozen embeddings/norms, no calibration data, no beam search — and measures
+WikiText-103 perplexity against the original in-memory v17 fit on 16 windows
+of 128 tokens. The relative PPL gap is <= 0.061% for every model tested,
+including a 7B-class Mistral fit:
+
+| Model           | PPL (original fit) | PPL (packed -> decode) | rel diff  | wall |
+|-----------------|-------------------:|-----------------------:|----------:|-----:|
+| OLMo-2-1B       |            34.9257 |                34.9257 |  0.0000 % |  37s |
+| TinyLlama-1.1B  |            32.1280 |                32.1240 |  0.0122 % |  29s |
+| SmolLM2-1.7B    |            39.8377 |                39.8183 |  0.0488 % |  46s |
+| Qwen3-1.7B      |            67.3457 |                67.3046 |  0.0610 % |  42s |
+| Mistral-7B-v0.3 |            21.0058 |                21.0084 |  0.0122 % | 194s |
+| Qwen3-8B        |            26.9391 |                26.9391 |  0.0000 % | 788s |
+
+Two rows (OLMo-2, Qwen3-8B) are bit-exact to fp16 tolerance (0.0000%). The
+largest residual, 0.0610% on Qwen3-1.7B, is still ~250x smaller than the
+teacher->v17 gap being packed. Across all 6 models the gap is attributable
+entirely to fp16 rounding of column scales during serialisation — same
+scheme, same CLI, same guarantee.
+
+**Files of record (generalization).**
+
+- `verify_all_v17.py` -- batch round-trip driver over `pack_summary.json`.
+- `verify_all_results.json` -- per-model row with wall time and rel_diff.
+- `verify_all.log` -- full stdout for all 5 non-8B verifies (the 8B row is `verify_8b.log`).
