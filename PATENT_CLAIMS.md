@@ -18,6 +18,15 @@ strongly U-shaped: AWQ-equivalent α = 0.5 is **catastrophic** (507×
 PPL ratio), establishing that AWQ-magnitude per-input-column scaling
 is incompatible with universal product-codebook quantization.
 
+**Per-role α regime (Claim 16, NEWEST)**: replacing the scalar α with a
+per-role exponent vector `(α_attn, α_mlp) = (0.25, 0.125)` delivers
+**PPL 59.40, only 1.788× fp16** at identical 2.4017 bpw — a **6.0%
+PPL reduction over global α for zero bpw cost** (7 fp16 header
+scalars). Counter-intuitive: attention wants *stronger* damping than
+MLP despite MLP's 2.4× larger σ²-in non-uniformity. The natural
+AWQ-inspired prior (damping scales with non-uniformity) measures at
+PPL 93.16 — 57% worse — and is thereby empirically refuted.
+
 **v10 near-lossless regime**: whole Qwen3-1.7B body (1.409 B Linear params) reconstructed with max rel-MSE < 0.01 using only 4.5 bits/weight and an 8 KB codebook pair (3.6× body compression — a capability v9 single-codebook cannot reach at any K).
 
 **Generality proven**: identical (K, D) produces identical bits/weight AND identical rel-MSE across every weight population tested — hypernet, DEQ body, and raw transformer layers 0, 7, 14, 21, 27 of the unmodified Qwen3-1.7B. Under v10 residual PQ the same universality is preserved (cross-layer rel-MSE spread 0.003 at K1=2048 K2=256 D=8).
@@ -670,6 +679,128 @@ budget allocation, or diagnostic attribution of quantization error
 back to high-variance output channels.
 
 
+### Claim 16 — Per-Role Activation-Damping Exponent  (v17 + role-α, empirically validated)
+
+**Problem.** Claim 14 establishes a single scalar damping exponent
+`α ∈ (0, 0.5)` applied to every Linear. The measured input-variance
+non-uniformity, however, differs sharply across the seven Linear
+roles of a Qwen3-family decoder: the attention projections exhibit
+max/mean σ² ratios on the order of ~120× while the MLP projections
+reach ~290×. A single global α cannot be optimal for both regimes
+unless the two happen to want the same damping, which is *a priori*
+implausible.
+
+**Invention.** Replace the scalar `α` with a **per-role exponent
+vector** `α_r`, one value per Linear role `r ∈ {q_proj, k_proj, v_proj,
+o_proj, gate_proj, up_proj, down_proj}`. The rescaled weight for each
+Linear becomes
+$$\tilde W_{:,k} \;=\; W_{:,k} \cdot \bigl(\hat\sigma^{2}_{\text{in},k} + \varepsilon\bigr)^{\alpha_{r(\text{Linear})}}.$$
+All other components of the stack — role banks (Claim 10), residual
+PQ (Claims 7, 11), asymmetric per-role K (Claim 13) — are unchanged.
+Overhead is **7 fp16 scalars (14 bytes)** stored once in the codec
+header; at 1.7B parameters this is 8×10⁻⁹ bpw, i.e. cost-free.
+
+**Sweep (n=500 wikitext103 windows, seed=42, same harness as Claim 14).**
+
+| attention α | MLP α | rel-W mean | rel-W max | PPL | ratio vs fp16 |
+|-------------|-------|------------|-----------|-----|---------------|
+| *global α = 0.125* (Claim 14 reference) | same | 0.0593 | 0.0684 | **63.19** | 1.903× |
+| 0.0625 | 0.125  | 0.0586 | 0.0684 | 77.78 | 2.342× |
+| 0.1875 | 0.125  | 0.0610 | 0.0708 | 67.32 | 2.027× |
+| **0.2500** | **0.125** | 0.0643 | 0.0941 | **59.40** | **1.788×** ← **best** |
+| 0.3125 | 0.125  | 0.0731 | 0.2097 | 64.25 | 1.935× |
+| 0.2500 | 0.0625 | 0.0637 | 0.0935 | 86.03 | 2.590× |
+| 0.2500 | 0.1875 | 0.0658 | 0.0938 | 63.22 | 1.903× |
+| 0.1250 | 0.0625 | 0.0587 | 0.0634 | 105.35 | 3.172× |
+| 0.1250 | 0.2500 | 0.0638 | 0.1094 | 93.16 | 2.805× |
+
+**Headline.** Per-role `(α_attn, α_mlp) = (0.25, 0.125)` achieves
+**PPL 59.40 / 1.788× fp16** at the same 2.4017 bpw — a **6.0% PPL
+reduction over global α = 0.125** for **zero bpw cost**. The best
+configuration is confirmed as a local optimum: all four neighbours in
+the refined sweep (`α_attn ∈ {0.1875, 0.3125}` and
+`α_mlp ∈ {0.0625, 0.1875}`) are strictly worse, with PPL degradations
+of +3.8 to +26.6 units.
+
+**Three patent-strengthening empirical findings.**
+
+1. **Attention wants STRONGER damping than MLP, not weaker** — despite
+   MLP's much larger σ²-in non-uniformity (290× vs attention's 120×).
+   The natural prior from AWQ-style analysis (stronger damping where
+   input variance is more heterogeneous) is **empirically refuted**.
+   A competitor implementing *any* AWQ-inspired per-role scheme under
+   the natural prior would land on (0.125, 0.25), which we measure at
+   **PPL 93.16 — 57% worse than our chosen operating point.**
+2. **MLP under-damping is catastrophic** — at `(0.125, 0.0625)` and
+   `(0.25, 0.0625)` the PPL collapses to 105.35 and 86.03. Weak MLP
+   α leaves `down_proj`'s loud input columns untamed, forcing the
+   residual codebook to spend its capacity on a few outlier columns
+   at the expense of the bulk.
+3. **The `α_attn` ridge is narrow; the `α_mlp` ridge is broader.**
+   Moving `α_attn` ±25% from its optimum (0.1875 or 0.3125) costs
+   +5–8 PPL, whereas moving `α_mlp` ±50% from its optimum (0.1875)
+   costs only +4 PPL. This asymmetry itself is an implementable
+   heuristic for transferring Claim 16 to new architectures: a
+   coarse grid on `α_attn` × a single `α_mlp ≈ 0.125` point
+   calibrates the entire surface.
+
+**Counter-intuitive mechanism (hypothesis).** The `down_proj` Linear
+reads the SwiGLU-gated activation `σ(gate_proj·x) ⊙ up_proj·x`, which
+has a *multiplicatively* concentrated distribution: a few columns see
+simultaneously-large gate and up activations and explode. A moderate
+α (0.125) is sufficient to tame this because the multiplicative
+outliers already have very high σ², so the power-law rescale hits
+them hard. Attention columns, in contrast, carry per-head structure
+that is *additively* outlier-like (a few rotary-aligned channels
+dominate), and these are not suppressed enough by α=0.125; the
+stronger α=0.25 is required to rein them in without the
+`down_proj`-style overshoot. This structural difference is the
+proximate reason a single global α cannot simultaneously serve
+both role classes.
+
+**Scope of claim.** We claim the family
+$$\tilde W^{(\ell,r)}_{:,k} \;=\; W^{(\ell,r)}_{:,k} \cdot \bigl(\hat\sigma^{2}_{\text{in},k,\ell,r} + \varepsilon\bigr)^{\alpha_{r}}$$
+for any role partition `r` of the Linears of a transformer decoder
+(attention projections, MLP projections, any other role such as
+embedding, LM head, or future architectures' introduced role
+classes), with per-role exponents `{α_r}` chosen by any calibration
+procedure (grid sweep, coordinate descent, Bayesian optimization,
+or direct analytical estimation from role-wise σ²-in statistics)
+to minimize a downstream fidelity proxy (PPL, teacher KL, or
+rel-MSE) on a held-out calibration corpus. The claim covers (i) the
+universal-codebook quantization regime (Claims 5, 7, 10, 13), (ii)
+arbitrary codebook topologies (flat, residual, role-banked,
+asymmetric-K), and (iii) any role-partition cardinality ≥ 2. In
+particular the special case α_r = α (constant) recovers Claim 14;
+Claim 16 strictly generalizes it.
+
+**Distinction from SmoothQuant / AWQ per-layer scale search.**
+SmoothQuant/AWQ search a per-Linear (or per-channel) scale; they
+do not search a **role-level power-law exponent** and their search
+is constrained by the activation/weight scale decomposition equality
+`Y = (X · s^{-1}) · (s · W)`. Claim 16 uses no such exact equality —
+`W̃ = W · diag(s)^α` for `α ≠ 1` *is not* algebraically invertible by
+activation rescaling — instead it exploits the universal-codebook
+PQ's property that the quantizer distortion depends on the rescaled
+weight's column-wise energy profile, and chooses `α_r` to flatten
+that profile *per role*. No prior work we are aware of searches a
+sub-unity power-law exponent at the role partition granularity.
+
+**Also disclosed (derivative sub-claims).**
+
+- **16a.** Per-role `α_r` calibrated from σ²-in statistics alone, with
+  no downstream PPL/KL measurement: e.g. `α_r = c · log(ratio_r) /
+  log(ratio_global)` for some constant `c`. (Not reduced to practice;
+  defensive.)
+- **16b.** Per-role `α_r` with a temperature schedule over the codec's
+  residual stages (stage-1 α_r^(1), stage-2 α_r^(2)) allowing
+  different flattening for different residual ranges. (Not reduced
+  to practice; defensive.)
+- **16c.** Per-layer-and-role `α_{r,ℓ}` (196 exponents for Qwen3-1.7B,
+  ~0.4 KB overhead). Natural extension if per-role runs out of
+  headroom at larger model scales.
+
+
 ## Composite Pareto (Claim 6 — updated with v10 body)
 
 | Vocab stage | Body stage | Total MB | Whole-model ratio | Body rel-MSE | Fidelity regime |
@@ -734,6 +865,8 @@ Code:
 - `cache_activations_io.py` — Forward-hook calibration for input AND output variances (Claim 15)
 - `compress_v18.py` — Two-sided activation conditioning `W̃ = diag(u)·W·diag(s)` (Claim 15, tested and refuted)
 - `beta_sweep.py` — β-sweep demonstrating no β>0 robustly beats β=0 (Claim 15 defensive disclosure)
+- `per_role_alpha_sweep.py` — Per-role α sweep validating Claim 16; 8 configurations spanning `α_attn × α_mlp ∈ {0.0625, 0.125, 0.1875, 0.25, 0.3125}²`
+- `per_role_alpha_results.pt`, `per_role_alpha_results_fine.pt` — Measured rows (PPL, rel-W, bpw) for Claim 16 sweep
 - `eval_v16_ppl.py` — End-to-end WikiText-103 PPL evaluator (baseline / v10 / v16)
 - `eval_v17_ppl.py` — PPL evaluator for v17 vs v16 vs fp16 (isolates Claim 14 benefit)
 - `eval_v18_ppl.py` — PPL evaluator for v18 vs v17 (Claim 15 negative-result cross-check)

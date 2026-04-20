@@ -66,9 +66,14 @@ def _key_to_cache(name: str) -> str:
 
 def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
                  alpha: float = 0.25,
+                 alpha_per_role: dict | None = None,
                  iters: int = 8, beam: int = 8, device: str = "cuda:0",
                  pool_sz: int = 200_000, kmeans_iters: int = 6,
                  eps: float = 1e-4):
+    """If alpha_per_role is provided it overrides alpha on a per-role basis
+    (Claim 15-per-role). Keys must be role names from ROLE_PATTERNS; any
+    role absent from the dict falls back to the global alpha.
+    """
     raw = collect_body_linears(teacher_pt)
     W_orig_cpu = {n: v.float() for n, v in raw.items() if v.shape[1] % D == 0}
     del raw
@@ -80,8 +85,10 @@ def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
     missing = 0
     for name in W_orig_cpu:
         k = name  # compress_v14 keys already 'model.layers...weight'
+        role = _role_of(name)
+        a_r = (alpha_per_role or {}).get(role, alpha)
         if k in act:
-            s = (act[k].clamp(min=eps)).pow(alpha)
+            s = (act[k].clamp(min=eps)).pow(a_r)
             s_col[name] = s
         else:
             missing += 1
@@ -89,8 +96,11 @@ def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
     if missing:
         print(f"[v17] WARNING: {missing} tensors missing activation data; "
               f"using s=1 (no rescaling)")
-    print(f"[v17] alpha={alpha}  "
-          f"s ratio max/mean avg over tensors: "
+    if alpha_per_role:
+        print(f"[v17] per-role alpha: {alpha_per_role}  (global fallback={alpha})")
+    else:
+        print(f"[v17] alpha={alpha}")
+    print(f"[v17] s ratio max/mean avg over tensors: "
           f"{sum((s.max()/s.mean()).item() for s in s_col.values())/len(s_col):.2f}")
 
     dims = sorted({W.shape[1] for W in W_orig_cpu.values()})
@@ -208,6 +218,7 @@ def v17_compress(teacher_pt: str, act_pt: str, role_K: dict, D: int,
                       "K1": b["K1"], "K2": b["K2"]} for r, b in banks.items()},
         "s_col": {n: s.cpu() for n, s in s_col.items()},
         "role_K": role_K, "D": D, "iters": iters, "beam": beam, "alpha": alpha,
+        "alpha_per_role": alpha_per_role,
         "rel_w_init_mean": sum(rws0) / len(rws0),
         "rel_w_init_max": max(rws0),
         "rel_w_final_mean": sum(rws) / len(rws),
