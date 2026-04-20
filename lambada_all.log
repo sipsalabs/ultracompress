@@ -1,0 +1,107 @@
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\cuda\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+[tok] lambada_test_olmo2.pt <- LAMBADA via allenai/OLMo-2-0425-1B
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776725840.793913   50004 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776725842.305973   50004 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+W0420 16:57:23.477000 34704 site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+
+[OLMo-2-1B] teacher -> olmo2_1b_cache.pt
+`torch_dtype` is deprecated! Use `dtype` instead!
+    [200/500] t1_gt=34.73%  t10_gt=68.55%
+    [400/500] t1_gt=34.80%  t10_gt=68.54%
+    [200/500] running ppl 31.4125
+    [400/500] running ppl 31.5141
+[OLMo-2-1B] teacher  PPL=31.5885  T1=34.75%  T10=68.52%   (15s)
+  substituting 112 body Linears (v17 stack, alpha=?)
+    [200/500] t1_gt=31.07%  t10_gt=64.61%
+    [400/500] t1_gt=31.12%  t10_gt=64.62%
+    [200/500] running ppl 43.2781
+    [400/500] running ppl 43.3760
+[OLMo-2-1B] v17 fit  PPL=43.5250  T1=31.07%  T10=64.60%   T1_vs_teacher=65.01%  (35s)
+[lambada_all] wrote lambada_all_results.json (1)
+[tok] lambada_test_tinyllama.pt <- LAMBADA via TinyLlama/TinyLlama-1.1B-Chat-v1.0
+Token indices sequence length is longer than the specified maximum sequence length for this model (467312 > 2048). Running this sequence through the model will result in indexing errors
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (19s)
+  substituting 154 body Linears (v17 stack, alpha=?)
+    [200/500] t1_gt=36.54%  t10_gt=69.19%
+    [400/500] t1_gt=36.06%  t10_gt=68.56%
+    [200/500] running ppl 27.1148
+    [400/500] running ppl 28.3593
+[TinyLlama-1.1B] v17 fit  PPL=28.7321  T1=36.03%  T10=68.28%   T1_vs_teacher=65.42%  (40s)
+[lambada_all] wrote lambada_all_results.json (2)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (30s)
+  substituting 196 body Linears (v17 stack, alpha=?)
+    [200/500] t1_gt=26.96%  t10_gt=60.03%
+    [400/500] t1_gt=26.65%  t10_gt=60.15%
+    [200/500] running ppl 80.9473
+    [400/500] running ppl 80.6936
+[Qwen3-1.7B] v17 fit  PPL=80.9092  T1=26.70%  T10=60.09%   T1_vs_teacher=58.26%  (60s)
+[lambada_all] wrote lambada_all_results.json (3)
+[tok] lambada_test_smollm2.pt <- LAMBADA via HuggingFaceTB/SmolLM2-1.7B
+Token indices sequence length is longer than the specified maximum sequence length for this model (430648 > 8192). Running this sequence through the model will result in indexing errors
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (14s)
+  substituting 168 body Linears (v17 stack, alpha=?)
+    [200/500] t1_gt=34.67%  t10_gt=67.91%
+    [400/500] t1_gt=34.42%  t10_gt=67.85%
+    [200/500] running ppl 32.6444
+    [400/500] running ppl 33.0207
+[SmolLM2-1.7B] v17 fit  PPL=33.0444  T1=34.47%  T10=67.80%   T1_vs_teacher=63.71%  (47s)
+[lambada_all] wrote lambada_all_results.json (4)
+[tok] lambada_test_mistral.pt <- LAMBADA via mistralai/Mistral-7B-v0.3
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (33s)
+  substituting 224 body Linears (v17 stack, alpha=?)
+    [200/500] t1_gt=39.29%  t10_gt=71.68%
+    [400/500] t1_gt=39.23%  t10_gt=71.61%
+    [200/500] running ppl 22.9785
+    [400/500] running ppl 23.0732
+[Mistral-7B] v17 fit  PPL=23.4099  T1=39.07%  T10=71.31%   T1_vs_teacher=71.91%  (172s)
+[lambada_all] wrote lambada_all_results.json (5)
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (42s)
+  substituting 252 body Linears (v17 stack, alpha=?)
+    [200/500] t1_gt=32.97%  t10_gt=66.20%
+    [400/500] t1_gt=32.94%  t10_gt=66.43%
+    [200/500] running ppl 44.2512
+    [400/500] running ppl 43.9105
+[Qwen3-8B] v17 fit  PPL=43.7967  T1=33.07%  T10=66.50%   T1_vs_teacher=72.76%  (179s)
+[lambada_all] wrote lambada_all_results.json (6)
+
+================ summary ================
+model               teacher_ppl    v17_ppl   ratio   tchT1   v17T1   T1_ret
+OLMo-2-1B               31.5885    43.5250   1.378  34.75%  31.07%   89.39%
+TinyLlama-1.1B          21.8216    28.7321   1.317  40.03%  36.03%   90.02%
+Qwen3-1.7B              48.3843    80.9092   1.672  32.09%  26.70%   83.19%
+SmolLM2-1.7B            22.0188    33.0444   1.501  39.78%  34.47%   86.66%
+Mistral-7B              17.3566    23.4099   1.349  42.96%  39.07%   90.94%
+Qwen3-8B                35.8173    43.7967   1.223  34.94%  33.07%   94.66%

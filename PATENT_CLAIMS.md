@@ -1635,3 +1635,44 @@ scheme, same CLI, same guarantee.
 - `verify_all_v17.py` -- batch round-trip driver over `pack_summary.json`.
 - `verify_all_results.json` -- per-model row with wall time and rel_diff.
 - `verify_all.log` -- full stdout for all 5 non-8B verifies (the 8B row is `verify_8b.log`).
+
+
+## Claim 16 LAMBADA cross-corpus generalization (all 6 models)
+
+The v17 Claim-16 fits are **calibrated on WikiText-103** (Wikipedia encyclopedic
+prose). To measure generalization we re-evaluate all 6 packed fits on
+**LAMBADA** (BookCorpus narrative fiction, `EleutherAI/lambada_openai`) --
+a held-out corpus that was **never seen during calibration, factorization,
+codebook fitting, or packing**. For each model we draw 500 random
+128-token windows with a fixed seed, measure teacher perplexity /
+top-1 / top-10, then substitute the v17 body-Linears and re-measure.
+
+| Model          | Teacher PPL | v17 PPL | PPL ratio | Teacher T1 | v17 T1 | T1 retention |
+|----------------|------------:|--------:|----------:|-----------:|-------:|-------------:|
+| OLMo-2-1B      |      31.589 |  43.525 |     1.378 |     34.75% | 31.07% |       89.39% |
+| TinyLlama-1.1B |      21.822 |  28.732 |     1.317 |     40.03% | 36.03% |       90.02% |
+| Qwen3-1.7B     |      48.384 |  80.909 |     1.672 |     32.09% | 26.70% |       83.19% |
+| SmolLM2-1.7B   |      22.019 |  33.044 |     1.501 |     39.78% | 34.47% |       86.66% |
+| Mistral-7B     |      17.357 |  23.410 |     1.349 |     42.96% | 39.07% |       90.94% |
+| Qwen3-8B       |      35.817 |  43.797 |     1.223 |     34.94% | 33.07% |       94.66% |
+
+**Cohort envelope.** PPL ratio 1.22-1.67, top-1 retention 83.2%-94.7% across
+6 architectures spanning 3 families (Llama/Mistral, Qwen3, OLMo-2 / SmolLM2)
+and a 7x parameter range (1.1B-8B). All 6 fits are packed at 2.40-2.41
+bpw (Claim 16 packed-format table) and all 6 round-trip reload to
+<=0.061% PPL drift (Claim 16 round-trip table). **The LAMBADA eval is
+pure inference** -- no re-fit, no re-calibration, no data leak -- so every
+row above is a true out-of-distribution measurement of the WikiText-fitted
+v17 stack.
+
+**Scaling trend.** The 8B Qwen3 fit has the **smallest** PPL ratio (1.223)
+and the **highest** top-1 retention (94.7%) of the cohort, consistent with
+the prediction that Claim-16 fidelity improves with scale as per-weight
+quantization noise averages over more independent heads and channels.
+
+**Files of record (LAMBADA cross-corpus).**
+
+- `lambada_all.py` -- 6-model OOD driver; seeds 500 windows per model at fixed seed, measures teacher and v17 PPL/T1/T10, caches teacher top-1 for agreement computation.
+- `lambada_all_results.json` -- one row per model with teacher_ppl, v17_ppl, ppl_ratio, teacher_t1/t10, v17_t1/t10, v17_t1_vs_teacher, t1_ret.
+- `lambada_all.log` -- full stdout for all 6 evals with intermediate running PPL/T1/T10 at 200/400/500 windows.
+

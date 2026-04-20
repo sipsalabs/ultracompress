@@ -129,3 +129,27 @@ Raw aggregated results: [`results.json`](results.json)
 - `topk_<model>_results.pt` — top-1 / top-10 fidelity measurements.
 
 For the full method, patent claims, 16-point α × α sweep, β-sweep defensive disclosure, Qwen3-8B chunked-EM scaling path, and Mistral outlier-robustness analysis see `PATENT_CLAIMS.md`.
+
+
+## LAMBADA cross-corpus generalization (all 6 models)
+
+Every v17 fit is calibrated only on WikiText-103. LAMBADA (BookCorpus
+narrative fiction via `EleutherAI/lambada_openai`) is therefore a true
+out-of-distribution test -- no re-fit, no re-calibration, pure inference.
+500 random 128-token windows per model, fixed seed.
+
+| Model          | Teacher PPL | v17 PPL | PPL ratio | Teacher T1 | v17 T1 | T1 retention |
+|----------------|------------:|--------:|----------:|-----------:|-------:|-------------:|
+| OLMo-2-1B      |      31.589 |  43.525 |     1.378 |     34.75% | 31.07% |       89.39% |
+| TinyLlama-1.1B |      21.822 |  28.732 |     1.317 |     40.03% | 36.03% |       90.02% |
+| Qwen3-1.7B     |      48.384 |  80.909 |     1.672 |     32.09% | 26.70% |       83.19% |
+| SmolLM2-1.7B   |      22.019 |  33.044 |     1.501 |     39.78% | 34.47% |       86.66% |
+| Mistral-7B     |      17.357 |  23.410 |     1.349 |     42.96% | 39.07% |       90.94% |
+| Qwen3-8B       |      35.817 |  43.797 |     1.223 |     34.94% | 33.07% |       94.66% |
+
+Cohort envelope: PPL ratio 1.22-1.67, top-1 retention 83.2%-94.7% across
+6 architectures (Llama/Mistral, Qwen3, OLMo-2, SmolLM2) and a 7x parameter
+range. The 8B fit has the lowest PPL ratio and highest top-1 retention,
+matching the scaling prediction. Driver `lambada_all.py`, data
+`lambada_all_results.json`.
+
