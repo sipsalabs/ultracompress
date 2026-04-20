@@ -1,0 +1,142 @@
+{
+  "claim": "Claim 16: (a_attn=0.25, a_mlp=0.125) 2.40-bpw model-agnostic compression law",
+  "operating_point": {
+    "alpha_attn": 0.25,
+    "alpha_mlp": 0.125,
+    "D": 8,
+    "beam": 8,
+    "iters": 6,
+    "K_per_role": {
+      "q_proj": [
+        2048,
+        256
+      ],
+      "k_proj": [
+        2048,
+        256
+      ],
+      "v_proj": [
+        2048,
+        256
+      ],
+      "o_proj": [
+        4096,
+        512
+      ],
+      "gate_proj": [
+        2048,
+        256
+      ],
+      "up_proj": [
+        2048,
+        256
+      ],
+      "down_proj": [
+        2048,
+        256
+      ]
+    }
+  },
+  "models": [
+    {
+      "model": "TinyLlama-1.1B",
+      "family": "Llama-2",
+      "params_B": 1.1,
+      "body_linears": 154,
+      "sigma2_ratio_q": 1126,
+      "alpha_attn": 0.25,
+      "alpha_mlp": 0.125,
+      "D": 8,
+      "ppl_fp16": 17.01424239501764,
+      "ppl_v17": 28.898876946337626,
+      "ratio": 1.6985109460295582,
+      "bpw": 2.3988095238095237,
+      "t1_teacher": 45.6953125,
+      "t10_teacher": 75.1328125,
+      "t1_v17": 38.207812499999996,
+      "t10_v17": 68.91874999999999,
+      "t1_agreement": 65.01249999999999,
+      "t10_agreement": 94.171875,
+      "t1_retention": 83.61429304154557,
+      "t10_retention": 91.72922948944576
+    },
+    {
+      "model": "Qwen3-1.7B",
+      "family": "Qwen3",
+      "params_B": 1.7,
+      "body_linears": 168,
+      "sigma2_ratio_q": 120,
+      "alpha_attn": 0.25,
+      "alpha_mlp": 0.125,
+      "D": 8,
+      "t1_teacher": 40.699999999999996,
+      "t10_teacher": 70.8890625,
+      "t1_v17": 34.453125,
+      "t10_v17": 64.28437500000001,
+      "t1_agreement": 64.04062499999999,
+      "t10_agreement": 93.875,
+      "t1_retention": 84.65141277641278,
+      "t10_retention": 90.68306552932621,
+      "ppl_fp16": 33.21,
+      "ppl_v17": 59.4,
+      "ratio": 1.788,
+      "bpw": 2.4017,
+      "rel_w_mean": 0.0643,
+      "rel_w_max": 0.0941
+    },
+    {
+      "model": "Mistral-7B-v0.3",
+      "family": "Mistral",
+      "params_B": 7.248,
+      "body_linears": 224,
+      "sigma2_ratio_q": 2173,
+      "alpha_attn": 0.25,
+      "alpha_mlp": 0.125,
+      "D": 8,
+      "ppl_fp16": 12.356927004363763,
+      "ppl_v17": 20.109324113563332,
+      "ratio": 1.6273725746265122,
+      "bpw": 2.394230769230769,
+      "t1_teacher": 49.5203125,
+      "t10_teacher": 78.9609375,
+      "t1_v17": 42.6921875,
+      "t10_v17": 73.5859375,
+      "t1_agreement": 69.6921875,
+      "t10_agreement": 95.059375,
+      "t1_retention": 86.21146625437794,
+      "t10_retention": 93.19283664786782
+    },
+    {
+      "model": "Qwen3-8B",
+      "family": "Qwen3",
+      "params_B": 8.19,
+      "body_linears": 252,
+      "sigma2_ratio_q": 120,
+      "alpha_attn": 0.25,
+      "alpha_mlp": 0.125,
+      "D": 8,
+      "ppl_fp16": 20.69626242935018,
+      "ppl_v17": 28.682890100681682,
+      "ratio": 1.3858971009183452,
+      "bpw": 2.3967391304347827,
+      "t1_teacher": 46.075,
+      "t10_teacher": 76.109375,
+      "t1_v17": 42.3203125,
+      "t10_v17": 72.93437499999999,
+      "t1_agreement": 73.559375,
+      "t10_agreement": 96.984375,
+      "t1_retention": 91.85092240911558,
+      "t10_retention": 95.82837199753644,
+      "rel_w_mean": 0.0642,
+      "rel_w_max": 0.0834
+    }
+  ],
+  "envelope": {
+    "bpw_min": 2.394230769230769,
+    "bpw_max": 2.4017,
+    "ratio_min": 1.3858971009183452,
+    "ratio_max": 1.788,
+    "t10_agreement_min": 93.875,
+    "t10_retention_min": 90.68306552932621
+  }
+}
