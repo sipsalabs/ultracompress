@@ -43,6 +43,8 @@ Thumbs.db
 .claude/
 .playwright-mcp/
 full_chat_transcript.jsonl
+2???-??-??-*.txt
 plots/
 
-v17_qwen3_1.7b.bin
+# Packed Claim-16 binaries (multi-GB, regeneratable via pack_all_v17.py)
+v17_*.bin
