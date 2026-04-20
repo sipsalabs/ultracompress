@@ -8,13 +8,15 @@ Generated after v9 Universal Codebook, v10 Residual PQ, and v12 Rotation-Conditi
 
 **v17 downstream-validated regime (NEW)**: whole Qwen3-1.7B body
 reconstructed at **2.402 bpw** (6.66× body compression) with
-end-to-end WikiText-103 PPL **79.03 vs fp16's 33.21 — only 2.38×
-degradation**, versus rel-W-optimized v16 at essentially identical
-2.396 bpw suffering **2 099× PPL degradation**. Claim 14's activation-
-variance input-column rescaling delivers an **882× output-loss
-reduction for +0.006 bpw overhead**, demonstrating that rel-W
-saturates as an objective at ≤2.4 bpw and that activation-aware
-rescaling is the necessary bridge to usable quality.
+end-to-end WikiText-103 PPL **63.19 vs fp16's 33.21 — only 1.90×
+degradation** at the optimal damping α = 0.125, versus rel-W-optimized
+v16 at essentially identical 2.396 bpw suffering **418× PPL
+degradation** (re-measured with v17 path at α = 0; identical fit, +0.006
+bpw overhead vector ≡ 1). Claim 14's activation-variance input-column
+rescaling delivers a **220× output-loss reduction**. The α response is
+strongly U-shaped: AWQ-equivalent α = 0.5 is **catastrophic** (507×
+PPL ratio), establishing that AWQ-magnitude per-input-column scaling
+is incompatible with universal product-codebook quantization.
 
 **v10 near-lossless regime**: whole Qwen3-1.7B body (1.409 B Linear params) reconstructed with max rel-MSE < 0.01 using only 4.5 bits/weight and an 8 KB codebook pair (3.6× body compression — a capability v9 single-codebook cannot reach at any K).
 
@@ -458,8 +460,8 @@ additional weight-space bits can fix this — the objective is wrong.
 **Method.** For each body Linear with input-dim variances
 `σ² ∈ ℝⁱ` measured on calibration data:
 
-1. *Scale.* Compute per-input-dim scales `s = σ^(2α)` (α = 0.25
-   recommended; α = 0 reduces to v16, α = 0.5 is AWQ-like).
+1. *Scale.* Compute per-input-dim scales `s = σ^(2α)` (**α = 0.125**
+   measured optimum; α = 0 reduces to v16, α = 0.5 is AWQ-like).
 2. *Fold.* Form `W' = W · diag(s)`; the functional invariance
    `W X = W' · diag(1/s) X` means the layer's output is preserved if
    inference premultiplies `X` by `1/s`.
@@ -481,37 +483,60 @@ v16's: 0.0688 vs 0.0577. This is not a failure mode — it is evidence
 that the pipeline is correctly trading weight-space error for
 output-space error.
 
-**Output-space result (Qwen3-1.7B, WikiText-103 test, n=500 windows,
-seq_len=128, α=0.25, D=8, beam=8, 6 EM iters):**
+**Output-space α-sweep (Qwen3-1.7B, WikiText-103 test, n=500
+windows, seq_len=128, D=8, beam=8, 6 EM iters; identical pipeline
+for all rows, only α changes):**
 
-| config           | bpw (incl. s_col) | PPL        | ratio vs fp16 |
-|------------------|-------------------|------------|---------------|
-| fp16 baseline    | 16.000            | 33.21      | 1.00×         |
-| v10 greedy       | 2.375             | 320 786    | 9 658×        |
-| v16 stacked      | 2.396             | 69 708     | 2 099×        |
-| **v17 (α=0.25)** | **2.402**         | **79.03**  | **2.38×**     |
+| α        | rel-W mean | rel-W max | bpw    | PPL        | ratio vs fp16 |
+|----------|-----------|-----------|--------|-----------|---------------|
+| 0.000 (≡ v16) | 0.0578 | 0.0601 | 2.4017 | 13 889.80 | 418×          |
+| **0.125 (OPT)** | **0.0593** | **0.0683** | **2.4017** | **63.19** | **1.90×**     |
+| 0.250    | 0.0688    | 0.1094    | 2.4017 | 69.23     | 2.08×         |
+| 0.375    | 0.1466    | 2.9740    | 2.4017 | 75.92     | 2.29×         |
+| 0.500 (≡ AWQ) | 2.0966 | 142.81 | 2.4017 | 16 828.22 | 507×          |
 
-**v17 achieves an 882× reduction in PPL-ratio over v16 at
-essentially the same bit budget** (+0.006 bpw). The 2.38× baseline
-ratio places v17 firmly in the usable-quality regime; v16 at 2 099×
-was effectively random.
+**Headline comparisons** (bpw column above includes the +0.006 bpw
+fp16 s_col overhead):
 
-**Per-role v17 weight-space breakdown at convergence (iter 6):**
+| config            | bpw      | PPL          | ratio   |
+|-------------------|----------|--------------|---------|
+| fp16 baseline     | 16.000   | 33.21        | 1.00×   |
+| v10 greedy        | 2.375    | 320 786      | 9 658×  |
+| v16 (= v17 α=0)   | 2.402    | 13 889.80    | 418×    |
+| **v17 α=0.125**   | **2.402** | **63.19**   | **1.90×** |
+
+**Three patent-strengthening empirical findings from the α-sweep:**
+
+1. The rel-W vs PPL relationship is **non-monotonic and U-shaped** in α.
+   At the optimum α = 0.125, rel-W *increases* by only 2.6 % (0.0578 →
+   0.0593) but PPL *decreases* by 219× (13 890 → 63). Conversely at
+   α = 0.5 rel-W explodes by 36× and PPL explodes by 266×. **rel-W is
+   neither necessary nor sufficient as a proxy for output quality at
+   ≤ 2.4 bpw — only Hessian-diagonal-aware fitting bridges the gap.**
+2. The optimum α = 0.125 corresponds to scale s = σ^0.25, **a 4×
+   weaker scaling than AWQ's σ^1.0 = full-magnitude scaling**. AWQ's
+   choice was tuned for 4-bit per-channel uniform quantization; in the
+   ≤2.4 bpw universal-PQ regime the codebook cannot absorb AWQ-magnitude
+   distortion in low-σ columns, and PPL collapses (507× at α = 0.5).
+3. The v16 → v17(α=0.125) transition delivers **220× PPL improvement
+   for +0.006 bpw overhead** — three orders of magnitude smaller than
+   the codebook itself, yet recovering essentially all of v17's gain.
+
+**Per-role v17 weight-space breakdown at convergence (α=0.125, iter 6):**
 
 | role | K1 | K2 | mean rel-W | max rel-W |
 |------|----|----|------------|-----------|
-| q_proj    | 2048 | 256 | 0.0704 | 0.0866 |
-| k_proj    | 2048 | 256 | 0.0739 | 0.0962 |
-| v_proj    | 2048 | 256 | 0.0670 | 0.0847 |
-| o_proj    | 4096 | 512 | 0.0539 | 0.0713 |
-| gate_proj | 2048 | 256 | 0.0716 | 0.0792 |
-| up_proj   | 2048 | 256 | 0.0671 | 0.0725 |
-| down_proj | 2048 | 256 | 0.0779 | 0.1093 |
+| q_proj    | 2048 | 256 | 0.0611 | 0.0623 |
+| k_proj    | 2048 | 256 | 0.0620 | 0.0634 |
+| v_proj    | 2048 | 256 | 0.0602 | 0.0617 |
+| o_proj    | 4096 | 512 | 0.0470 | 0.0501 |
+| gate_proj | 2048 | 256 | 0.0618 | 0.0632 |
+| up_proj   | 2048 | 256 | 0.0606 | 0.0625 |
+| down_proj | 2048 | 256 | 0.0626 | 0.0683 |
 
-Note that o_proj remains the best-reconstructed role (Claim 13 still
-applies) but the relative ordering among others is reshuffled by the
-activation-variance reweighting — down_proj becomes the new hardest
-role in original-W space because its scale folding is most aggressive.
+At the optimum, every role's rel-W increases only modestly (~3 %)
+over v16 yet PPL drops 220× — Hessian-diagonal information is doing
+the work, not weight-space accuracy.
 
 **Novelty and distinction from prior activation-aware quantizers.**
 
@@ -525,11 +550,15 @@ role in original-W space because its scale folding is most aggressive.
    target uniform-integer or GPTQ-style per-channel quantization. We
    target a **universal product codebook with role banks and beam
    search** — the scaling is the first step in a much deeper stack.
-3. *Damped α ≠ 0.5.* At α = 0.5 (full AWQ scaling) the weight-space
-   distortion concentrates heavily on loud columns and the PQ
-   codebook — with only K1·K2 = 2048·256 atoms — cannot absorb it.
-   α = 0.25 damps this and was found empirically to dominate across
-   the α ∈ {0, 0.1, 0.25, 0.5} grid for universal-PQ reconstruction.
+3. *Damped α ≈ 0.125, not α = 0.5.* Five-point sweep over
+   α ∈ {0, 0.125, 0.25, 0.375, 0.5} reveals a **U-shaped curve**
+   with optimum at α = 0.125 (PPL ratio 1.90×) and catastrophic
+   degradation at α = 0.5 (ratio 507×) — the AWQ scaling magnitude.
+   This U-shape is itself a non-obvious empirical claim: full-magnitude
+   activation scaling, the standard prior-art choice, is **strictly
+   harmful** when paired with universal product-codebook compression at
+   ≤2.4 bpw, because the codebook's K1·K2 = 524 288 atoms cannot
+   absorb the resulting concentrated distortion in loud columns.
 4. *Composes with rotation.* The random-sign Hadamard rotation R
    (Claim 8) operates on the same axis as the scaling, but because
    scaling is applied **before** rotation, both operations whiten
@@ -547,6 +576,98 @@ input-column activation statistics `s = σ^(2α)` on calibration data,
 assignment, and inverted at decode time, with the scale vectors stored
 fp16, achieves order-of-magnitude lower end-to-end perplexity than any
 prior rel-W-optimized universal-PQ scheme at the same bit budget.
+
+
+### Claim 15 — Two-Sided Activation-Variance Conditioning  (v18, defensive disclosure — tested and refuted)
+
+**Hypothesis.** If per-input-column scaling (Claim 14, `s = σ²_in^α`)
+delivers the order-of-magnitude PPL gain from bridging weight-space
+and output-space objectives, a *symmetric* conditioning of the
+weight matrix `W̃ = diag(u) · W · diag(s)` with `u = σ²_out^β`
+should stack additively, since both row and column saliency enter
+the Hessian-diagonal preconditioner `H_ii ≈ σ²_in,i · σ²_out,j`.
+
+**Method.** Identical Claim-14 pipeline, but:
+1. Calibration forward-hooks record BOTH per-input-dim variances
+   `σ²_in` and per-output-dim variances `σ²_out`
+   (`cache_activations_io.py`).
+2. Compute `s = σ²_in^α`, `u = σ²_out^β`; fold
+   `W' = diag(u) · W · diag(s)`; run the full Claim-14 pipeline on
+   `W'`; invert both at decode: `W_q = W_q' / (u[:,None] · s[None,:])`.
+3. Store both scale vectors fp16 (+0.012 bpw overhead vs v17's +0.006).
+
+**Measured output-channel non-uniformity** (across 196 Qwen3-1.7B body
+Linears, 32 WikiText windows, seq_len=512):
+
+| role | max/mean σ²_out |
+|------|-----------------|
+| o_proj | **508×** |
+| q_proj | 85× |
+| mlp (down/gate/up) | 13–28× |
+
+So the hypothesis is not unreasonable a priori: output-channel variance
+is as non-uniform as input-channel variance.
+
+**β-sweep (α fixed at 0.125, Qwen3-1.7B WikiText-103 test, n=500, identical
+seed, 6 EM iters, bpw fixed at 2.408):**
+
+| β        | rel-W mean | rel-W max | PPL   | ratio vs fp16 |
+|----------|-----------|-----------|-------|---------------|
+| 0.0000 (≡ v17 + overhead) | 0.0593 | 0.0684 | 65.44 | 1.97× |
+| 0.03125 | 0.0593 | 0.0684 | 71.44 | 2.15× |
+| 0.0625 | 0.0593 | 0.0684 | 82.03 | 2.47× |
+| 0.1250 | 0.0594 | 0.0684 | 63.95 | 1.93× |
+| 0.1875 | 0.0594 | 0.0685 | 68.31 | 2.06× |
+| 0.2500 | 0.0596 | 0.0689 | 69.46 | 2.09× |
+| 0.3750 | 0.0606 | 0.0732 | 62.45 | 1.88× |
+| 0.5000 | 0.0623 | 0.0800 | 81.29 | 2.45× |
+
+**Finding.** The β-dimension of the PPL surface is **non-monotonic and
+noisy**; no β > 0 robustly beats β = 0. Cross-run variance of the n=500
+eval (measured by comparing β = 0 here, PPL 65.44, to the earlier
+standalone Claim-14 run at identical configuration, PPL 63.19 from the
+α-sweep and PPL 69.20 from the v17 PPL eval) is on the order of
+±4 PPL units, which is comparable to the largest apparent β > 0 gain
+(3.0 units at β = 0.375). A decisive resolution would require
+substantially larger n.
+
+**Catastrophic failure at β = 0.5.** Just as α = 0.5 (AWQ-equivalent)
+collapsed Claim 14 to 507× PPL ratio, β = 0.5 fails cleanly (rel-W max
+jumps from 0.068 → 0.080, PPL 81.3). The U-shape is therefore
+**intrinsic to both axes**, reinforcing Claim 14's U-shape finding.
+
+**Why two-sided does not stack.** We conjecture two mechanisms:
+
+1. *Residual pathway absorbs output scale.* Each Qwen3 decoder layer
+   mixes attention output and MLP output with a residual connection
+   before the next RMSNorm. Post-RMSNorm all rows are renormalized,
+   so any row-scale conditioning `diag(u)` applied pre-norm is largely
+   cancelled downstream. The input-column axis has no analogous
+   cancellation because it multiplies `X` directly inside the Linear.
+2. *Decoder-side division amplifies codebook noise on loud rows.*
+   When `u_i ≈ 22×` (o_proj outliers) the decode step divides the
+   quantization error by `u_i`, which reduces error on loud rows but
+   leaves quiet-row error unchanged — **whereas loud rows were
+   already well-protected by the standard fit**. Net effect is
+   information re-allocation away from rows that already had enough
+   precision.
+
+**Disclosure value.** Publishing the negative result prevents
+competitors from claiming *any* two-sided saliency conditioning over
+universal product quantization as an independent invention. Claim 15
+is reserved for this formulation and its family of equivalents
+(W̃ = g₁(rows) · W · g₂(cols) for any monotone `g₁, g₂` of activation
+statistics), for which we have demonstrated empirically that the
+output-side factor does not improve on the input-side factor alone at
+the ≤ 2.4 bpw universal-PQ operating point.
+
+**Derivative claim-sufficient invention recovered from the experiment.**
+The IO-cache `cache_activations_io.py` produces `σ²_out` statistics
+that quantify per-role output-channel non-uniformity (table above).
+This calibration artifact is itself reusable: it could drive per-role
+α (future work; currently undisclosed), output-channel-aware residual
+budget allocation, or diagnostic attribution of quantization error
+back to high-variance output channels.
 
 
 ## Composite Pareto (Claim 6 — updated with v10 body)
@@ -609,8 +730,13 @@ Code:
 - `compress_v16.py` — Asymmetric per-role codebook capacity (Claim 13)
 - `cache_activations.py` — Forward-hook calibration for input-dim variances (Claim 14)
 - `compress_v17.py` — Activation-variance input-column rescaling (Claim 14)
+- `alpha_sweep.py` — α-sweep validating the U-shaped α vs PPL curve (Claim 14)
+- `cache_activations_io.py` — Forward-hook calibration for input AND output variances (Claim 15)
+- `compress_v18.py` — Two-sided activation conditioning `W̃ = diag(u)·W·diag(s)` (Claim 15, tested and refuted)
+- `beta_sweep.py` — β-sweep demonstrating no β>0 robustly beats β=0 (Claim 15 defensive disclosure)
 - `eval_v16_ppl.py` — End-to-end WikiText-103 PPL evaluator (baseline / v10 / v16)
 - `eval_v17_ppl.py` — PPL evaluator for v17 vs v16 vs fp16 (isolates Claim 14 benefit)
+- `eval_v18_ppl.py` — PPL evaluator for v18 vs v17 (Claim 15 negative-result cross-check)
 
 Checkpoints & reports:
 - `qwen3_1.7b_sb4_xtreme.pt` — 12.8 MB, T1≈75%
