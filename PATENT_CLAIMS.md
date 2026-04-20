@@ -27,6 +27,14 @@ MLP despite MLP's 2.4× larger σ²-in non-uniformity. The natural
 AWQ-inspired prior (damping scales with non-uniformity) measures at
 PPL 93.16 — 57% worse — and is thereby empirically refuted.
 
+**Next-token fidelity at the Claim-16 operating point (NEW, measured)**:
+on 500 wikitext103 windows (seq_len=128), the compressed 2.40-bpw
+student retains **T1=84.65%** and **T10=90.68%** of the fp16 teacher's
+accuracy (absolute: student T1=34.45% vs teacher 40.70%, student
+T10=64.28% vs teacher 70.89%). **Teacher-agreement: T1=64.04%,
+T10=93.88%** — the student reproduces the teacher's top-10 choice
+~94% of the time at 6.66× body compression.
+
 **v10 near-lossless regime**: whole Qwen3-1.7B body (1.409 B Linear params) reconstructed with max rel-MSE < 0.01 using only 4.5 bits/weight and an 8 KB codebook pair (3.6× body compression — a capability v9 single-codebook cannot reach at any K).
 
 **Generality proven**: identical (K, D) produces identical bits/weight AND identical rel-MSE across every weight population tested — hypernet, DEQ body, and raw transformer layers 0, 7, 14, 21, 27 of the unmodified Qwen3-1.7B. Under v10 residual PQ the same universality is preserved (cross-layer rel-MSE spread 0.003 at K1=2048 K2=256 D=8).
@@ -800,6 +808,21 @@ sub-unity power-law exponent at the role partition granularity.
   ~0.4 KB overhead). Natural extension if per-role runs out of
   headroom at larger model scales.
 
+**Downstream next-token fidelity (n=500 wikitext103 windows, seq_len=128).**
+
+| metric | fp16 teacher | Claim 16 (2.40 bpw, 6.66× body) | retention | teacher-agreement |
+|--------|--------------|----------------------------------|-----------|-------------------|
+| T1 (ground-truth next token)  | 40.70% | 34.45% | **84.65%** | **64.04%** |
+| T10 (ground-truth in top-10)  | 70.89% | 64.28% | **90.68%** | **93.88%** |
+
+The **teacher-agreement** numbers are the correct fidelity metric for
+a compression claim (they isolate "does the compressed model produce
+the same distribution as the teacher" from "does the teacher itself
+predict the ground truth"): at 6.66× body compression + 2.40 bpw, the
+student retains **93.88% of the teacher's top-10 choices** and
+**64.04% of its top-1 choices**, which is a dramatically tighter
+fidelity bound than PPL alone (1.788× ratio) would suggest.
+
 
 ## Composite Pareto (Claim 6 — updated with v10 body)
 
@@ -867,6 +890,7 @@ Code:
 - `beta_sweep.py` — β-sweep demonstrating no β>0 robustly beats β=0 (Claim 15 defensive disclosure)
 - `per_role_alpha_sweep.py` — Per-role α sweep validating Claim 16; 8 configurations spanning `α_attn × α_mlp ∈ {0.0625, 0.125, 0.1875, 0.25, 0.3125}²`
 - `per_role_alpha_results.pt`, `per_role_alpha_results_fine.pt` — Measured rows (PPL, rel-W, bpw) for Claim 16 sweep
+- `eval_claim16_topk.py` — Top-1 / top-10 next-token fidelity evaluator at Claim-16 operating point; reports ground-truth retention and teacher-agreement
 - `eval_v16_ppl.py` — End-to-end WikiText-103 PPL evaluator (baseline / v10 / v16)
 - `eval_v17_ppl.py` — PPL evaluator for v17 vs v16 vs fp16 (isolates Claim 14 benefit)
 - `eval_v18_ppl.py` — PPL evaluator for v18 vs v17 (Claim 15 negative-result cross-check)
