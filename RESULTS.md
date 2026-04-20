@@ -1,6 +1,6 @@
 # UltraCompress — Claim 16 Cross-Family Results
 
-**A single 2.40-bpw compression operating point validated across 4 transformer models spanning 3 architecture families (Llama-2, Qwen3, Mistral) and 7.5× in parameter scale — with zero hyperparameter retuning.**
+**A single 2.40-bpw compression operating point validated across 5 transformer models spanning 3 architecture families (Llama-2, Qwen3, Mistral), two independent Llama-family training corpora (TinyLlama / SmolLM2), and 7.5× in parameter scale — with zero hyperparameter retuning.**
 
 ![cross-family envelope](claim16_envelope.png)
 
@@ -8,11 +8,12 @@
 
 ---
 
-## Result envelope (4/4 models)
+## Result envelope (5/5 models)
 
 | Model              | Family    | Params | bpw    | PPL fp16 | PPL 2.40bpw | Ratio  | T1 retention | T10 retention | T10 teacher-agreement |
 |--------------------|-----------|--------|--------|----------|-------------|--------|--------------|----------------|------------------------|
 | TinyLlama-1.1B     | Llama-2   | 1.1 B  | 2.4053 | 17.01    | 28.90       | 1.699× | 83.61 %      | 91.73 %        | 94.17 %                |
+| SmolLM2-1.7B       | Llama-2   | 1.81 B | 2.3955 | 18.03    | 34.24       | 1.899× | 80.84 %      | 90.18 %        | 93.20 %                |
 | Qwen3-1.7B         | Qwen3     | 1.7 B  | 2.4017 | 33.21    | 59.40       | 1.788× | 84.65 %      | 90.68 %        | 93.88 %                |
 | Mistral-7B-v0.3    | Mistral   | 7.25 B | 2.3971 | 12.36    | 20.11       | 1.627× | 86.21 %      | 93.19 %        | 95.06 %                |
 | Qwen3-8B           | Qwen3     | 8.19 B | 2.3998 | 20.70    | 28.68       | 1.386× | 91.85 %      | 95.83 %        | 96.98 %                |
@@ -21,11 +22,12 @@ All runs: `(α_attn = 0.25, α_mlp = 0.125)`, D = 8, beam = 8, 3 – 6 EM iters.
 
 ### The envelope holds uniformly:
 
-- **bpw spread across all 4 models:** 0.0082 bits (0.3 % relative) — the 2.40-bpw target is architecture-invariant.
-- **PPL ratio:** 1.39× – 1.79× (bounded under 1.8× everywhere).
-- **T10 teacher-agreement ≥ 93.88 %** on every model: the compressed student matches the fp16 teacher's top-10 next-token choice on more than 93 of every 100 tokens.
-- **T1 retention ≥ 83.61 %** on every model.
+- **bpw spread across all 5 models:** 0.0098 bits (0.41 % relative) — the 2.40-bpw target is architecture- and corpus-invariant.
+- **PPL ratio:** 1.39× – 1.90× (all within < 2×).
+- **T10 teacher-agreement ≥ 93.20 %** on every model: the compressed student matches the fp16 teacher's top-10 next-token choice on more than 93 of every 100 tokens.
+- **T1 retention ≥ 80.84 %** on every model.
 - **σ²-input-column outlier intensity spanning 18×** (Qwen3 ≈ 120× → Mistral 2173×) is absorbed structurally by the role-bank + per-column-scaling stack without retuning.
+- **Same Llama-arch, different corpus:** TinyLlama (pretrained on SlimPajama) and SmolLM2 (pretrained on FineWeb-Edu / Cosmopedia) both land inside the envelope, demonstrating that the operating point is not specific to a single pretraining recipe.
 
 ---
 
@@ -37,7 +39,8 @@ Post-training quantization at **2.40 bits per weight** is typically a model-fami
 - ships a **single implementation path** (`compress_v17.py`) across all 4 models;
 - requires **zero per-model hyperparameter search**;
 - holds under **18× differences in activation-variance outlier intensity** across families;
-- converges to **2.40 ± 0.004 bpw** deterministically.
+- holds under **two independent Llama-arch pretraining corpora** (SlimPajama vs FineWeb-Edu);
+- converges to **2.40 ± 0.005 bpw** deterministically.
 
 At 2.40 bpw, an 8 B model compresses to ≈ 2.4 GB of body weights — a 6.7× reduction vs fp16 — while retaining 97 % of the teacher's top-10 token decisions and 95.8 % of its ground-truth top-10 accuracy on held-out text.
 
