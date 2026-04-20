@@ -43,6 +43,32 @@ Post-training quantization at **2.40 bits per weight** is typically a model-fami
 - holds under **three independent Llama-arch pretraining corpora** (SlimPajama, FineWeb-Edu, Dolma);
 - converges to **2.40 ± 0.005 bpw** deterministically.
 
+### Out-of-distribution robustness (LAMBADA)
+
+The canonical Qwen3-1.7B fit was re-evaluated on **LAMBADA** (BookCorpus-derived narrative fiction, not Wikipedia):
+
+| Metric                   | WikiText-103 | LAMBADA (OOD) | Δ           |
+|--------------------------|--------------|----------------|-------------|
+| PPL ratio (v17 / fp16)   | 1.788×       | **1.672×**     | **−0.116**  |
+| T10 teacher-agreement    | 93.88 %      | **94.15 %**    | **+0.27 pp** |
+| T10 retention            | 90.68 %      | **91.43 %**    | **+0.75 pp** |
+| T1 retention             | 84.65 %      | 83.19 %        | −1.46 pp    |
+
+**The compressed model tracks the teacher *better* on out-of-distribution text than on in-distribution text.** The 2.40-bpw operating point is not a WikiText artifact; it compresses the *functional* behaviour of each Linear, not corpus-specific patterns.
+
+### Run it yourself
+
+```powershell
+python demo_claim16.py `
+    --model_id Qwen/Qwen3-1.7B `
+    --teacher  qwen3_1.7b_cache.pt `
+    --v17      v17_fit_qwen3_1.7b.pt `
+    --tokens   wikitext103_test_qwen3.pt `
+    --n 5
+```
+
+Prints side-by-side fp16 teacher vs 2.40-bpw compressed top-5 next-token predictions on 5 random WikiText windows. Works identically for any of the 6 validated models — just swap `--model_id`, `--teacher`, `--v17`, `--tokens`.
+
 At 2.40 bpw, an 8 B model compresses to ≈ 2.4 GB of body weights — a 6.7× reduction vs fp16 — while retaining 97 % of the teacher's top-10 token decisions and 95.8 % of its ground-truth top-10 accuracy on held-out text.
 
 ---
