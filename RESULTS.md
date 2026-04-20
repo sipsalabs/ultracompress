@@ -60,6 +60,19 @@ The canonical Qwen3-1.7B fit was re-evaluated on **LAMBADA** (BookCorpus-derived
 
 The Claim-16 fit for Qwen3-1.7B is serialised end-to-end to a single binary file, **`v17_qwen3_1.7b.bin` — 424,563,357 bytes = 2.4101 bpw** (vs 2.4017 claimed; +0.008 bpw from JSON header + codebooks + fp16 scale rounding). A pure-decode path (`pack_v17.py verify`) reconstructs 196 body Linears from the binary alone — no calibration, no beam search — and the resulting model's PPL matches the original fit to **0.064 %** relative difference on the same 64 WikiText windows. This turns Claim 16 from a bit-counting argument into a working compressed-inference format.
 
+**Format generalises across all 6 validated models.** Running `pack_all_v17.py` over every v17 fit produces six packed binaries with bit-rates all in the 2.40–2.41 bpw band across three model families, three tokenizer/corpus pairings, and a 7.2× parameter-count range. The 8B-scale round-trip (`verify_8b.log`) is **0.0000 %** relative PPL difference on Qwen3-8B — bit-exact decode at 6.95 B Linear params.
+
+| Model           |    Params         | Pack bytes       | bpw_disk | round-trip diff |
+|-----------------|------------------:|-----------------:|---------:|----------------:|
+| Qwen3-1.7B      |     1,409,286,144 |      424,563,357 |   2.4101 |       0.0643 %  |
+| Qwen3-8B        |     6,945,767,424 |    2,086,698,389 |   2.4034 |       0.0000 %  |
+| Mistral-7B-v0.3 |     6,979,321,856 |    2,094,344,357 |   2.4006 |       (pending) |
+| TinyLlama-1.1B  |       968,884,224 |      292,422,381 |   2.4145 |       (pending) |
+| SmolLM2-1.7B    |     1,610,612,736 |      483,884,549 |   2.4035 |       (pending) |
+| OLMo-2-1B       |     1,073,741,824 |      322,688,101 |   2.4042 |       (pending) |
+
+The 2.40-bpw on-disk envelope is a property of the scheme, not of a particular model.
+
 ### Run it yourself
 
 ```powershell

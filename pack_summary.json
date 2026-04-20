@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Qwen3-1.7B",
+    "fit": "v17_fit_qwen3_1.7b.pt",
+    "bin": "v17_qwen3_1.7b.bin",
+    "bytes": 424563357,
+    "params": 1409286144,
+    "bpw_disk": 2.410090293203081,
+    "bpw_claim": 2.4016927083333335,
+    "a_attn": 0.25,
+    "a_mlp": 0.125
+  },
+  {
+    "name": "Qwen3-8B",
+    "fit": "v17_fit_8b.pt",
+    "bin": "v17_qwen3_8b.bin",
+    "bytes": 2086698389,
+    "params": 6945767424,
+    "bpw_disk": 2.4034186711057948,
+    "bpw_claim": 2.399796195652174,
+    "a_attn": 0.25,
+    "a_mlp": 0.125
+  },
+  {
+    "name": "Mistral-7B",
+    "fit": "v17_fit_mistral.pt",
+    "bin": "v17_mistral_7b.bin",
+    "bytes": 2094344357,
+    "params": 6979321856,
+    "bpw_disk": 2.400627912237094,
+    "bpw_claim": 2.3970853365384617,
+    "a_attn": 0.25,
+    "a_mlp": 0.125
+  },
+  {
+    "name": "TinyLlama-1.1B",
+    "fit": "v17_fit_tinyllama.pt",
+    "bin": "v17_tinyllama.bin",
+    "bytes": 292422381,
+    "params": 968884224,
+    "bpw_disk": 2.4145083489356103,
+    "bpw_claim": 2.4053199404761902,
+    "a_attn": 0.25,
+    "a_mlp": 0.125
+  },
+  {
+    "name": "SmolLM2-1.7B",
+    "fit": "v17_fit_smollm2.pt",
+    "bin": "v17_smollm2.bin",
+    "bytes": 483884549,
+    "params": 1610612736,
+    "bpw_disk": 2.4034805546204248,
+    "bpw_claim": 2.3955078125,
+    "a_attn": 0.25,
+    "a_mlp": 0.125
+  },
+  {
+    "name": "OLMo-2-1B",
+    "fit": "v17_fit_olmo2.pt",
+    "bin": "v17_olmo2.bin",
+    "bytes": 322688101,
+    "params": 1073741824,
+    "bpw_disk": 2.4042137041687965,
+    "bpw_claim": 2.3955078125,
+    "a_attn": 0.25,
+    "a_mlp": 0.125
+  }
+]

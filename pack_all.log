@@ -1,0 +1,21 @@
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\cuda\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+[skip-pack] Qwen3-1.7B: v17_qwen3_1.7b.bin exists (424,563,357 bytes)
+[skip-pack] Qwen3-8B: v17_qwen3_8b.bin exists (2,086,698,389 bytes)
+[skip-pack] Mistral-7B: v17_mistral_7b.bin exists (2,094,344,357 bytes)
+[skip-pack] TinyLlama-1.1B: v17_tinyllama.bin exists (292,422,381 bytes)
+[skip-pack] SmolLM2-1.7B: v17_smollm2.bin exists (483,884,549 bytes)
+[skip-pack] OLMo-2-1B: v17_olmo2.bin exists (322,688,101 bytes)
+
+================================================================================
+Model                      Params          Bytes   bpw_disk  bpw_claim    delta
+================================================================================
+Qwen3-1.7B          1,409,286,144    424,563,357     2.4101     2.4017  +0.0084
+Qwen3-8B            6,945,767,424  2,086,698,389     2.4034     2.3998  +0.0036
+Mistral-7B          6,979,321,856  2,094,344,357     2.4006     2.3971  +0.0035
+TinyLlama-1.1B        968,884,224    292,422,381     2.4145     2.4053  +0.0092
+SmolLM2-1.7B        1,610,612,736    483,884,549     2.4035     2.3955  +0.0080
+OLMo-2-1B           1,073,741,824    322,688,101     2.4042     2.3955  +0.0087
+================================================================================
+
+[pack] wrote pack_summary.json

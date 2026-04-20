@@ -52,54 +52,39 @@ def pack_codes(idx1: np.ndarray, idx2: np.ndarray,
     N = idx1.size
     b = b1 + b2
     total_bits = N * b
-    n_words = (total_bits + 63) // 64
-    out = np.zeros(n_words, dtype=np.uint64)
-    pos = 0  # absolute bit index (MSB = bit 0 within word 0)
+    n_bytes = (total_bits + 7) // 8
+    # pad to multiple of 8 for packbits round-trip
+    padded_bits = ((total_bits + 63) // 64) * 64
 
-    # Vectorised pack: process in chunks to keep memory bounded.
-    # Each group writes b1 bits of v1 shifted into place, then b2 bits of v2.
-    idx1_u64 = idx1.astype(np.uint64)
-    idx2_u64 = idx2.astype(np.uint64)
-    for i in range(N):
-        v = (idx1_u64[i] << np.uint64(b2)) | idx2_u64[i]  # b bits
-        word = pos >> 6
-        off = pos & 63
-        # we store "MSB-first": group's high bit goes to bit (63-off) of word
-        room = 64 - off
-        if b <= room:
-            out[word] |= v << np.uint64(room - b)
-        else:
-            hi = b - room
-            out[word] |= v >> np.uint64(hi)
-            out[word + 1] |= (v & ((np.uint64(1) << np.uint64(hi)) - np.uint64(1))) << np.uint64(64 - hi)
-        pos += b
-    return out.tobytes()
+    # Build concatenated bit array via unpackbits on big-endian uint32 views.
+    # For each group i, emit b1 bits of idx1[i] then b2 bits of idx2[i] (MSB-first).
+    v1 = idx1.astype(">u4")  # big-endian uint32
+    v2 = idx2.astype(">u4")
+    bits1 = np.unpackbits(v1.view(np.uint8)).reshape(N, 32)[:, 32 - b1:]   # (N, b1)
+    bits2 = np.unpackbits(v2.view(np.uint8)).reshape(N, 32)[:, 32 - b2:]   # (N, b2)
+    bits  = np.concatenate([bits1, bits2], axis=1).ravel()                 # (N*b,)
+    # pad with zeros to padded_bits (mult of 64)
+    if bits.size < padded_bits:
+        bits = np.concatenate([bits, np.zeros(padded_bits - bits.size, dtype=np.uint8)])
+    # packbits gives MSB-first bytes → view as big-endian uint64 → bytes
+    packed_bytes = np.packbits(bits).tobytes()   # length = padded_bits // 8
+    return packed_bytes[:((padded_bits // 8))]
 
 
 def unpack_codes(buf: bytes, N: int, b1: int, b2: int):
-    """Inverse of pack_codes."""
+    """Inverse of pack_codes (bit-level MSB-first via packbits/unpackbits)."""
     b = b1 + b2
     total_bits = N * b
-    n_words = (total_bits + 63) // 64
-    words = np.frombuffer(buf, dtype=np.uint64, count=n_words)
-    idx1 = np.empty(N, dtype=np.uint32)
-    idx2 = np.empty(N, dtype=np.uint32)
-    mask_b1 = (np.uint64(1) << np.uint64(b1)) - np.uint64(1)
-    mask_b2 = (np.uint64(1) << np.uint64(b2)) - np.uint64(1)
-    pos = 0
-    for i in range(N):
-        word = pos >> 6
-        off = pos & 63
-        room = 64 - off
-        if b <= room:
-            v = (words[word] >> np.uint64(room - b)) & ((np.uint64(1) << np.uint64(b)) - np.uint64(1))
-        else:
-            hi = b - room
-            v = ((words[word] & ((np.uint64(1) << np.uint64(room)) - np.uint64(1))) << np.uint64(hi)) \
-                | (words[word + 1] >> np.uint64(64 - hi))
-        idx1[i] = int((v >> np.uint64(b2)) & mask_b1)
-        idx2[i] = int(v & mask_b2)
-        pos += b
+    # Input buf has length ceil(total_bits/64)*8 (padded to 64-bit words).
+    bits = np.unpackbits(np.frombuffer(buf, dtype=np.uint8))  # (padded_bits,)
+    bits = bits[:total_bits].reshape(N, b)                    # trim pad, reshape
+    bits1 = bits[:, :b1]                                      # (N, b1)
+    bits2 = bits[:, b1:]                                      # (N, b2)
+    # Pad to 32-bit wide bit arrays for packbits round-trip into uint32.
+    pad1 = np.concatenate([np.zeros((N, 32 - b1), dtype=np.uint8), bits1], axis=1)
+    pad2 = np.concatenate([np.zeros((N, 32 - b2), dtype=np.uint8), bits2], axis=1)
+    idx1 = np.packbits(pad1.ravel()).view(">u4").astype(np.uint32).copy()
+    idx2 = np.packbits(pad2.ravel()).view(">u4").astype(np.uint32).copy()
     return idx1, idx2
 
 
@@ -338,8 +323,10 @@ def verify_roundtrip(teacher_path: str, v17_path: str, pack_path: str,
     starts = torch.randint(0, all_tokens.numel() - seq_len - 1, (n,), generator=g)
 
     cfg = AutoConfig.from_pretrained(model_id, trust_remote_code=True)
-    model = AutoModelForCausalLM.from_config(cfg, torch_dtype=torch.float16,
-                                             trust_remote_code=True)
+    from transformers.modeling_utils import no_init_weights
+    with no_init_weights():
+        model = AutoModelForCausalLM.from_config(cfg, torch_dtype=torch.float16,
+                                                 trust_remote_code=True)
     model.load_state_dict(teacher_sd, strict=False)
     model = model.to(device).eval()
 
