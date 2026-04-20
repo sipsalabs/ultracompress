@@ -325,6 +325,98 @@ The measurement itself (per-role index entropies after weighted EM) is
 novel and supports the fidelity claims of all prior sections.
 
 
+### Claim 13 — Asymmetric Per-Role Codebook Capacity (Screen-Driven Minimax Bit Allocation)  (v16)
+
+A role-banked universal-codebook family (Claim 10) does not require
+uniform codebook sizes across roles. Each role `r` has its own chunk
+pool of size `n_r`, and a pre-screen that fits (cb1_r, cb2_r) at
+several (K1, K2) configurations using the stacked pipeline (Claims 7–11)
+reveals the per-role rel-W-vs-bpw Pareto frontier. These frontiers
+differ sharply across roles, because the post-rotation subvector
+distributions and row-scale spectra differ.
+
+**Method.**
+1. *Screen*. For each role, fit on that role's chunks only (cost
+   `O(n_r · K · D)`, tiny vs whole-body) at a grid of (K1, K2) values.
+   Tabulate (bpw_r, rel-W_r mean, rel-W_r max).
+2. *Allocate*. Select (K1_r, K2_r) per role so that
+   `max_r rel-W_r` is minimized subject to a global bpw budget
+   `Σ_r (log₂K1_r + log₂K2_r)/D · n_r / N ≤ B`. With 7 roles and a
+   small grid of K values, this is a small mixed-integer problem
+   solved exactly by enumeration or 1-step greedy.
+3. *Fit*. Run the full stacked pipeline (Claims 7+8+9+10+11) with the
+   per-role (K1_r, K2_r).
+
+**Screen result on Qwen3-1.7B body** (single-role fits, 6 EM iters,
+beam=8):
+
+*o_proj (the v15 structural tail):*
+
+| K1 | K2 | bpw_r | mean  | max   |
+|----|----|-------|-------|-------|
+| 2048 | 256 | 2.375 | 0.0628 | 0.0664 |
+| 4096 | 256 | 2.500 | 0.0532 | 0.0563 |
+| **4096** | **512** | **2.625** | **0.0453** | **0.0479** |
+| 8192 | 256 | 2.625 | 0.0450 | 0.0477 |
+
+o_proj responds *dramatically* to extra bits: +0.25 bpw on this role
+alone drops its max 27.8 %. The (4096, 512) and (8192, 256) points are
+equivalent — extra stage-1 bits do the work, stage-2 is saturated.
+
+*down_proj (the easiest role in v15):*
+
+| K1 | K2 | bpw_r | mean  | max   |
+|----|----|-------|-------|-------|
+| **2048** | **256** | **2.375** | **0.0598** | **0.0599** |
+| 1024 | 256 | 2.250 | 0.0704 | 0.0705 |
+| 512  | 256 | 2.125 | 0.0826 | 0.0827 |
+| 2048 | 128 | 2.250 | 0.0700 | 0.0700 |
+
+Cutting *any* bit hurts down_proj by 17 % or more — the uniform v15
+allocation was not wasteful. **Novel empirical finding: no role is
+over-budgeted, but one role (o_proj) is severely under-budgeted. The
+correct move is additive capacity, not bit-shifting.**
+
+**Full-body validation** (Qwen3-1.7B, D=8, beam=8, 8 EM iters,
+allocation: o_proj → (K1=4096, K2=512); all others → (2048, 256)):
+
+| iter | rel-W mean | rel-W max |
+|------|-----------|-----------|
+| init (greedy) | 0.0668 | 0.0693 |
+| 1  | 0.0593 | 0.0617 |
+| 2  | 0.0584 | 0.0607 |
+| 4  | 0.0579 | 0.0602 |
+| 6  | 0.0578 | 0.0601 |
+| 8  | **0.0577** | **0.0600** |
+
+Per-role breakdown at convergence:
+
+| role | K1 | K2 | bpw_r | mean | max |
+|------|----|----|-------|------|-----|
+| q_proj    | 2048 | 256 | 2.375 | 0.0598 | 0.0599 |
+| k_proj    | 2048 | 256 | 2.375 | 0.0597 | 0.0599 |
+| v_proj    | 2048 | 256 | 2.375 | 0.0597 | 0.0600 |
+| **o_proj**    | **4096** | **512** | **2.625** | **0.0452** | **0.0478** |
+| gate_proj | 2048 | 256 | 2.375 | 0.0599 | 0.0600 |
+| up_proj   | 2048 | 256 | 2.375 | 0.0599 | 0.0600 |
+| down_proj | 2048 | 256 | 2.375 | 0.0597 | 0.0598 |
+
+**Global param-weighted bpw: 2.396** (vs v15's 2.375 uniform, +0.88 %).
+**rel-W mean: 0.0577 (−4.2 % vs v15), rel-W max: 0.0600 (−9.4 % vs v15).**
+Screen predicted o_proj max 0.0479; actual 0.0478 — methodology is
+quantitatively predictive.
+
+**Mechanistic consequence.** After v16 the structural o_proj tail is
+*gone*: o_proj is now the *best* role (0.0478 max), six other roles form
+a tight 0.0598–0.0600 band that sets the new global max. Future gains
+must attack this homogeneous floor (tighter D, or model-output-aware
+calibration weights), not a single structural outlier.
+
+Stacking Claims 7 + 8 + 9 + 10 + 11 + 13 yields rel-W mean **0.0577**
+at 2.396 bits/w — a **24.5 % improvement over raw v10 (0.0764)** at
+essentially the same bit budget.
+
+
 ## Composite Pareto (Claim 6 — updated with v10 body)
 
 | Vocab stage | Body stage | Total MB | Whole-model ratio | Body rel-MSE | Fidelity regime |
@@ -381,6 +473,8 @@ Code:
 - `compress_v13.py` — Row-scale-weighted joint EM refinement (Claim 9)
 - `compress_v14.py` — Role-conditioned codebook banks (Claim 10)
 - `compress_v15.py` — Beam-search joint residual + entropy accounting (Claims 11, 12)
+- `screen_v16.py` — Per-role bit-allocation pre-screen (Claim 13)
+- `compress_v16.py` — Asymmetric per-role codebook capacity (Claim 13)
 
 Checkpoints & reports:
 - `qwen3_1.7b_sb4_xtreme.pt` — 12.8 MB, T1≈75%
