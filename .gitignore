@@ -44,3 +44,5 @@ Thumbs.db
 .playwright-mcp/
 full_chat_transcript.jsonl
 plots/
+
+v17_qwen3_1.7b.bin

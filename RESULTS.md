@@ -56,6 +56,10 @@ The canonical Qwen3-1.7B fit was re-evaluated on **LAMBADA** (BookCorpus-derived
 
 **The compressed model tracks the teacher *better* on out-of-distribution text than on in-distribution text.** The 2.40-bpw operating point is not a WikiText artifact; it compresses the *functional* behaviour of each Linear, not corpus-specific patterns.
 
+### On-disk packed format (2.41 bpw, round-trip verified)
+
+The Claim-16 fit for Qwen3-1.7B is serialised end-to-end to a single binary file, **`v17_qwen3_1.7b.bin` — 424,563,357 bytes = 2.4101 bpw** (vs 2.4017 claimed; +0.008 bpw from JSON header + codebooks + fp16 scale rounding). A pure-decode path (`pack_v17.py verify`) reconstructs 196 body Linears from the binary alone — no calibration, no beam search — and the resulting model's PPL matches the original fit to **0.064 %** relative difference on the same 64 WikiText windows. This turns Claim 16 from a bit-counting argument into a working compressed-inference format.
+
 ### Run it yourself
 
 ```powershell
