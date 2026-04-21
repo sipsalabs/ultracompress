@@ -1,0 +1,53 @@
+[
+  {
+    "name": "Qwen3-8B",
+    "model_id": "Qwen/Qwen3-8B",
+    "method": "our_fp8_2p79",
+    "n": 80,
+    "seq_len": 128,
+    "teacher_ppl": 35.0872183318208,
+    "teacher_t1": 0.35029296875,
+    "teacher_t10": 0.6923828125,
+    "student_ppl": 37.61277487480319,
+    "student_t1": 0.34287109375,
+    "student_t10": 0.68203125,
+    "student_t1_vs_teacher": 0.80009765625,
+    "ppl_ratio": 1.0719793891638298,
+    "t1_ret": 0.9788123780317816,
+    "t10_ret": 0.9850493653032439,
+    "effective_bpw": 2.7975375025844755,
+    "tier": "head2head+fp8-overlay",
+    "overlay_bpw": 0.025798372149692814,
+    "base_bpw": 2.7717391304347827,
+    "meta": {
+      "rho": 0.005,
+      "score_mode": "weighted"
+    }
+  },
+  {
+    "name": "Qwen3-8B",
+    "model_id": "Qwen/Qwen3-8B",
+    "method": "our_mixed_2p79",
+    "n": 80,
+    "seq_len": 128,
+    "teacher_ppl": 35.0872183318208,
+    "teacher_t1": 0.35029296875,
+    "teacher_t10": 0.6923828125,
+    "student_ppl": 37.642171336671865,
+    "student_t1": 0.3419921875,
+    "student_t10": 0.6822265625,
+    "student_t1_vs_teacher": 0.8001953125,
+    "ppl_ratio": 1.0728172002889713,
+    "t1_ret": 0.976303317535545,
+    "t10_ret": 0.9853314527503526,
+    "effective_bpw": 2.800231673992424,
+    "tier": "head2head+mixed-overlay",
+    "overlay_bpw": 0.028492543557641182,
+    "base_bpw": 2.7717391304347827,
+    "meta": {
+      "rho_hi": 0.001,
+      "rho_lo": 0.003,
+      "score_mode": "weighted"
+    }
+  }
+]

@@ -118,11 +118,12 @@ def _run_bnb_baseline(
         bnb_cfg = BitsAndBytesConfig(load_in_8bit=True)
         method = "bnb_int8"
 
+    dev_index = int(device.split(":", 1)[1]) if ":" in device else 0
     student = AutoModelForCausalLM.from_pretrained(
         model_id,
         quantization_config=bnb_cfg,
         trust_remote_code=True,
-        device_map={"": 0},
+        device_map={"": dev_index},
     ).eval()
 
     t1 = time.time()
