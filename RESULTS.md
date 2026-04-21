@@ -151,7 +151,7 @@ Cohort envelope: PPL ratio 1.22-1.67, top-1 retention 83.2%-94.7% across
 6 architectures (Llama/Mistral, Qwen3, OLMo-2, SmolLM2) and a 7x parameter
 range. The 8B fit has the lowest PPL ratio and highest top-1 retention,
 matching the scaling prediction. Driver `lambada_all.py`, data
-`lambada_all_results.json`.
+`results/lambada_all_results.json`.
 
 
 ## Capacity-tier dial: 2.40 bpw -> 2.78 bpw  (Claim 16 second operating point)
@@ -184,8 +184,8 @@ rel-W mean at 2.40 bpw was 0.052-0.072; at 2.78 bpw it is 0.037-0.053
 (olmo2: 0.054 -> 0.037, qwen3_1.7b: 0.052 -> 0.043, smollm2: 0.073 -> 0.039).
 
 Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py),
-[`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json),
-[`lambada_hifi_results.json`](lambada_hifi_results.json).
+[`lambada_hifi.py`](lambada_hifi.py), [`results/v17hi_fit_summary.json`](results/v17hi_fit_summary.json),
+[`results/lambada_hifi_results.json`](results/lambada_hifi_results.json).
 
 
 ## Capacity-tier dial: 2.40 bpw -> 2.78 bpw (Claim 16, all 6 models)
@@ -207,7 +207,7 @@ Weight-space reconstruction error halves on the small-model cohort (rel_w_mean 0
 
 The lift is monotone -- no model regresses, no per-model retuning -- demonstrating the capacity dial is a first-class property of the Claim 16 method, not a tuned recipe. Lift is largest where the 2.40-bpw baseline was weakest (Qwen3-1.7B +9.35 pp), smallest where the baseline already had headroom (Qwen3-8B +3.09 pp).
 
-Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py), [`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json), [`lambada_hifi_results.json`](lambada_hifi_results.json), [`fit_hifi.log`](fit_hifi.log), [`fit_hifi_7b8b.log`](fit_hifi_7b8b.log), [`lambada_hifi_6m.log`](lambada_hifi_6m.log).
+Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py), [`lambada_hifi.py`](lambada_hifi.py), [`results/v17hi_fit_summary.json`](results/v17hi_fit_summary.json), [`results/lambada_hifi_results.json`](results/lambada_hifi_results.json), [`fit_hifi.log`](fit_hifi.log), [`fit_hifi_7b8b.log`](fit_hifi_7b8b.log), [`lambada_hifi_6m.log`](lambada_hifi_6m.log).
 
 
 ## Claim 17: activation-weighted sparse fp16 row-overlay (novel)
@@ -314,7 +314,7 @@ Overlay is orthogonal to:
 It plugs in after any Claim-16 decode without changing any of the above.
 
 Drivers and artifacts: [`lambada_overlay.py`](lambada_overlay.py),
-[`lambada_overlay_results.json`](lambada_overlay_results.json),
+[`results/lambada_overlay_results.json`](results/lambada_overlay_results.json),
 [`overlay_002.log`](overlay_002.log), [`overlay_005.log`](overlay_005.log).
 
 ## Claim 18: overlay variants — fp8 row storage and adaptive allocation
@@ -367,7 +367,7 @@ higher overlay mass.
 
 Drivers and artifacts:
 [`lambada_overlay_fp8.py`](lambada_overlay_fp8.py),
-[`lambada_overlay_fp8_results.json`](lambada_overlay_fp8_results.json),
+[`results/lambada_overlay_fp8_results.json`](results/lambada_overlay_fp8_results.json),
 [`overlay_fp8.log`](overlay_fp8.log),
 [`overlay_fp8_resume.log`](overlay_fp8_resume.log),
 [`overlay_fp8_qwen8b.log`](overlay_fp8_qwen8b.log).
@@ -406,7 +406,7 @@ that wins on every aggregate measure in the 6-model cohort.
 
 Drivers and artifacts:
 [`lambada_overlay_adaptive.py`](lambada_overlay_adaptive.py),
-[`lambada_overlay_adaptive_results.json`](lambada_overlay_adaptive_results.json),
+[`results/lambada_overlay_adaptive_results.json`](results/lambada_overlay_adaptive_results.json),
 [`overlay_adaptive.log`](overlay_adaptive.log).
 
 ### 18C — int4 row-overlay (negative result: precision floor on the density axis)
@@ -460,7 +460,7 @@ overlay-bpw in the measured 6-model cohort.
 
 Drivers and artifacts:
 [`lambada_overlay_int4.py`](lambada_overlay_int4.py),
-[`lambada_overlay_int4_results.json`](lambada_overlay_int4_results.json),
+[`results/lambada_overlay_int4_results.json`](results/lambada_overlay_int4_results.json),
 [`overlay_int4.log`](overlay_int4.log).
 
 
@@ -532,7 +532,7 @@ Claim 18A as degenerate cases (K2=0 ? pure fp16; K1=0 ? pure fp8).
 
 **Artifacts:**
 [lambada_overlay_mixed.py](lambada_overlay_mixed.py),
-[lambada_overlay_mixed_results.json](lambada_overlay_mixed_results.json),
+[results/lambada_overlay_mixed_results.json](results/lambada_overlay_mixed_results.json),
 [overlay_mixed.log](overlay_mixed.log).
 
 ## Claim 19: External-baseline head-to-head (bitsandbytes nf4, 6-model cohort)
@@ -568,10 +568,10 @@ f4 with double-quant, fp16 compute). Identical teacher protocol, identical LAMBA
 **Artifacts:**
 
 - `benchmark_head_to_head.py` - unified harness (our overlays + bnb nf4/int8)
-- `head_to_head_results_6model_n80.json` - primary run, 18 rows
-- `head_to_head_results_qwen3_8_cuda1.json` - parallel cuda:1 confirmation (Qwen3-8B fp8+mixed)
-- `head_to_head_results_pair.json` - earlier pair run at n=120 (OLMo + TinyLlama, 6 rows)
-- `head_to_head_results.json` - initial pilot (OLMo-2-1B, 5 rows, includes bnb_int8)
+- `results/head_to_head_results_6model_n80.json` - primary run, 18 rows
+- `results/head_to_head_results_qwen3_8_cuda1.json` - parallel cuda:1 confirmation (Qwen3-8B fp8+mixed)
+- `results/head_to_head_results_pair.json` - earlier pair run at n=120 (OLMo + TinyLlama, 6 rows)
+- `results/head_to_head_results.json` - initial pilot (OLMo-2-1B, 5 rows, includes bnb_int8)
 
 Not yet included: GPTQ and AWQ baselines (`auto_gptq`/`autoawq` not installed). When added, they would provide an additional matched-bpw comparison at 4-bit and strengthen the bit-rate-frontier claim.
 
@@ -651,9 +651,9 @@ The penultimate row (+60.75 pp at **lower** bpw than HQQ 2-bit g16) is the stron
   - `_run_hqq_baseline(...)` — HQQ wrapper using `AutoHQQHFModel.quantize_model(...)` with `hqq.core.quantize.BaseQuantizeConfig`.
   - 4 new `MethodSpec`s in `_default_methods()`: `hqq_4bit_g64`, `hqq_3bit_g64`, `hqq_2bit_g64`, `hqq_2bit_g16`.
   - Dispatch branch for `method.kind == "hqq"` in `main()`.
-- `h2h_n500_full.json` — 48 rows (6 models × 8 methods), n=500 each.
-- `h2h_n500_small.json`, `h2h_n500_large.json` — dual-GPU partitions (cuda:0 smalls, cuda:1 7-8B).
-- `h2h_n500_small.log`, `h2h_n500_large.log` — full run logs.
+- `results/h2h_n500_full.json` — 48 rows (6 models × 8 methods), n=500 each.
+- `results/h2h_n500_small.json`, `results/h2h_n500_large.json` — dual-GPU partitions (cuda:0 smalls, cuda:1 7-8B).
+- `logs/h2h_n500_small.log`, `logs/h2h_n500_large.log` — full run logs.
 - `claim20_summary.txt` — stdout dump of `_analyze_claim20.py` (per-model tables, cohort averages, cross comparisons, catastrophic-failure list).
 - `_analyze_claim20.py` — summary/merge script.
 
