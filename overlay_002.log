@@ -1,0 +1,115 @@
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\cuda\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776737610.109868   49408 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776737611.424244   49408 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+W0420 20:13:32.186000 32864 site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+
+[OLMo-2-1B] teacher -> olmo2_1b_cache.pt
+`torch_dtype` is deprecated! Use `dtype` instead!
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\nn\modules\module.py:1370: UserWarning: expandable_segments not supported on this platform (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\c10/cuda/CUDAAllocatorConfig.h:39.)
+  return t.to(
+    [200/500] t1_gt=34.73%  t10_gt=68.55%
+    [400/500] t1_gt=34.80%  t10_gt=68.54%
+    [200/500] running ppl 31.4125
+    [400/500] running ppl 31.5141
+[OLMo-2-1B] teacher  PPL=31.5885  T1=34.75%  T10=68.52%   (13s)
+  substituting 112 body Linears (v17+overlay, rho=0.002, alpha=0.25)
+  overlay: restored 832/425984 rows (0.195%), 2097152/1073741824 params (0.195%)
+  overlay bpw overhead: +0.0259 (base 2.7656 -> effective 2.7915)
+    [200/500] t1_gt=32.79%  t10_gt=66.38%
+    [400/500] t1_gt=32.79%  t10_gt=66.51%
+    [200/500] running ppl 36.6748
+    [400/500] running ppl 36.7756
+[OLMo-2-1B] v17+ov rho=0.002  PPL=36.8804  T1=32.73%  T10=66.48%  T1_vs_teacher=74.05%  (64s)
+[lambada_overlay] wrote lambada_overlay_results.json (1)
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (19s)
+  substituting 154 body Linears (v17+overlay, rho=0.002, alpha=0.25)
+  overlay: restored 792/394240 rows (0.201%), 1937408/968884224 params (0.200%)
+  overlay bpw overhead: +0.0265 (base 2.7738 -> effective 2.8003)
+    [200/500] t1_gt=39.41%  t10_gt=71.35%
+    [400/500] t1_gt=38.86%  t10_gt=70.96%
+    [200/500] running ppl 22.8443
+    [400/500] running ppl 23.6717
+[TinyLlama-1.1B] v17+ov rho=0.002  PPL=23.9861  T1=38.70%  T10=70.70%  T1_vs_teacher=75.00%  (68s)
+[lambada_overlay] wrote lambada_overlay_results.json (2)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (32s)
+  substituting 196 body Linears (v17+overlay, rho=0.002, alpha=0.25)
+  overlay: restored 1120/573440 rows (0.195%), 2752512/1409286144 params (0.195%)
+  overlay bpw overhead: +0.0259 (base 2.7708 -> effective 2.7967)
+    [200/500] t1_gt=30.18%  t10_gt=63.27%
+    [400/500] t1_gt=29.95%  t10_gt=63.47%
+    [200/500] running ppl 59.3422
+    [400/500] running ppl 58.9045
+[Qwen3-1.7B] v17+ov rho=0.002  PPL=58.9870  T1=30.03%  T10=63.45%  T1_vs_teacher=70.81%  (100s)
+[lambada_overlay] wrote lambada_overlay_results.json (3)
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (15s)
+  substituting 168 body Linears (v17+overlay, rho=0.002, alpha=0.25)
+  overlay: restored 1248/638976 rows (0.195%), 3145728/1610612736 params (0.195%)
+  overlay bpw overhead: +0.0259 (base 2.7656 -> effective 2.7915)
+    [200/500] t1_gt=37.45%  t10_gt=70.18%
+    [400/500] t1_gt=37.32%  t10_gt=70.18%
+    [200/500] running ppl 26.5488
+    [400/500] running ppl 26.7741
+[SmolLM2-1.7B] v17+ov rho=0.002  PPL=26.8396  T1=37.35%  T10=70.14%  T1_vs_teacher=74.67%  (92s)
+[lambada_overlay] wrote lambada_overlay_results.json (4)
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (33s)
+  substituting 224 body Linears (v17+overlay, rho=0.002, alpha=0.25)
+  overlay: restored 2752/1376256 rows (0.200%), 13893632/6979321856 params (0.199%)
+  overlay bpw overhead: +0.0264 (base 2.7692 -> effective 2.7956)
+    [200/500] t1_gt=42.21%  t10_gt=74.14%
+    [400/500] t1_gt=42.20%  t10_gt=74.17%
+    [200/500] running ppl 18.6208
+    [400/500] running ppl 18.6278
+[Mistral-7B] v17+ov rho=0.002  PPL=18.8945  T1=42.05%  T10=73.94%  T1_vs_teacher=85.16%  (365s)
+[lambada_overlay] wrote lambada_overlay_results.json (5)
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (43s)
+  substituting 252 body Linears (v17+overlay, rho=0.002, alpha=0.25)
+  overlay: restored 2808/1400832 rows (0.200%), 13860864/6945767424 params (0.200%)
+  overlay bpw overhead: +0.0264 (base 2.7717 -> effective 2.7982)
+    [200/500] t1_gt=34.03%  t10_gt=67.66%
+    [400/500] t1_gt=33.93%  t10_gt=67.75%
+    [200/500] running ppl 38.8439
+    [400/500] running ppl 38.5621
+[Qwen3-8B] v17+ov rho=0.002  PPL=38.4207  T1=34.06%  T10=67.82%  T1_vs_teacher=79.95%  (379s)
+[lambada_overlay] wrote lambada_overlay_results.json (6)
+
+================ overlay summary ================
+model                  rho   t1_ret   ppl_r  eff_bpw
+Mistral-7B          0.0020   97.86%   1.089  2.7956
+OLMo-2-1B           0.0020   94.16%   1.168  2.7915
+Qwen3-1.7B          0.0020   93.55%   1.219  2.7967
+Qwen3-8B            0.0020   97.48%   1.073  2.7982
+SmolLM2-1.7B        0.0020   93.88%   1.219  2.7915
+TinyLlama-1.1B      0.0020   96.67%   1.099  2.8003
