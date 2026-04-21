@@ -50,7 +50,7 @@ section 5 for how evaluation is handled.
 HQ5 h256 (the headline 311x, 55.40% / 69.64% configuration):
 
 ```bash
-python run_hq4_ceiling_break.py --h 256 --steps 80000 --device cuda:0 \
+python scripts/frr/run_hq4_ceiling_break.py --h 256 --steps 80000 --device cuda:0 \
     --tag hq5_h256                   # HQ5 is produced by this script
                                      # with the HQ5-tuned hyperparams
                                      # in the file header
@@ -64,26 +64,26 @@ Runtime on an RTX 5090: ~6 hours. The checkpoint lands in
 We ship **two** eval harnesses with different rigor guarantees. Report
 both numbers; they should agree within ~1 point.
 
-### 5a. In-domain eval (hires_eval.py)
+### 5a. In-domain eval (scripts/frr/hires_eval.py)
 
-`hires_eval.py` samples 1000 starts from the tail 50 M tokens of
+`scripts/frr/hires_eval.py` samples 1000 starts from the tail 50 M tokens of
 `fineweb_edu_500M_tokens.pt` with seed 42. The tail region is drawn
 from during training, so this is **in-distribution** held-out, not
 strictly disjoint. Use it for relative comparison between training
 runs.
 
 ```bash
-python hires_eval.py --tags hq5_h256 hq5_h128 --n 1000 --seed 42 --device cuda:1
+python scripts/frr/hires_eval.py --tags hq5_h256 hq5_h128 --n 1000 --seed 42 --device cuda:1
 ```
 
-### 5b. Fully-disjoint eval (wikitext_eval.py)
+### 5b. Fully-disjoint eval (scripts/overlay/wikitext_eval.py)
 
-`wikitext_eval.py` uses the WikiText-103 test split (~245 K tokens),
+`scripts/overlay/wikitext_eval.py` uses the WikiText-103 test split (~245 K tokens),
 which was not used in any training and is a public standard benchmark.
 Seed and protocol otherwise identical.
 
 ```bash
-python wikitext_eval.py --tags hq5_h256 hq5_h128 --n 1000 --seed 42 --device cuda:1
+python scripts/overlay/wikitext_eval.py --tags hq5_h256 hq5_h128 --n 1000 --seed 42 --device cuda:1
 ```
 
 First run tokenizes the WikiText test split with the Qwen3 tokenizer
@@ -99,9 +99,9 @@ To show that the nested-fractal + entropy-weighted loss is load-bearing,
 we include a matched-parameter standard-KD baseline:
 
 ```bash
-python run_baseline_distill.py --h 256 --n_layers 2 --steps 80000 \
+python scripts/frr/run_baseline_distill.py --h 256 --n_layers 2 --steps 80000 \
     --device cuda:0 --tag baseline_h256_L2
-python hires_eval.py --tags baseline_h256_L2 --n 1000 --device cuda:1
+python scripts/frr/hires_eval.py --tags baseline_h256_L2 --n 1000 --device cuda:1
 ```
 
 Expected delta (HQ5 vs standard KD at matched ~1.5 M params): we expect
@@ -121,7 +121,7 @@ is the contribution.
   eval numbers should match bit-for-bit.
 - cuDNN non-determinism on attention kernels can cause small (< 0.1 %)
   drift in T10 between runs on different hardware. This is normal.
-- The combined-stack eval (`combined_stack_eval.py`) uses seed 42 for
+- The combined-stack eval (`scripts/frr/combined_stack_eval.py`) uses seed 42 for
   its 1000-sample draw.
 
 ## 8. Integrity hashes

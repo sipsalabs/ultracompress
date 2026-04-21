@@ -35,15 +35,15 @@ Head-to-head LAMBADA benchmark against two independent external quantization fam
 
 **Qualitative differentiator.** HQQ produces catastrophic failures (ppl-ratio > 10×) on **6/6 models** at 2-bit g64 and **4/6** at 2-bit g16. Our row-overlay produces **zero** catastrophic failures across all 48 measurements.
 
-Full results: [RESULTS.md § Claim 20](RESULTS.md) · [PATENT_CLAIMS.md § Claim 20](PATENT_CLAIMS.md) · raw data: [results/h2h_n500_full.json](results/h2h_n500_full.json) · analysis: [claim20_summary.txt](claim20_summary.txt).
+Full results: [RESULTS.md § Claim 20](RESULTS.md) · [PATENT_CLAIMS.md § Claim 20](PATENT_CLAIMS.md) · raw data: [results/h2h_n500_full.json](results/h2h_n500_full.json) · analysis: [docs/claim20_summary.txt](docs/claim20_summary.txt).
 
-Reproduce: `python benchmark_head_to_head.py --methods our_fp8_2p79,our_mixed_2p79,bnb_nf4,bnb_int8,hqq_4bit_g64,hqq_3bit_g64,hqq_2bit_g64,hqq_2bit_g16 --n 500`.
+Reproduce: `python scripts/overlay/benchmark_head_to_head.py --methods our_fp8_2p79,our_mixed_2p79,bnb_nf4,bnb_int8,hqq_4bit_g64,hqq_3bit_g64,hqq_2bit_g64,hqq_2bit_g16 --n 500`.
 
 ---
 
 ## Track B — FRR architectural compression (held-out, 1000 samples, seed 42)
 
-Independent re-evaluation on a held-out region of FineWeb-Edu that was *least-touched during training*. Protocol: 1000 samples, 128-token context, seed 42, bootstrap 95% CIs. Reproduce in ~15 minutes on a single 32GB GPU: `python hires_eval.py --tags hq5_h256 hq5_h128 --n 1000`.
+Independent re-evaluation on a held-out region of FineWeb-Edu that was *least-touched during training*. Protocol: 1000 samples, 128-token context, seed 42, bootstrap 95% CIs. Reproduce in ~15 minutes on a single 32GB GPU: `python scripts/frr/hires_eval.py --tags hq5_h256 hq5_h128 --n 1000`.
 
 | Variant       | Trainable | Compression | all-T1 | all-T10 | last-T10 | Quality | PPL ratio |
 |---------------|-----------|-------------|--------|---------|----------|---------|-----------|
@@ -58,8 +58,8 @@ Full results: [results/hires_results_hq5.json](results/hires_results_hq5.json). 
 
 The numbers above are **in-distribution held-out** (training samples from the full 500M-token range, eval samples from the tail 50M with a different seed). To defend against a stricter reviewer we also ship:
 
-- **⭐ Fully-disjoint eval on WikiText-103 test split — DONE.** `python wikitext_eval.py --tags hq5_h256 hq5_h128 --n 1000`. WikiText-103 test was never touched during training and is a standard public benchmark. Result: on WT103 HQ5-h256 scores **T1 = 55.53%** (vs 55.40% in-domain) and **T10 = 66.82%** (vs 69.64% in-domain). Top-1 agreement is within 0.13 percentage points of the in-domain number — strong evidence the student learned the teacher's distribution rather than just the FineWeb-Edu surface statistics. Raw data: [results/wikitext_results.json](results/wikitext_results.json).
-- **Matched-parameter standard-KD baseline** — `python run_baseline_distill.py --h 256 --n_layers 2 --steps 80000 --tag baseline_h256_L2`. Trains a vanilla transformer student at the same ~1.5M trainable params using classical Hinton-2015 distillation. Head-to-head delta proves the nested-fractal + entropy-weighted loss is load-bearing.
+- **⭐ Fully-disjoint eval on WikiText-103 test split — DONE.** `python scripts/overlay/wikitext_eval.py --tags hq5_h256 hq5_h128 --n 1000`. WikiText-103 test was never touched during training and is a standard public benchmark. Result: on WT103 HQ5-h256 scores **T1 = 55.53%** (vs 55.40% in-domain) and **T10 = 66.82%** (vs 69.64% in-domain). Top-1 agreement is within 0.13 percentage points of the in-domain number — strong evidence the student learned the teacher's distribution rather than just the FineWeb-Edu surface statistics. Raw data: [results/wikitext_results.json](results/wikitext_results.json).
+- **Matched-parameter standard-KD baseline** — `python scripts/frr/run_baseline_distill.py --h 256 --n_layers 2 --steps 80000 --tag baseline_h256_L2`. Trains a vanilla transformer student at the same ~1.5M trainable params using classical Hinton-2015 distillation. Head-to-head delta proves the nested-fractal + entropy-weighted loss is load-bearing.
 - **Pinned dependencies** — see `requirements.txt` for exact versions (torch 2.11.0+cu128, transformers 4.57.2, datasets 4.8.4, numpy 2.2.6).
 - **Full reproduce guide** — see [REPRODUCE.md](REPRODUCE.md) for step-by-step.
 
@@ -84,7 +84,7 @@ python demo.py --tag hq5_h128          # 734× model instead of 311×
 | HQ3 h256      | 1.51 M    | 311×        | 54.1%     | 68.2%        | 54.7%     | 68.2%        | 68.1%     |
 | HQ3 h128      | 0.64 M    | 734×        | 54.2%     | 68.0%        | 54.2%     | 68.0%        | 67.7%     |
 
-**HQ5 h256 is the current flagship.** First checkpoint to cross 70% quality on Qwen3-1.7B distillation. Details: [HQ5_RESULTS.md](HQ5_RESULTS.md), [HQ4_RESULTS.md](HQ4_RESULTS.md), [HQ3_RESULTS.md](HQ3_RESULTS.md). Currently training: HQ6 (dual GPU, ENT_POW=2.0) and HQ7 long-horizon (160K steps).
+**HQ5 h256 is the current flagship.** First checkpoint to cross 70% quality on Qwen3-1.7B distillation. Details: [docs/HQ5_RESULTS.md](docs/HQ5_RESULTS.md), [docs/HQ4_RESULTS.md](docs/HQ4_RESULTS.md), [docs/HQ3_RESULTS.md](docs/HQ3_RESULTS.md). Currently training: HQ6 (dual GPU, ENT_POW=2.0) and HQ7 long-horizon (160K steps).
 
 ### ASVD head fine-tuning (trained separately — stackable with FRR body)
 
@@ -120,7 +120,7 @@ Full end-to-end compression — the actual deployment artifact. FRR body (HQ5 h2
 - **Balanced deployment (8–14× compression):** `hq5_h128` or `hq5_h256+asvd_r512_ft` — 68–69% T10 with under 80M parameters. Appropriate for edge GPU boxes, 8GB Apple Silicon.
 - **Aggressive deployment (27× compression):** `hq5_h256+asvd_r256_ft` — the 40.9M-parameter model; targets phones, Raspberry Pi class hardware. Quality drops to 50% — appropriate for offline / retrieval-augmented / constrained-vocabulary use cases only.
 
-Raw Pareto data: [docs/pareto_frontier.json](docs/pareto_frontier.json). Reproduce the chart: `python make_pareto_chart.py`.
+Raw Pareto data: [docs/pareto_frontier.json](docs/pareto_frontier.json). Reproduce the chart: `python scripts/frr/make_pareto_chart.py`.
 
 ---
 
@@ -129,8 +129,8 @@ Raw Pareto data: [docs/pareto_frontier.json](docs/pareto_frontier.json). Reprodu
 The method is architecture-agnostic. This release includes:
 
 - **`scaling/teacher_loader.py`** — auto-detecting Qwen3-family loader. Point it at any cached Qwen3 state dict; it infers hidden size, layer count, head counts, and intermediate dim from the tensors.
-- **`run_frr_generic.py`** — generic trainer with `--teacher_cache` flag. Drop-in replacement for the hardcoded 1.7B trainer.
-- **`scale_eval.py`** — model-agnostic eval with bootstrap CIs.
+- **`scripts/frr/run_frr_generic.py`** — generic trainer with `--teacher_cache` flag. Drop-in replacement for the hardcoded 1.7B trainer.
+- **`scripts/frr/scale_eval.py`** — model-agnostic eval with bootstrap CIs.
 - **`tests/test_sanity.py`** — 6-test regression guard (teacher auto-detect on both 0.6B and 1.7B caches, forward determinism, flagship checkpoint reproducibility, random-init floor, ckpt roundtrip).
 
 Verified on both Qwen3-0.6B (hidden=1024) and Qwen3-1.7B (hidden=2048) state dicts. See [docs/SCALING_PLAN.md](docs/SCALING_PLAN.md) for the cross-scale experimental matrix and [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) for honest disclosures.
@@ -200,7 +200,7 @@ Two mechanisms working together:
 | **HQ5**   | **311–734×** | **55.1%** | **70.0%** | **Done, public** | **Stronger entropy_power (1.5) + per-width latent floor** |
 | HQ6       | 311–734×    | TBD       | TBD       | Training  | ENT_POW=2.0 (h256) + h384 capacity test                 |
 
-Full training logs: `hq{3,4,5,6}_h{128,256,384}.log`.
+Full training logs: [logs/](logs/) (`hq{3,4,5,6}_h{128,256,384}.log`).
 
 ---
 
@@ -218,10 +218,10 @@ python tools/download_models.py
 python prepare_500M_tokens.py
 
 # 3. Train TinyFRR body with the HQ4 ceiling-break objective
-python run_hq4_ceiling_break.py --h 256 --steps 80000 --tag my_run
+python scripts/frr/run_hq4_ceiling_break.py --h 256 --steps 80000 --tag my_run
 
 # 4. (Optional) Dual-GPU detached launch
-python launch_hq4_detached.py     # spawns h=128 on GPU 0, h=256 on GPU 1
+python scripts/frr/launch_hq4_detached.py     # spawns h=128 on GPU 0, h=256 on GPU 1
 
 # 5. Fine-tune an ASVD-factored lm_head
 python finetune_asvd_head.py --r 1024 --steps 20000 --tag asvd_r1024_ft
@@ -231,30 +231,49 @@ python finetune_asvd_head.py --r 1024 --steps 20000 --tag asvd_r1024_ft
 All `run_hq*.py` scripts save `{ckpt_dir}/latest.pt` every 2000 steps. Relaunching the same command auto-resumes.
 
 ### Detached training on Windows
-`launch_hq4_detached.py` / `launch_hq5_detached.py` use `subprocess.Popen` with `DETACHED_PROCESS | CREATE_BREAKAWAY_FROM_JOB | CREATE_NEW_PROCESS_GROUP` so training survives terminal closure, VS Code restart, and parent-shell kills.
+`scripts/frr/launch_hq4_detached.py` / `scripts/frr/launch_hq5_detached.py` use `subprocess.Popen` with `DETACHED_PROCESS | CREATE_BREAKAWAY_FROM_JOB | CREATE_NEW_PROCESS_GROUP` so training survives terminal closure, VS Code restart, and parent-shell kills.
 
 ---
 
 ## Repository Layout
 
 ```
-ultracompress/                    Core library (FractalModel, MiniTransformer, pipeline)
-├── moonshot.py                   FractalModel — shared recursive block
-├── inference.py                  Teacher loader (Qwen3 family)
-├── ultimate_pipeline.py          5-stage compression pipeline
-└── entropy_coding.py             Lossless 6× entropy coding for Q2 weights
-
-run_hq4_ceiling_break.py          ★ Flagship HQ4 training script
-launch_hq4_detached.py            ★ Windows detached dual-GPU launcher
-launch_hq5_detached.py            ★ HQ5 variant launcher
-finetune_asvd_head.py             ASVD head fine-tuning w/ KL distillation
-factor_lmhead.py                  Offline ASVD factorization
-HQ3_RESULTS.md, HQ4_RESULTS.md    Per-generation result write-ups
-
-experiments/                      Training, eval, analysis, sweeps
-docs/                             Paper draft, patent, YC app, model card, figures
-tools/                            Model download, quantization utilities
-tests/                            Unit tests
+ultracompress/
+├── README.md                     This file
+├── RESULTS.md                    Per-claim measurement record (Claims 1-20)
+├── PATENT_CLAIMS.md              Full patent claims file (20 claims)
+├── REPRODUCE.md                  Step-by-step reproduction guide
+├── CONTRIBUTING.md               Contribution guide
+├── LICENSE                       Apache 2.0
+├── requirements.txt              Pinned deps (torch 2.11+cu128, transformers 4.57)
+├── pyproject.toml                Package metadata
+├── demo.py                       Interactive teacher-vs-student demo
+├── serve.py                      Minimal inference server
+├── ultracompress.py              CLI entry point
+│
+├── ultracompress/                Core library (FractalModel, pipeline, coding)
+├── scaling/                      Cross-model teacher loaders (Qwen3 family)
+├── lib/                          Shared utilities
+├── tools/                        Model download, quantization utilities
+├── tests/                        Regression tests
+│
+├── scripts/overlay/              ★ Track A — row-overlay (Claims 17-20)
+│   ├── benchmark_head_to_head.py   Unified bnb + HQQ + ours harness
+│   ├── _analyze_claim20.py         Claim-20 merge + summary generator
+│   ├── lambada_overlay*.py         Overlay drivers (sparse / fp8 / mixed)
+│   ├── fit_v17_hifi.py             v17 weight-row fit driver
+│   ├── pack_all_v17.py, pack_v17.py, verify_all_v17.py
+│   └── ...
+├── scripts/frr/                  Track B — FRR architectural compression
+│   ├── run_hq4_ceiling_break.py    Flagship HQ4 trainer
+│   ├── launch_hq{4,5,6,7}_*.py     Windows detached dual-GPU launchers
+│   ├── hires_eval.py               Held-out eval driver
+│   └── ...
+│
+├── results/                      All measurement JSONs (indexed by claim)
+├── logs/                         Run logs (indexed by claim)
+├── archive/                      Obsolete compress_v8..v18 iteration scripts
+└── docs/                         Paper, patent drafts, pitch, claim figures
 ```
 
 ---
@@ -312,7 +331,7 @@ These are architectural projections; the 734× FRR body has been trained end-to-
 ## Status & Contact
 
 - Active development — see `HQ5` and [docs/STATUS.md](docs/STATUS.md) for the latest training run.
-- Full result write-ups in [HQ3_RESULTS.md](HQ3_RESULTS.md), [HQ4_RESULTS.md](HQ4_RESULTS.md).
+- Full result write-ups in [docs/HQ3_RESULTS.md](docs/HQ3_RESULTS.md), [docs/HQ4_RESULTS.md](docs/HQ4_RESULTS.md).
 - Paper draft: [docs/PAPER_DRAFT.md](docs/PAPER_DRAFT.md). Patent draft: [docs/PATENT_DRAFT.md](docs/PATENT_DRAFT.md).
 
 ## License

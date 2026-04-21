@@ -2,9 +2,9 @@
 
 **A single 2.40-bpw compression operating point validated across 6 transformer models spanning 3 architecture families (Llama-2, Qwen3, Mistral), three independent Llama-family training corpora (TinyLlama / SmolLM2 / OLMo-2 / Dolma), institutional provenance ranging from AllenAI to Meta-derived to MistralAI to Alibaba, and 7.5× in parameter scale — with zero hyperparameter retuning.**
 
-![cross-family envelope](claim16_envelope.png)
+![cross-family envelope](docs/claim16_envelope.png)
 
-![bpw convergence](claim16_bpw.png)
+![bpw convergence](docs/claim16_bpw.png)
 
 ---
 
@@ -37,7 +37,7 @@ All runs: `(α_attn = 0.25, α_mlp = 0.125)`, D = 8, beam = 8, 3 – 6 EM iters.
 Post-training quantization at **2.40 bits per weight** is typically a model-family-specific tuning problem. Published schemes (GPTQ, AWQ, SmoothQuant, OmniQuant, QuaRot, SpinQuant) require per-model calibration, per-role α/β searches, or rotation-matrix learning. The operating point documented here:
 
 - is a **single, fixed 2-parameter point** `(0.25, 0.125)`;
-- ships a **single implementation path** (`compress_v17.py`) across all 4 models;
+- ships a **single implementation path** (`scripts/overlay/compress_v17.py`) across all 4 models;
 - requires **zero per-model hyperparameter search**;
 - holds under **108× differences in activation-variance outlier intensity** across families (OLMo-2 20× → Mistral 2173×);
 - holds under **three independent Llama-arch pretraining corpora** (SlimPajama, FineWeb-Edu, Dolma);
@@ -58,9 +58,9 @@ The canonical Qwen3-1.7B fit was re-evaluated on **LAMBADA** (BookCorpus-derived
 
 ### On-disk packed format (2.41 bpw, round-trip verified)
 
-The Claim-16 fit for Qwen3-1.7B is serialised end-to-end to a single binary file, **`v17_qwen3_1.7b.bin` — 424,563,357 bytes = 2.4101 bpw** (vs 2.4017 claimed; +0.008 bpw from JSON header + codebooks + fp16 scale rounding). A pure-decode path (`pack_v17.py verify`) reconstructs 196 body Linears from the binary alone — no calibration, no beam search — and the resulting model's PPL matches the original fit to **0.064 %** relative difference on the same 64 WikiText windows. This turns Claim 16 from a bit-counting argument into a working compressed-inference format.
+The Claim-16 fit for Qwen3-1.7B is serialised end-to-end to a single binary file, **`v17_qwen3_1.7b.bin` — 424,563,357 bytes = 2.4101 bpw** (vs 2.4017 claimed; +0.008 bpw from JSON header + codebooks + fp16 scale rounding). A pure-decode path (`scripts/overlay/pack_v17.py verify`) reconstructs 196 body Linears from the binary alone — no calibration, no beam search — and the resulting model's PPL matches the original fit to **0.064 %** relative difference on the same 64 WikiText windows. This turns Claim 16 from a bit-counting argument into a working compressed-inference format.
 
-**Format generalises across all 6 validated models.** Running `pack_all_v17.py` over every v17 fit produces six packed binaries with bit-rates all in the 2.40–2.41 bpw band across three model families, three tokenizer/corpus pairings, and a 7.2× parameter-count range. The 8B-scale round-trip (`verify_8b.log`) is **0.0000 %** relative PPL difference on Qwen3-8B — bit-exact decode at 6.95 B Linear params.
+**Format generalises across all 6 validated models.** Running `scripts/overlay/pack_all_v17.py` over every v17 fit produces six packed binaries with bit-rates all in the 2.40–2.41 bpw band across three model families, three tokenizer/corpus pairings, and a 7.2× parameter-count range. The 8B-scale round-trip (`verify_8b.log`) is **0.0000 %** relative PPL difference on Qwen3-8B — bit-exact decode at 6.95 B Linear params.
 
 | Model           |    Params         | Pack bytes       | bpw_disk | round-trip diff |
 |-----------------|------------------:|-----------------:|---------:|----------------:|
@@ -76,7 +76,7 @@ The 2.40-bpw on-disk envelope is a property of the scheme, not of a particular m
 ### Run it yourself
 
 ```powershell
-python demo_claim16.py `
+python scripts/overlay/demo_claim16.py `
     --model_id Qwen/Qwen3-1.7B `
     --teacher  qwen3_1.7b_cache.pt `
     --v17      v17_fit_qwen3_1.7b.pt `
@@ -95,20 +95,20 @@ At 2.40 bpw, an 8 B model compresses to ≈ 2.4 GB of body weights — a 6.7× r
 For each model:
 
 ```powershell
-python cache_teacher_8b.py  --model_id <HF_ID> --out <model>_cache.pt
-python tokenize_wikitext.py --model_id <HF_ID> --out wikitext103_test_<model>.pt
-python cache_activations.py --teacher <model>_cache.pt --model_id <HF_ID> `
+python scripts/overlay/cache_teacher_8b.py  --model_id <HF_ID> --out <model>_cache.pt
+python scripts/overlay/tokenize_wikitext.py --model_id <HF_ID> --out wikitext103_test_<model>.pt
+python scripts/overlay/cache_activations.py --teacher <model>_cache.pt --model_id <HF_ID> `
                             --tokens wikitext103_test_<model>.pt `
                             --n_cal 32 --seq_len 512 --out v17_activations_<model>.pt
-python fit_v17_8b.py        --teacher <model>_cache.pt `
+python scripts/overlay/fit_v17_8b.py        --teacher <model>_cache.pt `
                             --v17act v17_activations_<model>.pt `
                             --a_attn 0.25 --a_mlp 0.125 --iters 6 `
                             --out v17_fit_<model>.pt
-python eval_v17_8b.py       --model_id <HF_ID> --teacher <model>_cache.pt `
+python scripts/overlay/eval_v17_8b.py       --model_id <HF_ID> --teacher <model>_cache.pt `
                             --v17 v17_fit_<model>.pt `
                             --tokens wikitext103_test_<model>.pt `
                             --n 500 --seq_len 128 --out v17_<model>_ppl.pt
-python eval_topk_8b.py      --model_id <HF_ID> --teacher <model>_cache.pt `
+python scripts/overlay/eval_topk_8b.py      --model_id <HF_ID> --teacher <model>_cache.pt `
                             --v17 v17_fit_<model>.pt `
                             --tokens wikitext103_test_<model>.pt `
                             --n 500 --seq_len 128 --out topk_<model>_results.pt
@@ -123,7 +123,7 @@ Raw aggregated results: [`results.json`](results.json)
 ## Artifacts of record
 
 - `results.json` — machine-readable summary (this document's source of truth).
-- `claim16_envelope.png`, `claim16_bpw.png` — portfolio plots.
+- `docs/claim16_envelope.png`, `docs/claim16_bpw.png` — portfolio plots.
 - `v17_fit_<model>.pt` — compressed-weight checkpoints.
 - `v17_<model>_ppl.pt` — end-to-end perplexity measurements.
 - `topk_<model>_results.pt` — top-1 / top-10 fidelity measurements.
@@ -150,7 +150,7 @@ out-of-distribution test -- no re-fit, no re-calibration, pure inference.
 Cohort envelope: PPL ratio 1.22-1.67, top-1 retention 83.2%-94.7% across
 6 architectures (Llama/Mistral, Qwen3, OLMo-2, SmolLM2) and a 7x parameter
 range. The 8B fit has the lowest PPL ratio and highest top-1 retention,
-matching the scaling prediction. Driver `lambada_all.py`, data
+matching the scaling prediction. Driver `scripts/overlay/lambada_all.py`, data
 `results/lambada_all_results.json`.
 
 
@@ -183,8 +183,8 @@ Weight-space reconstruction error on the same four fits halves:
 rel-W mean at 2.40 bpw was 0.052-0.072; at 2.78 bpw it is 0.037-0.053
 (olmo2: 0.054 -> 0.037, qwen3_1.7b: 0.052 -> 0.043, smollm2: 0.073 -> 0.039).
 
-Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py),
-[`lambada_hifi.py`](lambada_hifi.py), [`results/v17hi_fit_summary.json`](results/v17hi_fit_summary.json),
+Drivers and artifacts: [`scripts/overlay/fit_v17_hifi.py`](scripts/overlay/fit_v17_hifi.py),
+[`scripts/overlay/lambada_hifi.py`](scripts/overlay/lambada_hifi.py), [`results/v17hi_fit_summary.json`](results/v17hi_fit_summary.json),
 [`results/lambada_hifi_results.json`](results/lambada_hifi_results.json).
 
 
@@ -207,7 +207,7 @@ Weight-space reconstruction error halves on the small-model cohort (rel_w_mean 0
 
 The lift is monotone -- no model regresses, no per-model retuning -- demonstrating the capacity dial is a first-class property of the Claim 16 method, not a tuned recipe. Lift is largest where the 2.40-bpw baseline was weakest (Qwen3-1.7B +9.35 pp), smallest where the baseline already had headroom (Qwen3-8B +3.09 pp).
 
-Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py), [`lambada_hifi.py`](lambada_hifi.py), [`results/v17hi_fit_summary.json`](results/v17hi_fit_summary.json), [`results/lambada_hifi_results.json`](results/lambada_hifi_results.json), [`fit_hifi.log`](fit_hifi.log), [`fit_hifi_7b8b.log`](fit_hifi_7b8b.log), [`lambada_hifi_6m.log`](lambada_hifi_6m.log).
+Drivers and artifacts: [`scripts/overlay/fit_v17_hifi.py`](scripts/overlay/fit_v17_hifi.py), [`scripts/overlay/lambada_hifi.py`](scripts/overlay/lambada_hifi.py), [`results/v17hi_fit_summary.json`](results/v17hi_fit_summary.json), [`results/lambada_hifi_results.json`](results/lambada_hifi_results.json), [`fit_hifi.log`](fit_hifi.log), [`fit_hifi_7b8b.log`](fit_hifi_7b8b.log), [`lambada_hifi_6m.log`](lambada_hifi_6m.log).
 
 
 ## Claim 17: activation-weighted sparse fp16 row-overlay (novel)
@@ -313,7 +313,7 @@ Overlay is orthogonal to:
 - the role_K schedule.
 It plugs in after any Claim-16 decode without changing any of the above.
 
-Drivers and artifacts: [`lambada_overlay.py`](lambada_overlay.py),
+Drivers and artifacts: [`scripts/overlay/lambada_overlay.py`](scripts/overlay/lambada_overlay.py),
 [`results/lambada_overlay_results.json`](results/lambada_overlay_results.json),
 [`overlay_002.log`](overlay_002.log), [`overlay_005.log`](overlay_005.log).
 
@@ -366,7 +366,7 @@ same effective bpw, which tends to help T1 and slightly hurt PPL at
 higher overlay mass.
 
 Drivers and artifacts:
-[`lambada_overlay_fp8.py`](lambada_overlay_fp8.py),
+[`scripts/overlay/lambada_overlay_fp8.py`](scripts/overlay/lambada_overlay_fp8.py),
 [`results/lambada_overlay_fp8_results.json`](results/lambada_overlay_fp8_results.json),
 [`overlay_fp8.log`](overlay_fp8.log),
 [`overlay_fp8_resume.log`](overlay_fp8_resume.log),
@@ -531,14 +531,14 @@ but the advantage is sub-noise-floor. It is disclosed as a novel mechanism
 Claim 18A as degenerate cases (K2=0 ? pure fp16; K1=0 ? pure fp8).
 
 **Artifacts:**
-[lambada_overlay_mixed.py](lambada_overlay_mixed.py),
+[scripts/overlay/lambada_overlay_mixed.py](scripts/overlay/lambada_overlay_mixed.py),
 [results/lambada_overlay_mixed_results.json](results/lambada_overlay_mixed_results.json),
 [overlay_mixed.log](overlay_mixed.log).
 
 ## Claim 19: External-baseline head-to-head (bitsandbytes nf4, 6-model cohort)
 
 First head-to-head comparison of our row-overlay stack against an external quantization baseline (itsandbytes 0.49.2, 
-f4 with double-quant, fp16 compute). Identical teacher protocol, identical LAMBADA windows (n=80, seq_len=128, seed 42), identical top-k measurement (eval_claim16_topk.measure_topk with `teacher_topk=tch_cache`). Driver: `benchmark_head_to_head.py`.
+f4 with double-quant, fp16 compute). Identical teacher protocol, identical LAMBADA windows (n=80, seq_len=128, seed 42), identical top-k measurement (eval_claim16_topk.measure_topk with `teacher_topk=tch_cache`). Driver: `scripts/overlay/benchmark_head_to_head.py`.
 
 | model           | ours_fp8 T1-ret | ours_mixed T1-ret | nf4 T1-ret | best_our | bpw_our | gap vs nf4 |
 | :-------------- | --------------: | ----------------: | ---------: | -------: | ------: | ---------: |
@@ -567,7 +567,7 @@ f4 with double-quant, fp16 compute). Identical teacher protocol, identical LAMBA
 
 **Artifacts:**
 
-- `benchmark_head_to_head.py` - unified harness (our overlays + bnb nf4/int8)
+- `scripts/overlay/benchmark_head_to_head.py` - unified harness (our overlays + bnb nf4/int8)
 - `results/head_to_head_results_6model_n80.json` - primary run, 18 rows
 - `results/head_to_head_results_qwen3_8_cuda1.json` - parallel cuda:1 confirmation (Qwen3-8B fp8+mixed)
 - `results/head_to_head_results_pair.json` - earlier pair run at n=120 (OLMo + TinyLlama, 6 rows)
@@ -647,15 +647,15 @@ The penultimate row (+60.75 pp at **lower** bpw than HQQ 2-bit g16) is the stron
 
 ### Reproducibility & artifacts
 
-- `benchmark_head_to_head.py` — unified harness. This commit adds:
+- `scripts/overlay/benchmark_head_to_head.py` — unified harness. This commit adds:
   - `_run_hqq_baseline(...)` — HQQ wrapper using `AutoHQQHFModel.quantize_model(...)` with `hqq.core.quantize.BaseQuantizeConfig`.
   - 4 new `MethodSpec`s in `_default_methods()`: `hqq_4bit_g64`, `hqq_3bit_g64`, `hqq_2bit_g64`, `hqq_2bit_g16`.
   - Dispatch branch for `method.kind == "hqq"` in `main()`.
 - `results/h2h_n500_full.json` — 48 rows (6 models × 8 methods), n=500 each.
 - `results/h2h_n500_small.json`, `results/h2h_n500_large.json` — dual-GPU partitions (cuda:0 smalls, cuda:1 7-8B).
 - `logs/h2h_n500_small.log`, `logs/h2h_n500_large.log` — full run logs.
-- `claim20_summary.txt` — stdout dump of `_analyze_claim20.py` (per-model tables, cohort averages, cross comparisons, catastrophic-failure list).
-- `_analyze_claim20.py` — summary/merge script.
+- `docs/claim20_summary.txt` — stdout dump of `scripts/overlay/_analyze_claim20.py` (per-model tables, cohort averages, cross comparisons, catastrophic-failure list).
+- `scripts/overlay/_analyze_claim20.py` — summary/merge script.
 
 ### Evaluation protocol
 
