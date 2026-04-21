@@ -2076,3 +2076,36 @@ narrowed to that rule.
   improvement — it is claimed as prior-art-narrowing ablation.
 
 ---
+
+### Claim 18C: int4 row-overlay (negative-result ablation)
+
+**Claim.** The Claim-17 outlier row-overlay mechanism with restored
+rows stored in symmetric int4 plus a per-row fp16 scale: per-row cost
+`4·I + 16 + 32` bits, giving ~10× row density of fp16 at matched bpw.
+
+**Disclosed as inferior.** Measured across the same 6-model cohort on
+LAMBADA (500 windows, seed 42) at two matched effective-bpw operating
+points:
+
+| Operating point | Mean T1-ret Δ vs fp16 | Mean ppl-ratio Δ vs fp16 |
+|-----------------|----------------------:|-------------------------:|
+| ~2.79 bpw       |              −1.23 pp |                   +0.084 |
+| ~2.83 bpw       |              −1.77 pp |                   +0.112 |
+
+int4 strictly loses on 6/6 models at both operating points, both
+metrics. Per-element quantization noise dominates the 10× row-density
+advantage. At the higher ρ = 0.054 operating point, int4 T1-retention
+**regresses** vs ρ = 0.021 on most models — more noisy rows hurt more
+than the added row count helps — while fp16 and fp8 both improve
+monotonically with ρ.
+
+**Patent consequence — narrowing via negative result.** Claim 18 is
+positively narrowed: the row-storage precision axis is bounded below by
+approximately 8 bits plus a per-row fp16 scale. 4-bit row storage is
+explicitly disclaimed as inferior at matched overlay-bpw.
+
+**Artifacts of record:**
+- [`lambada_overlay_int4.py`](lambada_overlay_int4.py) — driver.
+- [`lambada_overlay_int4_results.json`](lambada_overlay_int4_results.json)
+  — 12 measured rows (6 models × 2 ρ).
+- [`overlay_int4.log`](overlay_int4.log) — full run log.

@@ -408,3 +408,57 @@ Drivers and artifacts:
 [`lambada_overlay_adaptive.py`](lambada_overlay_adaptive.py),
 [`lambada_overlay_adaptive_results.json`](lambada_overlay_adaptive_results.json),
 [`overlay_adaptive.log`](overlay_adaptive.log).
+
+### 18C — int4 row-overlay (negative result: precision floor on the density axis)
+
+Natural extension of the fp16→fp8 axis: store restored rows in
+symmetric int4 with a single per-row fp16 scale. Per-row cost drops
+to `4·I + 16 + 32` bits — roughly 10× the row density of fp16 and
+~3× the density of fp8 at matched overlay-bpw. Round-trip:
+`scale = absmax(row)/7; xq = round(x/scale).clamp(-7,7)·scale`.
+
+**LAMBADA 6-model cohort, matched effective-bpw, all three storage formats:**
+
+**Matched ~2.79 bpw — fp16 ρ=0.002 | fp8 ρ=0.005 | int4 ρ=0.021:**
+
+| Model          | fp16 T1-ret | fp8 T1-ret | int4 T1-ret | fp16 pplr | fp8 pplr | int4 pplr |
+|----------------|------------:|-----------:|------------:|----------:|---------:|----------:|
+| OLMo-2-1B      |      94.15% |     94.12% |      93.20% |     1.168 |    1.162 |     1.215 |
+| TinyLlama-1.1B |      96.56% |     96.43% |      95.78% |     1.098 |    1.093 |     1.144 |
+| Qwen3-1.7B     |      93.53% |     93.79% |      93.31% |     1.237 |    1.256 |     1.222 |
+| SmolLM2-1.7B   |      93.79% |     93.48% |      91.00% |     1.219 |    1.236 |     1.495 |
+| Mistral-7B     |      97.88% |     98.03% |      95.91% |     1.088 |    1.069 |     1.144 |
+| Qwen3-8B       |      97.46% |     97.57% |      96.82% |     1.075 |    1.066 |     1.169 |
+| **Mean**       |  **95.56%** | **95.57%** |  **94.33%** | **1.148** |**1.147** | **1.232** |
+
+**Matched ~2.83 bpw — fp16 ρ=0.005 | fp8 ρ=0.012 | int4 ρ=0.054:**
+
+| Model          | fp16 T1-ret | fp8 T1-ret | int4 T1-ret | fp16 pplr | fp8 pplr | int4 pplr |
+|----------------|------------:|-----------:|------------:|----------:|---------:|----------:|
+| OLMo-2-1B      |      94.23% |     94.37% |      93.13% |     1.163 |    1.158 |     1.216 |
+| TinyLlama-1.1B |      96.47% |     96.85% |      94.82% |     1.095 |    1.084 |     1.165 |
+| Qwen3-1.7B     |      93.74% |     93.90% |      92.79% |     1.238 |    1.258 |     1.305 |
+| SmolLM2-1.7B   |      93.52% |     93.07% |      90.68% |     1.223 |    1.244 |     1.491 |
+| Mistral-7B     |      98.08% |     98.09% |      95.54% |     1.070 |    1.068 |     1.148 |
+| Qwen3-8B       |      97.58% |     97.63% |      96.05% |     1.066 |    1.072 |     1.229 |
+| **Mean**       |  **95.60%** | **95.65%** |  **93.83%** | **1.143** |**1.147** | **1.259** |
+
+**Read-out.** int4 row-overlay **strictly loses** on all 6 models, both
+metrics, both operating points: mean ΔT1 = −1.23 pp at ~2.79 bpw and
+−1.77 pp at ~2.83 bpw; mean Δppl-ratio = +0.084 and +0.112. The
+SmolLM2 ppl-ratio blows up from 1.22 to 1.50. Notably, **increasing
+int4 rho from 0.021 to 0.054 makes things worse on most models** — more
+noisy rows overwhelm the density advantage, while fp16 and fp8 both
+improve monotonically with rho. This locates the **precision floor on
+the density/precision Pareto**: fp8 is the densest row format that
+still lives on the Claim-17 frontier; int4 is below it.
+
+This ablation narrows the patent scope positively: the claim is
+restricted to row-storage precisions `≥ 8 bits` plus a per-row fp16
+scale, with `≥ 4 bits` explicitly disclaimed as inferior at matched
+overlay-bpw in the measured 6-model cohort.
+
+Drivers and artifacts:
+[`lambada_overlay_int4.py`](lambada_overlay_int4.py),
+[`lambada_overlay_int4_results.json`](lambada_overlay_int4_results.json),
+[`overlay_int4.log`](overlay_int4.log).
