@@ -59,6 +59,11 @@ DEFAULT_ROLE_K: dict[str, tuple[int, int]] = {
 def _chunked_argmin(X: torch.Tensor, C: torch.Tensor, bs: int = 300_000) -> torch.Tensor:
     out = torch.empty(X.shape[0], dtype=torch.long, device=X.device)
     C_nrm = (C * C).sum(-1)
+    # Adaptive chunk: the distance matrix is [bs, K] fp32. Keep it <= ~2.5 GB
+    # so hifi/ultra codebooks (K1 up to 16384) don't OOM on 32GB cards.
+    K = C.shape[0]
+    max_chunk = max(16_000, int(650_000_000 // max(K, 1)))
+    bs = min(bs, max_chunk)
     for s in range(0, X.shape[0], bs):
         e = min(s + bs, X.shape[0])
         d = C_nrm.unsqueeze(0) - 2.0 * (X[s:e] @ C.T) + (X[s:e] * X[s:e]).sum(-1, keepdim=True)

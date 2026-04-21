@@ -73,6 +73,12 @@ def beam_assign(G: torch.Tensor, cb1: torch.Tensor, cb2: torch.Tensor,
     cb1_nrm = (cb1 * cb1).sum(-1)  # [K1]
     cb2_nrm = (cb2 * cb2).sum(-1)  # [K2]
 
+    # Adaptive chunk: dominant buffer is d1 = [chunk, K1] fp32.
+    # Keep it <= ~1.5 GB so ultra-tier K1 up to 16384 fits on 32GB cards.
+    K1 = cb1.shape[0]
+    max_chunk = max(16_000, int(400_000_000 // max(K1, 1)))
+    chunk = min(chunk, max_chunk)
+
     for s in range(0, N, chunk):
         e = min(s + chunk, N)
         Gc = G[s:e]                              # [n, D]

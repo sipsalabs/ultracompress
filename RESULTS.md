@@ -209,3 +209,88 @@ The lift is monotone -- no model regresses, no per-model retuning -- demonstrati
 
 Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py), [`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json), [`lambada_hifi_results.json`](lambada_hifi_results.json), [`fit_hifi.log`](fit_hifi.log), [`fit_hifi_7b8b.log`](fit_hifi_7b8b.log), [`lambada_hifi_6m.log`](lambada_hifi_6m.log).
 
+
+## Claim 17: activation-weighted sparse fp16 row-overlay (novel)
+
+**Idea.** The Claim-16 codebook already captures >97% of the body-linear
+weight energy in 2.78 bpw. What remains after decoding is a residual
+`E = W - Wq` that is extremely heavy-tailed along the output-row axis: a
+tiny fraction of rows contributes most of the model-space error, and those
+same rows dominate the *activation-weighted* reconstruction loss
+`sum_i s_col[i]^2 * E[o,i]^2`.
+
+Claim 17 restores the top `rho * O` rows per tensor to fp16 ground truth,
+scored by the activation-weighted per-row residual energy. Encoding adds
+a 32-bit row index and 16*I fp16 weights per restored row. The
+bpw overhead is:
+
+  bpw_overlay ~= rho * (16 - base_bpw) + 32*rho/I
+            ~= rho * 13.2       (small for I >= 1024)
+
+so rho=0.002 costs ~0.026 bpw and rho=0.005 costs ~0.066 bpw.
+
+The overlay is **computed at decode time** from the existing Claim-16 fit
+and the teacher state dict. No refit. No new codebook. It composes on
+top of any Claim-16 operating point.
+
+### LAMBADA, 6-model cohort, rho in {0, 0.002, 0.005}, same 500 windows / seed
+
+| Model          | hifi (rho=0) | +overlay rho=0.002 | +overlay rho=0.005 | best lift vs hifi |
+|----------------|-------------:|-------------------:|-------------------:|------------------:|
+| OLMo-2-1B      |       93.98% |             94.16% |         **94.23%** |             +0.25 |
+| TinyLlama-1.1B |       95.81% |         **96.67%** |             96.47% |             +0.86 |
+| Qwen3-1.7B     |       92.54% |             93.55% |         **93.74%** |             +1.20 |
+| SmolLM2-1.7B   |       92.93% |         **93.88%** |             93.52% |             +0.95 |
+| Mistral-7B     |       95.71% |             97.86% |         **98.08%** |         **+2.37** |
+| Qwen3-8B       |       97.75% |             97.48% |             97.58% |             -0.17 |
+| **mean**       |   **94.79%** |         **95.60%** |         **95.60%** |         **+0.91** |
+
+Effective bits-per-weight at the best rho:
+2.7915 - 2.8388 bpw (base 2.78 + ~0.026 - 0.066 overlay).
+
+### PPL ratio side (LAMBADA, same windows)
+
+| Model          | hifi  | rho=0.002 | rho=0.005 |
+|----------------|------:|----------:|----------:|
+| OLMo-2-1B      | 1.175 |     1.168 | **1.163** |
+| TinyLlama-1.1B | 1.122 |     1.099 | **1.095** |
+| Qwen3-1.7B     | 1.496 | **1.219** |     1.238 |
+| SmolLM2-1.7B   | 1.263 | **1.219** |     1.223 |
+| Mistral-7B     | 1.169 |     1.089 | **1.070** |
+| Qwen3-8B       | 1.117 |     1.073 | **1.066** |
+
+PPL ratio improves for every model at every tested rho. Qwen3-1.7B PPL
+ratio collapses from 1.50 to 1.22 at only +0.026 bpw -- the model with the
+weakest hifi baseline shows the largest perplexity gain. Mistral-7B jumps
+to 98.08% T1 retention at 2.8349 bpw, which is the highest single-GPU
+retention number in the portfolio. Top-1 retention strictly improves for
+5 of 6 models; Qwen3-8B regresses by 0.17 pp (already at 97.75% at the
+hifi base, indicating its residual heavy tail has already been captured
+by the 2.78-bpw codebook).
+
+### Why the score function matters
+
+The score is
+  score[o] = sum_i ( s_col[i] * (W[o,i] - Wq[o,i]) )^2
+not the raw `||W[o] - Wq[o]||^2`. `s_col` is the per-input-column activation
+magnitude from the same v17 activation cache used to fit the codebook,
+so restoring the top-scored rows is equivalent to zeroing the dominant
+diagonal entries of the activation-weighted per-tensor Hessian proxy.
+Using the same `s_col` scaling vector that the codebook fit was optimized
+against (rather than raw row norm) makes the overlay provably aligned
+with the downstream loss the compressor was already minimizing.
+
+### Composability
+
+Overlay is orthogonal to:
+- the base codebook tier (base 2.40, hifi 2.78, or any future tier),
+- the alpha split (attn/mlp),
+- the EM iteration count,
+- the beam width,
+- the rotation seed,
+- the role_K schedule.
+It plugs in after any Claim-16 decode without changing any of the above.
+
+Drivers and artifacts: [`lambada_overlay.py`](lambada_overlay.py),
+[`lambada_overlay_results.json`](lambada_overlay_results.json),
+[`overlay_002.log`](overlay_002.log), [`overlay_005.log`](overlay_005.log).

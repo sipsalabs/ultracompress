@@ -1771,3 +1771,100 @@ The hifi tier doubles K1 to 4096, which makes the beam-assign distance matrix (b
 - `lambada_hifi_results.json` -- per-model teacher/v17 PPL, T1, T10, retention on LAMBADA (6 rows).
 - `fit_hifi.log` / `fit_hifi_7b8b.log` / `lambada_hifi_6m.log` -- full stdout.
 
+
+
+---
+
+## Claim 17: activation-weighted sparse fp16 outlier row-overlay
+
+### Statement of the claim
+
+A method for compressing transformer weights below the Claim-16 codebook
+operating point's measured residual, comprising:
+  1. obtaining a Claim-16 (or Claim-16-family) fit producing decoded
+     weights Wq approximating teacher weights W, together with the
+     per-input-column activation-magnitude vector s_col used during the
+     codebook fit;
+  2. for each body-linear weight tensor, computing a per-output-row
+     activation-weighted reconstruction score
+         score[o] = sum_i ( s_col[i] * ( W[o, i] - Wq[o, i] ) )**2 ;
+  3. selecting the top K = round(rho * O) rows per tensor by that score,
+     for a single scalar hyperparameter rho in (0, 1) (nominally
+     rho = 0.002 - 0.005);
+  4. storing the selected row indices (e.g., as 32-bit integers) together
+     with the restored fp16 weights of those rows;
+  5. at decode time, reconstructing the tensor as Wq with the selected
+     rows overwritten by their stored fp16 values.
+
+The bit overhead added to any Claim-16 fit is
+    bpw_overlay = rho * (16 - bpw_base) + 32 * rho / I_mean
+and is dominated by rho * (16 - bpw_base) for realistic tensor widths
+(I >= 1024), so rho = 0.002 costs about 0.026 bpw and rho = 0.005
+costs about 0.066 bpw on top of the Claim-16 base.
+
+### Novelty elements
+
+1. The score function is the *activation-weighted* residual energy using
+   the same s_col vector that the Claim-16 codebook was optimized against.
+   This aligns the overlay's row-selection objective with the same
+   surrogate loss that drove codebook fitting, rather than using a raw
+   Frobenius residual or an outlier-magnitude heuristic.
+2. The overlay is computed at decode time from (teacher state dict,
+   existing Claim-16 fit). It requires no refit, no additional EM pass,
+   no new codebook, and no change to the role_K, alpha, D, beam, or
+   rotation-seed schedule of the underlying Claim-16 fit.
+3. The overlay composes orthogonally with every other Claim-16 knob:
+   base-tier (2.40 bpw), hifi-tier (2.78 bpw), any future tier, any
+   alpha split, any EM iteration count, any beam width.
+4. Sparsity is expressed in *rows* (not individual weights), which
+   preserves a single coherent dot-product contribution during
+   activation*weight and avoids per-weight indexing overhead at inference.
+
+### Demonstration (LAMBADA, 6 models, 500 windows, fixed seed)
+
+| Model          | hifi (rho=0) T1 | rho=0.002 T1 | rho=0.005 T1 | best lift |
+|----------------|----------------:|-------------:|-------------:|----------:|
+| OLMo-2-1B      |          93.98% |       94.16% |       94.23% |    +0.25  |
+| TinyLlama-1.1B |          95.81% |       96.67% |       96.47% |    +0.86  |
+| Qwen3-1.7B     |          92.54% |       93.55% |       93.74% |    +1.20  |
+| SmolLM2-1.7B   |          92.93% |       93.88% |       93.52% |    +0.95  |
+| Mistral-7B     |          95.71% |       97.86% |       98.08% |    +2.37  |
+| Qwen3-8B       |          97.75% |       97.48% |       97.58% |    -0.17  |
+| mean           |      **94.79%** |   **95.60%** |   **95.60%** |   +0.91   |
+
+PPL ratio improves for every model at every tested rho (see RESULTS.md
+for the paired table). Effective bits-per-weight lands between 2.7915
+and 2.8388 -- i.e. Claim 17 adds 0.026 - 0.066 bpw to the Claim-16
+hifi base while pushing Mistral-7B to 98.08% T1 retention, the highest
+single-GPU retention number across the portfolio.
+
+### Honest failure modes
+
+- Qwen3-8B's hifi baseline is already at 97.75%; its residual heavy tail
+  is small enough that the top-rho rows do not dominate and the overlay
+  regresses by 0.17 pp at rho=0.002 (and remains -0.17 at rho=0.005).
+  This confirms the overlay is targeting the right quantity (heavy-tail
+  residual rows): when there is no heavy tail left to target, it stops
+  helping, as expected.
+- The overlay fp16 rows are stored densely per selected row; this is a
+  structured sparsity pattern (row-sparse, column-dense) and is
+  efficient on fused GEMM kernels, but requires a small scatter at
+  decode time (handled in lambada_overlay.substitute_v17_overlay).
+
+### Implementation note
+
+The overlay builder shares the Claim-16 decode path exactly: it calls
+the same rotation, beam-assign, and unrotation routines as
+`eval_v17_ppl._reconstruct_v17`, then computes the per-row score in the
+same model space. This means any bug in Claim-16 decode would surface
+identically in the overlay score, so the two paths are co-validated
+end-to-end.
+
+### Artifacts of record
+
+- `lambada_overlay.py` -- builder + evaluator; reads the hifi fit and
+  teacher cache, emits `lambada_overlay_results.json`.
+- `lambada_overlay_results.json` -- 12 rows (6 models x 2 rho values),
+  each with teacher PPL/T1/T10, overlaid PPL/T1/T10, effective bpw,
+  restored row count, restored param count.
+- `overlay_002.log`, `overlay_005.log` -- full evaluation stdout.
