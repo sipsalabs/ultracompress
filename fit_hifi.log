@@ -1,0 +1,298 @@
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\cuda\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+====== olmo2 (olmo2_1b_cache.pt) -> v17hi_fit_olmo2.pt ======
+[v17] loading activation cache v17_activations_olmo2.pt
+[v17] alpha=0.25
+[v17] s ratio max/mean avg over tensors: 4.53
+[v17] init role=q_proj      K1=4096 K2=1024  n_chunks=   8388608
+[v17] init role=k_proj      K1=4096 K2=1024  n_chunks=   8388608
+[v17] init role=v_proj      K1=4096 K2=1024  n_chunks=   8388608
+[v17] init role=o_proj      K1=8192 K2=2048  n_chunks=   8388608
+[v17] init role=gate_proj   K1=4096 K2=1024  n_chunks=  33554432
+[v17] init role=up_proj     K1=4096 K2=1024  n_chunks=  33554432
+[v17] init role=down_proj   K1=4096 K2=1024  n_chunks=  33554432
+
+[v17] init (greedy, on W*s): orig-space rel-W mean 0.0442  max 0.0539
+[v17]  it1 role=q_proj     3s
+[v17]  it1 role=k_proj     3s
+[v17]  it1 role=v_proj     3s
+[v17]  it1 role=o_proj     6s
+[v17]  it1 role=gate_proj  12s
+[v17]  it1 role=up_proj    12s
+[v17]  it1 role=down_proj  12s
+[v17] iter 1/6: mean 0.0387 max 0.0467 | 51s
+[v17]  it2 role=q_proj     3s
+[v17]  it2 role=k_proj     3s
+[v17]  it2 role=v_proj     3s
+[v17]  it2 role=o_proj     6s
+[v17]  it2 role=gate_proj  11s
+[v17]  it2 role=up_proj    11s
+[v17]  it2 role=down_proj  11s
+[v17] iter 2/6: mean 0.0380 max 0.0460 | 50s
+[v17]  it3 role=q_proj     3s
+[v17]  it3 role=k_proj     3s
+[v17]  it3 role=v_proj     3s
+[v17]  it3 role=o_proj     6s
+[v17]  it3 role=gate_proj  12s
+[v17]  it3 role=up_proj    11s
+[v17]  it3 role=down_proj  12s
+[v17] iter 3/6: mean 0.0377 max 0.0457 | 50s
+[v17]  it4 role=q_proj     3s
+[v17]  it4 role=k_proj     3s
+[v17]  it4 role=v_proj     3s
+[v17]  it4 role=o_proj     6s
+[v17]  it4 role=gate_proj  12s
+[v17]  it4 role=up_proj    12s
+[v17]  it4 role=down_proj  12s
+[v17] iter 4/6: mean 0.0375 max 0.0455 | 51s
+[v17]  it5 role=q_proj     3s
+[v17]  it5 role=k_proj     3s
+[v17]  it5 role=v_proj     3s
+[v17]  it5 role=o_proj     6s
+[v17]  it5 role=gate_proj  12s
+[v17]  it5 role=up_proj    12s
+[v17]  it5 role=down_proj  12s
+[v17] iter 5/6: mean 0.0374 max 0.0454 | 51s
+[v17]  it6 role=q_proj     3s
+[v17]  it6 role=k_proj     3s
+[v17]  it6 role=v_proj     3s
+[v17]  it6 role=o_proj     6s
+[v17]  it6 role=gate_proj  12s
+[v17]  it6 role=up_proj    12s
+[v17]  it6 role=down_proj  12s
+[v17] iter 6/6: mean 0.0373 max 0.0453 | 51s
+
+[v17] s_col overhead: 0.66 MB  (+0.0049 bpw)
+
+[v17] final per-role breakdown (orig-space rel-W):
+  q_proj       K1= 4096 K2=1024  mean 0.0381  max 0.0389
+  k_proj       K1= 4096 K2=1024  mean 0.0387  max 0.0397
+  v_proj       K1= 4096 K2=1024  mean 0.0369  max 0.0374
+  o_proj       K1= 8192 K2=2048  mean 0.0308  max 0.0326
+  gate_proj    K1= 4096 K2=1024  mean 0.0385  max 0.0397
+  up_proj      K1= 4096 K2=1024  mean 0.0375  max 0.0386
+  down_proj    K1= 4096 K2=1024  mean 0.0405  max 0.0453
+[olmo2] DONE bpw=2.7705 rel_w mean=0.0373 max=0.0453 wall=378s
+
+====== tinyllama (tinyllama_1.1b_cache.pt) -> v17hi_fit_tinyllama.pt ======
+[v17] loading activation cache v17_activations_tinyllama.pt
+[v17] alpha=0.25
+[v17] s ratio max/mean avg over tensors: 3.90
+[v17] init role=q_proj      K1=4096 K2=1024  n_chunks=  11534336
+[v17] init role=k_proj      K1=4096 K2=1024  n_chunks=   1441792
+[v17] init role=v_proj      K1=4096 K2=1024  n_chunks=   1441792
+[v17] init role=o_proj      K1=8192 K2=2048  n_chunks=  11534336
+[v17] init role=gate_proj   K1=4096 K2=1024  n_chunks=  31719424
+[v17] init role=up_proj     K1=4096 K2=1024  n_chunks=  31719424
+[v17] init role=down_proj   K1=4096 K2=1024  n_chunks=  31719424
+
+[v17] init (greedy, on W*s): orig-space rel-W mean 0.0629  max 1.1772
+[v17]  it1 role=q_proj     4s
+[v17]  it1 role=k_proj     1s
+[v17]  it1 role=v_proj     1s
+[v17]  it1 role=o_proj     8s
+[v17]  it1 role=gate_proj  11s
+[v17]  it1 role=up_proj    11s
+[v17]  it1 role=down_proj  11s
+[v17] iter 1/6: mean 0.0546 max 0.9888 | 47s
+[v17]  it2 role=q_proj     4s
+[v17]  it2 role=k_proj     1s
+[v17]  it2 role=v_proj     1s
+[v17]  it2 role=o_proj     8s
+[v17]  it2 role=gate_proj  11s
+[v17]  it2 role=up_proj    11s
+[v17]  it2 role=down_proj  11s
+[v17] iter 2/6: mean 0.0537 max 0.9630 | 47s
+[v17]  it3 role=q_proj     4s
+[v17]  it3 role=k_proj     1s
+[v17]  it3 role=v_proj     1s
+[v17]  it3 role=o_proj     8s
+[v17]  it3 role=gate_proj  11s
+[v17]  it3 role=up_proj    11s
+[v17]  it3 role=down_proj  11s
+[v17] iter 3/6: mean 0.0532 max 0.9478 | 47s
+[v17]  it4 role=q_proj     4s
+[v17]  it4 role=k_proj     1s
+[v17]  it4 role=v_proj     1s
+[v17]  it4 role=o_proj     8s
+[v17]  it4 role=gate_proj  11s
+[v17]  it4 role=up_proj    11s
+[v17]  it4 role=down_proj  11s
+[v17] iter 4/6: mean 0.0530 max 0.9406 | 47s
+[v17]  it5 role=q_proj     4s
+[v17]  it5 role=k_proj     1s
+[v17]  it5 role=v_proj     1s
+[v17]  it5 role=o_proj     8s
+[v17]  it5 role=gate_proj  11s
+[v17]  it5 role=up_proj    11s
+[v17]  it5 role=down_proj  11s
+[v17] iter 5/6: mean 0.0529 max 0.9327 | 47s
+[v17]  it6 role=q_proj     4s
+[v17]  it6 role=k_proj     1s
+[v17]  it6 role=v_proj     1s
+[v17]  it6 role=o_proj     8s
+[v17]  it6 role=gate_proj  11s
+[v17]  it6 role=up_proj    11s
+[v17]  it6 role=down_proj  11s
+[v17] iter 6/6: mean 0.0528 max 0.9275 | 48s
+
+[v17] s_col overhead: 0.79 MB  (+0.0065 bpw)
+
+[v17] final per-role breakdown (orig-space rel-W):
+  q_proj       K1= 4096 K2=1024  mean 0.0767  max 0.5778
+  k_proj       K1= 4096 K2=1024  mean 0.1060  max 0.9275
+  v_proj       K1= 4096 K2=1024  mean 0.0391  max 0.0572
+  o_proj       K1= 8192 K2=2048  mean 0.0307  max 0.0341
+  gate_proj    K1= 4096 K2=1024  mean 0.0385  max 0.0450
+  up_proj      K1= 4096 K2=1024  mean 0.0379  max 0.0406
+  down_proj    K1= 4096 K2=1024  mean 0.0405  max 0.0547
+[tinyllama] DONE bpw=2.7803 rel_w mean=0.0528 max=0.9275 wall=356s
+
+====== qwen3_1.7b (qwen3_1.7b_cache.pt) -> v17hi_fit_qwen3_1.7b.pt ======
+[v17] loading activation cache v17_activations.pt
+[v17] alpha=0.25
+[v17] s ratio max/mean avg over tensors: 4.81
+[v17] init role=q_proj      K1=4096 K2=1024  n_chunks=  14680064
+[v17] init role=k_proj      K1=4096 K2=1024  n_chunks=   7340032
+[v17] init role=v_proj      K1=4096 K2=1024  n_chunks=   7340032
+[v17] init role=o_proj      K1=8192 K2=2048  n_chunks=  14680064
+[v17] init role=gate_proj   K1=4096 K2=1024  n_chunks=  44040192
+[v17] init role=up_proj     K1=4096 K2=1024  n_chunks=  44040192
+[v17] init role=down_proj   K1=4096 K2=1024  n_chunks=  44040192
+
+[v17] init (greedy, on W*s): orig-space rel-W mean 0.0504  max 0.0810
+[v17]  it1 role=q_proj     6s
+[v17]  it1 role=k_proj     3s
+[v17]  it1 role=v_proj     3s
+[v17]  it1 role=o_proj     11s
+[v17]  it1 role=gate_proj  17s
+[v17]  it1 role=up_proj    17s
+[v17]  it1 role=down_proj  17s
+[v17] iter 1/6: mean 0.0439 max 0.0695 | 75s
+[v17]  it2 role=q_proj     6s
+[v17]  it2 role=k_proj     3s
+[v17]  it2 role=v_proj     3s
+[v17]  it2 role=o_proj     11s
+[v17]  it2 role=gate_proj  16s
+[v17]  it2 role=up_proj    17s
+[v17]  it2 role=down_proj  17s
+[v17] iter 2/6: mean 0.0431 max 0.0687 | 75s
+[v17]  it3 role=q_proj     6s
+[v17]  it3 role=k_proj     3s
+[v17]  it3 role=v_proj     3s
+[v17]  it3 role=o_proj     11s
+[v17]  it3 role=gate_proj  17s
+[v17]  it3 role=up_proj    17s
+[v17]  it3 role=down_proj  18s
+[v17] iter 3/6: mean 0.0429 max 0.0685 | 76s
+[v17]  it4 role=q_proj     6s
+[v17]  it4 role=k_proj     3s
+[v17]  it4 role=v_proj     3s
+[v17]  it4 role=o_proj     11s
+[v17]  it4 role=gate_proj  17s
+[v17]  it4 role=up_proj    17s
+[v17]  it4 role=down_proj  18s
+[v17] iter 4/6: mean 0.0427 max 0.0684 | 76s
+[v17]  it5 role=q_proj     6s
+[v17]  it5 role=k_proj     3s
+[v17]  it5 role=v_proj     3s
+[v17]  it5 role=o_proj     12s
+[v17]  it5 role=gate_proj  16s
+[v17]  it5 role=up_proj    17s
+[v17]  it5 role=down_proj  18s
+[v17] iter 5/6: mean 0.0426 max 0.0684 | 77s
+[v17]  it6 role=q_proj     6s
+[v17]  it6 role=k_proj     3s
+[v17]  it6 role=v_proj     3s
+[v17]  it6 role=o_proj     12s
+[v17]  it6 role=gate_proj  18s
+[v17]  it6 role=up_proj    18s
+[v17]  it6 role=down_proj  18s
+[v17] iter 6/6: mean 0.0425 max 0.0683 | 79s
+
+[v17] s_col overhead: 1.03 MB  (+0.0059 bpw)
+
+[v17] final per-role breakdown (orig-space rel-W):
+  q_proj       K1= 4096 K2=1024  mean 0.0436  max 0.0541
+  k_proj       K1= 4096 K2=1024  mean 0.0457  max 0.0589
+  v_proj       K1= 4096 K2=1024  mean 0.0413  max 0.0528
+  o_proj       K1= 8192 K2=2048  mean 0.0332  max 0.0443
+  gate_proj    K1= 4096 K2=1024  mean 0.0442  max 0.0490
+  up_proj      K1= 4096 K2=1024  mean 0.0413  max 0.0448
+  down_proj    K1= 4096 K2=1024  mean 0.0486  max 0.0683
+[qwen3_1.7b] DONE bpw=2.7767 rel_w mean=0.0425 max=0.0683 wall=548s
+
+====== smollm2 (smollm2_1.7b_cache.pt) -> v17hi_fit_smollm2.pt ======
+[v17] loading activation cache v17_activations_smollm2.pt
+[v17] alpha=0.25
+[v17] s ratio max/mean avg over tensors: 5.19
+[v17] init role=q_proj      K1=4096 K2=1024  n_chunks=  12582912
+[v17] init role=k_proj      K1=4096 K2=1024  n_chunks=  12582912
+[v17] init role=v_proj      K1=4096 K2=1024  n_chunks=  12582912
+[v17] init role=o_proj      K1=8192 K2=2048  n_chunks=  12582912
+[v17] init role=gate_proj   K1=4096 K2=1024  n_chunks=  50331648
+[v17] init role=up_proj     K1=4096 K2=1024  n_chunks=  50331648
+[v17] init role=down_proj   K1=4096 K2=1024  n_chunks=  50331648
+
+[v17] init (greedy, on W*s): orig-space rel-W mean 0.0468  max 0.1053
+[v17]  it1 role=q_proj     5s
+[v17]  it1 role=k_proj     5s
+[v17]  it1 role=v_proj     5s
+[v17]  it1 role=o_proj     10s
+[v17]  it1 role=gate_proj  19s
+[v17]  it1 role=up_proj    18s
+[v17]  it1 role=down_proj  20s
+[v17] iter 1/6: mean 0.0410 max 0.0898 | 85s
+[v17]  it2 role=q_proj     5s
+[v17]  it2 role=k_proj     5s
+[v17]  it2 role=v_proj     5s
+[v17]  it2 role=o_proj     10s
+[v17]  it2 role=gate_proj  20s
+[v17]  it2 role=up_proj    20s
+[v17]  it2 role=down_proj  21s
+[v17] iter 2/6: mean 0.0401 max 0.0884 | 88s
+[v17]  it3 role=q_proj     5s
+[v17]  it3 role=k_proj     5s
+[v17]  it3 role=v_proj     5s
+[v17]  it3 role=o_proj     10s
+[v17]  it3 role=gate_proj  20s
+[v17]  it3 role=up_proj    20s
+[v17]  it3 role=down_proj  18s
+[v17] iter 3/6: mean 0.0398 max 0.0875 | 86s
+[v17]  it4 role=q_proj     5s
+[v17]  it4 role=k_proj     5s
+[v17]  it4 role=v_proj     5s
+[v17]  it4 role=o_proj     9s
+[v17]  it4 role=gate_proj  18s
+[v17]  it4 role=up_proj    20s
+[v17]  it4 role=down_proj  20s
+[v17] iter 4/6: mean 0.0396 max 0.0869 | 83s
+[v17]  it5 role=q_proj     5s
+[v17]  it5 role=k_proj     5s
+[v17]  it5 role=v_proj     5s
+[v17]  it5 role=o_proj     10s
+[v17]  it5 role=gate_proj  20s
+[v17]  it5 role=up_proj    21s
+[v17]  it5 role=down_proj  20s
+[v17] iter 5/6: mean 0.0395 max 0.0865 | 88s
+[v17]  it6 role=q_proj     5s
+[v17]  it6 role=k_proj     5s
+[v17]  it6 role=v_proj     5s
+[v17]  it6 role=o_proj     10s
+[v17]  it6 role=gate_proj  20s
+[v17]  it6 role=up_proj    20s
+[v17]  it6 role=down_proj  20s
+[v17] iter 6/6: mean 0.0394 max 0.0860 | 88s
+
+[v17] s_col overhead: 0.98 MB  (+0.0049 bpw)
+
+[v17] final per-role breakdown (orig-space rel-W):
+  q_proj       K1= 4096 K2=1024  mean 0.0426  max 0.0860
+  k_proj       K1= 4096 K2=1024  mean 0.0437  max 0.0725
+  v_proj       K1= 4096 K2=1024  mean 0.0379  max 0.0393
+  o_proj       K1= 8192 K2=2048  mean 0.0339  max 0.0700
+  gate_proj    K1= 4096 K2=1024  mean 0.0387  max 0.0397
+  up_proj      K1= 4096 K2=1024  mean 0.0377  max 0.0385
+  down_proj    K1= 4096 K2=1024  mean 0.0414  max 0.0594
+[smollm2] DONE bpw=2.7705 rel_w mean=0.0394 max=0.0860 wall=618s

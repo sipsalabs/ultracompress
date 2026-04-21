@@ -1,0 +1,73 @@
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\cuda\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776729005.163667   49580 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776729008.213130   49580 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+W0420 17:50:09.313000 16600 site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+
+[OLMo-2-1B] teacher -> olmo2_1b_cache.pt
+`torch_dtype` is deprecated! Use `dtype` instead!
+    [200/500] t1_gt=34.73%  t10_gt=68.55%
+    [400/500] t1_gt=34.80%  t10_gt=68.54%
+    [200/500] running ppl 31.4125
+    [400/500] running ppl 31.5141
+[OLMo-2-1B] teacher  PPL=31.5885  T1=34.75%  T10=68.52%   (16s)
+  substituting 112 body Linears (v17 stack, alpha=0.25)
+    [200/500] t1_gt=32.74%  t10_gt=66.29%
+    [400/500] t1_gt=32.72%  t10_gt=66.38%
+    [200/500] running ppl 36.8540
+    [400/500] running ppl 37.0347
+[OLMo-2-1B] v17 fit  PPL=37.1236  T1=32.66%  T10=66.37%   T1_vs_teacher=73.38%  (110s)
+[lambada_hifi] wrote lambada_hifi_results.json (1)
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (23s)
+  substituting 154 body Linears (v17 stack, alpha=0.25)
+    [200/500] t1_gt=38.99%  t10_gt=71.27%
+    [400/500] t1_gt=38.46%  t10_gt=70.88%
+    [200/500] running ppl 23.3634
+    [400/500] running ppl 24.1708
+[TinyLlama-1.1B] v17 fit  PPL=24.4748  T1=38.35%  T10=70.65%   T1_vs_teacher=75.72%  (80s)
+[lambada_hifi] wrote lambada_hifi_results.json (2)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (35s)
+  substituting 196 body Linears (v17 stack, alpha=0.25)
+    [200/500] t1_gt=29.81%  t10_gt=62.88%
+    [400/500] t1_gt=29.60%  t10_gt=63.04%
+    [200/500] running ppl 73.0050
+    [400/500] running ppl 72.0858
+[Qwen3-1.7B] v17 fit  PPL=72.3636  T1=29.70%  T10=62.99%   T1_vs_teacher=69.19%  (180s)
+[lambada_hifi] wrote lambada_hifi_results.json (3)
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (16s)
+  substituting 168 body Linears (v17 stack, alpha=0.25)
+    [200/500] t1_gt=37.15%  t10_gt=69.85%
+    [400/500] t1_gt=36.96%  t10_gt=69.81%
+    [200/500] running ppl 27.5563
+    [400/500] running ppl 27.7515
+[SmolLM2-1.7B] v17 fit  PPL=27.8023  T1=36.97%  T10=69.76%   T1_vs_teacher=73.44%  (105s)
+[lambada_hifi] wrote lambada_hifi_results.json (4)
+[skip] Mistral-7B: v17hi_fit_mistral.pt not present
+[skip] Qwen3-8B: v17hi_fit_8b.pt not present
+
+================ hifi summary ================
+model               teacher_ppl  v17hi_ppl   ratio   tchT1    hiT1   T1_ret
+OLMo-2-1B               31.5885    37.1236   1.175  34.75%  32.66%   93.98%
+TinyLlama-1.1B          21.8216    24.4748   1.122  40.03%  38.35%   95.81%
+Qwen3-1.7B              48.3843    72.3636   1.496  32.09%  29.70%   92.54%
+SmolLM2-1.7B            22.0188    27.8023   1.263  39.78%  36.97%   92.93%

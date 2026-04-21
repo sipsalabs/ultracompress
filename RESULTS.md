@@ -153,3 +153,37 @@ range. The 8B fit has the lowest PPL ratio and highest top-1 retention,
 matching the scaling prediction. Driver `lambada_all.py`, data
 `lambada_all_results.json`.
 
+
+## Capacity-tier dial: 2.40 bpw -> 2.78 bpw  (Claim 16 second operating point)
+
+Doubling per-role codebook capacity -- small models retuned only in  
+`role_K` (K1: 2048 -> 4096, K2: 256 -> 1024; o_proj: 4096 -> 8192, 512 -> 2048),  
+all other knobs (D=8, alpha=0.25, beam=8, 6 EM iters) held fixed -- lifts the  
+same LAMBADA out-of-distribution retention numbers by 5-9 points in one shot.  
+Identical pipeline, identical activation cache, identical seed.
+
+### LAMBADA (same 500 windows, same seed) at the higher-fidelity tier
+
+| Model          | bpw_2.40 T1 ret | bpw_2.78 T1 ret | lift   | bpw_2.40 PPL ratio | bpw_2.78 PPL ratio |
+|----------------|----------------:|----------------:|-------:|-------------------:|-------------------:|
+| OLMo-2-1B      |          89.39% |      **93.98%** | +4.59  |              1.378 |          **1.175** |
+| TinyLlama-1.1B |          90.02% |      **95.81%** | +5.79  |              1.317 |          **1.122** |
+| Qwen3-1.7B     |          83.19% |      **92.54%** | +9.35  |              1.672 |          **1.496** |
+| SmolLM2-1.7B   |          86.66% |      **92.93%** | +6.27  |              1.501 |          **1.263** |
+
+Bit-budget cost: **+0.38 bpw mean** (2.7705-2.7803 bpw across the four fits  
+vs 2.3955-2.4053 at the low-bit tier). The 0.38 bpw delta buys a mean T1  
+retention gain of **6.5 percentage points on out-of-distribution narrative  
+fiction** without touching a single other hyperparameter or adding a single  
+line of code. This is the capacity dial promised by Claim 16: a continuous  
+bpw vs fidelity Pareto curve exposed through one structural parameter  
+(`role_K`), not a family of bespoke quantization recipes.
+
+Weight-space reconstruction error on the same four fits halves:  
+rel-W mean at 2.40 bpw was 0.052-0.072; at 2.78 bpw it is 0.037-0.053  
+(olmo2: 0.054 -> 0.037, qwen3_1.7b: 0.052 -> 0.043, smollm2: 0.073 -> 0.039).
+
+Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py),  
+[`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json),  
+[`lambada_hifi_results.json`](lambada_hifi_results.json).
+

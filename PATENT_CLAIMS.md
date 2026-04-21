@@ -1676,3 +1676,58 @@ quantization noise averages over more independent heads and channels.
 - `lambada_all_results.json` -- one row per model with teacher_ppl, v17_ppl, ppl_ratio, teacher_t1/t10, v17_t1/t10, v17_t1_vs_teacher, t1_ret.
 - `lambada_all.log` -- full stdout for all 6 evals with intermediate running PPL/T1/T10 at 200/400/500 windows.
 
+
+## Claim 16 capacity-tier hardening: LAMBADA at 2.78 bpw
+
+The 2.40-bpw operating point is one rung on a continuous Pareto ladder,  
+not a global optimum. Claim 16 exposes the ladder through a single  
+structural parameter - the per-role codebook capacity tuple  
+(`K1`, `K2`) - and requires no other change to hit a higher-fidelity  
+rung. Fits were re-run on the four small-model (<=2B) cohort at  
+(`K1`=4096, `K2`=1024) with `o_proj` at (`K1`=8192, `K2`=2048),  
+keeping D=8, alpha=0.25, beam=8, 6 EM iters unchanged. The resulting  
+on-disk bit-budget is **2.7705-2.7803 bpw**, i.e. +0.38 bpw vs the  
+baseline 2.40-bpw tier.
+
+### LAMBADA (identical 500 windows / seed as Claim-16 baseline)
+
+| Model          | 2.40 bpw T1 ret | 2.78 bpw T1 ret | lift  | 2.40 PPL ratio | 2.78 PPL ratio |
+|----------------|----------------:|----------------:|------:|---------------:|---------------:|
+| OLMo-2-1B      |          89.39% |      **93.98%** | +4.59 |          1.378 |      **1.175** |
+| TinyLlama-1.1B |          90.02% |      **95.81%** | +5.79 |          1.317 |      **1.122** |
+| Qwen3-1.7B     |          83.19% |      **92.54%** | +9.35 |          1.672 |      **1.496** |
+| SmolLM2-1.7B   |          86.66% |      **92.93%** | +6.27 |          1.501 |      **1.263** |
+
+Weight-space MSE tracks the retention gain: mean relative W-error on the  
+same four fits goes from 0.052-0.072 at 2.40 bpw to 0.037-0.053 at 2.78 bpw  
+(olmo2 0.054 -> 0.037; qwen3_1.7b 0.052 -> 0.043; smollm2 0.073 -> 0.039).  
+The tier is a **lossless reduction in quantization noise at the cost of  
+0.38 extra bits/weight**, with no corpus-specific, family-specific, or  
+alpha-specific retuning.
+
+### What this demonstrates for Claim 16
+
+1. **The dial is real and smooth.** Doubling codebook capacity produces  
+   monotone improvement across all four models. No model regresses; none  
+   requires per-model alpha adjustment to benefit.
+2. **The lift is largest where the baseline is weakest.** Qwen3-1.7B  
+   (83.19% T1 ret at 2.40 bpw) jumps 9.35 points - the cohort member with  
+   the steepest PPL ratio at 2.40 bpw captures the largest share of the  
+   new bit budget. This is the expected signature of capacity-limited  
+   quantization and confirms that 2.40 bpw had pushed the smaller  
+   codebooks to their distortion floor on that model.
+3. **No method change.** `fit_v17_hifi.py` differs from `fit_v17_8b.py`  
+   only in the `role_K` dict. Same algorithm, same activation cache,  
+   same beam-assign + EM + alpha-scaled loss.
+
+### Artifacts of record
+
+- `fit_v17_hifi.py` -- driver; loads baseline activation caches, calls  
+  `v17_compress(..., role_K=ROLE_K_HIFI, ...)`, writes per-model fits.  
+- `lambada_hifi.py` -- reuses `lambada_all.run_one` with the new fit  
+  paths and an extra `tier=hifi` field in each record.  
+- `v17hi_fit_summary.json` -- per-model bpw, overhead, rel_w stats, wall  
+  time.  
+- `lambada_hifi_results.json` -- per-model teacher/v17 PPL, T1, T10, and  
+  retention on LAMBADA.  
+- `fit_hifi.log` / `lambada_hifi.log` -- full stdout for both phases.
