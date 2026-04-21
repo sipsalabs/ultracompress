@@ -1,0 +1,223 @@
+
+[Mistral-7B] method=our_fp8_2p79
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (39s)
+  substituting 224 body Linears (v17+fp8-overlay, rho=0.005, score=weighted)
+  fp8-overlay: restored 6848/1376256 rows (0.498%), 34603008/6979321856 params (0.496%)
+  fp8-overlay bpw overhead: +0.0260 (base 2.7692 -> effective 2.7952)
+    [200/500] t1_gt=42.30%  t10_gt=74.34%
+    [400/500] t1_gt=42.27%  t10_gt=74.33%
+    [200/500] running ppl 18.2943
+    [400/500] running ppl 18.2967
+[Mistral-7B] v17+fp8ov rho=0.005 score=weighted  PPL=18.5594  T1=42.12%  T10=74.09%  T1_vs_teacher=85.66%  (349s)
+[head2head] wrote h2h_n500_large.json (1 rows)
+
+[Mistral-7B] method=our_mixed_2p79
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (40s)
+  substituting 224 body Linears (v17+mixed-overlay, rho_hi=0.001, rho_lo=0.003, score=weighted)
+  mixed-overlay: fp16 rows 1344, fp8 rows 4096, total 5440/1376256 (0.395%)
+  mixed-overlay bpw overhead: +0.0285 (base 2.7692 -> effective 2.7977) [fp16 part +0.0129, fp8 part +0.0155]
+    [200/500] t1_gt=42.32%  t10_gt=74.29%
+    [400/500] t1_gt=42.29%  t10_gt=74.27%
+    [200/500] running ppl 18.3857
+    [400/500] running ppl 18.3899
+[Mistral-7B] v17+mixedov rho_hi=0.001 rho_lo=0.003 score=weighted  PPL=18.6540  T1=42.12%  T10=74.04%  T1_vs_teacher=85.55%  (346s)
+[head2head] wrote h2h_n500_large.json (2 rows)
+
+[Mistral-7B] method=bnb_nf4
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+    [200/500] t1_gt=42.76%  t10_gt=74.54%
+    [400/500] t1_gt=42.85%  t10_gt=74.54%
+    [200/500] running ppl 18.1130
+    [400/500] running ppl 18.0757
+[head2head] wrote h2h_n500_large.json (3 rows)
+
+[Mistral-7B] method=bnb_int8
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+    [200/500] t1_gt=43.01%  t10_gt=75.02%
+    [400/500] t1_gt=43.08%  t10_gt=74.97%
+    [200/500] running ppl 17.1300
+    [400/500] running ppl 17.1383
+[head2head] wrote h2h_n500_large.json (4 rows)
+
+[Mistral-7B] method=hqq_4bit_g64
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+    [200/500] t1_gt=42.49%  t10_gt=74.41%
+    [400/500] t1_gt=42.59%  t10_gt=74.38%
+    [200/500] running ppl 18.5011
+    [400/500] running ppl 18.4803
+[head2head] wrote h2h_n500_large.json (5 rows)
+
+[Mistral-7B] method=hqq_3bit_g64
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+    [200/500] t1_gt=41.12%  t10_gt=72.93%
+    [400/500] t1_gt=41.07%  t10_gt=72.95%
+    [200/500] running ppl 20.5035
+    [400/500] running ppl 20.5514
+[head2head] wrote h2h_n500_large.json (6 rows)
+
+[Mistral-7B] method=hqq_2bit_g64
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+    [200/500] t1_gt=4.40%  t10_gt=18.05%
+    [400/500] t1_gt=4.50%  t10_gt=18.26%
+    [200/500] running ppl 2055.9557
+    [400/500] running ppl 2066.6850
+[head2head] wrote h2h_n500_large.json (7 rows)
+
+[Mistral-7B] method=hqq_2bit_g16
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+    [200/500] t1_gt=26.66%  t10_gt=57.32%
+    [400/500] t1_gt=26.49%  t10_gt=57.33%
+    [200/500] running ppl 70.9886
+    [400/500] running ppl 71.3135
+[head2head] wrote h2h_n500_large.json (8 rows)
+
+[Qwen3-8B] method=our_fp8_2p79
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (42s)
+  substituting 252 body Linears (v17+fp8-overlay, rho=0.005, score=weighted)
+  fp8-overlay: restored 6912/1400832 rows (0.493%), 34209792/6945767424 params (0.493%)
+  fp8-overlay bpw overhead: +0.0258 (base 2.7717 -> effective 2.7975)
+    [200/500] t1_gt=34.11%  t10_gt=67.70%
+    [400/500] t1_gt=33.98%  t10_gt=67.77%
+    [200/500] running ppl 38.6087
+    [400/500] running ppl 38.3288
+[Qwen3-8B] v17+fp8ov rho=0.005 score=weighted  PPL=38.1902  T1=34.09%  T10=67.81%  T1_vs_teacher=79.88%  (349s)
+[head2head] wrote h2h_n500_large.json (9 rows)
+
+[Qwen3-8B] method=our_mixed_2p79
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (41s)
+  substituting 252 body Linears (v17+mixed-overlay, rho_hi=0.001, rho_lo=0.003, score=weighted)
+  mixed-overlay: fp16 rows 1368, fp8 rows 4176, total 5544/1400832 (0.396%)
+  mixed-overlay bpw overhead: +0.0285 (base 2.7717 -> effective 2.8002) [fp16 part +0.0129, fp8 part +0.0156]
+    [200/500] t1_gt=34.09%  t10_gt=67.72%
+    [400/500] t1_gt=34.00%  t10_gt=67.76%
+    [200/500] running ppl 38.6309
+    [400/500] running ppl 38.3531
+[Qwen3-8B] v17+mixedov rho_hi=0.001 rho_lo=0.003 score=weighted  PPL=38.2127  T1=34.11%  T10=67.81%  T1_vs_teacher=79.90%  (355s)
+[head2head] wrote h2h_n500_large.json (10 rows)
+
+[Qwen3-8B] method=bnb_nf4
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+    [200/500] t1_gt=34.20%  t10_gt=68.15%
+    [400/500] t1_gt=34.17%  t10_gt=68.16%
+    [200/500] running ppl 37.3810
+    [400/500] running ppl 37.2371
+[head2head] wrote h2h_n500_large.json (11 rows)
+
+[Qwen3-8B] method=bnb_int8
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+    [200/500] t1_gt=34.97%  t10_gt=68.58%
+    [400/500] t1_gt=34.77%  t10_gt=68.57%
+    [200/500] running ppl 36.1383
+    [400/500] running ppl 36.0050
+[head2head] wrote h2h_n500_large.json (12 rows)
+
+[Qwen3-8B] method=hqq_4bit_g64
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+    [200/500] t1_gt=34.30%  t10_gt=68.13%
+    [400/500] t1_gt=34.35%  t10_gt=68.04%
+    [200/500] running ppl 36.0203
+    [400/500] running ppl 35.9124
+[head2head] wrote h2h_n500_large.json (13 rows)
+
+[Qwen3-8B] method=hqq_3bit_g64
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+    [200/500] t1_gt=31.50%  t10_gt=64.70%
+    [400/500] t1_gt=31.29%  t10_gt=64.76%
+    [200/500] running ppl 60.1867
+    [400/500] running ppl 60.3477
+[head2head] wrote h2h_n500_large.json (14 rows)
+
+[Qwen3-8B] method=hqq_2bit_g64
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+    [200/500] t1_gt=0.73%  t10_gt=5.71%
+    [400/500] t1_gt=0.74%  t10_gt=5.65%
+    [200/500] running ppl 533610.7262
+    [400/500] running ppl 559579.7901
+[head2head] wrote h2h_n500_large.json (15 rows)
+
+[Qwen3-8B] method=hqq_2bit_g16
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+    [200/500] t1_gt=19.50%  t10_gt=49.39%
+    [400/500] t1_gt=19.35%  t10_gt=49.30%
+    [200/500] running ppl 176.2415
+    [400/500] running ppl 173.8577
+[head2head] wrote h2h_n500_large.json (16 rows)
+
+================ head-to-head summary ================
+model              method             t1_ret    ppl_r  eff_bpw
+Mistral-7B         our_fp8_2p79       98.03%   1.069   2.7952
+Mistral-7B         our_mixed_2p79     98.04%   1.075   2.7977
+Mistral-7B         bnb_nf4            99.36%   1.056   4.0000
+Mistral-7B         bnb_int8           99.83%   1.001   8.0000
+Mistral-7B         hqq_4bit_g64       98.77%   1.080   4.5000
+Mistral-7B         hqq_3bit_g64       95.28%   1.197   3.5000
+Mistral-7B         hqq_2bit_g64       10.42% 119.371   2.5000
+Mistral-7B         hqq_2bit_g16       61.52%   4.147   4.0000
+Qwen3-8B           our_fp8_2p79       97.57%   1.066   2.7975
+Qwen3-8B           our_mixed_2p79     97.63%   1.067   2.8002
+Qwen3-8B           bnb_nf4            98.24%   1.034   4.0000
+Qwen3-8B           bnb_int8           99.89%   1.001   8.0000
+Qwen3-8B           hqq_4bit_g64       98.74%   0.998   4.5000
+Qwen3-8B           hqq_3bit_g64       90.05%   1.667   3.5000
+Qwen3-8B           hqq_2bit_g64        2.11% 15626.792   2.5000
+Qwen3-8B           hqq_2bit_g16       55.63%   4.857   4.0000

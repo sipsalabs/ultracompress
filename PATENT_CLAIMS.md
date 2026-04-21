@@ -2158,3 +2158,60 @@ the quantized weight, with rows not selected left at base quantized precision.
 - [lambada_overlay_mixed_results.json](lambada_overlay_mixed_results.json)
   � 12 measured rows (6 models � 2 operating points).
 - [overlay_mixed.log](overlay_mixed.log) � full run log.
+
+
+---
+
+## Claim 20 (independent, measurement claim)
+
+An article of manufacture comprising a quantized large-language-model stored
+as (i) a base weight matrix compressed to ≤ 2.8 bits per weight via the
+row-overlay stack of Claims 17–19, and (ii) a row-selection metadata blob of
+Claims 17–19, **characterized in that** on a six-model Transformer cohort
+{OLMo-2-1B, TinyLlama-1.1B, Qwen3-1.7B, SmolLM2-1.7B, Mistral-7B, Qwen3-8B}
+evaluated on LAMBADA at n=500 samples, the article achieves cohort-mean
+top-1 retention ≥ 95% relative to the fp16 teacher at ≤ 2.80 effective bits
+per weight, while (a) the bitsandbytes nf4 baseline requires 4.0 bpw to
+reach 98% retention, (b) the HQQ 4-bit group-64 baseline requires 4.5 bpw
+to reach 97.7% retention, and (c) every tested HQQ configuration at or
+below 4.0 bpw produces at least one catastrophic failure (student
+perplexity > 10× teacher perplexity) on at least one model in the cohort,
+whereas the article produces zero catastrophic failures.
+
+**Supporting data (of record):**
+
+- 48 measured rows in [h2h_n500_full.json](h2h_n500_full.json)
+  (6 models × 8 methods × n=500).
+- Analysis dump in [claim20_summary.txt](claim20_summary.txt).
+- Per-model highlight at 8B scale: Qwen3-8B our_fp8_2p79 = 97.57% T1-ret
+  at 2.798 bpw vs nf4 98.24% at 4.000 bpw (−0.67 pp at 30% fewer bits).
+- Catastrophic-failure asymmetry: HQQ fails on 6/6 models at 2-bit g64,
+  4/6 at 2-bit g16, 2/6 at 3-bit g64; ours fails on 0/6 at any tested
+  operating point.
+
+**Relationship to prior claims:**
+- Validates Claims 17–19 on a second independent external quantization
+  family (HQQ) beyond bitsandbytes.
+- Upgrades the n=80 measurement of Claim 19 to n=500 full-cohort.
+- Documents the Qwen3-1.7B gap (Claim 19) as architectural rather than
+  fit-quality (v17 `rel_w_final_mean` = 0.04255 for Qwen3-1.7B, strictly
+  better than TinyLlama 0.05279 and Mistral 0.05826).
+- Establishes a qualitative differentiator — failure-mode asymmetry —
+  that does not depend on the exact bpw operating point.
+
+**Negative / disclaimed coverage:**
+- GPTQ (`auto_gptq` 0.3.1) and AWQ (`autoawq`) external baselines were
+  attempted and blocked by upstream dependency drift (peft API change,
+  triton Windows absence, pcre absence for `gptqmodel`). Their inclusion
+  is explicitly deferred; the claim stands on the bnb + HQQ pair.
+
+**Artifacts of record:**
+- [benchmark_head_to_head.py](benchmark_head_to_head.py) — harness
+  (adds `_run_hqq_baseline`, 4 new HQQ `MethodSpec`s, dispatch branch).
+- [h2h_n500_small.json](h2h_n500_small.json) — cuda:0 partition (32 rows).
+- [h2h_n500_large.json](h2h_n500_large.json) — cuda:1 partition (16 rows).
+- [h2h_n500_full.json](h2h_n500_full.json) — merged cohort (48 rows).
+- [h2h_n500_small.log](h2h_n500_small.log),
+  [h2h_n500_large.log](h2h_n500_large.log) — full run logs.
+- [claim20_summary.txt](claim20_summary.txt) — analysis dump.
+- [_analyze_claim20.py](_analyze_claim20.py) — merge + summary script.

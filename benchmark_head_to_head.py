@@ -242,6 +242,108 @@ def _run_ours(
     }
 
 
+def _run_hqq_baseline(
+    name: str,
+    model_id: str,
+    tokens_path: str,
+    n: int,
+    seq_len: int,
+    device: str,
+    nbits: int,
+    group_size: int = 64,
+) -> dict[str, Any]:
+    """HQQ (Half-Quadratic Quantization) baseline.
+
+    Uses group-wise affine quantization with the HQQ algorithm. Pure PyTorch,
+    so it runs on Windows without triton.
+
+    Effective bpw accounting (meta not quantized): per group of ``group_size``
+    weights we store ``group_size * nbits`` quantized bits plus two fp16 scalars
+    (scale + zero) = 32 bits of metadata. So bpw = nbits + 32/group_size.
+    """
+    from hqq.core.quantize import BaseQuantizeConfig
+    from hqq.models.hf.base import AutoHQQHFModel
+    from transformers import AutoConfig, AutoModelForCausalLM
+    from transformers.modeling_utils import no_init_weights
+
+    toks = _load_tokens(tokens_path)
+    starts = _random_starts(toks, n=n, seq_len=seq_len, seed=42)
+
+    cfg = AutoConfig.from_pretrained(model_id, trust_remote_code=True)
+    with no_init_weights():
+        _ = AutoModelForCausalLM.from_config(cfg, torch_dtype=torch.float16, trust_remote_code=True)
+    teacher = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        trust_remote_code=True,
+        low_cpu_mem_usage=True,
+    ).to(device).eval()
+
+    t0 = time.time()
+    tch_topk, tch_cache, tch_ppl = _measure_teacher(teacher, toks, starts, seq_len, device)
+    teacher_wall = time.time() - t0
+
+    del teacher
+    torch.cuda.empty_cache()
+    gc.collect()
+
+    student = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        trust_remote_code=True,
+        low_cpu_mem_usage=True,
+    ).to(device).eval()
+
+    quant_config = BaseQuantizeConfig(
+        nbits=nbits,
+        group_size=group_size,
+        quant_zero=False,
+        quant_scale=False,
+        offload_meta=False,
+        axis=1,
+    )
+    AutoHQQHFModel.quantize_model(
+        student,
+        quant_config=quant_config,
+        compute_dtype=torch.float16,
+        device=device,
+    )
+    student.eval()
+
+    effective_bpw = float(nbits) + 32.0 / float(group_size)
+
+    t1 = time.time()
+    q_topk, q_ppl = _measure_student(student, toks, starts, seq_len, device, teacher_cache=tch_cache)
+    student_wall = time.time() - t1
+
+    del student, toks
+    torch.cuda.empty_cache()
+    gc.collect()
+
+    return {
+        "name": name,
+        "model_id": model_id,
+        "method": f"hqq_{nbits}bit_g{group_size}",
+        "n": n,
+        "seq_len": seq_len,
+        "teacher_ppl": float(tch_ppl),
+        "teacher_t1": float(tch_topk["t1_gt"]),
+        "teacher_t10": float(tch_topk["t10_gt"]),
+        "student_ppl": float(q_ppl),
+        "student_t1": float(q_topk["t1_gt"]),
+        "student_t10": float(q_topk["t10_gt"]),
+        "student_t1_vs_teacher": float(q_topk["t1_agree"]),
+        "ppl_ratio": float(q_ppl / tch_ppl),
+        "t1_ret": float(q_topk["t1_gt"] / tch_topk["t1_gt"] if tch_topk["t1_gt"] > 0 else 0.0),
+        "t10_ret": float(q_topk["t10_gt"] / tch_topk["t10_gt"] if tch_topk["t10_gt"] > 0 else 0.0),
+        "effective_bpw": effective_bpw,
+        "tier": "external-hqq",
+        "teacher_wall_s": float(teacher_wall),
+        "student_wall_s": float(student_wall),
+        "meta": {"nbits": nbits, "group_size": group_size},
+    }
+
+
 def _default_methods() -> list[MethodSpec]:
     return [
         MethodSpec("our_fp16_2p79", "fp16_overlay", {"rho": 0.002, "score_mode": "weighted"}),
@@ -260,6 +362,10 @@ def _default_methods() -> list[MethodSpec]:
         ),
         MethodSpec("bnb_nf4", "bnb4", {}),
         MethodSpec("bnb_int8", "bnb8", {}),
+        MethodSpec("hqq_4bit_g64", "hqq", {"nbits": 4, "group_size": 64}),
+        MethodSpec("hqq_3bit_g64", "hqq", {"nbits": 3, "group_size": 64}),
+        MethodSpec("hqq_2bit_g64", "hqq", {"nbits": 2, "group_size": 64}),
+        MethodSpec("hqq_2bit_g16", "hqq", {"nbits": 2, "group_size": 16}),
     ]
 
 
@@ -332,6 +438,17 @@ def main():
                     rec = _run_bnb_baseline(name, model_id, tokens, args.n, args.seq_len, args.device, quant_bits=4)
                 elif method.kind == "bnb8":
                     rec = _run_bnb_baseline(name, model_id, tokens, args.n, args.seq_len, args.device, quant_bits=8)
+                elif method.kind == "hqq":
+                    rec = _run_hqq_baseline(
+                        name,
+                        model_id,
+                        tokens,
+                        args.n,
+                        args.seq_len,
+                        args.device,
+                        nbits=method.params["nbits"],
+                        group_size=method.params.get("group_size", 64),
+                    )
                 else:
                     rec = _run_ours(method, name, model_id, teacher, fit, tokens, args.n, args.seq_len, args.device)
 
