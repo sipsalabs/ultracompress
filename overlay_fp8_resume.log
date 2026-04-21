@@ -1,0 +1,42 @@
+[skip] OLMo-2-1B rho=0.012 already done
+[skip] TinyLlama-1.1B rho=0.012 already done
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (34s)
+  substituting 196 body Linears (v17+fp8-overlay, rho=0.012, score=weighted)
+  fp8-overlay: restored 6916/573440 rows (1.206%), 17031168/1409286144 params (1.208%)
+  fp8-overlay bpw overhead: +0.0634 (base 2.7708 -> effective 2.8343)
+    [200/500] t1_gt=30.26%  t10_gt=63.37%
+    [400/500] t1_gt=30.05%  t10_gt=63.54%
+    [200/500] running ppl 61.2331
+    [400/500] running ppl 60.7764
+[Qwen3-1.7B] v17+fp8ov rho=0.012 score=weighted  PPL=60.8618  T1=30.14%  T10=63.49%  T1_vs_teacher=71.10%  (112s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (9)
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (16s)
+  substituting 168 body Linears (v17+fp8-overlay, rho=0.012, score=weighted)
+  fp8-overlay: restored 7704/638976 rows (1.206%), 19464192/1610612736 params (1.208%)
+  fp8-overlay bpw overhead: +0.0635 (base 2.7656 -> effective 2.8291)
+    [200/500] t1_gt=37.14%  t10_gt=69.88%
+    [400/500] t1_gt=37.02%  t10_gt=69.89%
+    [200/500] running ppl 27.1002
+    [400/500] running ppl 27.2909
+[SmolLM2-1.7B] v17+fp8ov rho=0.012 score=weighted  PPL=27.3882  T1=37.03%  T10=69.88%  T1_vs_teacher=73.16%  (108s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (10)
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (36s)
+  substituting 224 body Linears (v17+fp8-overlay, rho=0.012, score=weighted)

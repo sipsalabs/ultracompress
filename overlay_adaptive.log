@@ -1,0 +1,214 @@
+[skip] OLMo-2-1B rho=0.002 score=weighted tier=hifi+overlay-adaptive: already done
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (20s)
+  substituting 154 body Linears (v17+overlay-adaptive, rho=0.002, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 47.1s
+  overlay-adaptive: restored 788/394240 rows (0.200%), 1732096/968884224 params (0.179%)
+  per-tensor rho multiplier: min=0.000 p25=0.244 med=0.266 p75=3.906 max=3.995
+  overlay bpw overhead: +0.0237 (base 2.7738 -> effective 2.7975)
+    [200/500] t1_gt=39.37%  t10_gt=71.32%
+    [400/500] t1_gt=38.76%  t10_gt=70.93%
+    [200/500] running ppl 22.8019
+    [400/500] running ppl 23.6287
+[TinyLlama-1.1B] v17+ov-adaptive rho=0.002 score=weighted  PPL=23.9490  T1=38.64%  T10=70.70%  T1_vs_teacher=74.75%  (70s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (2)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (31s)
+  substituting 196 body Linears (v17+overlay-adaptive, rho=0.002, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 67.4s
+  overlay-adaptive: restored 1147/573440 rows (0.200%), 3164160/1409286144 params (0.225%)
+  per-tensor rho multiplier: min=0.244 p25=0.244 med=0.488 p75=3.906 max=3.988
+  overlay bpw overhead: +0.0297 (base 2.7708 -> effective 2.8006)
+    [200/500] t1_gt=30.14%  t10_gt=63.21%
+    [400/500] t1_gt=29.91%  t10_gt=63.37%
+    [200/500] running ppl 60.7483
+    [400/500] running ppl 60.3474
+[Qwen3-1.7B] v17+ov-adaptive rho=0.002 score=weighted  PPL=60.4495  T1=29.98%  T10=63.37%  T1_vs_teacher=70.78%  (102s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (3)
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (14s)
+  substituting 168 body Linears (v17+overlay-adaptive, rho=0.002, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 75.7s
+  overlay-adaptive: restored 1278/638976 rows (0.200%), 4208640/1610612736 params (0.261%)
+  per-tensor rho multiplier: min=0.244 p25=0.244 med=0.488 p75=3.906 max=3.906
+  overlay bpw overhead: +0.0346 (base 2.7656 -> effective 2.8002)
+    [200/500] t1_gt=37.16%  t10_gt=70.06%
+    [400/500] t1_gt=37.11%  t10_gt=70.05%
+    [200/500] running ppl 26.8688
+    [400/500] running ppl 27.0862
+[SmolLM2-1.7B] v17+ov-adaptive rho=0.002 score=weighted  PPL=27.1643  T1=37.14%  T10=70.02%  T1_vs_teacher=73.82%  (93s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (4)
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (32s)
+  substituting 224 body Linears (v17+overlay-adaptive, rho=0.002, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 329.4s
+  overlay-adaptive: restored 2753/1376256 rows (0.200%), 11931648/6979321856 params (0.171%)
+  per-tensor rho multiplier: min=0.244 p25=0.244 med=0.244 p75=3.810 max=4.028
+  overlay bpw overhead: +0.0226 (base 2.7692 -> effective 2.7919)
+    [200/500] t1_gt=42.16%  t10_gt=74.13%
+    [400/500] t1_gt=42.12%  t10_gt=74.14%
+    [200/500] running ppl 18.7857
+    [400/500] running ppl 18.7928
+[Mistral-7B] v17+ov-adaptive rho=0.002 score=weighted  PPL=19.0660  T1=41.97%  T10=73.90%  T1_vs_teacher=84.75%  (374s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (5)
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (43s)
+  substituting 252 body Linears (v17+overlay-adaptive, rho=0.002, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 330.7s
+  overlay-adaptive: restored 2802/1400832 rows (0.200%), 14934016/6945767424 params (0.215%)
+  per-tensor rho multiplier: min=0.244 p25=0.244 med=0.488 p75=1.740 max=4.028
+  overlay bpw overhead: +0.0285 (base 2.7717 -> effective 2.8002)
+    [200/500] t1_gt=34.00%  t10_gt=67.63%
+    [400/500] t1_gt=33.90%  t10_gt=67.73%
+    [200/500] running ppl 38.8128
+    [400/500] running ppl 38.5309
+[Qwen3-8B] v17+ov-adaptive rho=0.002 score=weighted  PPL=38.3912  T1=34.04%  T10=67.78%  T1_vs_teacher=79.93%  (385s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (6)
+
+[OLMo-2-1B] teacher -> olmo2_1b_cache.pt
+    [200/500] t1_gt=34.73%  t10_gt=68.55%
+    [400/500] t1_gt=34.80%  t10_gt=68.54%
+    [200/500] running ppl 31.4125
+    [400/500] running ppl 31.5141
+[OLMo-2-1B] teacher  PPL=31.5885  T1=34.75%  T10=68.52%   (13s)
+  substituting 112 body Linears (v17+overlay-adaptive, rho=0.005, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 50.2s
+  overlay-adaptive: restored 2130/425984 rows (0.500%), 5621760/1073741824 params (0.524%)
+  per-tensor rho multiplier: min=0.244 p25=0.293 med=0.293 p75=0.299 max=4.004
+  overlay bpw overhead: +0.0694 (base 2.7656 -> effective 2.8350)
+    [200/500] t1_gt=32.94%  t10_gt=66.45%
+    [400/500] t1_gt=32.91%  t10_gt=66.57%
+    [200/500] running ppl 36.3010
+    [400/500] running ppl 36.4045
+[OLMo-2-1B] v17+ov-adaptive rho=0.005 score=weighted  PPL=36.5091  T1=32.85%  T10=66.56%  T1_vs_teacher=74.21%  (66s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (7)
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (20s)
+  substituting 154 body Linears (v17+overlay-adaptive, rho=0.005, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 47.0s
+  overlay-adaptive: restored 1971/394240 rows (0.500%), 4305408/968884224 params (0.444%)
+  per-tensor rho multiplier: min=0.000 p25=0.249 med=0.293 p75=3.906 max=4.013
+  overlay bpw overhead: +0.0588 (base 2.7738 -> effective 2.8326)
+    [200/500] t1_gt=39.39%  t10_gt=71.41%
+    [400/500] t1_gt=38.82%  t10_gt=70.96%
+    [200/500] running ppl 22.7286
+    [400/500] running ppl 23.5662
+[TinyLlama-1.1B] v17+ov-adaptive rho=0.005 score=weighted  PPL=23.8840  T1=38.69%  T10=70.75%  T1_vs_teacher=74.81%  (69s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (8)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (31s)
+  substituting 196 body Linears (v17+overlay-adaptive, rho=0.005, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 66.9s
+  overlay-adaptive: restored 2867/573440 rows (0.500%), 8017920/1409286144 params (0.569%)
+  per-tensor rho multiplier: min=0.195 p25=0.260 med=0.293 p75=3.906 max=4.004
+  overlay bpw overhead: +0.0753 (base 2.7708 -> effective 2.8462)
+    [200/500] t1_gt=30.12%  t10_gt=63.17%
+    [400/500] t1_gt=29.96%  t10_gt=63.35%
+    [200/500] running ppl 60.5942
+    [400/500] running ppl 60.2064
+[Qwen3-1.7B] v17+ov-adaptive rho=0.005 score=weighted  PPL=60.3141  T1=30.03%  T10=63.34%  T1_vs_teacher=70.73%  (101s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (9)
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (14s)
+  substituting 168 body Linears (v17+overlay-adaptive, rho=0.005, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 75.7s
+  overlay-adaptive: restored 3195/638976 rows (0.500%), 10776576/1610612736 params (0.669%)
+  per-tensor rho multiplier: min=0.244 p25=0.293 med=0.488 p75=3.052 max=4.004
+  overlay bpw overhead: +0.0886 (base 2.7656 -> effective 2.8542)
+    [200/500] t1_gt=37.32%  t10_gt=69.98%
+    [400/500] t1_gt=37.13%  t10_gt=69.98%
+    [200/500] running ppl 26.9321
+    [400/500] running ppl 27.1670
+[SmolLM2-1.7B] v17+ov-adaptive rho=0.005 score=weighted  PPL=27.2428  T1=37.13%  T10=69.95%  T1_vs_teacher=73.59%  (93s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (10)
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (32s)
+  substituting 224 body Linears (v17+overlay-adaptive, rho=0.005, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 328.7s
+  overlay-adaptive: restored 6881/1376256 rows (0.500%), 29822976/6979321856 params (0.427%)
+  per-tensor rho multiplier: min=0.195 p25=0.244 med=0.251 p75=3.381 max=4.004
+  overlay bpw overhead: +0.0566 (base 2.7692 -> effective 2.8258)
+    [200/500] t1_gt=42.30%  t10_gt=74.11%
+    [400/500] t1_gt=42.24%  t10_gt=74.12%
+    [200/500] running ppl 18.7529
+    [400/500] running ppl 18.7614
+[Mistral-7B] v17+ov-adaptive rho=0.005 score=weighted  PPL=19.0270  T1=42.05%  T10=73.88%  T1_vs_teacher=85.03%  (371s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (11)
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (43s)
+  substituting 252 body Linears (v17+overlay-adaptive, rho=0.005, score=weighted, clip=(0.25, 4.0))
+  pass-1 decode+score: 330.3s
+  overlay-adaptive: restored 7004/1400832 rows (0.500%), 37634048/6945767424 params (0.542%)
+  per-tensor rho multiplier: min=0.195 p25=0.244 med=0.244 p75=2.417 max=4.004
+  overlay bpw overhead: +0.0717 (base 2.7717 -> effective 2.8434)
+    [200/500] t1_gt=34.02%  t10_gt=67.64%
+    [400/500] t1_gt=33.91%  t10_gt=67.71%
+    [200/500] running ppl 38.6339
+    [400/500] running ppl 38.3512
+[Qwen3-8B] v17+ov-adaptive rho=0.005 score=weighted  PPL=38.2075  T1=34.03%  T10=67.76%  T1_vs_teacher=80.08%  (384s)
+[lambada_overlay_adaptive] wrote lambada_overlay_adaptive_results.json (12)
+
+================ overlay-adaptive summary ================
+model              tier                     score           rho  t1_ret   ppl_r eff_bpw
+Mistral-7B         hifi+overlay-adaptive    weighted     0.0020  97.68%  1.098  2.7919
+OLMo-2-1B          hifi+overlay-adaptive    weighted     0.0020  94.29%  1.163  2.7934
+Qwen3-1.7B         hifi+overlay-adaptive    weighted     0.0020  93.43%  1.249  2.8006
+Qwen3-8B           hifi+overlay-adaptive    weighted     0.0020  97.43%  1.072  2.8002
+SmolLM2-1.7B       hifi+overlay-adaptive    weighted     0.0020  93.35%  1.234  2.8002
+TinyLlama-1.1B     hifi+overlay-adaptive    weighted     0.0020  96.54%  1.097  2.7975
+Mistral-7B         hifi+overlay-adaptive    weighted     0.0050  97.88%  1.096  2.8258
+OLMo-2-1B          hifi+overlay-adaptive    weighted     0.0050  94.52%  1.156  2.8350
+Qwen3-1.7B         hifi+overlay-adaptive    weighted     0.0050  93.56%  1.247  2.8462
+Qwen3-8B           hifi+overlay-adaptive    weighted     0.0050  97.42%  1.067  2.8434
+SmolLM2-1.7B       hifi+overlay-adaptive    weighted     0.0050  93.35%  1.237  2.8542
+TinyLlama-1.1B     hifi+overlay-adaptive    weighted     0.0050  96.66%  1.095  2.8326

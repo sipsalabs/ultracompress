@@ -316,3 +316,95 @@ It plugs in after any Claim-16 decode without changing any of the above.
 Drivers and artifacts: [`lambada_overlay.py`](lambada_overlay.py),
 [`lambada_overlay_results.json`](lambada_overlay_results.json),
 [`overlay_002.log`](overlay_002.log), [`overlay_005.log`](overlay_005.log).
+
+## Claim 18: overlay variants — fp8 row storage and adaptive allocation
+
+Two ablations of the Claim-17 mechanism, each run on the same 6-model /
+500-window LAMBADA harness with the same seed and the same Claim-16
+hifi base fit.
+
+### 18A — fp8 row-overlay (positive-to-neutral)
+
+Restored rows are stored in `torch.float8_e4m3fn` (E4M3) with a per-row
+fp16 scale rather than raw fp16. Per-row cost drops from `16·I + 32`
+bits to `8·I + 16 + 32` bits — roughly half the bit cost per row, or
+equivalently 2× row density at matched overlay bpw. Round-trip is
+`xq = (x / (absmax/448)).to(float8_e4m3fn).to(float32) * scale`; scale
+range `[−448, 448]` covers any body-linear row.
+
+**Matched-bpw comparison A (~2.79 bpw): fp16 ρ=0.002 vs fp8 ρ=0.005**
+
+| Model          | fp16 bpw | fp8 bpw | fp16 T1-ret | fp8 T1-ret | ΔT1 (pp) | fp16 pplr | fp8 pplr | Δpplr  |
+|----------------|---------:|--------:|------------:|-----------:|---------:|----------:|---------:|-------:|
+| OLMo-2-1B      |  2.7915  | 2.7916  |      94.15% |     94.12% |    −0.02 |     1.168 |    1.162 | −0.006 |
+| TinyLlama-1.1B |  2.8003  | 2.7995  |      96.56% |     96.43% |    −0.13 |     1.098 |    1.093 | −0.005 |
+| Qwen3-1.7B     |  2.7967  | 2.7969  |      93.53% |     93.79% |    +0.25 |     1.237 |    1.256 | +0.019 |
+| SmolLM2-1.7B   |  2.7915  | 2.7916  |      93.79% |     93.48% |    −0.31 |     1.219 |    1.236 | +0.017 |
+| Mistral-7B     |  2.7956  | 2.7952  |      97.88% |     98.03% |    +0.16 |     1.088 |    1.069 | −0.019 |
+| Qwen3-8B       |  2.7982  | 2.7975  |      97.46% |     97.57% |    +0.11 |     1.075 |    1.066 | −0.009 |
+| **Mean**       |          |         |  **95.56%** | **95.57%** | **+0.01** | **1.148** | **1.147**|  **0** |
+
+**Matched-bpw comparison B (~2.83 bpw): fp16 ρ=0.005 vs fp8 ρ=0.012**
+
+| Model          | fp16 bpw | fp8 bpw | fp16 T1-ret | fp8 T1-ret | ΔT1 (pp) | fp16 pplr | fp8 pplr | Δpplr  |
+|----------------|---------:|--------:|------------:|-----------:|---------:|----------:|---------:|-------:|
+| OLMo-2-1B      |  2.8311  | 2.8291  |      94.23% |     94.37% |    +0.14 |     1.163 |    1.158 | −0.005 |
+| TinyLlama-1.1B |  2.8388  | 2.8374  |      96.47% |     96.85% |    +0.38 |     1.095 |    1.084 | −0.012 |
+| Qwen3-1.7B     |  2.8366  | 2.8343  |      93.74% |     93.90% |    +0.16 |     1.238 |    1.258 | +0.020 |
+| SmolLM2-1.7B   |  2.8311  | 2.8291  |      93.52% |     93.07% |    −0.45 |     1.223 |    1.244 | +0.021 |
+| Mistral-7B     |  2.8349  | 2.8320  |      98.08% |     98.09% |    +0.00 |     1.070 |    1.068 | −0.002 |
+| Qwen3-8B       |  2.8369  | 2.8343  |      97.58% |     97.63% |    +0.06 |     1.066 |    1.072 | +0.005 |
+| **Mean**       |          |         |  **95.60%** | **95.65%** | **+0.05** | **1.143** | **1.147**| **+0.004** |
+
+**Read-out.** At the low-bpw operating point, fp8 row-overlay is a
+**statistical tie** with fp16 row-overlay (mean ΔT1 = +0.01 pp, mean
+Δppl-ratio = 0). At the higher operating point, fp8 is a **marginal T1
+win** (+0.05 pp mean, 4/6 models improve or tie) with a marginal
+ppl-ratio regression (+0.004). The mechanism therefore provides a new
+**orthogonal bit-budget knob**: fp8 storage buys 2× row density at the
+same effective bpw, which tends to help T1 and slightly hurt PPL at
+higher overlay mass.
+
+Drivers and artifacts:
+[`lambada_overlay_fp8.py`](lambada_overlay_fp8.py),
+[`lambada_overlay_fp8_results.json`](lambada_overlay_fp8_results.json),
+[`overlay_fp8.log`](overlay_fp8.log),
+[`overlay_fp8_resume.log`](overlay_fp8_resume.log),
+[`overlay_fp8_qwen8b.log`](overlay_fp8_qwen8b.log).
+
+### 18B — Adaptive global-topK allocation (negative result)
+
+Instead of restoring the top `ρ · O_t` rows **per tensor** uniformly, the
+adaptive variant pools the row-scores across all body linears and
+chooses a **global top-K** across tensors, with a per-tensor clip of
+`[0.25·ρ·O_t, 4·ρ·O_t]` to prevent pathological concentration. Total
+row budget is unchanged: `K = ρ · Σ_t O_t`.
+
+**Uniform vs adaptive at ρ=0.002 (hifi base, matched budget):**
+
+| Model          | uniform bpw | adaptive bpw | uniform T1-ret | adaptive T1-ret | ΔT1 (pp) | uniform pplr | adaptive pplr |  Δpplr |
+|----------------|------------:|-------------:|---------------:|----------------:|---------:|-------------:|--------------:|-------:|
+| OLMo-2-1B      |      2.7915 |       2.7934 |         94.15% |          94.29% |    +0.14 |        1.168 |         1.163 | −0.004 |
+| TinyLlama-1.1B |      2.8003 |       2.7975 |         96.56% |          96.54% |    −0.03 |        1.098 |         1.097 | −0.001 |
+| Qwen3-1.7B     |      2.7967 |       2.8006 |         93.53% |          93.43% |    −0.11 |        1.237 |         1.249 | +0.012 |
+| SmolLM2-1.7B   |      2.7915 |       2.8002 |         93.79% |          93.35% |    −0.44 |        1.219 |         1.234 | +0.015 |
+| Mistral-7B     |      2.7956 |       2.7919 |         97.88% |          97.68% |    −0.20 |        1.088 |         1.098 | +0.011 |
+| Qwen3-8B       |      2.7982 |       2.8002 |         97.46% |          97.43% |    −0.03 |        1.075 |         1.072 | −0.003 |
+| **Mean**       |             |              |     **95.56%** |      **95.45%** | **−0.11**|    **1.148** |     **1.152** | **+0.005** |
+
+**Read-out.** Adaptive allocation loses to uniform allocation on both
+metrics (mean ΔT1 = −0.11 pp, mean Δppl = +0.005). The global top-K
+concentrates its budget in a few large-I MLP tensors with heavy residual
+tails, but the overall loss surface is flatter across tensors than that
+skew, and the clip bounds — while necessary — are still loose enough to
+underweight small-I attention projections that genuinely benefit from
+row restoration.
+
+This is an **honest negative result** that strengthens the Claim-17 base
+case: the simplest rule — uniform per-tensor top-`ρ·O_t` — is the one
+that wins on every aggregate measure in the 6-model cohort.
+
+Drivers and artifacts:
+[`lambada_overlay_adaptive.py`](lambada_overlay_adaptive.py),
+[`lambada_overlay_adaptive_results.json`](lambada_overlay_adaptive_results.json),
+[`overlay_adaptive.log`](overlay_adaptive.log).

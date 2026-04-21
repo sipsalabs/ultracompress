@@ -1,0 +1,116 @@
+[skip] OLMo-2-1B rho=0.005 already done
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (20s)
+  substituting 154 body Linears (v17+fp8-overlay, rho=0.005, score=weighted)
+  fp8-overlay: restored 1936/394240 rows (0.491%), 4753408/968884224 params (0.491%)
+  fp8-overlay bpw overhead: +0.0257 (base 2.7738 -> effective 2.7995)
+    [200/500] t1_gt=39.31%  t10_gt=71.43%
+    [400/500] t1_gt=38.74%  t10_gt=71.00%
+    [200/500] running ppl 22.7244
+    [400/500] running ppl 23.5460
+[TinyLlama-1.1B] v17+fp8ov rho=0.005 score=weighted  PPL=23.8606  T1=38.60%  T10=70.76%  T1_vs_teacher=75.20%  (68s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (2)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (31s)
+  substituting 196 body Linears (v17+fp8-overlay, rho=0.005, score=weighted)
+  fp8-overlay: restored 2856/573440 rows (0.498%), 6995968/1409286144 params (0.496%)
+  fp8-overlay bpw overhead: +0.0261 (base 2.7708 -> effective 2.7969)
+    [200/500] t1_gt=30.27%  t10_gt=63.25%
+    [400/500] t1_gt=30.01%  t10_gt=63.44%
+    [200/500] running ppl 61.0867
+    [400/500] running ppl 60.7029
+[Qwen3-1.7B] v17+fp8ov rho=0.005 score=weighted  PPL=60.7843  T1=30.10%  T10=63.42%  T1_vs_teacher=70.82%  (99s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (3)
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (14s)
+  substituting 168 body Linears (v17+fp8-overlay, rho=0.005, score=weighted)
+  fp8-overlay: restored 3168/638976 rows (0.496%), 7962624/1610612736 params (0.494%)
+  fp8-overlay bpw overhead: +0.0260 (base 2.7656 -> effective 2.7916)
+    [200/500] t1_gt=37.26%  t10_gt=70.11%
+    [400/500] t1_gt=37.19%  t10_gt=70.08%
+    [200/500] running ppl 26.9466
+    [400/500] running ppl 27.1306
+[SmolLM2-1.7B] v17+fp8ov rho=0.005 score=weighted  PPL=27.2166  T1=37.19%  T10=70.04%  T1_vs_teacher=73.88%  (91s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (4)
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (32s)
+  substituting 224 body Linears (v17+fp8-overlay, rho=0.005, score=weighted)
+  fp8-overlay: restored 6848/1376256 rows (0.498%), 34603008/6979321856 params (0.496%)
+  fp8-overlay bpw overhead: +0.0260 (base 2.7692 -> effective 2.7952)
+    [200/500] t1_gt=42.30%  t10_gt=74.34%
+    [400/500] t1_gt=42.27%  t10_gt=74.33%
+    [200/500] running ppl 18.2943
+    [400/500] running ppl 18.2967
+[Mistral-7B] v17+fp8ov rho=0.005 score=weighted  PPL=18.5594  T1=42.12%  T10=74.09%  T1_vs_teacher=85.66%  (363s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (5)
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (44s)
+  substituting 252 body Linears (v17+fp8-overlay, rho=0.005, score=weighted)
+  fp8-overlay: restored 6912/1400832 rows (0.493%), 34209792/6945767424 params (0.493%)
+  fp8-overlay bpw overhead: +0.0258 (base 2.7717 -> effective 2.7975)
+    [200/500] t1_gt=34.11%  t10_gt=67.70%
+    [400/500] t1_gt=33.98%  t10_gt=67.77%
+    [200/500] running ppl 38.6087
+    [400/500] running ppl 38.3288
+[Qwen3-8B] v17+fp8ov rho=0.005 score=weighted  PPL=38.1902  T1=34.09%  T10=67.81%  T1_vs_teacher=79.88%  (418s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (6)
+
+[OLMo-2-1B] teacher -> olmo2_1b_cache.pt
+    [200/500] t1_gt=34.73%  t10_gt=68.55%
+    [400/500] t1_gt=34.80%  t10_gt=68.54%
+    [200/500] running ppl 31.4125
+    [400/500] running ppl 31.5141
+[OLMo-2-1B] teacher  PPL=31.5885  T1=34.75%  T10=68.52%   (17s)
+  substituting 112 body Linears (v17+fp8-overlay, rho=0.012, score=weighted)
+  fp8-overlay: restored 5136/425984 rows (1.206%), 12976128/1073741824 params (1.208%)
+  fp8-overlay bpw overhead: +0.0635 (base 2.7656 -> effective 2.8291)
+    [200/500] t1_gt=32.82%  t10_gt=66.38%
+    [400/500] t1_gt=32.90%  t10_gt=66.52%
+    [200/500] running ppl 36.3837
+    [400/500] running ppl 36.4705
+[OLMo-2-1B] v17+fp8ov rho=0.012 score=weighted  PPL=36.5852  T1=32.80%  T10=66.49%  T1_vs_teacher=74.22%  (74s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (7)
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (21s)
+  substituting 154 body Linears (v17+fp8-overlay, rho=0.012, score=weighted)
+  fp8-overlay: restored 4774/394240 rows (1.211%), 11748352/968884224 params (1.213%)
+  fp8-overlay bpw overhead: +0.0636 (base 2.7738 -> effective 2.8374)
+    [200/500] t1_gt=39.41%  t10_gt=71.53%
+    [400/500] t1_gt=38.89%  t10_gt=71.09%
+    [200/500] running ppl 22.5154
+    [400/500] running ppl 23.3421
+[TinyLlama-1.1B] v17+fp8ov rho=0.012 score=weighted  PPL=23.6525  T1=38.76%  T10=70.87%  T1_vs_teacher=75.44%  (77s)
+[fp8-overlay] wrote lambada_overlay_fp8_results.json (8)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%

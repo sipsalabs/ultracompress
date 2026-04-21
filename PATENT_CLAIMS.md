@@ -1953,3 +1953,126 @@ even at 0.1 bpw, beyond any commodity single-device memory. Claims of
 explicitly disclaimed.
 
 ---
+
+## Claim 18: Overlay variants — fp8 row storage and adaptive allocation
+
+### Statement of the claims
+
+**Claim 18A (fp8 row-overlay).** The Claim-17 outlier row-overlay
+mechanism, with restored rows stored in a minifloat format
+(IEEE-like E4M3 / `torch.float8_e4m3fn`) together with a single per-row
+fp16 scale, rather than raw fp16. Per-row bit cost drops from
+`16·I + 32` to `8·I + 16 + 32`, approximately halving the cost per
+restored row. At matched overlay-bpw this yields ≈ 2× the number of
+restored rows, or equivalently at matched row count yields ≈ half the
+overlay-bpw overhead.
+
+The round-trip is strictly data-free: `scale = absmax(row) / 448`,
+`xq = (x / scale).to(float8_e4m3fn).to(float32) * scale`. The scale
+range `[−448, 448]` covers any body-linear row because activation
+spikes dominate columns, not rows, and are absorbed by the existing
+per-column `s_col` scaling of Claim 16.
+
+**Claim 18B (adaptive global-topK allocation).** Instead of choosing
+the top `⌊ρ·O_t⌋` rows per tensor uniformly, the global variant pools
+all per-row activation-weighted residual scores across all body linears,
+picks a single global top-K of size `K = ρ·Σ_t O_t`, subject to a
+per-tensor clip of `[c_lo·ρ·O_t, c_hi·ρ·O_t]` with `c_lo=0.25`,
+`c_hi=4`. Total restored-row budget and therefore total overlay-bpw
+budget is unchanged vs Claim 17.
+
+### Measured effect — fp8 (Claim 18A)
+
+LAMBADA, 6-model cohort, 500 windows, seed 42, identical Claim-16 hifi
+base fit. **Matched effective-bpw comparisons:**
+
+**A (~2.79 bpw): fp16 ρ=0.002 vs fp8 ρ=0.005**
+
+| Model          | ΔT1 (pp) | Δppl-ratio |
+|----------------|---------:|-----------:|
+| OLMo-2-1B      |    −0.02 |     −0.006 |
+| TinyLlama-1.1B |    −0.13 |     −0.005 |
+| Qwen3-1.7B     |    +0.25 |     +0.019 |
+| SmolLM2-1.7B   |    −0.31 |     +0.017 |
+| Mistral-7B     |    +0.16 |     −0.019 |
+| Qwen3-8B       |    +0.11 |     −0.009 |
+| **Mean**       | **+0.01**|   **~0**   |
+
+**B (~2.83 bpw): fp16 ρ=0.005 vs fp8 ρ=0.012**
+
+| Model          | ΔT1 (pp) | Δppl-ratio |
+|----------------|---------:|-----------:|
+| OLMo-2-1B      |    +0.14 |     −0.005 |
+| TinyLlama-1.1B |    +0.38 |     −0.012 |
+| Qwen3-1.7B     |    +0.16 |     +0.020 |
+| SmolLM2-1.7B   |    −0.45 |     +0.021 |
+| Mistral-7B     |    +0.00 |     −0.002 |
+| Qwen3-8B       |    +0.06 |     +0.005 |
+| **Mean**       | **+0.05**|  **+0.004**|
+
+**Read-out.** At matched effective-bpw, fp8 row-storage is a
+statistical tie with fp16 row-storage at low overlay mass, and a
+marginal top-1 win with a marginal ppl-ratio regression at higher
+overlay mass. The claim's value is therefore **the new orthogonal
+knob** — rows-per-bit vs bits-per-row — not strict dominance over the
+fp16 variant.
+
+### Measured effect — adaptive (Claim 18B)
+
+At matched ρ = 0.002, hifi base:
+
+| Model          | Δ T1 adaptive − uniform (pp) | Δ ppl-ratio |
+|----------------|-----------------------------:|------------:|
+| OLMo-2-1B      |                        +0.14 |      −0.004 |
+| TinyLlama-1.1B |                        −0.03 |      −0.001 |
+| Qwen3-1.7B     |                        −0.11 |      +0.012 |
+| SmolLM2-1.7B   |                        −0.44 |      +0.015 |
+| Mistral-7B     |                        −0.20 |      +0.011 |
+| Qwen3-8B       |                        −0.03 |      −0.003 |
+| **Mean**       |                   **−0.11**  |  **+0.005** |
+
+**Read-out.** Adaptive global-topK **loses** to the simpler uniform
+per-tensor rule on both aggregate metrics. 5/6 models regress or tie
+on top-1 retention. This is disclosed here as a defensive
+**negative-result ablation** — the simplest Claim-17 rule is empirically
+optimal in the 6-model cohort, and the patent is therefore positively
+narrowed to that rule.
+
+### Novelty elements
+
+- Restored-row storage in fp8 E4M3 with per-row absmax-scale,
+  reconstructed by pure scalar multiplication, composing on top of a
+  2.40/2.78-bpw codebook without any retraining, without any separate
+  calibration, and without any dequantization path change other than a
+  scalar.
+- Matched-bpw comparison methodology that treats overlay row-format as
+  a first-class bit-budget axis, independent of the Claim-16 base fit.
+- Honest pre-registration of the adaptive-allocation negative result as
+  a narrowing ablation of Claim 17.
+
+### Artifacts of record
+
+- [`lambada_overlay_fp8.py`](lambada_overlay_fp8.py) — Claim 18A driver.
+- [`lambada_overlay_fp8_results.json`](lambada_overlay_fp8_results.json)
+  — 12 measured rows, 6 models × 2 ρ.
+- [`overlay_fp8.log`](overlay_fp8.log),
+  [`overlay_fp8_resume.log`](overlay_fp8_resume.log),
+  [`overlay_fp8_qwen8b.log`](overlay_fp8_qwen8b.log) — full run logs.
+- [`lambada_overlay_adaptive.py`](lambada_overlay_adaptive.py) — Claim
+  18B driver.
+- [`lambada_overlay_adaptive_results.json`](lambada_overlay_adaptive_results.json)
+  — 12 measured rows.
+- [`overlay_adaptive.log`](overlay_adaptive.log) — full run log.
+
+### Honest failure modes
+
+- fp8 row-storage has **no measurable win** over fp16 row-storage at
+  low overlay mass (~0.02 pp mean T1). It is a tie, not a dominance.
+- fp8 slightly regresses ppl-ratio on SmolLM2-1.7B and Qwen3-1.7B by
+  about +0.02 at matched bpw — the models where the residual row tail
+  is heaviest and the fp8 per-row scale loses sub-LSB precision.
+- Adaptive allocation is a strict negative result at matched budget.
+  It is disclosed here, and is explicitly *not* claimed as an
+  improvement — it is claimed as prior-art-narrowing ablation.
+
+---
