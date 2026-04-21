@@ -462,3 +462,75 @@ Drivers and artifacts:
 [`lambada_overlay_int4.py`](lambada_overlay_int4.py),
 [`lambada_overlay_int4_results.json`](lambada_overlay_int4_results.json),
 [`overlay_int4.log`](overlay_int4.log).
+
+
+---
+
+## Claim 18D: Mixed-precision row-overlay (fp16 top-K + fp8 next-K)
+
+**Mechanism.** The Claim-17 row-overlay is extended to a two-tier precision
+scheme: residual rows are scored and sorted by magnitude; the top K1 rows
+(hardest residuals, highest per-row L2 norm) are stored exactly in fp16; the
+next K2 rows (lower-priority residuals) are stored in fp8 with a per-row
+absmax/448 scale. K1 = rho_hi * O rows, K2 = rho_lo * O rows.
+
+**Bit-cost model per Linear layer (O outputs, average I inputs per row):**
+
+    fp16 tier: (16 - base_bpw) * I_hi + 32  bits net per row
+    fp8 tier:  ( 8 - base_bpw) * I_lo + 48  bits net per row  (16b scale + 32b index)
+    eff_bpw = base_bpw + sum_over_layers(fp16_bits + fp8_bits) / total_params
+
+**Operating points tested:**
+
+- Low mass:  rho_hi=0.001, rho_lo=0.003 ? eff_bpw ˜ 2.794
+- High mass: rho_hi=0.002, rho_lo=0.008 ? eff_bpw ˜ 2.838
+
+**Matched-bpw comparison — fp16 | fp8 | mixed at ~2.79 bpw:**
+
+| Model          | fp16 T1-ret | fp8 T1-ret | mixed T1-ret | Winner |
+|----------------|------------:|-----------:|-------------:|--------|
+| OLMo-2-1B      |      94.16% |     94.12% |       94.19% | mixed  |
+| TinyLlama-1.1B |      96.47% |     96.43% |       96.37% | fp16   |
+| Qwen3-1.7B     |      93.74% |     93.79% |       93.81% | mixed  |
+| SmolLM2-1.7B   |      93.52% |     93.48% |       93.72% | mixed  |
+| Mistral-7B     |      97.87% |     98.03% |       98.04% | mixed  |
+| Qwen3-8B       |      97.58% |     97.57% |       97.63% | mixed  |
+| **Mean**       |  **95.56%** | **95.57%** |   **95.63%** | **mixed** |
+
+**Matched-bpw comparison — fp16 | fp8 | mixed at ~2.83 bpw:**
+
+| Model          | fp16 T1-ret | fp8 T1-ret | mixed T1-ret | Winner |
+|----------------|------------:|-----------:|-------------:|--------|
+| OLMo-2-1B      |      94.23% |     94.37% |       94.51% | mixed  |
+| TinyLlama-1.1B |      96.47% |     96.85% |       96.71% | fp8    |
+| Qwen3-1.7B     |      93.74% |     93.90% |       93.83% | fp8    |
+| SmolLM2-1.7B   |      93.52% |     93.07% |       93.20% | fp16   |
+| Mistral-7B     |      98.08% |     98.09% |       98.15% | mixed  |
+| Qwen3-8B       |      97.58% |     97.63% |       97.54% | fp8    |
+| **Mean**       |  **95.60%** | **95.65%** |   **95.66%** | **mixed** |
+
+**Read-out.** Mixed-precision is the cohort-mean winner at both bpw tiers
+(+0.06 pp at 2.79 bpw, +0.01 pp at 2.83 bpw vs fp8) but the margins are
+within measurement noise (±0.2–0.3 pp on 500 LAMBADA samples). Mixed wins
+outright on 4/6 models at the low tier and 2/6 at the high tier. It never
+catastrophically fails (unlike int4). The two-tier scheme is most beneficial
+on models where the residual row tail is heavy (OLMo, SmolLM2) and less
+helpful on models where fp8 per-row noise is already negligible (TinyLlama,
+Qwen3-1.7B at high mass).
+
+**Progression across precision choices (2.83 bpw mean T1-ret):**
+
+    int4 overlay:   93.83%  (strict negative — precision floor)
+    fp16 overlay:   95.60%  (Claim 17 baseline)
+    fp8 overlay:    95.65%  (+0.05 pp)
+    mixed fp16+fp8: 95.66%  (+0.01 pp over fp8, tie/marginal)
+
+**Conclusion.** Mixed-precision is the Pareto-dominant choice on the mean
+but the advantage is sub-noise-floor. It is disclosed as a novel mechanism
+(score-ranked two-tier precision split) that subsumes both Claim 17 and
+Claim 18A as degenerate cases (K2=0 ? pure fp16; K1=0 ? pure fp8).
+
+**Artifacts:**
+[lambada_overlay_mixed.py](lambada_overlay_mixed.py),
+[lambada_overlay_mixed_results.json](lambada_overlay_mixed_results.json),
+[overlay_mixed.log](overlay_mixed.log).

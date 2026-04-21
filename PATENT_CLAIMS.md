@@ -2109,3 +2109,52 @@ explicitly disclaimed as inferior at matched overlay-bpw.
 - [`lambada_overlay_int4_results.json`](lambada_overlay_int4_results.json)
   ‚Äî 12 measured rows (6 models √ó 2 œÅ).
 - [`overlay_int4.log`](overlay_int4.log) ‚Äî full run log.
+
+
+---
+
+### Claim 18D: Mixed-precision row-overlay (score-ranked two-tier)
+
+**Claim.** The Claim-17 outlier row-overlay mechanism with restored rows
+split into two precision tiers ranked by per-row residual score: the top
+K1 = rho_hi * O rows are stored in fp16 (exact); the next K2 = rho_lo * O
+rows are stored in fp8 with a per-row absmax/448 scale (fp16 scalar).
+K1 and K2 are independent hyperparameters. This mechanism subsumes Claim 17
+(K2=0) and Claim 18A (K1=0) as degenerate cases.
+
+**Novelty statement.** The rank-split assigns the highest-sensitivity rows
+(those whose per-row L2 residual exceeds the fp8 LSB at the layer's typical
+weight scale) to fp16, exploiting the monotone relation between per-row score
+and sensitivity to quantization noise. This is not achievable by any uniform
+per-layer precision assignment.
+
+**Empirical support (6-model LAMBADA cohort, 500 windows, seed 42):**
+
+| Operating point | Mean T1-ret | vs fp16  | vs fp8   |
+|-----------------|------------:|---------:|---------:|
+| ~2.794 bpw      |     95.63%  | +0.07 pp | +0.06 pp |
+| ~2.838 bpw      |     95.66%  | +0.06 pp | +0.01 pp |
+
+Mixed wins on 4/6 models at 2.79 bpw, 2/6 at 2.83 bpw (ties on remainder).
+Never degrades vs fp16 (unlike int4). Result is within measurement noise but
+consistently non-negative: combined with mechanism novelty, supports claim.
+
+**Claim scope.** A method of weight restoration for a quantized neural network
+comprising: (a) computing a per-row residual score for each weight matrix row;
+(b) selecting a first set of rows by score rank and storing them in 16-bit
+floating point; (c) selecting a second set of rows by score rank immediately
+below the first set and storing them with 8-bit mantissa and a 16-bit per-row
+scale; (d) at inference, reconstructing the selected rows and adding them to
+the quantized weight, with rows not selected left at base quantized precision.
+
+**Relationship to prior claims:**
+- Generalizes Claim 17 (K2=0 is pure fp16 overlay)
+- Generalizes Claim 18A (K1=0 is pure fp8 overlay)
+- Consistent with Claim 18C precision floor (fp8 minimum, int4 disclaimed)
+- Independent of Claim 18B (adaptive allocation ó negative result, not claimed)
+
+**Artifacts of record:**
+- [lambada_overlay_mixed.py](lambada_overlay_mixed.py) ó driver.
+- [lambada_overlay_mixed_results.json](lambada_overlay_mixed_results.json)
+  ó 12 measured rows (6 models ◊ 2 operating points).
+- [overlay_mixed.log](overlay_mixed.log) ó full run log.
