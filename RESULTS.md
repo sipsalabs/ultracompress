@@ -156,10 +156,10 @@ matching the scaling prediction. Driver `lambada_all.py`, data
 
 ## Capacity-tier dial: 2.40 bpw -> 2.78 bpw  (Claim 16 second operating point)
 
-Doubling per-role codebook capacity -- small models retuned only in  
-`role_K` (K1: 2048 -> 4096, K2: 256 -> 1024; o_proj: 4096 -> 8192, 512 -> 2048),  
-all other knobs (D=8, alpha=0.25, beam=8, 6 EM iters) held fixed -- lifts the  
-same LAMBADA out-of-distribution retention numbers by 5-9 points in one shot.  
+Doubling per-role codebook capacity -- small models retuned only in
+`role_K` (K1: 2048 -> 4096, K2: 256 -> 1024; o_proj: 4096 -> 8192, 512 -> 2048),
+all other knobs (D=8, alpha=0.25, beam=8, 6 EM iters) held fixed -- lifts the
+same LAMBADA out-of-distribution retention numbers by 5-9 points in one shot.
 Identical pipeline, identical activation cache, identical seed.
 
 ### LAMBADA (same 500 windows, same seed) at the higher-fidelity tier
@@ -171,20 +171,20 @@ Identical pipeline, identical activation cache, identical seed.
 | Qwen3-1.7B     |          83.19% |      **92.54%** | +9.35  |              1.672 |          **1.496** |
 | SmolLM2-1.7B   |          86.66% |      **92.93%** | +6.27  |              1.501 |          **1.263** |
 
-Bit-budget cost: **+0.38 bpw mean** (2.7705-2.7803 bpw across the four fits  
-vs 2.3955-2.4053 at the low-bit tier). The 0.38 bpw delta buys a mean T1  
-retention gain of **6.5 percentage points on out-of-distribution narrative  
-fiction** without touching a single other hyperparameter or adding a single  
-line of code. This is the capacity dial promised by Claim 16: a continuous  
-bpw vs fidelity Pareto curve exposed through one structural parameter  
+Bit-budget cost: **+0.38 bpw mean** (2.7705-2.7803 bpw across the four fits
+vs 2.3955-2.4053 at the low-bit tier). The 0.38 bpw delta buys a mean T1
+retention gain of **6.5 percentage points on out-of-distribution narrative
+fiction** without touching a single other hyperparameter or adding a single
+line of code. This is the capacity dial promised by Claim 16: a continuous
+bpw vs fidelity Pareto curve exposed through one structural parameter
 (`role_K`), not a family of bespoke quantization recipes.
 
-Weight-space reconstruction error on the same four fits halves:  
-rel-W mean at 2.40 bpw was 0.052-0.072; at 2.78 bpw it is 0.037-0.053  
+Weight-space reconstruction error on the same four fits halves:
+rel-W mean at 2.40 bpw was 0.052-0.072; at 2.78 bpw it is 0.037-0.053
 (olmo2: 0.054 -> 0.037, qwen3_1.7b: 0.052 -> 0.043, smollm2: 0.073 -> 0.039).
 
-Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py),  
-[`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json),  
+Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py),
+[`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json),
 [`lambada_hifi_results.json`](lambada_hifi_results.json).
 
 
@@ -268,7 +268,7 @@ retention number in the portfolio. Top-1 retention strictly improves for
 hifi base, indicating its residual heavy tail has already been captured
 by the 2.78-bpw codebook).
 
-### Why the score function matters
+### Why the score function matters (ablation)
 
 The score is
   score[o] = sum_i ( s_col[i] * (W[o,i] - Wq[o,i]) )^2
@@ -277,8 +277,30 @@ magnitude from the same v17 activation cache used to fit the codebook,
 so restoring the top-scored rows is equivalent to zeroing the dominant
 diagonal entries of the activation-weighted per-tensor Hessian proxy.
 Using the same `s_col` scaling vector that the codebook fit was optimized
-against (rather than raw row norm) makes the overlay provably aligned
-with the downstream loss the compressor was already minimizing.
+against (rather than raw row norm) makes the overlay aligned with the
+same surrogate loss the compressor was already minimizing — no extra
+calibration data or Hessian estimation is required.
+
+**Ablation (ρ = 0.002, hifi+overlay, LAMBADA 500 windows):**
+
+| Model          | weighted T1-ret | unweighted T1-ret | Δ (weighted − unweighted) |
+|----------------|----------------:|------------------:|--------------------------:|
+| OLMo-2-1B      |          94.16% |            94.13% |                    +0.03 pp |
+| TinyLlama-1.1B |          96.67% |            96.56% |                    +0.11 pp |
+| Qwen3-1.7B     |          93.55% |            93.54% |                    +0.01 pp |
+| SmolLM2-1.7B   |          93.88% |            93.79% |                    +0.09 pp |
+| Mistral-7B     |          97.86% |            97.86% |                     0.00 pp |
+| Qwen3-8B       |          97.48% |            97.46% |                    +0.02 pp |
+| **Mean**       |      **95.60%** |        **95.56%** |                **+0.04 pp** |
+
+Weighted scoring strictly wins or ties on 6/6 models. The measured gap is
+small (+0.04 pp mean T1-retention) — i.e. using the activation-weighted
+score is a consistent improvement but not the dominant factor driving the
+overlay's ~0.9 pp total gain. The primary claim is therefore the
+**overall activation-weighted sparse row-overlay mechanism** composing on
+top of a pre-existing Claim-16 fit; the weighted score function is a
+cheap, data-free refinement that uses the compressor's own ``s_col``
+vector rather than a separately-estimated Hessian diagonal.
 
 ### Composability
 

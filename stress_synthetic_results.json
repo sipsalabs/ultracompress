@@ -1,0 +1,114 @@
+[
+  {
+    "label": "tiny-square",
+    "O": 128,
+    "I": 128,
+    "relW": 2.1585476872587606e-07,
+    "deterministic": true,
+    "wall_sec": 0.29894018173217773
+  },
+  {
+    "label": "gpt2-style",
+    "O": 256,
+    "I": 768,
+    "relW": 0.4526522755622864,
+    "deterministic": true,
+    "wall_sec": 0.034510135650634766
+  },
+  {
+    "label": "1k-square",
+    "O": 1024,
+    "I": 1024,
+    "relW": 0.46709170937538147,
+    "deterministic": true,
+    "wall_sec": 0.07351565361022949
+  },
+  {
+    "label": "2k-square",
+    "O": 2048,
+    "I": 2048,
+    "relW": 0.4701310992240906,
+    "deterministic": true,
+    "wall_sec": 0.2020249366760254
+  },
+  {
+    "label": "wide-4k",
+    "O": 512,
+    "I": 4096,
+    "relW": 0.4697704613208771,
+    "deterministic": true,
+    "wall_sec": 0.12851357460021973
+  },
+  {
+    "label": "tall-4k",
+    "O": 4096,
+    "I": 512,
+    "relW": 0.46897196769714355,
+    "deterministic": true,
+    "wall_sec": 0.12351012229919434
+  },
+  {
+    "label": "gpt2-mlp",
+    "O": 1024,
+    "I": 3072,
+    "relW": 0.4696371257305145,
+    "deterministic": true,
+    "wall_sec": 0.16602301597595215
+  },
+  {
+    "label": "gpt2-mlp-T",
+    "O": 3072,
+    "I": 1024,
+    "relW": 0.4698602557182312,
+    "deterministic": true,
+    "wall_sec": 0.1670212745666504
+  },
+  {
+    "label": "non-po2-in",
+    "O": 2048,
+    "I": 1376,
+    "relW": 0.47054386138916016,
+    "deterministic": true,
+    "wall_sec": 0.15153145790100098
+  },
+  {
+    "label": "non-po2-out",
+    "O": 1137,
+    "I": 2048,
+    "relW": 0.46949073672294617,
+    "deterministic": true,
+    "wall_sec": 0.14152908325195312
+  },
+  {
+    "label": "llama-mlp",
+    "O": 4096,
+    "I": 14336,
+    "relW": 0.4694417417049408,
+    "deterministic": true,
+    "wall_sec": 2.287658452987671
+  },
+  {
+    "label": "llama-mlp-T",
+    "O": 14336,
+    "I": 4096,
+    "relW": 0.47047320008277893,
+    "deterministic": true,
+    "wall_sec": 2.1995351314544678
+  },
+  {
+    "label": "qwen-like",
+    "O": 3584,
+    "I": 2048,
+    "relW": 0.4699845314025879,
+    "deterministic": true,
+    "wall_sec": 0.3406093120574951
+  },
+  {
+    "label": "wide-8k",
+    "O": 1024,
+    "I": 8192,
+    "relW": 0.47067248821258545,
+    "deterministic": true,
+    "wall_sec": 0.37000322341918945
+  }
+]

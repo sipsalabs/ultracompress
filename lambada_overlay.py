@@ -24,8 +24,15 @@ from compress_v15 import beam_assign
 def _reconstruct_v17_with_overlay(W_fp16: torch.Tensor, role: str, bank: dict,
                                   s_col: torch.Tensor, D: int,
                                   rot: torch.Tensor, device: str,
-                                  rho: float) -> tuple[torch.Tensor, int]:
-    """v17 decode + outlier-row overlay. Returns (Wq_with_overlay_fp16_cpu, n_restored)."""
+                                  rho: float,
+                                  score_mode: str = "weighted"
+                                  ) -> tuple[torch.Tensor, int]:
+    """v17 decode + outlier-row overlay. Returns (Wq_with_overlay_fp16_cpu, n_restored).
+
+    score_mode:
+      "weighted"   -> score[o] = sum_i (s_col[i] * (W[o,i] - Wq[o,i]))^2     (Claim 17)
+      "unweighted" -> score[o] = sum_i (W[o,i] - Wq[o,i])^2                   (ablation)
+    """
     W = W_fp16.to(device=device, dtype=torch.float32)
     s = s_col.to(device=device, dtype=torch.float32)
     W_scaled = W * s.unsqueeze(0)
@@ -41,8 +48,14 @@ def _reconstruct_v17_with_overlay(W_fp16: torch.Tensor, role: str, bank: dict,
     Wq_scaled = Wq_rot_scaled @ rot.T
     Wq = Wq_scaled / s.unsqueeze(0)                        # fp32 [O, I], model space
 
-    # per-row activation-weighted residual
-    diff = (W - Wq) * s.unsqueeze(0)                       # [O, I]
+    # per-row residual score
+    raw = W - Wq                                           # [O, I]
+    if score_mode == "weighted":
+        diff = raw * s.unsqueeze(0)
+    elif score_mode == "unweighted":
+        diff = raw
+    else:
+        raise ValueError(f"score_mode must be 'weighted' or 'unweighted', got {score_mode!r}")
     score = (diff * diff).sum(1)                           # [O]
     K = max(1, int(round(rho * O))) if rho > 0 else 0
     n_restored = 0
@@ -52,14 +65,14 @@ def _reconstruct_v17_with_overlay(W_fp16: torch.Tensor, role: str, bank: dict,
         Wq[idx] = W[idx]
         n_restored = K
 
-    del W, W_scaled, Wrot, g, cb1, cb2, idx1, idx2, gh, Wq_rot_scaled, Wq_scaled, s, diff, score
+    del W, W_scaled, Wrot, g, cb1, cb2, idx1, idx2, gh, Wq_rot_scaled, Wq_scaled, s, raw, diff, score
     out = Wq.to(dtype=torch.float16, device="cpu")
     del Wq
     return out, n_restored
 
 
 def substitute_v17_overlay(model, state_dict: dict, v17: dict, device: str,
-                           D: int, rho: float):
+                           D: int, rho: float, score_mode: str = "weighted"):
     rots = {}
     dims = sorted({v.shape[1] for k, v in state_dict.items()
                    if "layers." in k and any(p in k for p in ROLE_PATTERNS)
@@ -73,7 +86,7 @@ def substitute_v17_overlay(model, state_dict: dict, v17: dict, device: str,
                and k.endswith(".weight") and state_dict[k].ndim == 2
                and state_dict[k].shape[1] % D == 0]
     print(f"  substituting {len(hf_keys)} body Linears (v17+overlay, "
-          f"rho={rho}, alpha={v17.get('alpha','?')})")
+          f"rho={rho}, score={score_mode}, alpha={v17.get('alpha','?')})")
     total_restored = 0
     total_rows = 0
     total_params_restored = 0
@@ -89,7 +102,7 @@ def substitute_v17_overlay(model, state_dict: dict, v17: dict, device: str,
         else:
             s = s_col[k]
         W_new, nr = _reconstruct_v17_with_overlay(
-            W, role, bank, s, D, rots[W.shape[1]], device, rho)
+            W, role, bank, s, D, rots[W.shape[1]], device, rho, score_mode)
         total_restored += nr
         total_rows += W.shape[0]
         total_params_restored += nr * W.shape[1]
@@ -144,7 +157,8 @@ MODELS = [
 
 def run_one(name: str, model_id: str, teacher_path: str, v17_path: str,
             tokens_path: str, n: int, seq_len: int, device: str,
-            rho: float) -> dict:
+            rho: float, score_mode: str = "weighted",
+            tier: str = "hifi+overlay") -> dict:
     from transformers import AutoConfig, AutoModelForCausalLM
     from transformers.modeling_utils import no_init_weights
     from eval_v16_ppl import measure_ppl
@@ -175,10 +189,10 @@ def run_one(name: str, model_id: str, teacher_path: str, v17_path: str,
     t1 = time.time()
     v17 = torch.load(v17_path, map_location="cpu", weights_only=False)
     D = v17.get("D", 8)
-    ov_stats = substitute_v17_overlay(model, sd, v17, device, D, rho)
+    ov_stats = substitute_v17_overlay(model, sd, v17, device, D, rho, score_mode)
     v17_topk, _ = measure_topk(model, toks, starts, seq_len, device, teacher_topk=tch_cache)
     v17_ppl, _ = measure_ppl(model, toks, starts, seq_len, device)
-    print(f"[{name}] v17+ov rho={rho}  PPL={v17_ppl:.4f}  T1={v17_topk['t1_gt']*100:.2f}%  "
+    print(f"[{name}] v17+ov rho={rho} score={score_mode}  PPL={v17_ppl:.4f}  T1={v17_topk['t1_gt']*100:.2f}%  "
           f"T10={v17_topk['t10_gt']*100:.2f}%  T1_vs_teacher={v17_topk['t1_agree']*100:.2f}%  "
           f"({time.time()-t1:.0f}s)", flush=True)
 
@@ -189,6 +203,7 @@ def run_one(name: str, model_id: str, teacher_path: str, v17_path: str,
     rec = {
         "name": name, "model_id": model_id,
         "fit": v17_path, "rho": rho,
+        "score_mode": score_mode,
         "n": n, "seq_len": seq_len,
         "teacher_ppl": float(tch_ppl),
         "teacher_t1": float(tch_topk['t1_gt']),
@@ -200,7 +215,7 @@ def run_one(name: str, model_id: str, teacher_path: str, v17_path: str,
         "ppl_ratio": float(ppl_ratio),
         "t1_ret": float(t1_ret),
         "t10_ret": float(t10_ret),
-        "tier": "hifi+overlay",
+        "tier": tier,
     }
     rec.update(ov_stats)
     del model, sd, toks
@@ -217,10 +232,22 @@ def main():
                     help="comma-separated overlay row fractions")
     ap.add_argument("--only", default="", help="comma-separated model short tokens")
     ap.add_argument("--out", default="lambada_overlay_results.json")
+    ap.add_argument("--score", default="weighted",
+                    choices=["weighted", "unweighted"],
+                    help="row-scoring mode; 'unweighted' is the Claim-17 ablation")
+    ap.add_argument("--base", action="store_true",
+                    help="use 2.40-bpw base-tier fits (v17_fit_*.pt) instead of hifi")
     args = ap.parse_args()
 
     rhos = [float(x) for x in args.rhos.split(",") if x.strip()]
     wanted = set(s.strip().lower() for s in args.only.split(",") if s.strip()) or None
+
+    models = MODELS
+    tier_label = "hifi+overlay"
+    if args.base:
+        tier_label = "base+overlay"
+        models = [(n, mid, t, fit.replace("v17hi_fit_", "v17_fit_"), tok)
+                  for (n, mid, t, fit, tok) in MODELS]
 
     results = []
     if os.path.exists(args.out):
@@ -230,36 +257,43 @@ def main():
         except Exception:
             results = []
 
+    def _key(r):
+        return (r.get("name"), r.get("rho"),
+                r.get("score_mode", "weighted"),
+                r.get("tier", "hifi+overlay"))
+
     for rho in rhos:
-        for name, mid, teacher, fit, tokens in MODELS:
+        for name, mid, teacher, fit, tokens in models:
             if wanted and name.lower() not in wanted and name.lower().split("-")[0] not in wanted:
                 continue
             if not os.path.exists(fit):
                 print(f"[skip] {name}: {fit} not present")
                 continue
-            key = (name, rho)
-            if any((r.get("name"), r.get("rho")) == key and "error" not in r for r in results):
-                print(f"[skip] {name} rho={rho}: already done")
+            key = (name, rho, args.score, tier_label)
+            if any(_key(r) == key and "error" not in r for r in results):
+                print(f"[skip] {name} rho={rho} score={args.score} tier={tier_label}: already done")
                 continue
             try:
                 r = run_one(name, mid, teacher, fit, tokens,
-                            args.n, args.seq_len, args.device, rho)
+                            args.n, args.seq_len, args.device, rho,
+                            score_mode=args.score, tier=tier_label)
             except Exception as e:
                 traceback.print_exc()
-                r = {"name": name, "rho": rho, "fit": fit, "error": repr(e)}
-            results = [x for x in results if (x.get("name"), x.get("rho")) != key] + [r]
+                r = {"name": name, "rho": rho, "fit": fit, "error": repr(e),
+                     "score_mode": args.score, "tier": tier_label}
+            results = [x for x in results if _key(x) != key] + [r]
             with open(args.out, "w") as f:
                 json.dump(results, f, indent=2)
             print(f"[lambada_overlay] wrote {args.out} ({len(results)})", flush=True)
 
     # summary
     print("\n================ overlay summary ================")
-    print(f"{'model':<18} {'rho':>7} {'t1_ret':>8} {'ppl_r':>7} {'eff_bpw':>8}")
-    for r in sorted(results, key=lambda x: (str(x.get('rho')), x.get('name',''))):
+    print(f"{'model':<18} {'tier':<15} {'score':<11} {'rho':>7} {'t1_ret':>8} {'ppl_r':>7} {'eff_bpw':>8}")
+    for r in sorted(results, key=lambda x: (str(x.get('tier','')), str(x.get('score_mode','')), str(x.get('rho')), x.get('name',''))):
         if "error" in r:
-            print(f"  {r.get('name','?'):<16}  rho={r.get('rho','?')}  ERROR")
+            print(f"  {r.get('name','?'):<16}  {r.get('tier','?'):<13} {r.get('score_mode','?'):<9} rho={r.get('rho','?')}  ERROR")
             continue
-        print(f"{r['name']:<18} {r['rho']:>7.4f} {r['t1_ret']*100:>7.2f}% "
+        print(f"{r['name']:<18} {r.get('tier','?'):<15} {r.get('score_mode','?'):<11} {r['rho']:>7.4f} {r['t1_ret']*100:>7.2f}% "
               f"{r['ppl_ratio']:>7.3f} {r['effective_bpw']:>7.4f}")
 
 

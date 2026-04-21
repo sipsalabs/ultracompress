@@ -1868,3 +1868,88 @@ end-to-end.
   each with teacher PPL/T1/T10, overlaid PPL/T1/T10, effective bpw,
   restored row count, restored param count.
 - `overlay_002.log`, `overlay_005.log` -- full evaluation stdout.
+
+
+---
+
+## Deployment Robustness Addendum (pre-filing, Claim 17 era)
+
+This section consolidates the engineering evidence that the fitting and
+decode pipeline is (a) deterministic, (b) shape-agnostic, and (c) honest
+about its scaling frontier. These properties are prerequisites for
+reproducibility and portfolio defensibility.
+
+### D.1 Determinism
+
+The v17 decode path is purely a function of the frozen teacher state dict,
+the saved fit file, and a fixed `seed=42` per-I rotation. Given identical
+inputs, every Linear reconstruction is **bit-identical** across repeated runs.
+The fitting path is deterministic under a fixed `torch.manual_seed` + a
+fixed activation cache. `determinism_check.py` asserts the decode-side
+guarantee by running `_reconstruct_v17` twice over every body Linear of
+`tinyllama` and asserting `torch.equal` on all 154 resulting tensors.
+
+Reviewer-reproducibility claim: any party holding `{teacher_cache.pt,
+v17hi_fit_*.pt}` reproduces the published PPL / LAMBADA numbers to fp16
+tolerance (<= 0.06 % PPL, observed in the Claim-16 pack round-trip).
+
+### D.2 Shape & dtype coverage
+
+`stress_synthetic.py` runs the encode+decode cycle over 14 tensor shapes
+(square, wide, tall, non-power-of-2 widths, LLaMA/GPT-2/Qwen-style aspect
+ratios, up to O=14336, I=14336) on random fp16 Linears. Each shape is
+required to pass rel-Frobenius `||W-Wq||/||W|| <= threshold` and to be
+bit-identical on repeat runs. Coverage demonstrates the method does not
+silently depend on a particular D-group-aligned shape beyond the
+already-stated `I mod D == 0` (with D=8 by default).
+
+### D.3 Arbitrary-model smoke gate
+
+`smoke_any_model.py` runs a fixed-budget (n_cal=4, iters=3) end-to-end
+v17 cycle against any HuggingFace causal-LM ID. It (i) captures per-column
+|x| from 4 wikitext sequences, (ii) fits v17 base tier, (iii) measures
+teacher vs v17 PPL on 100 held-out windows, and (iv) gates on
+`ppl_ratio < 2.5 AND relw_mean < 0.15`. Intended to confirm new
+architectures — not present in the six-model portfolio — remain within the
+published operating envelope without bespoke tuning.
+
+### D.4 Claim-17 overlay composability
+
+The row-overlay is architecturally independent of the Claim-16 base
+codebooks: it operates on `(W_fp16, Wq, s_col)` triples alone and
+appends a sparse `(row_index, row_fp16)` list. It therefore composes on
+top of any Claim-16 tier — base (2.40 bpw), hifi (2.78 bpw), or any
+future higher-rate tier — without re-fitting the codebooks. The
+`--base` flag of `lambada_overlay.py` exercises this composability
+directly against the 2.40 bpw fits.
+
+### D.5 Single-GPU scaling frontier (honest bounds)
+
+Let `B_total = body_bpw + overhead_bpw + overlay_bpw`. On a 32 GB GPU
+with headroom for the fp16 teacher copy during substitution, the feasible
+frontier is:
+
+| Model size | 2.40 bpw body | 2.78 bpw body | 2.78 + 0.026 overlay |
+|-----------:|--------------:|--------------:|---------------------:|
+|         1 B |        0.30 GB |        0.35 GB |              0.35 GB |
+|         7 B |        2.10 GB |        2.43 GB |              2.45 GB |
+|        13 B |        3.90 GB |        4.52 GB |              4.56 GB |
+|        70 B |         21 GB |         24 GB |               24 GB |
+|       100 B |         30 GB |         35 GB |               35 GB |
+|       175 B |         53 GB |         61 GB |               61 GB |
+
+The single-GPU 32 GB ceiling therefore sits near **~100 B parameters at
+2.40 bpw body weight only**. The published portfolio evidence extends to
+8 B (Qwen3-8B); extrapolation beyond 8 B on a single GPU is *arithmetic
+feasibility* only and has not been empirically measured. Larger models
+require (i) sharded fitting across multiple GPUs — an engineering matter,
+not a method change — or (ii) chunked activation collection, already
+used in the 7 B/8 B path.
+
+**Non-claim:** The method does *not* fit 100 trillion parameters on a
+single GPU at any bit rate `>= 0.1 bpw` — such a model exceeds 1.25 TB
+even at 0.1 bpw, beyond any commodity single-device memory. Claims of
+"100 T at 1 bpw on one card" are not supported by this work and are
+explicitly disclaimed.
+
+---

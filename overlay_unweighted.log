@@ -1,0 +1,102 @@
+[skip] OLMo-2-1B rho=0.002 score=unweighted tier=hifi+overlay: already done
+
+[TinyLlama-1.1B] teacher -> tinyllama_1.1b_cache.pt
+    [200/500] t1_gt=40.54%  t10_gt=72.88%
+    [400/500] t1_gt=40.05%  t10_gt=72.52%
+    [200/500] running ppl 20.7610
+    [400/500] running ppl 21.5743
+[TinyLlama-1.1B] teacher  PPL=21.8216  T1=40.03%  T10=72.26%   (20s)
+  substituting 154 body Linears (v17+overlay, rho=0.002, score=unweighted, alpha=0.25)
+  overlay: restored 792/394240 rows (0.201%), 1937408/968884224 params (0.200%)
+  overlay bpw overhead: +0.0265 (base 2.7738 -> effective 2.8003)
+    [200/500] t1_gt=39.33%  t10_gt=71.39%
+    [400/500] t1_gt=38.79%  t10_gt=70.96%
+    [200/500] running ppl 22.8251
+    [400/500] running ppl 23.6525
+[TinyLlama-1.1B] v17+ov rho=0.002 score=unweighted  PPL=23.9652  T1=38.65%  T10=70.72%  T1_vs_teacher=74.95%  (67s)
+[lambada_overlay] wrote lambada_overlay_results.json (14)
+
+[Qwen3-1.7B] teacher -> qwen3_1.7b_cache.pt
+    [200/500] t1_gt=31.90%  t10_gt=65.65%
+    [400/500] t1_gt=31.96%  t10_gt=65.78%
+    [200/500] running ppl 48.4966
+    [400/500] running ppl 48.3009
+[Qwen3-1.7B] teacher  PPL=48.3843  T1=32.09%  T10=65.72%   (30s)
+  substituting 196 body Linears (v17+overlay, rho=0.002, score=unweighted, alpha=0.25)
+  overlay: restored 1120/573440 rows (0.195%), 2752512/1409286144 params (0.195%)
+  overlay bpw overhead: +0.0259 (base 2.7708 -> effective 2.7967)
+    [200/500] t1_gt=30.23%  t10_gt=63.25%
+    [400/500] t1_gt=29.95%  t10_gt=63.44%
+    [200/500] running ppl 60.2355
+    [400/500] running ppl 59.7775
+[Qwen3-1.7B] v17+ov rho=0.002 score=unweighted  PPL=59.8714  T1=30.02%  T10=63.43%  T1_vs_teacher=70.74%  (98s)
+[lambada_overlay] wrote lambada_overlay_results.json (15)
+
+[SmolLM2-1.7B] teacher -> smollm2_1.7b_cache.pt
+    [200/500] t1_gt=39.98%  t10_gt=72.69%
+    [400/500] t1_gt=39.81%  t10_gt=72.62%
+    [200/500] running ppl 21.7682
+    [400/500] running ppl 21.9096
+[SmolLM2-1.7B] teacher  PPL=22.0188  T1=39.78%  T10=72.50%   (13s)
+  substituting 168 body Linears (v17+overlay, rho=0.002, score=unweighted, alpha=0.25)
+  overlay: restored 1248/638976 rows (0.195%), 3145728/1610612736 params (0.195%)
+  overlay bpw overhead: +0.0259 (base 2.7656 -> effective 2.7915)
+    [200/500] t1_gt=37.46%  t10_gt=70.11%
+    [400/500] t1_gt=37.30%  t10_gt=70.14%
+    [200/500] running ppl 26.5374
+    [400/500] running ppl 26.7637
+[SmolLM2-1.7B] v17+ov rho=0.002 score=unweighted  PPL=26.8333  T1=37.31%  T10=70.10%  T1_vs_teacher=74.63%  (91s)
+[lambada_overlay] wrote lambada_overlay_results.json (16)
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (33s)
+  substituting 224 body Linears (v17+overlay, rho=0.002, score=unweighted, alpha=0.25)
+  overlay: restored 2752/1376256 rows (0.200%), 13893632/6979321856 params (0.199%)
+  overlay bpw overhead: +0.0264 (base 2.7692 -> effective 2.7956)
+    [200/500] t1_gt=42.25%  t10_gt=74.15%
+    [400/500] t1_gt=42.21%  t10_gt=74.16%
+    [200/500] running ppl 18.6060
+    [400/500] running ppl 18.6151
+[Mistral-7B] v17+ov rho=0.002 score=unweighted  PPL=18.8811  T1=42.05%  T10=73.93%  T1_vs_teacher=85.22%  (366s)
+[lambada_overlay] wrote lambada_overlay_results.json (17)
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (44s)
+  substituting 252 body Linears (v17+overlay, rho=0.002, score=unweighted, alpha=0.25)
+  overlay: restored 2808/1400832 rows (0.200%), 13860864/6945767424 params (0.200%)
+  overlay bpw overhead: +0.0264 (base 2.7717 -> effective 2.7982)
+    [200/500] t1_gt=34.05%  t10_gt=67.69%
+    [400/500] t1_gt=33.91%  t10_gt=67.74%
+    [200/500] running ppl 38.9385
+    [400/500] running ppl 38.6594
+[Qwen3-8B] v17+ov rho=0.002 score=unweighted  PPL=38.5151  T1=34.05%  T10=67.80%  T1_vs_teacher=79.94%  (375s)
+[lambada_overlay] wrote lambada_overlay_results.json (18)
+
+================ overlay summary ================
+model              tier            score           rho   t1_ret   ppl_r  eff_bpw
+Mistral-7B         hifi+overlay    unweighted   0.0020   97.88%   1.088  2.7956
+OLMo-2-1B          hifi+overlay    unweighted   0.0020   94.15%   1.168  2.7915
+Qwen3-1.7B         hifi+overlay    unweighted   0.0020   93.53%   1.237  2.7967
+Qwen3-8B           hifi+overlay    unweighted   0.0020   97.46%   1.075  2.7982
+SmolLM2-1.7B       hifi+overlay    unweighted   0.0020   93.79%   1.219  2.7915
+TinyLlama-1.1B     hifi+overlay    unweighted   0.0020   96.56%   1.098  2.8003
+Mistral-7B         hifi+overlay    weighted     0.0020   97.86%   1.089  2.7956
+OLMo-2-1B          hifi+overlay    weighted     0.0020   94.16%   1.168  2.7915
+Qwen3-1.7B         hifi+overlay    weighted     0.0020   93.55%   1.219  2.7967
+Qwen3-8B           hifi+overlay    weighted     0.0020   97.48%   1.073  2.7982
+SmolLM2-1.7B       hifi+overlay    weighted     0.0020   93.88%   1.219  2.7915
+TinyLlama-1.1B     hifi+overlay    weighted     0.0020   96.67%   1.099  2.8003
+Mistral-7B         hifi+overlay    weighted     0.0050   98.08%   1.070  2.8349
+OLMo-2-1B          hifi+overlay    weighted     0.0050   94.23%   1.163  2.8311
+Qwen3-1.7B         hifi+overlay    weighted     0.0050   93.74%   1.238  2.8366
+Qwen3-8B           hifi+overlay    weighted     0.0050   97.58%   1.066  2.8369
+SmolLM2-1.7B       hifi+overlay    weighted     0.0050   93.52%   1.223  2.8311
+TinyLlama-1.1B     hifi+overlay    weighted     0.0050   96.47%   1.095  2.8388
