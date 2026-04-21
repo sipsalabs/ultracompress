@@ -28,7 +28,9 @@ def _reconstruct_v17(W_fp16: torch.Tensor, role: str, bank: dict,
     rs = Wrot.abs().amax(1, keepdim=True).clamp(min=1e-6)
     g = (Wrot / rs).view(O, I // D, D).reshape(-1, D)
     cb1 = bank["cb1"].to(device); cb2 = bank["cb2"].to(device)
-    idx1, idx2, _ = beam_assign(g, cb1, cb2, beam=8)
+    # Scale beam_assign chunk inversely with K1 so hifi codebooks don't OOM on 7B/8B.
+    chunk = max(25_000, (200_000 * 2048) // max(cb1.shape[0], 1))
+    idx1, idx2, _ = beam_assign(g, cb1, cb2, beam=8, chunk=chunk)
     gh = cb1[idx1] + cb2[idx2]
     Wq_rot_scaled = (gh.view(O, I // D, D).reshape(O, I)) * rs.expand(O, I)
     Wq_scaled = Wq_rot_scaled @ rot.T

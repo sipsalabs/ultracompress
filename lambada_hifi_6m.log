@@ -1,0 +1,51 @@
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\cuda\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776735597.380316    8460 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1776735598.764389    8460 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+W0420 19:39:59.625000 50296 site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+[skip] OLMo-2-1B: already in lambada_hifi_results.json
+[skip] TinyLlama-1.1B: already in lambada_hifi_results.json
+[skip] Qwen3-1.7B: already in lambada_hifi_results.json
+[skip] SmolLM2-1.7B: already in lambada_hifi_results.json
+
+[Mistral-7B] teacher -> mistral_7b_v0.3_cache.pt
+`torch_dtype` is deprecated! Use `dtype` instead!
+C:\Users\scamd\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\nn\modules\module.py:1370: UserWarning: expandable_segments not supported on this platform (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\c10/cuda/CUDAAllocatorConfig.h:39.)
+  return t.to(
+    [200/500] t1_gt=43.07%  t10_gt=75.00%
+    [400/500] t1_gt=43.15%  t10_gt=74.99%
+    [200/500] running ppl 17.1018
+    [400/500] running ppl 17.1160
+[Mistral-7B] teacher  PPL=17.3566  T1=42.96%  T10=74.74%   (35s)
+  substituting 224 body Linears (v17 stack, alpha=0.25)
+    [200/500] t1_gt=41.20%  t10_gt=73.21%
+    [400/500] t1_gt=41.24%  t10_gt=73.25%
+    [200/500] running ppl 20.0098
+    [400/500] running ppl 20.0274
+[Mistral-7B] v17 fit  PPL=20.2939  T1=41.12%  T10=72.98%   T1_vs_teacher=81.90%  (363s)
+[lambada_hifi] wrote lambada_hifi_results.json (6)
+
+[Qwen3-8B] teacher -> qwen3_8b_cache.pt
+    [200/500] t1_gt=34.84%  t10_gt=68.54%
+    [400/500] t1_gt=34.73%  t10_gt=68.55%
+    [200/500] running ppl 36.0692
+    [400/500] running ppl 35.9979
+[Qwen3-8B] teacher  PPL=35.8173  T1=34.94%  T10=68.61%   (43s)
+  substituting 252 body Linears (v17 stack, alpha=0.25)
+    [200/500] t1_gt=34.12%  t10_gt=67.88%
+    [400/500] t1_gt=34.00%  t10_gt=67.93%
+    [200/500] running ppl 40.4864
+    [400/500] running ppl 40.1623
+[Qwen3-8B] v17 fit  PPL=39.9929  T1=34.15%  T10=67.97%   T1_vs_teacher=80.22%  (375s)
+[lambada_hifi] wrote lambada_hifi_results.json (6)
+
+================ hifi summary ================
+model               teacher_ppl  v17hi_ppl   ratio   tchT1    hiT1   T1_ret
+OLMo-2-1B               31.5885    37.1236   1.175  34.75%  32.66%   93.98%
+TinyLlama-1.1B          21.8216    24.4748   1.122  40.03%  38.35%   95.81%
+Qwen3-1.7B              48.3843    72.3636   1.496  32.09%  29.70%   92.54%
+SmolLM2-1.7B            22.0188    27.8023   1.263  39.78%  36.97%   92.93%
+Mistral-7B              17.3566    20.2939   1.169  42.96%  41.12%   95.71%
+Qwen3-8B                35.8173    39.9929   1.117  34.94%  34.15%   97.75%

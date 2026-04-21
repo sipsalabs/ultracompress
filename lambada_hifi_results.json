@@ -66,5 +66,39 @@
     "t1_ret": 0.9292615868028279,
     "fit": "v17hi_fit_smollm2.pt",
     "tier": "hifi"
+  },
+  {
+    "name": "Mistral-7B",
+    "model_id": "mistralai/Mistral-7B-v0.3",
+    "n": 500,
+    "seq_len": 128,
+    "teacher_ppl": 17.35656295426819,
+    "teacher_t1": 0.429640625,
+    "teacher_t10": 0.747421875,
+    "v17_ppl": 20.293899273885224,
+    "v17_t1": 0.41121875,
+    "v17_t10": 0.729796875,
+    "v17_t1_vs_teacher": 0.81903125,
+    "ppl_ratio": 1.1692349071274337,
+    "t1_ret": 0.9571225951922029,
+    "fit": "v17hi_fit_mistral.pt",
+    "tier": "hifi"
+  },
+  {
+    "name": "Qwen3-8B",
+    "model_id": "Qwen/Qwen3-8B",
+    "n": 500,
+    "seq_len": 128,
+    "teacher_ppl": 35.81725238425645,
+    "teacher_t1": 0.349375,
+    "teacher_t10": 0.68609375,
+    "v17_ppl": 39.99294745724513,
+    "v17_t1": 0.341515625,
+    "v17_t10": 0.679703125,
+    "v17_t1_vs_teacher": 0.80221875,
+    "ppl_ratio": 1.116583344478543,
+    "t1_ret": 0.9775044722719142,
+    "fit": "v17hi_fit_8b.pt",
+    "tier": "hifi"
   }
 ]

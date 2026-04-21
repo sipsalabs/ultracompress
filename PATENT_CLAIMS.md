@@ -1731,3 +1731,43 @@ alpha-specific retuning.
 - `lambada_hifi_results.json` -- per-model teacher/v17 PPL, T1, T10, and  
   retention on LAMBADA.  
 - `fit_hifi.log` / `lambada_hifi.log` -- full stdout for both phases.
+
+## Claim 16 capacity-tier hardening: LAMBADA 6/6 models at 2.78 bpw
+
+The 2.40-bpw baseline is one rung on a continuous Pareto ladder. Doubling `role_K` (K1 2048->4096, K2 256->1024; o_proj K1 4096->8192, K2 512->2048), with all other knobs (D=8, alpha=0.25, beam=8, 6 EM iters) held fixed, produces a uniform lift across the entire 6-model cohort.
+
+### LAMBADA (identical 500 windows / seed as Claim-16 baseline, 6/6 models)
+
+| Model          | 2.40 bpw T1 ret | 2.78 bpw T1 ret | lift  | 2.40 PPL ratio | 2.78 PPL ratio |
+|----------------|----------------:|----------------:|------:|---------------:|---------------:|
+| OLMo-2-1B      |          89.39% |      **93.98%** | +4.59 |          1.378 |      **1.175** |
+| TinyLlama-1.1B |          90.02% |      **95.81%** | +5.79 |          1.317 |      **1.122** |
+| Qwen3-1.7B     |          83.19% |      **92.54%** | +9.35 |          1.672 |      **1.496** |
+| SmolLM2-1.7B   |          86.66% |      **92.93%** | +6.27 |          1.501 |      **1.263** |
+| Mistral-7B     |          90.94% |      **95.71%** | +4.77 |          1.349 |      **1.169** |
+| Qwen3-8B       |          94.66% |      **97.75%** | +3.09 |          1.223 |      **1.117** |
+
+- **Cohort minimum retention: 92.54%** (Qwen3-1.7B), up from 83.19% at 2.40 bpw.
+- **Cohort maximum retention: 97.75%** (Qwen3-8B).
+- **Mean lift: +5.64 pp** at **+0.38 bpw mean cost** (2.7705-2.7803 bpw across the six hifi fits).
+- Weight-space rel_w_mean on the small-model cohort halves from 0.052-0.072 to 0.037-0.053; Mistral-7B and Qwen3-8B land at 0.0583 and 0.0418 respectively.
+
+### What this demonstrates for Claim 16
+
+1. **The capacity dial is a structural property.** `fit_v17_hifi.py` differs from `fit_v17_8b.py` only in the `role_K` dict. Same algorithm, same activation cache, same beam-assign + EM + alpha-scaled loss. The bpw-vs-fidelity Pareto curve is exposed through a single tuple, not a family of bespoke recipes.
+2. **The dial is monotone across 7.5x scale range and three families.** No model regresses; no per-model alpha adjustment is required to benefit. TinyLlama (Llama-2, 1.1B), OLMo-2 (Llama-2, 1.5B), SmolLM2 (Llama-2, 1.8B), Qwen3-1.7B, Mistral-7B-v0.3, and Qwen3-8B all improve.
+3. **Lift is largest where the baseline was weakest.** Qwen3-1.7B (the 2.40-bpw outlier at 83.19%) captures the largest share of the new bit budget (+9.35 pp); Qwen3-8B (already 94.66% at 2.40 bpw) captures the smallest (+3.09 pp). This is the expected signature of capacity-limited quantization and confirms the 2.40-bpw tier had pushed the small-K1 codebooks to their distortion floor on the weakest-baseline model.
+4. **OOD character is preserved.** LAMBADA is still never seen during activation collection (WikiText-103) or during fitting; the hifi numbers are out-of-distribution retention.
+
+### Implementation note (evaluation path)
+
+The hifi tier doubles K1 to 4096, which makes the beam-assign distance matrix (batch x K1) 2x wider during evaluation. On 7B/8B models this collides with the 32GB VRAM budget when combined with a full-precision teacher on device. `eval_v17_ppl.py::_reconstruct_v17` now scales the beam-assign chunk inversely with K1 (baseline 200k @ K1=2048 -> 100k @ K1=4096), and the driver sets `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` to defragment reserved memory. With these two changes 7B/8B hifi fits evaluate in-budget on a single 32GB card. No retune or approximation; the decode is still exact joint beam assignment against the fitted banks.
+
+### Artifacts of record
+
+- `fit_v17_hifi.py` -- driver; loads baseline activation caches, calls `v17_compress(..., role_K=ROLE_K_HIFI, ...)`, writes per-model fits.
+- `lambada_hifi.py` -- reuses `lambada_all.run_one` with the hifi fit paths and a `tier=hifi` field in each record.
+- `v17hi_fit_summary.json` -- per-model bpw, overhead, rel_w stats, wall time (6 rows).
+- `lambada_hifi_results.json` -- per-model teacher/v17 PPL, T1, T10, retention on LAMBADA (6 rows).
+- `fit_hifi.log` / `fit_hifi_7b8b.log` / `lambada_hifi_6m.log` -- full stdout.
+

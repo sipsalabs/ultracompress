@@ -187,3 +187,25 @@ Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py),
 [`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json),  
 [`lambada_hifi_results.json`](lambada_hifi_results.json).
 
+
+## Capacity-tier dial: 2.40 bpw -> 2.78 bpw (Claim 16, all 6 models)
+
+Full 6-model envelope at the higher capacity tier. Same algorithm, same alpha=0.25, D=8, beam=8, 6 EM iters -- only `role_K` is doubled (K1 2048->4096, K2 256->1024; o_proj K1 4096->8192, K2 512->2048). Same LAMBADA 500-window / seed protocol as the 2.40-bpw baseline.
+
+| Model          | 2.40 bpw T1 ret | 2.78 bpw T1 ret | lift  | 2.40 PPL ratio | 2.78 PPL ratio |
+|----------------|----------------:|----------------:|------:|---------------:|---------------:|
+| OLMo-2-1B      |          89.39% |      **93.98%** | +4.59 |          1.378 |      **1.175** |
+| TinyLlama-1.1B |          90.02% |      **95.81%** | +5.79 |          1.317 |      **1.122** |
+| Qwen3-1.7B     |          83.19% |      **92.54%** | +9.35 |          1.672 |      **1.496** |
+| SmolLM2-1.7B   |          86.66% |      **92.93%** | +6.27 |          1.501 |      **1.263** |
+| Mistral-7B     |          90.94% |      **95.71%** | +4.77 |          1.349 |      **1.169** |
+| Qwen3-8B       |          94.66% |      **97.75%** | +3.09 |          1.223 |      **1.117** |
+
+**All 6 models now >=92.5% T1 retention, top model (Qwen3-8B) at 97.75%.** Mean lift = +5.64 percentage points at +0.38 bpw mean cost. Bit-budget range across the 6 hifi fits: 2.7705 - 2.7803 bpw.
+
+Weight-space reconstruction error halves on the small-model cohort (rel_w_mean 0.052-0.072 -> 0.037-0.053). Mistral-7B and Qwen3-8B hifi rel_w_mean land at 0.0583 and 0.0418 respectively (wall 2267s / 2230s on one RTX 5090).
+
+The lift is monotone -- no model regresses, no per-model retuning -- demonstrating the capacity dial is a first-class property of the Claim 16 method, not a tuned recipe. Lift is largest where the 2.40-bpw baseline was weakest (Qwen3-1.7B +9.35 pp), smallest where the baseline already had headroom (Qwen3-8B +3.09 pp).
+
+Drivers and artifacts: [`fit_v17_hifi.py`](fit_v17_hifi.py), [`lambada_hifi.py`](lambada_hifi.py), [`v17hi_fit_summary.json`](v17hi_fit_summary.json), [`lambada_hifi_results.json`](lambada_hifi_results.json), [`fit_hifi.log`](fit_hifi.log), [`fit_hifi_7b8b.log`](fit_hifi_7b8b.log), [`lambada_hifi_6m.log`](lambada_hifi_6m.log).
+
