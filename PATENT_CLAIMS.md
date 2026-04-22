@@ -3032,6 +3032,39 @@ compressor, and is entirely recoverable under a one-page bit-level
 emitter. Artifacts: `results/claim21_varint_emitter.txt` and
 `results/claim21_varint_emitter_<model>_rho0.01.json`.
 
+**Shared-coder cross-entropy: operational universality.** Wave 22
+established distribution-shape universality for `fp8` and `idx_delta`
+at the level of raw histograms (Pearson r, TV, JSD). Wave 25 upgrades
+this to a direct statement about *coders*: for each stream and each
+"training" model M_t, a 256-bin Laplace-smoothed pmf is built from
+M_t's byte histogram; the cross-entropy
+$H(M_e, M_t) = -\sum_b p_{M_e}(b)\,\log_2 q_{M_t}(b)$ is then measured
+for every "evaluation" model M_e. The diagonal is the self-entropy
+(Shannon floor). The off-diagonal excess
+$\Delta_{e,t} = H(M_e, M_t) - H(M_e, M_e)$ is the exact bpB tax a
+static frequency coder trained on M_t pays when shipped to M_e.
+Across 4 models at ρ = 0.010, 12 off-diagonal pairs per stream:
+
+| stream      | global mean Δ bpB | global worst Δ bpB |
+|-------------|------------------:|-------------------:|
+| fp8         |           0.01327 |            0.03604 |
+| idx_delta   |           0.02768 |            0.03257 |
+| scale       |           2.26130 |            4.74648 |
+
+The `fp8` and `idx_delta` streams both carry a worst-case universal
+tax below 0.04 bpB — i.e. a SINGLE static entropy coder built on any
+one of the four pretrained models is within 0.04 bpB of the Shannon
+floor on every other model. Combined with wave 24's demonstration
+that a bit-level Rice emitter on `idx_delta` sits 0.061 bpB from the
+floor, the total tax of a single fixed universal coder shared across
+unrelated pretrained models is ≤ 0.1 bpB over theoretical optimum on
+both dominant streams. The `scale` stream is the clean negative
+control: its worst Δ reaches 4.75 bpB, confirming the wave-22 finding
+that scale distributions are genuinely model-specific and require
+per-model frequency tables. Pure aggregator over existing wave-19
+histogram JSONs (no GPU). Artifacts: `results/claim21_shared_coder.txt`
+and `results/claim21_shared_coder.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

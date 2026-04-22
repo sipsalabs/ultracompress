@@ -1,0 +1,69 @@
+Claim-21 shared-coder cross-entropy (wave 25)
+======================================================================================
+
+For each stream, cell (e, t) = bpB paid when coding model e's
+bytes with a Laplace-smoothed pmf trained on model t's bytes.
+Diagonal = Shannon self-entropy (floor). Row max over
+off-diagonal - diagonal = worst-case bpB tax of a static
+universal coder trained on any single model.
+
+Cohort: n=4 at rho=0.010
+
+--- stream: fp8 ---
+  eval \ train                olmo2_1b    qwen3_1.7b  smollm2_1.7b     tinyllama      self H
+  olmo2_1b              *       6.6218        6.6276        6.6396        6.6576      6.6218
+  qwen3_1.7b                    6.6777*       6.6720        6.6754        6.6853      6.6720
+  smollm2_1.7b                  6.7297        6.7153*       6.7119        6.7152      6.7119
+  tinyllama                     6.7942        6.7716        6.7615*       6.7582      6.7582
+
+  Cross-entropy excess over self-entropy (delta bpB, off-diagonal):
+  train model               mean delta bpB     worst delta bpB
+  olmo2_1b                         0.01986             0.03604
+  qwen3_1.7b                       0.00754             0.01341
+  smollm2_1.7b                     0.00821             0.01784
+  tinyllama                        0.01746             0.03577
+  global mean delta bpB (all off-diagonal) = 0.01327
+  global worst delta bpB                   = 0.03604
+
+--- stream: idx_delta ---
+  eval \ train                olmo2_1b    qwen3_1.7b  smollm2_1.7b     tinyllama      self H
+  olmo2_1b              *       2.7867        2.8089        2.8134        2.8191      2.7855
+  qwen3_1.7b                    2.8139*       2.7913        2.8183        2.8210      2.7906
+  smollm2_1.7b                  2.8110        2.8103*       2.7827        2.8098      2.7822
+  tinyllama                     2.8116        2.8090        2.8052*       2.7790      2.7776
+
+  Cross-entropy excess over self-entropy (delta bpB, off-diagonal):
+  train model               mean delta bpB     worst delta bpB
+  olmo2_1b                         0.02780             0.03257
+  qwen3_1.7b                       0.02662             0.03001
+  smollm2_1.7b                     0.02660             0.02692
+  tinyllama                        0.02971             0.03243
+  global mean delta bpB (all off-diagonal) = 0.02768
+  global worst delta bpB                   = 0.03257
+
+--- stream: scale ---
+  eval \ train                olmo2_1b    qwen3_1.7b  smollm2_1.7b     tinyllama      self H
+  olmo2_1b              *       6.3482        8.0498       11.0947        8.2201      6.3448
+  qwen3_1.7b                    6.4052*       5.0526        8.1930        5.5364      5.0273
+  smollm2_1.7b                  8.0725        7.1633*       5.1735        7.3859      5.1513
+  tinyllama                     7.5154        6.5956        8.6115*       5.3282      5.2930
+
+  Cross-entropy excess over self-entropy (delta bpB, off-diagonal):
+  train model               mean delta bpB     worst delta bpB
+  olmo2_1b                         2.14622             2.89899
+  qwen3_1.7b                       1.65292             1.98988
+  smollm2_1.7b                     3.72337             4.74648
+  tinyllama                        1.52268             2.21245
+  global mean delta bpB (all off-diagonal) = 2.26130
+  global worst delta bpB                   = 4.74648
+
+======================================================================================
+INTERPRETATION
+--------------------------------------------------------------------------------------
+- global worst delta bpB near 0 => a SINGLE static entropy
+  coder built on any one model is near-optimal on every model
+  for this stream. This is the operational form of the wave-22
+  distribution-shape universality result.
+- Large delta on scale confirms the wave-22 finding that scale
+  distributions are model-specific and need per-model tables.
+
