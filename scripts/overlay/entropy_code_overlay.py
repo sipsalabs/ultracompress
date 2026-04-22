@@ -130,6 +130,8 @@ def main():
     ap.add_argument("--score", default="weighted", choices=["weighted", "raw"])
     ap.add_argument("--device", default="cuda:0")
     ap.add_argument("--out",   default="results/claim21_entropy_coding.json")
+    ap.add_argument("--codec_sweep", action="store_true",
+                    help="Also measure zstd levels {3,9,15,22}, zlib, bz2, lzma on each stream.")
     args = ap.parse_args()
 
     teacher_pt, v17_pt = MODEL_CONFIGS[args.model]
@@ -262,6 +264,65 @@ def main():
     print(f"  savings on overlay bits :  {saved_pct:.2f}% "
           f"({saved_bpw:+.4f} bpw absolute)")
 
+    # ---------- Optional multi-codec sweep (Claim 21 strengthening) ----------
+    codec_sweep = None
+    if args.codec_sweep:
+        import zlib as _zlib, bz2 as _bz2, lzma as _lzma
+        import zstandard as _zstd
+
+        def _zstd_at(buf, lvl):
+            return _zstd.ZstdCompressor(level=lvl).compress(buf)
+
+        CODECS = [
+            ("zstd-3",  lambda b: _zstd_at(b, 3)),
+            ("zstd-9",  lambda b: _zstd_at(b, 9)),
+            ("zstd-15", lambda b: _zstd_at(b, 15)),
+            ("zstd-22", lambda b: _zstd_at(b, 22)),
+            ("zlib-9",  lambda b: _zlib.compress(b, 9)),
+            ("bz2-9",   lambda b: _bz2.compress(b, 9)),
+            ("lzma-6",  lambda b: _lzma.compress(b, preset=6)),
+        ]
+        streams = {"fp8": fp8_buf, "idx_delta": idx_buf, "scale": scale_buf}
+        shannon = {"fp8": H_fp8, "idx_delta": H_idx, "scale": H_scale}
+
+        codec_sweep = {}
+        print()
+        print("[codec sweep] per-stream compressed size (bytes) and bits/byte")
+        header = f"  {'stream':<10} {'raw':>12} {'Shannon':>8}  " + " ".join(f"{n:>8}" for n, _ in CODECS)
+        print(header)
+        for name, raw in streams.items():
+            row = {
+                "raw_bytes": len(raw),
+                "shannon_bits_per_byte": shannon[name],
+                "shannon_bytes": len(raw) * shannon[name] / 8.0,
+                "codecs": {},
+            }
+            row_str = f"  {name:<10} {len(raw):>12,} {shannon[name]:>8.3f}  "
+            for cname, cfn in CODECS:
+                c = cfn(raw)
+                row["codecs"][cname] = {
+                    "bytes": len(c),
+                    "bits_per_byte": 8.0 * len(c) / max(len(raw), 1),
+                }
+                row_str += f"{len(c):>8,} "
+            print(row_str)
+            codec_sweep[name] = row
+
+        # Cross-codec overlay-bpw table (sum across 3 streams)
+        print()
+        print("[codec sweep] total overlay bpw + savings vs raw overlay")
+        raw_overlay_bits = 8 * (len(fp8_buf) + len(idx_buf) + len(scale_buf))
+        for cname, _ in CODECS:
+            total_bytes = sum(codec_sweep[s]["codecs"][cname]["bytes"] for s in streams)
+            total_bits = 8 * total_bytes
+            bpw_overlay = total_bits / max(n_total_params, 1)
+            saved_pct_c = 100 * (raw_overlay_bits - total_bits) / raw_overlay_bits
+            shannon_total_bits = sum(codec_sweep[s]["shannon_bytes"] for s in streams) * 8
+            gap_pct = 100 * (total_bits - shannon_total_bits) / max(raw_overlay_bits - shannon_total_bits, 1)
+            print(f"  {cname:<8}  total={total_bytes:>12,} bytes  "
+                  f"bpw={bpw_overlay:.5f}  saved={saved_pct_c:5.2f}%  "
+                  f"gap->H={gap_pct:+5.2f}%")
+
     # ---------- emit JSON ----------
     out_path = REPO / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -296,6 +357,8 @@ def main():
         "saved_pct_of_overlay_bits": float(saved_pct),
         "saved_bpw_absolute": float(saved_bpw),
     }
+    if codec_sweep is not None:
+        result["codec_sweep"] = codec_sweep
     out_path.write_text(json.dumps(result, indent=2))
     print(f"\n[entropy-code] wrote {out_path}")
 

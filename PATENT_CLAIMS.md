@@ -1121,9 +1121,9 @@ lies in a tight envelope:
 **Patent-strengthening empirical law.** Define the "Claim-16 envelope" at
 2.40 bpw as the simultaneous satisfaction of
 
-  (E1) ratio(PPL) ≤ 1.8×  
-  (E2) T1 retention ≥ 83%  
-  (E3) T10 teacher-agreement ≥ 93%  
+  (E1) ratio(PPL) ≤ 1.8×
+  (E2) T1 retention ≥ 83%
+  (E3) T10 teacher-agreement ≥ 93%
   (E4) bpw within ±0.005 of 2.4000
 
 Across **4 of 4** models tested spanning **3 distinct architecture
@@ -1679,14 +1679,14 @@ quantization noise averages over more independent heads and channels.
 
 ## Claim 16 capacity-tier hardening: LAMBADA at 2.78 bpw
 
-The 2.40-bpw operating point is one rung on a continuous Pareto ladder,  
-not a global optimum. Claim 16 exposes the ladder through a single  
-structural parameter - the per-role codebook capacity tuple  
-(`K1`, `K2`) - and requires no other change to hit a higher-fidelity  
-rung. Fits were re-run on the four small-model (<=2B) cohort at  
-(`K1`=4096, `K2`=1024) with `o_proj` at (`K1`=8192, `K2`=2048),  
-keeping D=8, alpha=0.25, beam=8, 6 EM iters unchanged. The resulting  
-on-disk bit-budget is **2.7705-2.7803 bpw**, i.e. +0.38 bpw vs the  
+The 2.40-bpw operating point is one rung on a continuous Pareto ladder,
+not a global optimum. Claim 16 exposes the ladder through a single
+structural parameter - the per-role codebook capacity tuple
+(`K1`, `K2`) - and requires no other change to hit a higher-fidelity
+rung. Fits were re-run on the four small-model (<=2B) cohort at
+(`K1`=4096, `K2`=1024) with `o_proj` at (`K1`=8192, `K2`=2048),
+keeping D=8, alpha=0.25, beam=8, 6 EM iters unchanged. The resulting
+on-disk bit-budget is **2.7705-2.7803 bpw**, i.e. +0.38 bpw vs the
 baseline 2.40-bpw tier.
 
 ### LAMBADA (identical 500 windows / seed as Claim-16 baseline)
@@ -1698,38 +1698,38 @@ baseline 2.40-bpw tier.
 | Qwen3-1.7B     |          83.19% |      **92.54%** | +9.35 |          1.672 |      **1.496** |
 | SmolLM2-1.7B   |          86.66% |      **92.93%** | +6.27 |          1.501 |      **1.263** |
 
-Weight-space MSE tracks the retention gain: mean relative W-error on the  
-same four fits goes from 0.052-0.072 at 2.40 bpw to 0.037-0.053 at 2.78 bpw  
-(olmo2 0.054 -> 0.037; qwen3_1.7b 0.052 -> 0.043; smollm2 0.073 -> 0.039).  
-The tier is a **lossless reduction in quantization noise at the cost of  
-0.38 extra bits/weight**, with no corpus-specific, family-specific, or  
+Weight-space MSE tracks the retention gain: mean relative W-error on the
+same four fits goes from 0.052-0.072 at 2.40 bpw to 0.037-0.053 at 2.78 bpw
+(olmo2 0.054 -> 0.037; qwen3_1.7b 0.052 -> 0.043; smollm2 0.073 -> 0.039).
+The tier is a **lossless reduction in quantization noise at the cost of
+0.38 extra bits/weight**, with no corpus-specific, family-specific, or
 alpha-specific retuning.
 
 ### What this demonstrates for Claim 16
 
-1. **The dial is real and smooth.** Doubling codebook capacity produces  
-   monotone improvement across all four models. No model regresses; none  
+1. **The dial is real and smooth.** Doubling codebook capacity produces
+   monotone improvement across all four models. No model regresses; none
    requires per-model alpha adjustment to benefit.
-2. **The lift is largest where the baseline is weakest.** Qwen3-1.7B  
-   (83.19% T1 ret at 2.40 bpw) jumps 9.35 points - the cohort member with  
-   the steepest PPL ratio at 2.40 bpw captures the largest share of the  
-   new bit budget. This is the expected signature of capacity-limited  
-   quantization and confirms that 2.40 bpw had pushed the smaller  
+2. **The lift is largest where the baseline is weakest.** Qwen3-1.7B
+   (83.19% T1 ret at 2.40 bpw) jumps 9.35 points - the cohort member with
+   the steepest PPL ratio at 2.40 bpw captures the largest share of the
+   new bit budget. This is the expected signature of capacity-limited
+   quantization and confirms that 2.40 bpw had pushed the smaller
    codebooks to their distortion floor on that model.
-3. **No method change.** `scripts/overlay/fit_v17_hifi.py` differs from `scripts/overlay/fit_v17_8b.py`  
-   only in the `role_K` dict. Same algorithm, same activation cache,  
+3. **No method change.** `scripts/overlay/fit_v17_hifi.py` differs from `scripts/overlay/fit_v17_8b.py`
+   only in the `role_K` dict. Same algorithm, same activation cache,
    same beam-assign + EM + alpha-scaled loss.
 
 ### Artifacts of record
 
-- `scripts/overlay/fit_v17_hifi.py` -- driver; loads baseline activation caches, calls  
-  `v17_compress(..., role_K=ROLE_K_HIFI, ...)`, writes per-model fits.  
-- `scripts/overlay/lambada_hifi.py` -- reuses `lambada_all.run_one` with the new fit  
-  paths and an extra `tier=hifi` field in each record.  
-- `results/v17hi_fit_summary.json` -- per-model bpw, overhead, rel_w stats, wall  
-  time.  
-- `results/lambada_hifi_results.json` -- per-model teacher/v17 PPL, T1, T10, and  
-  retention on LAMBADA.  
+- `scripts/overlay/fit_v17_hifi.py` -- driver; loads baseline activation caches, calls
+  `v17_compress(..., role_K=ROLE_K_HIFI, ...)`, writes per-model fits.
+- `scripts/overlay/lambada_hifi.py` -- reuses `lambada_all.run_one` with the new fit
+  paths and an extra `tier=hifi` field in each record.
+- `results/v17hi_fit_summary.json` -- per-model bpw, overhead, rel_w stats, wall
+  time.
+- `results/lambada_hifi_results.json` -- per-model teacher/v17 PPL, T1, T10, and
+  retention on LAMBADA.
 - `fit_hifi.log` / `lambada_hifi.log` -- full stdout for both phases.
 
 ## Claim 16 capacity-tier hardening: LAMBADA 6/6 models at 2.78 bpw
@@ -2305,6 +2305,50 @@ zstd-specific artifact — any competent entropy coder (arithmetic,
 range, ANS) will land within ~3 pp of these numbers on the same
 payload streams.
 
+### Cross-codec validation (measured, 4 independent codec families)
+
+The "not zstd-specific" assertion above is validated directly. The
+same three payload streams were re-encoded with **seven coders** from
+four distinct algorithmic families (LZ77+FSE: zstd-{3,9,15,22}; LZ77+Huffman:
+zlib-9; BWT+RLE+Huffman: bz2-9; LZMA+range: lzma-6) on four
+measurement points spanning 2B-7B scale:
+
+| model / rho        | zstd-3 | zstd-22 | zlib-9 | lzma-6 | bz2-9 | spread (ex-bz2) |
+|--------------------|-------:|--------:|-------:|-------:|------:|----------------:|
+| OLMo-2-1B  / 0.003 | 16.33% |  15.96% | 16.34% | 17.32% | 11.97% |          1.36 pp |
+| OLMo-2-1B  / 0.010 | 17.09% |  16.81% | 16.89% | 17.50% | 12.73% |          0.69 pp |
+| OLMo-2-1B  / 0.030 | 17.41% |  17.27% | 17.24% | 17.56% | 13.20% |          0.32 pp |
+| Mistral-7B / 0.010 | 16.31% |  15.89% | 16.30% | 16.88% | 12.10% |          0.99 pp |
+
+(Values are percent overlay-bit reduction vs raw; "spread" excludes
+bz2-9, whose BWT pipeline is a poor fit for the fp8 value stream.)
+
+**Findings.**
+
+1. **The method is entropy-coder-agnostic.** All four LZ77 / LZMA
+   coders agree to within ~1.4 pp at rho=0.003 and ~0.3 pp at
+   rho=0.030 across a 5× parameter-count range. Zstd level 3 (fast)
+   and zstd level 22 (slow) differ by <0.5 pp on every measurement.
+
+2. **LZMA-6 slightly beats zstd** (0.3-1.4 pp more savings) because
+   its higher-order range coder models multi-byte fp8 correlations
+   better — the direction predicted by the sub-Shannon gap on
+   Qwen3-8B. This is independent confirmation that the "negative gap"
+   in the main cohort is a real multi-byte-context effect, not
+   instrumentation.
+
+3. **bz2 is ~4 pp worse** because BWT of fp8 data breaks the
+   per-row local coherence that the other coders exploit. We report
+   this negative result for audit: the claim is not trivially "any
+   bytestream compression works"; the payload has specific structure
+   that LZ-family coders capture.
+
+4. **Practical implication.** The Claim 21 savings at rho=0.003 vary
+   by <0.005 bpw across zstd-3 (fast), zlib-9 (ubiquitous), and
+   zstd-22 (slow). A deployment free to pick its codec can run
+   **zstd-3 at ~100× faster compression** than zstd-22 with virtually
+   no loss of savings.
+
 ### Honest scope and exclusions
 
 - This claim does NOT compress the Claim-16 base codebook bytes (no measurable
@@ -2328,6 +2372,10 @@ payload streams.
   - sweep driver (6 models x 2 rho).
 - [scripts/overlay/claim21_summary.py](scripts/overlay/claim21_summary.py)
   - aggregator emitting [results/claim21_summary.json](results/claim21_summary.json)
+- `results/claim21_codec_sweep_*.json` - cross-codec validation
+  (olmo2_1b at rho = 0.003, 0.010, 0.030 and mistral_7b at rho = 0.010),
+  each file containing measured compressed sizes for zstd-{3,9,15,22},
+  zlib-9, bz2-9, lzma-6 on the fp8, idx_delta, and scale streams.
   and [results/claim21_summary.txt](results/claim21_summary.txt).
 - [logs/claim21_sweep.log](logs/claim21_sweep.log) - full sweep stdout.
 

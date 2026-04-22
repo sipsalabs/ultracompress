@@ -537,7 +537,7 @@ Claim 18A as degenerate cases (K2=0 ? pure fp16; K1=0 ? pure fp8).
 
 ## Claim 19: External-baseline head-to-head (bitsandbytes nf4, 6-model cohort)
 
-First head-to-head comparison of our row-overlay stack against an external quantization baseline (itsandbytes 0.49.2, 
+First head-to-head comparison of our row-overlay stack against an external quantization baseline (itsandbytes 0.49.2,
 f4 with double-quant, fp16 compute). Identical teacher protocol, identical LAMBADA windows (n=80, seq_len=128, seed 42), identical top-k measurement (eval_claim16_topk.measure_topk with `teacher_topk=tch_cache`). Driver: `scripts/overlay/benchmark_head_to_head.py`.
 
 | model           | ours_fp8 T1-ret | ours_mixed T1-ret | nf4 T1-ret | best_our | bpw_our | gap vs nf4 |
@@ -720,6 +720,26 @@ because zstd exploits multi-byte Markov context that marginal
 byte-entropy does not see. The 14.5%-17.3% savings are therefore a
 near-optimal realization of the information-theoretic limit, not a
 zstd-specific artifact.
+
+**Cross-codec validation (4 independent coder families on 4 measurement points).**
+The same three payload streams re-encoded with zstd-{3,9,15,22},
+zlib-9, bz2-9, and lzma-6:
+
+| model / rho        | zstd-3 | zstd-22 | zlib-9 | lzma-6 | bz2-9  | spread (ex-bz2) |
+|--------------------|-------:|--------:|-------:|-------:|-------:|----------------:|
+| OLMo-2-1B  / 0.003 | 16.33% |  15.96% | 16.34% | 17.32% | 11.97% |         1.36 pp |
+| OLMo-2-1B  / 0.010 | 17.09% |  16.81% | 16.89% | 17.50% | 12.73% |         0.69 pp |
+| OLMo-2-1B  / 0.030 | 17.41% |  17.27% | 17.24% | 17.56% | 13.20% |         0.32 pp |
+| Mistral-7B / 0.010 | 16.31% |  15.89% | 16.30% | 16.88% | 12.10% |         0.99 pp |
+
+Across four LZ-family coders (zstd levels 3/9/15/22 + zlib) the
+savings agree to within **0.3-1.4 pp**; LZMA-6 adds another 0.3-1.4 pp
+by exploiting deeper multi-byte context (same mechanism as the
+sub-Shannon Qwen3-8B row). BZ2 underperforms by ~4 pp because its
+BWT+RLE pipeline is a poor match for fp8 residuals — reported for
+audit. Practical consequence: deploying with **zstd-3** (~100x faster
+compression than zstd-22) costs <0.5 pp of savings on every
+measurement, so the claim is insensitive to compression-time budget.
 
 **Read-out.** Entropy coding the overlay payload reduces overlay bits
 by 14.5%-17.3% across every (model, rho) pair with zero quality change

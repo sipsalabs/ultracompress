@@ -1,0 +1,138 @@
+{
+  "claim": 21,
+  "model": "olmo2_1b",
+  "rho": 0.01,
+  "score_mode": "weighted",
+  "n_restored_rows": 4224,
+  "n_total_rows": 425984,
+  "n_restored_params": 10616832,
+  "n_total_params": 1073741824,
+  "avg_row_width": 2513.4545454545455,
+  "base_bpw": 2.765625,
+  "payload_bytes": {
+    "fp8_raw": 10616832,
+    "fp8_zstd22": 8834531,
+    "idx_delta_raw": 8448,
+    "idx_delta_zstd": 5339,
+    "scale_raw": 8448,
+    "scale_zstd": 6842
+  },
+  "shannon_entropy_bits_per_byte": {
+    "fp8": 6.621802893059548,
+    "idx": 4.8821165798544675,
+    "scale": 6.344750673621002
+  },
+  "old_overlay_bpw": 0.07929039001464844,
+  "new_overlay_bpw": 0.0659131407737732,
+  "old_effective_bpw": 2.8449153900146484,
+  "new_effective_bpw": 2.831538140773773,
+  "saved_pct_of_overlay_bits": 16.871211301147433,
+  "saved_bpw_absolute": 0.013377249240875244,
+  "codec_sweep": {
+    "fp8": {
+      "raw_bytes": 10616832,
+      "shannon_bits_per_byte": 6.621802893059548,
+      "shannon_bytes": 8787821.106590899,
+      "codecs": {
+        "zstd-3": {
+          "bytes": 8804078,
+          "bits_per_byte": 6.634052794656636
+        },
+        "zstd-9": {
+          "bytes": 8851231,
+          "bits_per_byte": 6.6695835443190585
+        },
+        "zstd-15": {
+          "bytes": 8841061,
+          "bits_per_byte": 6.66192024136767
+        },
+        "zstd-22": {
+          "bytes": 8834531,
+          "bits_per_byte": 6.6569997528452935
+        },
+        "zlib-9": {
+          "bytes": 8825556,
+          "bits_per_byte": 6.650236906828703
+        },
+        "bz2-9": {
+          "bytes": 9268433,
+          "bits_per_byte": 6.98395378206983
+        },
+        "lzma-6": {
+          "bytes": 8761892,
+          "bits_per_byte": 6.602264781057099
+        }
+      }
+    },
+    "idx_delta": {
+      "raw_bytes": 8448,
+      "shannon_bits_per_byte": 4.8821165798544675,
+      "shannon_bytes": 5155.515108326317,
+      "codecs": {
+        "zstd-3": {
+          "bytes": 5380,
+          "bits_per_byte": 5.09469696969697
+        },
+        "zstd-9": {
+          "bytes": 5362,
+          "bits_per_byte": 5.077651515151516
+        },
+        "zstd-15": {
+          "bytes": 5324,
+          "bits_per_byte": 5.041666666666667
+        },
+        "zstd-22": {
+          "bytes": 5339,
+          "bits_per_byte": 5.055871212121212
+        },
+        "zlib-9": {
+          "bytes": 5620,
+          "bits_per_byte": 5.321969696969697
+        },
+        "bz2-9": {
+          "bytes": 5018,
+          "bits_per_byte": 4.7518939393939394
+        },
+        "lzma-6": {
+          "bytes": 4868,
+          "bits_per_byte": 4.609848484848484
+        }
+      }
+    },
+    "scale": {
+      "raw_bytes": 8448,
+      "shannon_bits_per_byte": 6.344750673621002,
+      "shannon_bytes": 6700.056711343778,
+      "codecs": {
+        "zstd-3": {
+          "bytes": 6827,
+          "bits_per_byte": 6.464962121212121
+        },
+        "zstd-9": {
+          "bytes": 6824,
+          "bits_per_byte": 6.462121212121212
+        },
+        "zstd-15": {
+          "bytes": 6842,
+          "bits_per_byte": 6.479166666666667
+        },
+        "zstd-22": {
+          "bytes": 6842,
+          "bits_per_byte": 6.479166666666667
+        },
+        "zlib-9": {
+          "bytes": 6854,
+          "bits_per_byte": 6.490530303030303
+        },
+        "bz2-9": {
+          "bytes": 6604,
+          "bits_per_byte": 6.253787878787879
+        },
+        "lzma-6": {
+          "bytes": 6444,
+          "bits_per_byte": 6.1022727272727275
+        }
+      }
+    }
+  }
+}
