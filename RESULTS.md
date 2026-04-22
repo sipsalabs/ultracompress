@@ -668,3 +668,69 @@ The penultimate row (+60.75 pp at **lower** bpw than HQQ 2-bit g16) is the stron
 ### Claim-20 takeaway (one sentence)
 
 > On a 6-model, 48-measurement LAMBADA sweep at n=500 against two independent external quantization families (bitsandbytes + HQQ), our ~2.80-bpw row-overlay stack retains 95.6% of teacher top-1 accuracy cohort-average, closes to within 0.7 pp of nf4 and 0.6 pp of HQQ 4-bit at 8B scale while using 30â€“38% fewer bits, and produces zero catastrophic failures â€” whereas HQQ at or below 4.0 bpw catastrophically fails on at least one model in every tested sub-2B configuration.
+
+
+---
+
+## Claim 21: Entropy coding of the overlay payload (cohort-measured)
+
+**Mechanism.** The Claim-18A (fp8) row-overlay payload is further
+compressed by (a) delta-coding the row indices, (b) applying zstd level
+22 to each of the three payload streams independently (fp8 values, idx
+deltas, fp16 scales). Shannon entropy of the fp8 values is measured
+in parallel as a lower-bound proxy. The codebook/decode path is
+unchanged; this claim is purely a lossless re-encoding of the overlay
+side-channel.
+
+**Measured effect (6-model LAMBADA cohort, 2 overlay operating points,
+same Claim-17/18A fit artifacts):**
+
+| model         | rho   | rows restored   | old total bpw | new total bpw | overlay saved | fp8 H |
+|---------------|:------|-----------------|--------------:|--------------:|--------------:|------:|
+| OLMo-2-1B     | 0.003 | 1,280 / 425,984  |       2.7896 |       2.7858 |        16.03% | 6.723 |
+| OLMo-2-1B     | 0.030 | 12,752 / 425,984 |       3.0055 |       2.9639 |        17.33% | 6.568 |
+| TinyLlama-1.1B| 0.003 | 1,188 / 394,240  |       2.7979 |       2.7944 |        14.49% | 6.835 |
+| TinyLlama-1.1B| 0.030 | 11,814 / 394,240 |       3.0139 |       2.9748 |        16.27% | 6.670 |
+| Qwen3-1.7B    | 0.003 | 1,680 / 573,440  |       2.7943 |       2.7907 |        15.34% | 6.728 |
+| Qwen3-1.7B    | 0.030 | 17,164 / 573,440 |       3.0107 |       2.9706 |        16.71% | 6.624 |
+| SmolLM2-1.7B  | 0.003 | 1,920 / 638,976  |       2.7896 |       2.7861 |        14.59% | 6.805 |
+| SmolLM2-1.7B  | 0.030 | 19,128 / 638,976 |       3.0055 |       2.9655 |        16.66% | 6.636 |
+| Mistral-7B    | 0.003 | 4,096 / 1,376,256|       2.7930 |       2.7895 |        14.63% | 6.828 |
+| Mistral-7B    | 0.030 | 41,312 / 1,376,256|      3.0097 |       2.9695 |        16.70% | 6.633 |
+| Qwen3-8B      | 0.003 | 4,176 / 1,400,832|       2.7955 |       2.7919 |        15.14% | 6.851 |
+| Qwen3-8B      | 0.030 | 42,084 / 1,400,832|      3.0123 |       2.9726 |        16.50% | 6.718 |
+| **cohort mean** | **0.003** | **—** |    **2.7933** |    **2.7898** |    **15.04%** | 6.795 |
+| **cohort mean** | **0.030** | **—** |    **3.0096** |    **2.9695** |    **16.70%** | 6.642 |
+
+**Read-out.** Entropy coding the overlay payload reduces overlay bits
+by 14.5%-17.3% across every (model, rho) pair with zero quality change
+(it is a lossless re-encoding of the same bytes). The savings scale
+consistently with overlay mass: larger rho gets larger relative savings
+because idx-delta and fp16-scale streams both become more compressible
+as restored rows cluster in activation-energy-heavy roles. The fp8
+value stream is already the high-entropy portion (H ˜ 6.6-6.9 bits/byte
+out of 8), which matches theory: E4M3 mantissa+exponent is ~uniform
+within each per-row scale band.
+
+**Operating-point interpretation.** At the rho=0.003 Claim-17/18A
+operating point, the entropy-coded overlay costs ~0.020 bpw instead of
+~0.024 bpw, landing the cohort at a mean **effective 2.7898 bpw** —
+below the nominal 2.79 bpw hifi target while preserving the identical
+LAMBADA retention numbers from Claim 18A (since the decoded bytes are
+identical).
+
+**Honest scope.**
+- Savings are on the **overlay payload only**, not the Claim-16 base codebook.
+- Absolute bpw delta is 0.003-0.041 depending on rho (larger rho ->
+  larger absolute savings, as expected).
+- Decode-time cost is one zstd frame decompression per payload stream
+  (negligible vs the fp8->fp16 unpack that Claim-18A already does).
+
+**Artifacts of record:**
+- [scripts/overlay/entropy_code_overlay.py](scripts/overlay/entropy_code_overlay.py) - builder (single model).
+- [scripts/overlay/claim21_sweep.py](scripts/overlay/claim21_sweep.py) - 6-model x 2-rho sweep driver.
+- [scripts/overlay/claim21_summary.py](scripts/overlay/claim21_summary.py) - aggregator.
+- [results/claim21_entropy_*.json](results/) - 12 measured rows.
+- [results/claim21_summary.json](results/claim21_summary.json),
+  [results/claim21_summary.txt](results/claim21_summary.txt) - cohort table.
+- [logs/claim21_sweep.log](logs/claim21_sweep.log) - full sweep stdout.

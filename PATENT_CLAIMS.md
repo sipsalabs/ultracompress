@@ -2215,3 +2215,141 @@ whereas the article produces zero catastrophic failures.
   [logs/h2h_n500_large.log](logs/h2h_n500_large.log) — full run logs.
 - [docs/claim20_summary.txt](docs/claim20_summary.txt) — analysis dump.
 - [scripts/overlay/_analyze_claim20.py](scripts/overlay/_analyze_claim20.py) — merge + summary script.
+
+
+---
+
+## Claim 21: Entropy coding of the overlay side-channel
+
+### Statement of the claim
+
+A method of reducing the storage cost of the outlier row-overlay payload
+of Claims 17/18 comprising:
+  1. encoding the selected row indices as first differences (delta
+     coding) rather than absolute offsets, exploiting the near-uniform
+     spread of selected rows within each Linear's output dimension;
+  2. serializing each of the three payload streams -
+     (i) fp8 minifloat values, (ii) delta-coded row indices,
+     (iii) fp16 per-row scales - independently;
+  3. applying a lossless general-purpose entropy coder (zstd level 22
+     is sufficient; arithmetic coding of measured byte-histograms is an
+     equivalent upper bound) to each stream;
+  4. at decode, inverting each transform to recover the exact Claim-18A
+     payload before the existing fp8->fp16 unpack step.
+
+The decode path of Claim 16 (base codebook), Claim 17 (row substitution),
+and Claim 18A (fp8 row storage) are unchanged. This claim is a strictly
+lossless side-channel re-encoding.
+
+### Novelty elements
+
+1. The three streams have *structurally different* byte-level
+   distributions: fp8 values are near-uniform (H = 6.6-6.9 bits/byte on
+   measured data), idx-deltas are geometrically distributed (H = 4.15-5.67
+   bits/byte), and fp16 scales are concentrated near the per-role activation
+   modes (H = 4.91-6.39 bits/byte). Encoding them jointly by concatenation
+   discards this structure; the claim encodes them independently and
+   recovers it.
+2. Delta-coding of selected row indices is specifically justified by the
+   Claim-17 selection rule (top-K by score per Linear), which
+   approximately produces an order-statistic-uniform subsample of {0..O-1};
+   the deltas therefore have compressible entropy whereas the raw indices
+   do not.
+3. The savings profile scales with overlay mass (rho) predictably:
+   low-rho overlays save ~15% of overlay bytes (H of idx-deltas dominates
+   because there are few of them); high-rho overlays save ~17% because the
+   idx-delta entropy drops further as selected rows become dense within
+   each Linear.
+4. The claim is composable: it applies to any Claim-17/18 row-overlay
+   instance independent of base codebook tier (2.40 / 2.78 / higher) and
+   independent of row-storage precision (fp16, fp8, or mixed per Claim 18D).
+
+### Measured effect (6-model LAMBADA cohort, 2 rho points per model)
+
+| model         | rho   | old overlay bpw | new overlay bpw | saved of overlay |
+|---------------|:------|----------------:|----------------:|-----------------:|
+| OLMo-2-1B     | 0.003 |         0.0240  |         0.0201  |           16.03% |
+| OLMo-2-1B     | 0.030 |         0.2398  |         0.1983  |           17.33% |
+| TinyLlama-1.1B| 0.003 |         0.0241  |         0.0206  |           14.49% |
+| TinyLlama-1.1B| 0.030 |         0.2401  |         0.2010  |           16.27% |
+| Qwen3-1.7B    | 0.003 |         0.0235  |         0.0199  |           15.34% |
+| Qwen3-1.7B    | 0.030 |         0.2398  |         0.1998  |           16.71% |
+| SmolLM2-1.7B  | 0.003 |         0.0240  |         0.0205  |           14.59% |
+| SmolLM2-1.7B  | 0.030 |         0.2398  |         0.1999  |           16.66% |
+| Mistral-7B    | 0.003 |         0.0238  |         0.0203  |           14.63% |
+| Mistral-7B    | 0.030 |         0.2404  |         0.2003  |           16.70% |
+| Qwen3-8B      | 0.003 |         0.0238  |         0.0202  |           15.14% |
+| Qwen3-8B      | 0.030 |         0.2406  |         0.2009  |           16.50% |
+
+**Cohort mean: 15.04% overlay-bit reduction at rho=0.003,
+16.70% at rho=0.030.** Zero quality change (decoded bytes are bit-identical to
+the Claim-18A payload).
+
+### Honest scope and exclusions
+
+- This claim does NOT compress the Claim-16 base codebook bytes (no measurable
+  savings there - the codebook is already near-entropy after k-means training).
+- Claim 21 savings are purely on overlay bits; absolute bpw delta
+  ranges from 0.003 (low rho) to 0.042 (high rho).
+- zstd22 is a specific realization; any entropy coder achieving the
+  same per-stream entropy bound (arithmetic, range, ANS) is equivalent.
+- The savings lower bound is set by Shannon entropy of each stream,
+  which is measured and reported alongside the observed zstd ratio for
+  audit. fp8 stream entropy (H ~ 6.7 bits/byte) leaves ~15% headroom
+  below the raw-byte baseline, consistent with the 14-17% observed
+  overall savings.
+
+### Artifacts of record
+
+- [scripts/overlay/entropy_code_overlay.py](scripts/overlay/entropy_code_overlay.py)
+  - builder. Emits per-model JSON with raw and entropy-coded payload sizes,
+  Shannon entropy per stream, and bpw accounting.
+- [scripts/overlay/claim21_sweep.py](scripts/overlay/claim21_sweep.py)
+  - sweep driver (6 models x 2 rho).
+- [scripts/overlay/claim21_summary.py](scripts/overlay/claim21_summary.py)
+  - aggregator emitting [results/claim21_summary.json](results/claim21_summary.json)
+  and [results/claim21_summary.txt](results/claim21_summary.txt).
+- [logs/claim21_sweep.log](logs/claim21_sweep.log) - full sweep stdout.
+
+
+---
+
+## Claim 22: Sensitivity-adaptive per-linear overlay budget (negative-result ablation)
+
+### Statement of the disclosed-and-disclaimed ablation
+
+A variant of Claim 18B in which the per-Linear row budget is allocated
+proportional to per-Linear residual energy, with per-tensor clipping and
+iterative spill-over to respect the global `K_total = rho * sum_t O_t`
+budget.
+
+### Measured outcome
+
+On Qwen3-1.7B LAMBADA (n=80, seed 42):
+- rho=0.003: adaptive T1=30.30%, eff bpw 2.790 vs
+  uniform T1=30.35%, eff bpw 2.786 -> **wash on T1, slightly worse bpw**.
+- rho=0.010: adaptive T1=30.18%, eff bpw 2.836 -> no win at higher rho either.
+
+### Interpretation
+
+Per-Linear raw residual energy is not a valid sensitivity signal for
+overlay row allocation. Specifically, `o_proj` and `gate_proj` have low
+raw residual L2 (because their input magnitudes are large and their
+output magnitudes are moderate) but high downstream importance; a valid
+allocation score would require a Hessian-diagonal or activation-variance-
+weighted sensitivity proxy. That stronger version is left as future work
+and **not** claimed here.
+
+### Why disclosed
+
+Claim 22 narrows the patent scope around Claim 17/18A: the simple
+per-Linear uniform rule is confirmed optimal against the residual-energy
+heuristic at the operating points tested.
+
+### Artifacts of record
+
+- [scripts/overlay/lambada_overlay_adaptive.py](scripts/overlay/lambada_overlay_adaptive.py)
+  - implementation.
+- [results/claim22_adaptive_qwen3_1.7b_rho0003_n80.json](results/claim22_adaptive_qwen3_1.7b_rho0003_n80.json),
+  [results/claim22_adaptive_qwen3_1.7b_rho001_n80.json](results/claim22_adaptive_qwen3_1.7b_rho001_n80.json)
+  - measured rows.

@@ -1,0 +1,31 @@
+{
+  "claim": 21,
+  "model": "mistral_7b",
+  "rho": 0.03,
+  "score_mode": "weighted",
+  "n_restored_rows": 41312,
+  "n_total_rows": 1376256,
+  "n_restored_params": 209518592,
+  "n_total_params": 6979321856,
+  "avg_row_width": 5071.615801704105,
+  "base_bpw": 2.769230769230769,
+  "payload_bytes": {
+    "fp8_raw": 209518592,
+    "fp8_zstd22": 174653251,
+    "idx_delta_raw": 82624,
+    "idx_delta_zstd": 39739,
+    "scale_raw": 82624,
+    "scale_zstd": 50830
+  },
+  "shannon_entropy_bits_per_byte": {
+    "fp8": 6.632697354299919,
+    "idx": 4.173486008731374,
+    "scale": 5.313243504684942
+  },
+  "old_overlay_bpw": 0.24044337639441857,
+  "new_overlay_bpw": 0.2002989099575923,
+  "old_effective_bpw": 3.009674145625188,
+  "new_effective_bpw": 2.9695296791883616,
+  "saved_pct_of_overlay_bits": 16.696016766531375,
+  "saved_bpw_absolute": 0.04014446643682623
+}

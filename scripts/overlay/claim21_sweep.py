@@ -9,21 +9,23 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent.parent
-SCRIPT = REPO / "scripts" / "overlay" / "entropy_code_overlay.py"
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent.parent
+SCRIPT = HERE / "entropy_code_overlay.py"
 OUTDIR = REPO / "results"
 OUTDIR.mkdir(exist_ok=True)
 
+sys.path.insert(0, str(HERE))
+from entropy_code_overlay import MODEL_CONFIGS  # noqa: E402
+
 MODELS = [
-    "qwen3_0.6b", "qwen3_1.7b", "qwen3_8b",
+    "qwen3_1.7b", "qwen3_8b",
     "smollm2_1.7b", "tinyllama", "olmo2_1b", "mistral_7b",
 ]
-RHOS = [0.003, 0.01, 0.03]
+RHOS = [0.003, 0.03]
 
 results = []
 for m in MODELS:
-    # skip missing artifacts
-    from scripts.overlay.entropy_code_overlay import MODEL_CONFIGS  # local import
     teacher_pt, v17_pt = MODEL_CONFIGS[m]
     if not (REPO / teacher_pt).exists() or not (REPO / v17_pt).exists():
         print(f"[skip] {m}: missing artifacts")
