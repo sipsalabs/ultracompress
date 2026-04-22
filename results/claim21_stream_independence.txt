@@ -1,0 +1,53 @@
+Claim-21 3-stream decomposition: concat-vs-split empirical test
+==================================================================================
+SPLIT  = Claim 21's emission: sum_s | codec(stream_s) |
+CONCAT = alternative coder:   | codec(fp8 || idx_delta || scale) |
+
+Interpretation:
+  concat-split > 0  => 3-stream split is STRICTLY BETTER for this coder
+                       (streams have different byte distributions;
+                        concatenation dilutes each distribution's
+                        memoryless entropy by Jensen's inequality).
+  concat-split < 0  => a single coder captures cross-stream structure
+                       the 3-stream split was leaving on the table.
+
+--- olmo2_1b  rho=0.01  n_linears=112 ---
+  raw: fp8=10,616,832  idx=16,896  scale=8,448  concat=10,642,176
+  codec               split       concat   split%  concat%   cs-gap%
+  --------------------------------------------------------------------
+  brotli-11       8,678,430    8,677,749  18.452%  18.459%   -0.008%
+  lzma-6          8,773,228    8,773,136  17.562%  17.563%   -0.001%
+  zstd-9          8,864,057    8,864,375  16.708%  16.705%   +0.004%
+
+--- qwen3_1.7b  rho=0.01  n_linears=196 ---
+  raw: fp8=13,877,248  idx=22,624  scale=11,312  concat=13,911,184
+  codec               split       concat   split%  concat%   cs-gap%
+  --------------------------------------------------------------------
+  brotli-11      11,405,569   11,404,831  18.012%  18.017%   -0.006%
+  lzma-6         11,555,624   11,555,592  16.933%  16.933%   -0.000%
+  zstd-9         11,671,351   11,672,382  16.101%  16.094%   +0.009%
+
+--- smollm2_1.7b  rho=0.01  n_linears=168 ---
+  raw: fp8=15,925,248  idx=25,344  scale=12,672  concat=15,963,264
+  codec               split       concat   split%  concat%   cs-gap%
+  --------------------------------------------------------------------
+  brotli-11      13,075,975   13,074,592  18.087%  18.096%   -0.011%
+  lzma-6         13,250,352   13,250,332  16.995%  16.995%   -0.000%
+  zstd-9         13,440,375   13,449,057  15.804%  15.750%   +0.065%
+
+--- tinyllama  rho=0.01  n_linears=154 ---
+  raw: fp8=9,596,928  idx=15,664  scale=7,832  concat=9,620,424
+  codec               split       concat   split%  concat%   cs-gap%
+  --------------------------------------------------------------------
+  brotli-11       7,893,872    7,893,504  17.947%  17.951%   -0.005%
+  lzma-6          8,005,896    8,005,836  16.782%  16.783%   -0.001%
+  zstd-9          8,138,037    8,142,964  15.409%  15.358%   +0.061%
+
+==================================================================================
+COHORT  (n=4 runs, size-weighted by raw bytes)
+----------------------------------------------------------------------------------
+  codec             split_tot     concat_tot   split%  concat%   cs-gap%
+  ------------------------------------------------------------------------
+  brotli-11        41,053,846     41,050,676  18.117%  18.123%   -0.008%
+  lzma-6           41,585,100     41,584,896  17.057%  17.058%   -0.000%
+  zstd-9           42,113,820     42,128,778  16.003%  15.973%   +0.036%

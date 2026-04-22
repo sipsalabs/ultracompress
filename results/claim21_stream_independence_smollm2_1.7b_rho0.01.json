@@ -1,0 +1,57 @@
+{
+  "claim": 21,
+  "experiment": "stream_independence",
+  "model": "smollm2_1.7b",
+  "rho": 0.01,
+  "n_linears": 168,
+  "raw_sizes": {
+    "fp8": 15925248,
+    "idx_delta": 25344,
+    "scale": 12672,
+    "concat": 15963264
+  },
+  "by_codec": {
+    "zstd-9": {
+      "split_bytes": {
+        "fp8": 13423590,
+        "idx_delta": 8594,
+        "scale": 8191,
+        "total": 13440375
+      },
+      "concat_bytes": 13449057,
+      "split_vs_raw_pct": 15.804343021577543,
+      "concat_vs_raw_pct": 15.749955648168195,
+      "concat_vs_split_pct": 0.06459641193047069,
+      "split_encode_s": 0.019521713256835938,
+      "concat_encode_s": 0.019519805908203125
+    },
+    "lzma-6": {
+      "split_bytes": {
+        "fp8": 13235400,
+        "idx_delta": 7068,
+        "scale": 7884,
+        "total": 13250352
+      },
+      "concat_bytes": 13250332,
+      "split_vs_raw_pct": 16.99471987683722,
+      "concat_vs_raw_pct": 16.994845164497686,
+      "concat_vs_split_pct": -0.0001509393863649811,
+      "split_encode_s": 4.423852205276489,
+      "concat_encode_s": 4.244699478149414
+    },
+    "brotli-11": {
+      "split_bytes": {
+        "fp8": 13059877,
+        "idx_delta": 8148,
+        "scale": 7950,
+        "total": 13075975
+      },
+      "concat_bytes": 13074592,
+      "split_vs_raw_pct": 18.08708419531244,
+      "concat_vs_raw_pct": 18.09574783703383,
+      "concat_vs_split_pct": -0.010576649160005277,
+      "split_encode_s": 15.200685262680054,
+      "concat_encode_s": 15.031530618667603
+    }
+  }
+}
