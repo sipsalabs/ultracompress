@@ -721,19 +721,26 @@ byte-entropy does not see. The 14.5%-17.3% savings are therefore a
 near-optimal realization of the information-theoretic limit, not a
 zstd-specific artifact.
 
-**Cross-codec validation (4 independent coder families on 4 measurement points).**
+**Cross-codec validation (4 independent coder families, full 6-model cohort at ρ=0.010 + OLMo-2 rho-sweep).**
 The same three payload streams re-encoded with zstd-{3,9,15,22},
 zlib-9, bz2-9, and lzma-6:
 
-| model / rho        | zstd-3 | zstd-22 | zlib-9 | lzma-6 | bz2-9  | spread (ex-bz2) |
-|--------------------|-------:|--------:|-------:|-------:|-------:|----------------:|
-| OLMo-2-1B  / 0.003 | 16.33% |  15.96% | 16.34% | 17.32% | 11.97% |         1.36 pp |
-| OLMo-2-1B  / 0.010 | 17.09% |  16.81% | 16.89% | 17.50% | 12.73% |         0.69 pp |
-| OLMo-2-1B  / 0.030 | 17.41% |  17.27% | 17.24% | 17.56% | 13.20% |         0.32 pp |
-| Mistral-7B / 0.010 | 16.31% |  15.89% | 16.30% | 16.88% | 12.10% |         0.99 pp |
+| model / rho             | zstd-3 | zstd-22 | zlib-9 | lzma-6 | bz2-9  | spread (ex-bz2) |
+|-------------------------|-------:|--------:|-------:|-------:|-------:|----------------:|
+| OLMo-2-1B     / 0.003   | 16.33% |  15.96% | 16.34% | 17.32% | 11.97% |         1.36 pp |
+| TinyLlama     / 0.010   | 15.68% |  15.41% | 15.82% | 16.71% | 11.73% |         1.30 pp |
+| OLMo-2-1B     / 0.010   | 17.09% |  16.81% | 16.89% | 17.50% | 12.73% |         0.69 pp |
+| SmolLM2-1.7B  / 0.010   | 16.37% |  15.76% | 16.21% | 16.93% | 12.08% |         1.17 pp |
+| Qwen3-1.7B    / 0.010   | 16.34% |  16.07% | 16.37% | 16.87% | 12.25% |         0.80 pp |
+| Mistral-7B    / 0.010   | 16.31% |  15.89% | 16.30% | 16.88% | 12.10% |         0.99 pp |
+| Qwen3-8B      / 0.010   | 16.34% |  16.04% | 16.30% | 17.06% | 11.99% |         1.02 pp |
+| **MEAN @ ρ=0.010 (n=6)** | **16.36%** | **16.00%** | **16.32%** | **16.99%** | **12.15%** | **0.99 pp** |
+| OLMo-2-1B     / 0.030   | 17.41% |  17.27% | 17.24% | 17.56% | 13.20% |         0.32 pp |
 
 Across four LZ-family coders (zstd levels 3/9/15/22 + zlib) the
-savings agree to within **0.3-1.4 pp**; LZMA-6 adds another 0.3-1.4 pp
+savings agree to within **0.3-1.4 pp** on every single row of the
+6-model cohort (1.1B - 8B, three architecture families, three
+tokenizer/corpus pairings); LZMA-6 adds another 0.3-1.4 pp
 by exploiting deeper multi-byte context (same mechanism as the
 sub-Shannon Qwen3-8B row). BZ2 underperforms by ~4 pp because its
 BWT+RLE pipeline is a poor match for fp8 residuals — reported for
