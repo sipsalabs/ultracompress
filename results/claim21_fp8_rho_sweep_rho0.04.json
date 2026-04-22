@@ -1,0 +1,71 @@
+{
+  "claim": 21,
+  "experiment": "fp8_rho_sweep_ext",
+  "rho": 0.04,
+  "rows": [
+    {
+      "n_bytes": 42991616,
+      "H0_bpB": 6.557362503404351,
+      "H1_plugin_bpB": 6.552239716061754,
+      "H1_MM_bpB": 6.55307036711655,
+      "H2_plugin_bpB": 6.464890932843257,
+      "H2_MM_bpB": 6.509389491113792,
+      "brotli11_bpB": 6.524671787168922,
+      "H2_plugin_minus_brotli": -0.05978085432566438,
+      "H2_MM_minus_brotli": -0.015282296055129763,
+      "MM_correction_bpB": 0.044498558270534616,
+      "observed_trigrams": 2701578,
+      "trigram_singleton_frac": 0.3248512536006734,
+      "model": "olmo2_1b",
+      "rho": 0.04
+    },
+    {
+      "n_bytes": 56426496,
+      "H0_bpB": 6.612669702487482,
+      "H1_plugin_bpB": 6.603483742666262,
+      "H1_MM_bpB": 6.604149576407217,
+      "H2_plugin_bpB": 6.522687166766506,
+      "H2_MM_bpB": 6.562067313727068,
+      "brotli11_bpB": 6.559252447644454,
+      "H2_plugin_minus_brotli": -0.03656528087794797,
+      "H2_MM_minus_brotli": 0.0028148660826143868,
+      "MM_correction_bpB": 0.03938014696056236,
+      "observed_trigrams": 3132547,
+      "trigram_singleton_frac": 0.3139068623710993,
+      "model": "qwen3_1.7b",
+      "rho": 0.04
+    },
+    {
+      "n_bytes": 64487424,
+      "H0_bpB": 6.615479025938168,
+      "H1_plugin_bpB": 6.60324549774187,
+      "H1_MM_bpB": 6.603839153897196,
+      "H2_plugin_bpB": 6.524859642192077,
+      "H2_MM_bpB": 6.561053898358205,
+      "brotli11_bpB": 6.544925224490282,
+      "H2_plugin_minus_brotli": -0.020065582298204987,
+      "H2_MM_minus_brotli": 0.016128673867923382,
+      "MM_correction_bpB": 0.03619425616612837,
+      "observed_trigrams": 3288787,
+      "trigram_singleton_frac": 0.3115805310590196,
+      "model": "smollm2_1.7b",
+      "rho": 0.04
+    },
+    {
+      "n_bytes": 38725632,
+      "H0_bpB": 6.647509340256052,
+      "H1_plugin_bpB": 6.628529425315346,
+      "H1_MM_bpB": 6.629516421268125,
+      "H2_plugin_bpB": 6.50857138855392,
+      "H2_MM_bpB": 6.561796059902635,
+      "brotli11_bpB": 6.552699566013539,
+      "H2_plugin_minus_brotli": -0.04412817745961917,
+      "H2_MM_minus_brotli": 0.00909649388909628,
+      "MM_correction_bpB": 0.05322467134871545,
+      "observed_trigrams": 2910361,
+      "trigram_singleton_frac": 0.33858651899197384,
+      "model": "tinyllama",
+      "rho": 0.04
+    }
+  ]
+}
