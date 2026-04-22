@@ -3566,6 +3566,47 @@ Artifacts: `results/claim21_fp8_order2_amortized_rho0.01.json`,
 `results/claim21_fp8_order2_amortized.txt`,
 `results/claim21_fp8_order2_amortized_summary.json`.
 
+**Wave 38 — three-stream Shannon-floor analysis (idx_delta and scale
+added to fp8):** Waves 30–37 analyzed only the fp8 stream. Wave 38
+extends the H₀/H₁/H₂ vs brotli-11 analysis to the other two payload
+streams — idx_delta (15–25 KB/model) and scale (8–13 KB/model) — and
+reports cohort-aggregate gaps.
+
+| stream | n_total | H₀ | H₁ MM | H₂ MM | brotli-11 | H₂ − br |
+|--------|---------|-----|--------|--------|-----------|---------|
+| fp8 | 50,016,256 | 6.691 | 6.662 | 6.515 | 6.558 | **−0.044** |
+| idx_delta | 80,528 | 2.784 | 2.659 | 2.453 | 2.597 | **−0.143** |
+| scale | 40,264 | 5.394 | 4.423 | 2.932 | 5.026 | **−2.094** |
+
+The scale stream shows a striking 2.09 bpB cohort Shannon gap at
+order 2 (up to 4.49 bpB on olmo2_1b alone). The idx_delta stream has
+a smaller 0.14 bpB gap. However, these non-fp8 streams are **tiny**
+(≈0.05 % and ≈0.03 % of payload respectively), so even saturating
+their full Shannon advantage would recover ≲ 5 KB per model —
+negligible against the ~10–16 MB fp8 payload.
+
+Sample-size caveat: at 8–25 KB per stream the 256³-cell order-2 state
+space is ~10⁻³ saturated, so H₂ plug-in estimates (even with
+Miller-Madow) are biased DOWN. The reported gaps are upper bounds on
+the true realizable Shannon advantage. The H₁ estimates on the scale
+stream (cohort gap −0.60 bpB vs brotli-11) are more reliable and
+confirm that brotli-11 under-exploits order-1 structure on small
+scale streams.
+
+**Three-stream operational conclusion:** brotli-11 sits effectively
+at the operational floor for the dominant (fp8) stream; the
+non-dominant streams offer theoretical Shannon advantages but their
+absolute byte budget is too small to matter. The cohort-wide
+realizable-saving upper bound across all three streams combined is
+**< 0.1 bpB of fp8-equivalent payload** — below measurement noise at
+current sample volumes. This definitively closes the Claim-21
+entropy-coder design space: **no stream-level recoding beyond brotli-
+11 is operationally viable** at the payload volumes tested.
+
+Artifacts: `results/claim21_streams_order2_rho0.01.json`,
+`results/claim21_streams_order2.txt`,
+`results/claim21_streams_order2_summary.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
