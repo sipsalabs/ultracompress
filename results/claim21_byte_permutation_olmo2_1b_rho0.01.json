@@ -1,0 +1,101 @@
+{
+  "claim": 21,
+  "experiment": "byte_permutation",
+  "model": "olmo2_1b",
+  "rho": 0.01,
+  "seed": 33,
+  "raw_sizes": {
+    "fp8": 10616832,
+    "idx_delta": 16896,
+    "scale": 8448
+  },
+  "by_codec": {
+    "zstd-9": {
+      "fp8": {
+        "orig_bytes": 8851231,
+        "perm_bytes": 8882453,
+        "orig_pct": 16.630205696011767,
+        "perm_pct": 16.33612550335166,
+        "context_gap_pp": 0.29408019266010754,
+        "orig_s": 0.01552581787109375,
+        "perm_s": 0.01300668716430664
+      },
+      "idx_delta": {
+        "orig_bytes": 6002,
+        "perm_bytes": 7449,
+        "orig_pct": 64.47679924242425,
+        "perm_pct": 55.91264204545455,
+        "context_gap_pp": 8.564157196969703,
+        "orig_s": 0.0,
+        "perm_s": 0.000499725341796875
+      },
+      "scale": {
+        "orig_bytes": 6824,
+        "perm_bytes": 6860,
+        "orig_pct": 19.223484848484848,
+        "perm_pct": 18.797348484848484,
+        "context_gap_pp": 0.4261363636363633,
+        "orig_s": 0.0,
+        "perm_s": 0.0
+      }
+    },
+    "lzma-6": {
+      "fp8": {
+        "orig_bytes": 8761892,
+        "perm_bytes": 8934096,
+        "orig_pct": 17.471690236786266,
+        "perm_pct": 15.849699797453704,
+        "context_gap_pp": 1.6219904393325617,
+        "orig_s": 2.5384438037872314,
+        "perm_s": 2.4881749153137207
+      },
+      "idx_delta": {
+        "orig_bytes": 4892,
+        "perm_bytes": 7208,
+        "orig_pct": 71.04640151515152,
+        "perm_pct": 57.33901515151515,
+        "context_gap_pp": 13.707386363636367,
+        "orig_s": 0.0035004615783691406,
+        "perm_s": 0.004506826400756836
+      },
+      "scale": {
+        "orig_bytes": 6444,
+        "perm_bytes": 7060,
+        "orig_pct": 23.72159090909091,
+        "perm_pct": 16.429924242424242,
+        "context_gap_pp": 7.291666666666668,
+        "orig_s": 0.003501415252685547,
+        "perm_s": 0.002499818801879883
+      }
+    },
+    "brotli-11": {
+      "fp8": {
+        "orig_bytes": 8666274,
+        "perm_bytes": 8822357,
+        "orig_pct": 18.37231671368634,
+        "perm_pct": 16.902170063536843,
+        "context_gap_pp": 1.4701466501494984,
+        "orig_s": 10.161010503768921,
+        "perm_s": 11.200016021728516
+      },
+      "idx_delta": {
+        "orig_bytes": 5589,
+        "perm_bytes": 6285,
+        "orig_pct": 66.92116477272727,
+        "perm_pct": 62.80184659090909,
+        "context_gap_pp": 4.119318181818173,
+        "orig_s": 0.009522438049316406,
+        "perm_s": 0.012007951736450195
+      },
+      "scale": {
+        "orig_bytes": 6567,
+        "perm_bytes": 6818,
+        "orig_pct": 22.265625,
+        "perm_pct": 19.294507575757574,
+        "context_gap_pp": 2.9711174242424256,
+        "orig_s": 0.006504058837890625,
+        "perm_s": 0.008006095886230469
+      }
+    }
+  }
+}

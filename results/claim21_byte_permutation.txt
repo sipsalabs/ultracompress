@@ -1,0 +1,107 @@
+Claim-21 byte-permutation test: order-0 vs higher-order context
+==================================================================================
+orig   = codec savings on Claim 21 emission (sorted ordering).
+perm   = codec savings on the SAME bytes after uniform byte-permutation
+         (preserves order-0 histogram; destroys all local structure).
+gap pp = orig pp - perm pp  (how many pp of savings came from context).
+
+--- olmo2_1b  rho=0.01 ---
+  raw: fp8=10,616,832  idx_delta=16,896  scale=8,448
+  brotli-11
+    stream        orig%    perm%    gap_pp
+    fp8         18.372%  16.902%   +1.470
+    idx_delta   66.921%  62.802%   +4.119
+    scale       22.266%  19.295%   +2.971
+  lzma-6
+    stream        orig%    perm%    gap_pp
+    fp8         17.472%  15.850%   +1.622
+    idx_delta   71.046%  57.339%  +13.707
+    scale       23.722%  16.430%   +7.292
+  zstd-9
+    stream        orig%    perm%    gap_pp
+    fp8         16.630%  16.336%   +0.294
+    idx_delta   64.477%  55.913%   +8.564
+    scale       19.223%  18.797%   +0.426
+
+--- qwen3_1.7b  rho=0.01 ---
+  raw: fp8=13,877,248  idx_delta=22,624  scale=11,312
+  brotli-11
+    stream        orig%    perm%    gap_pp
+    fp8         17.908%  16.252%   +1.656
+    idx_delta   67.641%  62.712%   +4.928
+    scale       45.421%  36.307%   +9.114
+  lzma-6
+    stream        orig%    perm%    gap_pp
+    fp8         16.826%  15.223%   +1.603
+    idx_delta   71.835%  57.762%  +14.074
+    scale       38.437%  25.707%  +12.730
+  zstd-9
+    stream        orig%    perm%    gap_pp
+    fp8         16.003%  15.718%   +0.286
+    idx_delta   65.718%  56.223%   +9.494
+    scale       36.757%  35.325%   +1.432
+
+--- smollm2_1.7b  rho=0.01 ---
+  raw: fp8=15,925,248  idx_delta=25,344  scale=12,672
+  brotli-11
+    stream        orig%    perm%    gap_pp
+    fp8         17.993%  15.740%   +2.252
+    idx_delta   67.850%  62.804%   +5.047
+    scale       37.263%  34.833%   +2.431
+  lzma-6
+    stream        orig%    perm%    gap_pp
+    fp8         16.890%  14.721%   +2.169
+    idx_delta   72.112%  57.986%  +14.126
+    scale       37.784%  25.253%  +12.532
+  zstd-9
+    stream        orig%    perm%    gap_pp
+    fp8         15.709%  15.184%   +0.525
+    idx_delta   66.091%  56.463%   +9.628
+    scale       35.361%  33.838%   +1.523
+
+--- tinyllama  rho=0.01 ---
+  raw: fp8=9,596,928  idx_delta=15,664  scale=7,832
+  brotli-11
+    stream        orig%    perm%    gap_pp
+    fp8         17.847%  15.160%   +2.687
+    idx_delta   67.569%  62.711%   +4.858
+    scale       41.228%  32.686%   +8.542
+  lzma-6
+    stream        orig%    perm%    gap_pp
+    fp8         16.679%  14.140%   +2.540
+    idx_delta   71.578%  57.329%  +14.249
+    scale       33.197%  21.399%  +11.798
+  zstd-9
+    stream        orig%    perm%    gap_pp
+    fp8         15.313%  14.589%   +0.724
+    idx_delta   65.449%  56.595%   +8.855
+    scale       32.546%  32.316%   +0.230
+
+==================================================================================
+COHORT  (n=4 runs, size-weighted over raw bytes per stream)
+----------------------------------------------------------------------------------
+  codec        stream         orig%    perm%    gap_pp
+  -------------------------------------------------------
+  brotli-11    fp8          18.022%  16.018%   +2.004
+  brotli-11    idx_delta    67.542%  62.760%   +4.782
+  brotli-11    scale        37.180%  31.569%   +5.610
+
+  lzma-6       fp8          16.955%  14.988%   +1.967
+  lzma-6       idx_delta    71.707%  57.659%  +14.047
+  lzma-6       scale        34.125%  22.780%  +11.345
+
+  zstd-9       fp8          15.910%  15.462%   +0.448
+  zstd-9       idx_delta    65.523%  56.306%   +9.217
+  zstd-9       scale        31.820%  30.804%   +1.016
+
+==================================================================================
+INTERPRETATION
+--------------
+- gap_pp near 0 => the coder is already operating at the order-0 Shannon
+  limit of that stream. Byte permutation cannot hurt a coder that
+  only uses marginal byte statistics.
+- gap_pp > 0   => the coder is finding higher-order context (e.g., run
+  length, repeated subsequences, delta patterns). Byte permutation
+  destroys this structure while preserving the histogram.
+- Histogram equality between orig and perm is asserted at encode time
+  (np.bincount match) so the order-0 distribution is provably identical.

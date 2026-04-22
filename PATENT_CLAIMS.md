@@ -2678,6 +2678,48 @@ distribution — driven by the fp8 row-bytes' sub-uniform entropy and
 the sorted-index delta distribution — not of any particular model
 size. Artifact: `results/claim21_model_scaling.txt`.
 
+**Byte-permutation test: order-0 vs. higher-order context.** To
+localize *which stream* the context-modeling coders are extracting
+higher-order structure from, run (on 4 models at ρ = 0.010): compress
+each stream twice — once as-emitted, once after a uniform byte
+permutation that provably preserves the order-0 histogram (asserted
+via `np.bincount` equality). The drop in savings is exactly the pp of
+savings that came from higher-order context; the residual is pure
+order-0 Shannon savings. Size-weighted cohort means across 4 runs:
+
+| codec     | stream    | orig %   | perm %   | context gap pp |
+|-----------|-----------|----------|----------|----------------|
+| brotli-11 | fp8       | 18.022 % | 16.018 % | **+2.004**     |
+| brotli-11 | idx_delta | 67.542 % | 62.760 % | +4.782         |
+| brotli-11 | scale     | 37.180 % | 31.569 % | +5.610         |
+| lzma-6    | fp8       | 16.955 % | 14.988 % | **+1.967**     |
+| lzma-6    | idx_delta | 71.707 % | 57.659 % | +14.047        |
+| lzma-6    | scale     | 34.125 % | 22.780 % | +11.345        |
+| zstd-9    | fp8       | 15.910 % | 15.462 % | **+0.448**     |
+| zstd-9    | idx_delta | 65.523 % | 56.306 % | +9.217         |
+| zstd-9    | scale     | 31.820 % | 30.804 % | +1.016         |
+
+On **fp8**, every coder has a small context gap (0.4 – 2.0 pp): the
+15.5 – 18 % savings are dominated by the *order-0 entropy deficit* of
+the fp8 bytes — their sub-uniform histogram alone accounts for ~16 pp
+out of the ~18 pp total. On **idx_delta**, the context gap is large
+(9.2 – 14.0 pp): the delta-coded sorted indices have strong
+run-length and repeated-subsequence structure that context-model
+coders exploit far beyond order-0. On **scale**, lzma-6 and brotli-11
+find ~6 – 11 pp of higher-order structure that zstd-9 does not —
+consistent with the cross-codec correlation finding that lzma and
+brotli diverge from LZ77-family coders on the scale stream
+specifically.
+
+This localizes the mechanism: fp8 savings come from *distributional*
+structure (sub-uniform byte histogram induced by Hadamard rotation +
+fp8 quantization), while idx_delta and scale savings come from
+*positional* structure (sorted-index delta patterns, per-row scale
+clustering). The 3-stream split routes each structural signature to
+the portion of the payload where it naturally arises. Artifact:
+`results/claim21_byte_permutation.txt`; per-run JSONs:
+`results/claim21_byte_permutation_<model>_rho0.01.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
