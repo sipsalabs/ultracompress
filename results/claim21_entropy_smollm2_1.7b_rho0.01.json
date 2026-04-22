@@ -1,0 +1,31 @@
+{
+  "claim": 21,
+  "model": "smollm2_1.7b",
+  "rho": 0.01,
+  "score_mode": "weighted",
+  "n_restored_rows": 6336,
+  "n_total_rows": 638976,
+  "n_restored_params": 15925248,
+  "n_total_params": 1610612736,
+  "avg_row_width": 2513.4545454545455,
+  "base_bpw": 2.765625,
+  "payload_bytes": {
+    "fp8_raw": 15925248,
+    "fp8_zstd22": 13421516,
+    "idx_delta_raw": 12672,
+    "idx_delta_zstd": 7760,
+    "scale_raw": 12672,
+    "scale_zstd": 8123
+  },
+  "shannon_entropy_bits_per_byte": {
+    "fp8": 6.711903109021026,
+    "idx": 4.883938853299514,
+    "scale": 5.151331894926807
+  },
+  "old_overlay_bpw": 0.07929039001464844,
+  "new_overlay_bpw": 0.06674428284168243,
+  "old_effective_bpw": 2.8449153900146484,
+  "new_effective_bpw": 2.8323692828416824,
+  "saved_pct_of_overlay_bits": 15.822985825455245,
+  "saved_bpw_absolute": 0.012546107172966003
+}

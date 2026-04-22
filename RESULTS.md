@@ -482,10 +482,10 @@ absmax/448 scale. K1 = rho_hi * O rows, K2 = rho_lo * O rows.
 
 **Operating points tested:**
 
-- Low mass:  rho_hi=0.001, rho_lo=0.003 ? eff_bpw ˜ 2.794
-- High mass: rho_hi=0.002, rho_lo=0.008 ? eff_bpw ˜ 2.838
+- Low mass:  rho_hi=0.001, rho_lo=0.003 ? eff_bpw ï¿½ 2.794
+- High mass: rho_hi=0.002, rho_lo=0.008 ? eff_bpw ï¿½ 2.838
 
-**Matched-bpw comparison — fp16 | fp8 | mixed at ~2.79 bpw:**
+**Matched-bpw comparison ï¿½ fp16 | fp8 | mixed at ~2.79 bpw:**
 
 | Model          | fp16 T1-ret | fp8 T1-ret | mixed T1-ret | Winner |
 |----------------|------------:|-----------:|-------------:|--------|
@@ -497,7 +497,7 @@ absmax/448 scale. K1 = rho_hi * O rows, K2 = rho_lo * O rows.
 | Qwen3-8B       |      97.58% |     97.57% |       97.63% | mixed  |
 | **Mean**       |  **95.56%** | **95.57%** |   **95.63%** | **mixed** |
 
-**Matched-bpw comparison — fp16 | fp8 | mixed at ~2.83 bpw:**
+**Matched-bpw comparison ï¿½ fp16 | fp8 | mixed at ~2.83 bpw:**
 
 | Model          | fp16 T1-ret | fp8 T1-ret | mixed T1-ret | Winner |
 |----------------|------------:|-----------:|-------------:|--------|
@@ -511,7 +511,7 @@ absmax/448 scale. K1 = rho_hi * O rows, K2 = rho_lo * O rows.
 
 **Read-out.** Mixed-precision is the cohort-mean winner at both bpw tiers
 (+0.06 pp at 2.79 bpw, +0.01 pp at 2.83 bpw vs fp8) but the margins are
-within measurement noise (±0.2–0.3 pp on 500 LAMBADA samples). Mixed wins
+within measurement noise (ï¿½0.2ï¿½0.3 pp on 500 LAMBADA samples). Mixed wins
 outright on 4/6 models at the low tier and 2/6 at the high tier. It never
 catastrophically fails (unlike int4). The two-tier scheme is most beneficial
 on models where the residual row tail is heavy (OLMo, SmolLM2) and less
@@ -520,7 +520,7 @@ Qwen3-1.7B at high mass).
 
 **Progression across precision choices (2.83 bpw mean T1-ret):**
 
-    int4 overlay:   93.83%  (strict negative — precision floor)
+    int4 overlay:   93.83%  (strict negative ï¿½ precision floor)
     fp16 overlay:   95.60%  (Claim 17 baseline)
     fp8 overlay:    95.65%  (+0.05 pp)
     mixed fp16+fp8: 95.66%  (+0.01 pp over fp8, tie/marginal)
@@ -682,25 +682,44 @@ in parallel as a lower-bound proxy. The codebook/decode path is
 unchanged; this claim is purely a lossless re-encoding of the overlay
 side-channel.
 
-**Measured effect (6-model LAMBADA cohort, 2 overlay operating points,
-same Claim-17/18A fit artifacts):**
+**Measured effect (6-model LAMBADA cohort, 3 overlay operating points,
+18 measurements, same Claim-17/18A fit artifacts):**
 
-| model         | rho   | rows restored   | old total bpw | new total bpw | overlay saved | fp8 H |
-|---------------|:------|-----------------|--------------:|--------------:|--------------:|------:|
-| OLMo-2-1B     | 0.003 | 1,280 / 425,984  |       2.7896 |       2.7858 |        16.03% | 6.723 |
-| OLMo-2-1B     | 0.030 | 12,752 / 425,984 |       3.0055 |       2.9639 |        17.33% | 6.568 |
-| TinyLlama-1.1B| 0.003 | 1,188 / 394,240  |       2.7979 |       2.7944 |        14.49% | 6.835 |
-| TinyLlama-1.1B| 0.030 | 11,814 / 394,240 |       3.0139 |       2.9748 |        16.27% | 6.670 |
-| Qwen3-1.7B    | 0.003 | 1,680 / 573,440  |       2.7943 |       2.7907 |        15.34% | 6.728 |
-| Qwen3-1.7B    | 0.030 | 17,164 / 573,440 |       3.0107 |       2.9706 |        16.71% | 6.624 |
-| SmolLM2-1.7B  | 0.003 | 1,920 / 638,976  |       2.7896 |       2.7861 |        14.59% | 6.805 |
-| SmolLM2-1.7B  | 0.030 | 19,128 / 638,976 |       3.0055 |       2.9655 |        16.66% | 6.636 |
-| Mistral-7B    | 0.003 | 4,096 / 1,376,256|       2.7930 |       2.7895 |        14.63% | 6.828 |
-| Mistral-7B    | 0.030 | 41,312 / 1,376,256|      3.0097 |       2.9695 |        16.70% | 6.633 |
-| Qwen3-8B      | 0.003 | 4,176 / 1,400,832|       2.7955 |       2.7919 |        15.14% | 6.851 |
-| Qwen3-8B      | 0.030 | 42,084 / 1,400,832|      3.0123 |       2.9726 |        16.50% | 6.718 |
-| **cohort mean** | **0.003** | **—** |    **2.7933** |    **2.7898** |    **15.04%** | 6.795 |
-| **cohort mean** | **0.030** | **—** |    **3.0096** |    **2.9695** |    **16.70%** | 6.642 |
+| model         | rho   | rows restored     | old total bpw | new total bpw | overlay saved | gap to Shannon |
+|---------------|:------|-------------------|--------------:|--------------:|--------------:|---------------:|
+| OLMo-2-1B     | 0.003 |  1,280 /   425,984 |       2.7896 |       2.7858 |        16.03% |           0.07% |
+| OLMo-2-1B     | 0.010 |  4,224 /   425,984 |       2.8449 |       2.8315 |        16.87% |           2.56% |
+| OLMo-2-1B     | 0.030 | 12,752 /   425,984 |       3.0055 |       2.9639 |        17.33% |           3.69% |
+| TinyLlama-1.1B| 0.003 |  1,188 /   394,240 |       2.7979 |       2.7944 |        14.49% |           1.15% |
+| TinyLlama-1.1B| 0.010 |  3,916 /   394,240 |       2.8532 |       2.8409 |        15.48% |           0.93% |
+| TinyLlama-1.1B| 0.030 | 11,814 /   394,240 |       3.0139 |       2.9748 |        16.27% |           2.80% |
+| Qwen3-1.7B    | 0.003 |  1,680 /   573,440 |       2.7943 |       2.7907 |        15.34% |           4.10% |
+| Qwen3-1.7B    | 0.010 |  5,656 /   573,440 |       2.8498 |       2.8371 |        16.14% |           3.38% |
+| Qwen3-1.7B    | 0.030 | 17,164 /   573,440 |       3.0107 |       2.9706 |        16.71% |           3.48% |
+| SmolLM2-1.7B  | 0.003 |  1,920 /   638,976 |       2.7896 |       2.7861 |        14.59% |           2.95% |
+| SmolLM2-1.7B  | 0.010 |  6,336 /   638,976 |       2.8449 |       2.8324 |        15.82% |           2.35% |
+| SmolLM2-1.7B  | 0.030 | 19,128 /   638,976 |       3.0055 |       2.9655 |        16.66% |           2.91% |
+| Mistral-7B    | 0.003 |  4,096 / 1,376,256 |       2.7930 |       2.7895 |        14.63% |           0.44% |
+| Mistral-7B    | 0.010 | 13,728 / 1,376,256 |       2.8492 |       2.8364 |        15.93% |           1.13% |
+| Mistral-7B    | 0.030 | 41,312 / 1,376,256 |       3.0097 |       2.9695 |        16.70% |           2.61% |
+| Qwen3-8B      | 0.003 |  4,176 / 1,400,832 |       2.7955 |       2.7919 |        15.14% |          -5.09% |
+| Qwen3-8B      | 0.010 | 14,004 / 1,400,832 |       2.8518 |       2.8390 |        16.07% |          -5.09% |
+| Qwen3-8B      | 0.030 | 42,084 / 1,400,832 |       3.0123 |       2.9726 |        16.50% |          -2.67% |
+| **cohort mean** | **0.003** | -- |    **2.7933** |    **2.7897** |    **15.04%** |        **0.60%** |
+| **cohort mean** | **0.010** | -- |    **2.8490** |    **2.8362** |    **16.05%** |        **0.88%** |
+| **cohort mean** | **0.030** | -- |    **3.0096** |    **2.9695** |    **16.70%** |        **2.14%** |
+
+**Information-theoretic calibration.** "Gap to Shannon" = how much
+extra the zstd-coded payload costs relative to the per-stream Shannon
+entropy floor, expressed as a percentage of the raw->Shannon savings
+bar. Across all 18 measurements zstd lands within **-5% to +4%** of
+the Shannon lower bound (cohort mean gap **0.60% / 0.88% / 2.14%** at
+rho=0.003 / 0.010 / 0.030). Negative values on Qwen3-8B mean zstd
+achieves *less* than the per-byte Shannon bound â€” physically valid
+because zstd exploits multi-byte Markov context that marginal
+byte-entropy does not see. The 14.5%-17.3% savings are therefore a
+near-optimal realization of the information-theoretic limit, not a
+zstd-specific artifact.
 
 **Read-out.** Entropy coding the overlay payload reduces overlay bits
 by 14.5%-17.3% across every (model, rho) pair with zero quality change
@@ -708,13 +727,13 @@ by 14.5%-17.3% across every (model, rho) pair with zero quality change
 consistently with overlay mass: larger rho gets larger relative savings
 because idx-delta and fp16-scale streams both become more compressible
 as restored rows cluster in activation-energy-heavy roles. The fp8
-value stream is already the high-entropy portion (H ˜ 6.6-6.9 bits/byte
+value stream is already the high-entropy portion (H ï¿½ 6.6-6.9 bits/byte
 out of 8), which matches theory: E4M3 mantissa+exponent is ~uniform
 within each per-row scale band.
 
 **Operating-point interpretation.** At the rho=0.003 Claim-17/18A
 operating point, the entropy-coded overlay costs ~0.020 bpw instead of
-~0.024 bpw, landing the cohort at a mean **effective 2.7898 bpw** —
+~0.024 bpw, landing the cohort at a mean **effective 2.7898 bpw** ï¿½
 below the nominal 2.79 bpw hifi target while preserving the identical
 LAMBADA retention numbers from Claim 18A (since the decoded bytes are
 identical).
@@ -729,8 +748,8 @@ identical).
 **Artifacts of record:**
 - [scripts/overlay/entropy_code_overlay.py](scripts/overlay/entropy_code_overlay.py) - builder (single model).
 - [scripts/overlay/claim21_sweep.py](scripts/overlay/claim21_sweep.py) - 6-model x 2-rho sweep driver.
-- [scripts/overlay/claim21_summary.py](scripts/overlay/claim21_summary.py) - aggregator.
-- [results/claim21_entropy_*.json](results/) - 12 measured rows.
+- [scripts/overlay/claim21_summary.py](scripts/overlay/claim21_summary.py) - aggregator (Shannon-gap column included).
+- [results/claim21_entropy_*.json](results/) - 18 measured rows (6 models x {0.003, 0.010, 0.030}).
 - [results/claim21_summary.json](results/claim21_summary.json),
   [results/claim21_summary.txt](results/claim21_summary.txt) - cohort table.
 - [logs/claim21_sweep.log](logs/claim21_sweep.log) - full sweep stdout.
