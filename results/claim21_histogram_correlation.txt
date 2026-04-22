@@ -1,0 +1,53 @@
+Claim-21 cross-model byte-histogram correlation
+==================================================================================
+
+Wave 19 established nearly identical Shannon H across models.
+This diagnostic compares the full 256-bin byte distributions
+pairwise. High r + low TV + low JSD => the distribution
+is a property of the encoding, not the model.
+
+Cohort: n=4 models at rho=0.010
+Models: ['olmo2_1b', 'qwen3_1.7b', 'smollm2_1.7b', 'tinyllama']
+
+--- stream: fp8 ---
+  pair                              r        TV      JSD (bits)   symKL (bits)
+  olmo2_1b vs qwen3_1.7b             0.99618   0.0385   0.00144       0.01150
+  olmo2_1b vs smollm2_1.7b           0.98865   0.0683   0.00445       0.03565
+  olmo2_1b vs tinyllama              0.97712   0.0976   0.00895       0.07182
+  qwen3_1.7b vs smollm2_1.7b         0.99791   0.0301   0.00086       0.00688
+  qwen3_1.7b vs tinyllama            0.99161   0.0601   0.00333       0.02668
+  smollm2_1.7b vs tinyllama          0.99783   0.0302   0.00084       0.00671
+
+  pairs n=6  r mean=0.99155 min=0.97712  TV mean=0.0541 max=0.0976  JSD mean=0.00331 max=0.00895
+
+--- stream: idx_delta ---
+  pair                              r        TV      JSD (bits)   symKL (bits)
+  olmo2_1b vs qwen3_1.7b             0.99996   0.0361   0.00611       0.04816
+  olmo2_1b vs smollm2_1.7b           0.99994   0.0406   0.00726       0.05898
+  olmo2_1b vs tinyllama              0.99992   0.0435   0.00871       0.06901
+  qwen3_1.7b vs smollm2_1.7b         0.99996   0.0381   0.00715       0.05784
+  qwen3_1.7b vs tinyllama            0.99995   0.0409   0.00807       0.06143
+  smollm2_1.7b vs tinyllama          0.99996   0.0379   0.00714       0.05659
+
+  pairs n=6  r mean=0.99995 min=0.99992  TV mean=0.0395 max=0.0435  JSD mean=0.00741 max=0.00871
+
+--- stream: scale ---
+  pair                              r        TV      JSD (bits)   symKL (bits)
+  olmo2_1b vs qwen3_1.7b             0.90974   0.4205   0.32498       1.24380
+  olmo2_1b vs smollm2_1.7b           0.06744   0.8127   0.65273       4.42150
+  olmo2_1b vs tinyllama              0.51829   0.6262   0.43540       2.57128
+  qwen3_1.7b vs smollm2_1.7b         0.22586   0.4615   0.36678       3.32055
+  qwen3_1.7b vs tinyllama            0.66406   0.2819   0.13715       0.62856
+  smollm2_1.7b vs tinyllama          0.22472   0.4829   0.39130       2.74467
+
+  pairs n=6  r mean=0.43502 min=0.06744  TV mean=0.5143 max=0.8127  JSD mean=0.38472 max=0.65273
+
+==================================================================================
+INTERPRETATION
+----------------------------------------------------------------------------------
+- Pearson r near +1 = models share byte-frequency shape.
+- JSD near 0 = distributions are informationally close.
+- If both hold across all pairs, scalar-H universality (wave 19)
+  is upgraded to full distribution-shape universality: a single
+  entropy-coder table trained on ANY model will be near-optimal
+  on EVERY model for this stream.

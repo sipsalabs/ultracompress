@@ -1,0 +1,226 @@
+{
+  "claim": 21,
+  "experiment": "histogram_correlation",
+  "rho": 0.01,
+  "models": [
+    "olmo2_1b",
+    "qwen3_1.7b",
+    "smollm2_1.7b",
+    "tinyllama"
+  ],
+  "streams": {
+    "fp8": {
+      "n_pairs": 6,
+      "pearson_r": {
+        "mean": 0.991549852448121,
+        "min": 0.9771205540474897,
+        "max": 0.9979139277285274
+      },
+      "tv_distance": {
+        "mean": 0.054132910237472236,
+        "min": 0.03010385959151569,
+        "max": 0.09763610804145598
+      },
+      "js_divergence_bits": {
+        "mean": 0.0033098090991041744,
+        "max": 0.008945739254910781
+      },
+      "symmetric_kl_bits": {
+        "mean": 0.0265396979226854,
+        "max": 0.07182053848160211
+      },
+      "pairs": [
+        {
+          "a": "olmo2_1b",
+          "b": "qwen3_1.7b",
+          "pearson_r": 0.9961818133937942,
+          "tv_distance": 0.038532415824239705,
+          "js_divergence_bits": 0.001436591425767813,
+          "symmetric_kl_bits": 0.011499797352431278
+        },
+        {
+          "a": "olmo2_1b",
+          "b": "smollm2_1.7b",
+          "pearson_r": 0.9886472025342071,
+          "tv_distance": 0.06825262626993311,
+          "js_divergence_bits": 0.004447905257772042,
+          "symmetric_kl_bits": 0.03564874538374388
+        },
+        {
+          "a": "olmo2_1b",
+          "b": "tinyllama",
+          "pearson_r": 0.9771205540474897,
+          "tv_distance": 0.09763610804145598,
+          "js_divergence_bits": 0.008945739254910781,
+          "symmetric_kl_bits": 0.07182053848160211
+        },
+        {
+          "a": "qwen3_1.7b",
+          "b": "smollm2_1.7b",
+          "pearson_r": 0.9979139277285274,
+          "tv_distance": 0.03010385959151569,
+          "js_divergence_bits": 0.0008593838036682475,
+          "symmetric_kl_bits": 0.006877653186491606
+        },
+        {
+          "a": "qwen3_1.7b",
+          "b": "tinyllama",
+          "pearson_r": 0.9916063685720068,
+          "tv_distance": 0.060105746284698544,
+          "js_divergence_bits": 0.003330896923807339,
+          "symmetric_kl_bits": 0.026682391403712077
+        },
+        {
+          "a": "smollm2_1.7b",
+          "b": "tinyllama",
+          "pearson_r": 0.9978292484127009,
+          "tv_distance": 0.03016670541299039,
+          "js_divergence_bits": 0.0008383379286988246,
+          "symmetric_kl_bits": 0.006709061728131469
+        }
+      ]
+    },
+    "idx_delta": {
+      "n_pairs": 6,
+      "pearson_r": {
+        "mean": 0.9999492054061757,
+        "min": 0.9999235179995369,
+        "max": 0.9999629768550448
+      },
+      "tv_distance": {
+        "mean": 0.03952195725984784,
+        "min": 0.03611033536389349,
+        "max": 0.043519375638406535
+      },
+      "js_divergence_bits": {
+        "mean": 0.007406918466615748,
+        "max": 0.008714795766274432
+      },
+      "symmetric_kl_bits": {
+        "mean": 0.05866961882027119,
+        "max": 0.06900840421240212
+      },
+      "pairs": [
+        {
+          "a": "olmo2_1b",
+          "b": "qwen3_1.7b",
+          "pearson_r": 0.9999629768550448,
+          "tv_distance": 0.03611033536389349,
+          "js_divergence_bits": 0.006105215330266222,
+          "symmetric_kl_bits": 0.04816462350827282
+        },
+        {
+          "a": "olmo2_1b",
+          "b": "smollm2_1.7b",
+          "pearson_r": 0.9999436451234177,
+          "tv_distance": 0.04064078282828283,
+          "js_divergence_bits": 0.0072631115541875926,
+          "symmetric_kl_bits": 0.058979250420843676
+        },
+        {
+          "a": "olmo2_1b",
+          "b": "tinyllama",
+          "pearson_r": 0.9999235179995369,
+          "tv_distance": 0.043519375638406535,
+          "js_divergence_bits": 0.008714795766274432,
+          "symmetric_kl_bits": 0.06900840421240212
+        },
+        {
+          "a": "qwen3_1.7b",
+          "b": "smollm2_1.7b",
+          "pearson_r": 0.9999567453652819,
+          "tv_distance": 0.03805933048662014,
+          "js_divergence_bits": 0.0071517780504229515,
+          "symmetric_kl_bits": 0.05784398589849361
+        },
+        {
+          "a": "qwen3_1.7b",
+          "b": "tinyllama",
+          "pearson_r": 0.9999503718430932,
+          "tv_distance": 0.04085973404724104,
+          "js_divergence_bits": 0.008067265566360303,
+          "symmetric_kl_bits": 0.061433592592709245
+        },
+        {
+          "a": "smollm2_1.7b",
+          "b": "tinyllama",
+          "pearson_r": 0.9999579752506804,
+          "tv_distance": 0.037942185194643055,
+          "js_divergence_bits": 0.007139344532182989,
+          "symmetric_kl_bits": 0.05658785628890565
+        }
+      ]
+    },
+    "scale": {
+      "n_pairs": 6,
+      "pearson_r": {
+        "mean": 0.43501895598193197,
+        "min": 0.06744209053909996,
+        "max": 0.9097404470050325
+      },
+      "tv_distance": {
+        "mean": 0.5142780873902332,
+        "min": 0.2818610011081365,
+        "max": 0.8127367424242424
+      },
+      "js_divergence_bits": {
+        "mean": 0.38472286186414717,
+        "max": 0.6527294024262136
+      },
+      "symmetric_kl_bits": {
+        "mean": 2.488394044468078,
+        "max": 4.421501607996383
+      },
+      "pairs": [
+        {
+          "a": "olmo2_1b",
+          "b": "qwen3_1.7b",
+          "pearson_r": 0.9097404470050325,
+          "tv_distance": 0.4204607402704556,
+          "js_divergence_bits": 0.32498284009068124,
+          "symmetric_kl_bits": 1.2438000983858613
+        },
+        {
+          "a": "olmo2_1b",
+          "b": "smollm2_1.7b",
+          "pearson_r": 0.06744209053909996,
+          "tv_distance": 0.8127367424242424,
+          "js_divergence_bits": 0.6527294024262136,
+          "symmetric_kl_bits": 4.421501607996383
+        },
+        {
+          "a": "olmo2_1b",
+          "b": "tinyllama",
+          "pearson_r": 0.5182920171941104,
+          "tv_distance": 0.6262236125297923,
+          "js_divergence_bits": 0.4354010728163083,
+          "symmetric_kl_bits": 2.5712768035691016
+        },
+        {
+          "a": "qwen3_1.7b",
+          "b": "smollm2_1.7b",
+          "pearson_r": 0.225859209809219,
+          "tv_distance": 0.46151434339862557,
+          "js_divergence_bits": 0.3667776132493348,
+          "symmetric_kl_bits": 3.32054939229954
+        },
+        {
+          "a": "qwen3_1.7b",
+          "b": "tinyllama",
+          "pearson_r": 0.6640581663090049,
+          "tv_distance": 0.2818610011081365,
+          "js_divergence_bits": 0.13714602043537488,
+          "symmetric_kl_bits": 0.6285621697587402
+        },
+        {
+          "a": "smollm2_1.7b",
+          "b": "tinyllama",
+          "pearson_r": 0.22472180503512515,
+          "tv_distance": 0.4828720846101464,
+          "js_divergence_bits": 0.39130022216697014,
+          "symmetric_kl_bits": 2.7446741947988404
+        }
+      ]
+    }
+  }
+}
