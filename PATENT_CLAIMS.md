@@ -2305,59 +2305,82 @@ zstd-specific artifact — any competent entropy coder (arithmetic,
 range, ANS) will land within ~3 pp of these numbers on the same
 payload streams.
 
-### Cross-codec validation (measured, 4 independent codec families, full 6-model cohort)
+### Cross-codec validation (measured, 4 independent codec families, full 6-model × 3-ρ cohort)
 
 The "not zstd-specific" assertion above is validated directly. The
 same three payload streams were re-encoded with **seven coders** from
 four distinct algorithmic families (LZ77+FSE: zstd-{3,9,15,22}; LZ77+Huffman:
 zlib-9; BWT+RLE+Huffman: bz2-9; LZMA+range: lzma-6) on the **full
-6-model Claim-16 cohort at ρ=0.010**, plus the OLMo-2 rho-sweep
-anchoring the low/high ends:
+18-point Claim-16 cohort** — every (model, rho) pair across 6 models
+(1.1 B – 8 B, three architecture families) and three overlay-density
+operating points:
 
 | model / rho             | zstd-3 | zstd-22 | zlib-9 | lzma-6 | bz2-9  | spread (ex-bz2) |
 |-------------------------|-------:|--------:|-------:|-------:|-------:|----------------:|
+| TinyLlama     / 0.003   | 14.66% |  14.42% | 14.98% | 16.35% | 11.06% |         1.69 pp |
+| SmolLM2-1.7B  / 0.003   | 15.43% |  14.52% | 15.36% | 16.60% | 11.43% |         2.08 pp |
+| Qwen3-1.7B    / 0.003   | 15.86% |  15.27% | 15.84% | 16.69% | 11.80% |         1.42 pp |
+| Mistral-7B    / 0.003   | 15.63% |  14.60% | 15.57% | 16.55% | 11.22% |         1.95 pp |
 | OLMo-2-1B     / 0.003   | 16.33% |  15.96% | 16.34% | 17.32% | 11.97% |         1.36 pp |
+| Qwen3-8B      / 0.003   | 15.92% |  15.11% | 15.82% | 16.82% | 11.33% |         1.71 pp |
+| **MEAN @ ρ=0.003 (n=6)** | **15.64%** | **14.98%** | **15.65%** | **16.72%** | **11.47%** | **1.74 pp** |
 | TinyLlama     / 0.010   | 15.68% |  15.41% | 15.82% | 16.71% | 11.73% |         1.30 pp |
-| OLMo-2-1B     / 0.010   | 17.09% |  16.81% | 16.89% | 17.50% | 12.73% |         0.69 pp |
 | SmolLM2-1.7B  / 0.010   | 16.37% |  15.76% | 16.21% | 16.93% | 12.08% |         1.17 pp |
 | Qwen3-1.7B    / 0.010   | 16.34% |  16.07% | 16.37% | 16.87% | 12.25% |         0.80 pp |
 | Mistral-7B    / 0.010   | 16.31% |  15.89% | 16.30% | 16.88% | 12.10% |         0.99 pp |
+| OLMo-2-1B     / 0.010   | 17.09% |  16.81% | 16.89% | 17.50% | 12.73% |         0.69 pp |
 | Qwen3-8B      / 0.010   | 16.34% |  16.04% | 16.30% | 17.06% | 11.99% |         1.02 pp |
 | **MEAN @ ρ=0.010 (n=6)** | **16.36%** | **16.00%** | **16.32%** | **16.99%** | **12.15%** | **0.99 pp** |
+| TinyLlama     / 0.030   | 16.34% |  16.20% | 16.36% | 16.99% | 12.40% |         0.79 pp |
+| SmolLM2-1.7B  / 0.030   | 16.84% |  16.59% | 16.72% | 17.15% | 12.66% |         0.56 pp |
+| Qwen3-1.7B    / 0.030   | 16.77% |  16.64% | 16.73% | 17.00% | 12.66% |         0.36 pp |
+| Mistral-7B    / 0.030   | 16.87% |  16.66% | 16.82% | 17.14% | 12.72% |         0.48 pp |
 | OLMo-2-1B     / 0.030   | 17.41% |  17.27% | 17.24% | 17.56% | 13.20% |         0.32 pp |
+| Qwen3-8B      / 0.030   | 16.67% |  16.47% | 16.59% | 17.16% | 12.49% |         0.69 pp |
+| **MEAN @ ρ=0.030 (n=6)** | **16.82%** | **16.64%** | **16.74%** | **17.17%** | **12.69%** | **0.53 pp** |
 
 (Values are percent overlay-bit reduction vs raw; "spread" excludes
 bz2-9, whose BWT pipeline is a poor fit for the fp8 value stream.)
 
 **Findings.**
 
-1. **The method is entropy-coder-agnostic at cohort scale.** Across
-   the full 6-model ρ=0.010 cohort (TinyLlama-1.1B through Qwen3-8B,
-   spanning Llama-2/Qwen3/Mistral architectures and 7.3× parameter
-   range), all four LZ77/LZMA coders agree to within **0.69-1.30 pp**
-   on every row and within **0.99 pp** on the cohort mean. Zstd
-   level 3 (fast) and zstd level 22 (slow) differ by <0.5 pp on every
-   row of all 8 measurement points.
+1. **The method is entropy-coder-agnostic at full cohort scale.**
+   Across all **18 measurement points** (6 models × 3 rhos), the four
+   LZ77/LZMA coders agree to within **0.32-2.08 pp** on every row.
+   The cohort-mean spread narrows monotonically with ρ — **1.74 pp
+   at ρ=0.003, 0.99 pp at ρ=0.010, 0.53 pp at ρ=0.030** — because
+   higher overlay density produces longer LZ match runs that all LZ
+   coders exploit equivalently. Zstd level 3 (fast) and zstd level 22
+   (slow) differ by **≤ 1.03 pp on every row of all 18 points**.
 
-2. **LZMA-6 slightly beats zstd** (0.3-1.4 pp more savings) on **8 of
-   8 measurement points** because its higher-order range coder models
+2. **LZMA-6 slightly beats zstd on 18 of 18 points** (0.36-1.69 pp
+   more savings) because its higher-order range coder models
    multi-byte fp8 correlations better — the direction predicted by
    the sub-Shannon gap. This is independent cohort-wide confirmation
-   that the "negative gap" is a real multi-byte-context effect, not
-   instrumentation.
+   (n=18) that the "negative gap" is a real multi-byte-context
+   effect, not instrumentation.
 
-3. **bz2 is ~4 pp worse uniformly** (11.73%-13.20% vs 15.68%-17.56%
-   for LZ coders) because BWT of fp8 data breaks the per-row local
-   coherence that the other coders exploit. We report this negative
-   result on every row of the cohort for audit: the claim is not
-   trivially "any bytestream compression works"; the payload has
+3. **bz2 is ~4 pp worse uniformly** (11.06%-13.20% vs 14.66%-17.56%
+   for LZ coders) on every row. BWT of fp8 data breaks the per-row
+   local coherence that the other coders exploit. We report this
+   negative result on every row of the cohort for audit: the claim is
+   not trivially "any bytestream compression works"; the payload has
    specific structure that LZ-family coders capture.
 
-4. **Practical implication.** At ρ=0.010 the cohort-mean Claim 21
-   savings vary by **<0.005 bpw** across zstd-3 (fast), zlib-9
-   (ubiquitous), and zstd-22 (slow). A deployment free to pick its
-   codec can run **zstd-3 at ~100× faster compression** than zstd-22
-   with virtually no loss of savings on any model in the cohort.
+4. **Monotone improvement in ρ across the cohort.** Cohort-mean
+   savings rise monotonically with ρ on **every single coder**:
+   zstd-3 15.64→16.36→16.82%, zstd-22 14.98→16.00→16.64%,
+   zlib-9 15.65→16.32→16.74%, lzma-6 16.72→16.99→17.17%,
+   bz2-9 11.47→12.14→12.69%. The Claim-21 savings scale with
+   overlay mass as predicted by the information-theoretic model of
+   the idx-delta and scale streams becoming more compressible as
+   restored rows cluster in high-activation-energy roles.
+
+5. **Practical implication.** Across the cohort the savings vary by
+   **<0.005 bpw** between zstd-3 (fast), zlib-9 (ubiquitous), and
+   zstd-22 (slow). A deployment free to pick its codec can run
+   **zstd-3 at ~100× faster compression** than zstd-22 with virtually
+   no loss of savings on any model or operating point in the cohort.
 
 ### Honest scope and exclusions
 
@@ -2383,11 +2406,11 @@ bz2-9, whose BWT pipeline is a poor fit for the fp8 value stream.)
 - [scripts/overlay/claim21_summary.py](scripts/overlay/claim21_summary.py)
   - aggregator emitting [results/claim21_summary.json](results/claim21_summary.json)
 - `results/claim21_codec_sweep_*.json` - cross-codec validation on the
-  full 6-model Claim-16 cohort at ρ=0.010 (TinyLlama, SmolLM2-1.7B,
-  OLMo-2-1B, Qwen3-1.7B, Mistral-7B, Qwen3-8B) plus OLMo-2-1B at
-  ρ = 0.003 and 0.030 anchoring the rho-sweep low/high ends, each file
-  containing measured compressed sizes for zstd-{3,9,15,22}, zlib-9,
-  bz2-9, lzma-6 on the fp8, idx_delta, and scale streams.
+  full 6-model × 3-ρ Claim-16 cohort (18 measurement points: TinyLlama,
+  SmolLM2-1.7B, OLMo-2-1B, Qwen3-1.7B, Mistral-7B, Qwen3-8B, each at
+  ρ ∈ {0.003, 0.010, 0.030}), each file containing measured compressed
+  sizes for zstd-{3,9,15,22}, zlib-9, bz2-9, lzma-6 on the fp8,
+  idx_delta, and scale streams.
 - [scripts/overlay/claim21_codec_summary.py](scripts/overlay/claim21_codec_summary.py)
   - cross-codec aggregator. Emits
   [results/claim21_codec_summary.json](results/claim21_codec_summary.json)

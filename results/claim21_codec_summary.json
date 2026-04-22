@@ -1,5 +1,48 @@
 [
   {
+    "model": "mistral_7b",
+    "rho": 0.003,
+    "raw_bytes": 20725760,
+    "shannon_bytes": 17687221.513345126,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 17486750,
+        "saved_pct": 15.627943197257904,
+        "gap_to_shannon_pct": -6.5976295586048375
+      },
+      "zstd-9": {
+        "bytes": 17700635,
+        "saved_pct": 14.59596656527915,
+        "gap_to_shannon_pct": 0.4414453433381007
+      },
+      "zstd-15": {
+        "bytes": 17701551,
+        "saved_pct": 14.591546944478756,
+        "gap_to_shannon_pct": 0.4715914153402501
+      },
+      "zstd-22": {
+        "bytes": 17700669,
+        "saved_pct": 14.595802518218873,
+        "gap_to_shannon_pct": 0.4425643023425473
+      },
+      "zlib-9": {
+        "bytes": 17498094,
+        "saved_pct": 15.573209378087945,
+        "gap_to_shannon_pct": -6.2242921778271265
+      },
+      "bz2-9": {
+        "bytes": 18400656,
+        "saved_pct": 11.218425765810277,
+        "gap_to_shannon_pct": 23.479527733094265
+      },
+      "lzma-6": {
+        "bytes": 17295264,
+        "saved_pct": 16.55184659090909,
+        "gap_to_shannon_pct": -12.89954085053015
+      }
+    }
+  },
+  {
     "model": "olmo2_1b",
     "rho": 0.003,
     "raw_bytes": 3216384,
@@ -39,6 +82,178 @@
         "bytes": 2659336,
         "saved_pct": 17.319076329194523,
         "gap_to_shannon_pct": -8.41242176609205
+      }
+    }
+  },
+  {
+    "model": "qwen3_1.7b",
+    "rho": 0.003,
+    "raw_bytes": 4135488,
+    "shannon_bytes": 3476891.6557779615,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 3479693,
+        "saved_pct": 15.8577415772939,
+        "gap_to_shannon_pct": 0.42535070937078817
+      },
+      "zstd-9": {
+        "bytes": 3507025,
+        "saved_pct": 15.196828040608509,
+        "gap_to_shannon_pct": 4.575388929258829
+      },
+      "zstd-15": {
+        "bytes": 3507115,
+        "saved_pct": 15.194651755729916,
+        "gap_to_shannon_pct": 4.589054355857319
+      },
+      "zstd-22": {
+        "bytes": 3503918,
+        "saved_pct": 15.271958230806135,
+        "gap_to_shannon_pct": 4.103628035464297
+      },
+      "zlib-9": {
+        "bytes": 3480358,
+        "saved_pct": 15.841661250135413,
+        "gap_to_shannon_pct": 0.5263230281262963
+      },
+      "bz2-9": {
+        "bytes": 3647560,
+        "saved_pct": 11.798559202686599,
+        "gap_to_shannon_pct": 25.91395256280068
+      },
+      "lzma-6": {
+        "bytes": 3445120,
+        "saved_pct": 16.693749322933595,
+        "gap_to_shannon_pct": -4.824146999402417
+      }
+    }
+  },
+  {
+    "model": "qwen3_8b",
+    "rho": 0.003,
+    "raw_bytes": 20660544,
+    "shannon_bytes": 17690825.177659698,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 17371235,
+        "saved_pct": 15.920727934366104,
+        "gap_to_shannon_pct": -10.761630874125759
+      },
+      "zstd-9": {
+        "bytes": 17590874,
+        "saved_pct": 14.857643632229626,
+        "gap_to_shannon_pct": -3.3656781547059325
+      },
+      "zstd-15": {
+        "bytes": 17589571,
+        "saved_pct": 14.863950339352149,
+        "gap_to_shannon_pct": -3.4095543624532088
+      },
+      "zstd-22": {
+        "bytes": 17539720,
+        "saved_pct": 15.105236338404255,
+        "gap_to_shannon_pct": -5.088198132529551
+      },
+      "zlib-9": {
+        "bytes": 17391337,
+        "saved_pct": 15.823431367538047,
+        "gap_to_shannon_pct": -10.084731773484354
+      },
+      "bz2-9": {
+        "bytes": 18319529,
+        "saved_pct": 11.330848790815963,
+        "gap_to_shannon_pct": 21.17048313162688
+      },
+      "lzma-6": {
+        "bytes": 17186088,
+        "saved_pct": 16.816866003141058,
+        "gap_to_shannon_pct": -16.99612683405283
+      }
+    }
+  },
+  {
+    "model": "smollm2_1.7b",
+    "rho": 0.003,
+    "raw_bytes": 4824576,
+    "shannon_bytes": 4102858.7281505717,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 4079989,
+        "saved_pct": 15.433211125703068,
+        "gap_to_shannon_pct": -3.1687932439204536
+      },
+      "zstd-9": {
+        "bytes": 4129681,
+        "saved_pct": 14.403234605486576,
+        "gap_to_shannon_pct": 3.716451427121205
+      },
+      "zstd-15": {
+        "bytes": 4129814,
+        "saved_pct": 14.400477886554176,
+        "gap_to_shannon_pct": 3.73487969608298
+      },
+      "zstd-22": {
+        "bytes": 4124141,
+        "saved_pct": 14.518063348986523,
+        "gap_to_shannon_pct": 2.948837817735976
+      },
+      "zlib-9": {
+        "bytes": 4083309,
+        "saved_pct": 15.364396788443171,
+        "gap_to_shannon_pct": -2.708779311942302
+      },
+      "bz2-9": {
+        "bytes": 4273226,
+        "saved_pct": 11.427947243446885,
+        "gap_to_shannon_pct": 23.605818856580168
+      },
+      "lzma-6": {
+        "bytes": 4023456,
+        "saved_pct": 16.604982489652976,
+        "gap_to_shannon_pct": -11.001916019980948
+      }
+    }
+  },
+  {
+    "model": "tinyllama",
+    "rho": 0.003,
+    "raw_bytes": 2910864,
+    "shannon_bytes": 2486184.9396889443,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 2484251,
+        "saved_pct": 14.655889110587097,
+        "gap_to_shannon_pct": -0.4553885203399823
+      },
+      "zstd-9": {
+        "bytes": 2504834,
+        "saved_pct": 13.948779468913697,
+        "gap_to_shannon_pct": 4.3913303136246595
+      },
+      "zstd-15": {
+        "bytes": 2504874,
+        "saved_pct": 13.94740530646571,
+        "gap_to_shannon_pct": 4.400749191016613
+      },
+      "zstd-22": {
+        "bytes": 2491062,
+        "saved_pct": 14.421903599755948,
+        "gap_to_shannon_pct": 1.148410827574956
+      },
+      "zlib-9": {
+        "bytes": 2474770,
+        "saved_pct": 14.981599964821442,
+        "gap_to_shannon_pct": -2.687897934167839
+      },
+      "bz2-9": {
+        "bytes": 2588800,
+        "saved_pct": 11.06420636621979,
+        "gap_to_shannon_pct": 24.16296679094454
+      },
+      "lzma-6": {
+        "bytes": 2434896,
+        "saved_pct": 16.35143380109823,
+        "gap_to_shannon_pct": -12.077105862337014
       }
     }
   },
@@ -301,6 +516,49 @@
     }
   },
   {
+    "model": "mistral_7b",
+    "rho": 0.03,
+    "raw_bytes": 209683840,
+    "shannon_bytes": 173807155.29679507,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 174302156,
+        "saved_pct": 16.873824897521907,
+        "gap_to_shannon_pct": 1.379728108379843
+      },
+      "zstd-9": {
+        "bytes": 174706168,
+        "saved_pct": 16.681148151426452,
+        "gap_to_shannon_pct": 2.5058410793587607
+      },
+      "zstd-15": {
+        "bytes": 174728582,
+        "saved_pct": 16.670458724906982,
+        "gap_to_shannon_pct": 2.5683161942848556
+      },
+      "zstd-22": {
+        "bytes": 174743820,
+        "saved_pct": 16.66319159359157,
+        "gap_to_shannon_pct": 2.6107894610486566
+      },
+      "zlib-9": {
+        "bytes": 174412223,
+        "saved_pct": 16.821333012596487,
+        "gap_to_shannon_pct": 1.6865206699293427
+      },
+      "bz2-9": {
+        "bytes": 183010280,
+        "saved_pct": 12.720846775793499,
+        "gap_to_shannon_pct": 25.65210464495009
+      },
+      "lzma-6": {
+        "bytes": 173754284,
+        "saved_pct": 17.135109696579384,
+        "gap_to_shannon_pct": -0.14736951653268865
+      }
+    }
+  },
+  {
     "model": "olmo2_1b",
     "rho": 0.03,
     "raw_bytes": 32163648,
@@ -340,6 +598,178 @@
         "bytes": 26514480,
         "saved_pct": 17.563828580638614,
         "gap_to_shannon_pct": 2.034844456756754
+      }
+    }
+  },
+  {
+    "model": "qwen3_1.7b",
+    "rho": 0.03,
+    "raw_bytes": 42216496,
+    "shannon_bytes": 34937168.3484575,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 35134808,
+        "saved_pct": 16.77469394901936,
+        "gap_to_shannon_pct": 2.7150811311621554
+      },
+      "zstd-9": {
+        "bytes": 35180325,
+        "saved_pct": 16.666875905570183,
+        "gap_to_shannon_pct": 3.3403723967690127
+      },
+      "zstd-15": {
+        "bytes": 35184283,
+        "saved_pct": 16.657500423531125,
+        "gap_to_shannon_pct": 3.3947455503000437
+      },
+      "zstd-22": {
+        "bytes": 35190354,
+        "saved_pct": 16.643119789003805,
+        "gap_to_shannon_pct": 3.47814610994807
+      },
+      "zlib-9": {
+        "bytes": 35153235,
+        "saved_pct": 16.731045134584356,
+        "gap_to_shannon_pct": 2.968222642055614
+      },
+      "bz2-9": {
+        "bytes": 36871541,
+        "saved_pct": 12.660821021242501,
+        "gap_to_shannon_pct": 26.57350711686406
+      },
+      "lzma-6": {
+        "bytes": 35039828,
+        "saved_pct": 16.999677093049126,
+        "gap_to_shannon_pct": 1.4102902968070952
+      }
+    }
+  },
+  {
+    "model": "qwen3_8b",
+    "rho": 0.03,
+    "raw_bytes": 208818576,
+    "shannon_bytes": 175320166.18577844,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 174000337,
+        "saved_pct": 16.67391841614704,
+        "gap_to_shannon_pct": -3.9399756379424105
+      },
+      "zstd-9": {
+        "bytes": 174503163,
+        "saved_pct": 16.43312278884614,
+        "gap_to_shannon_pct": -2.438931251690595
+      },
+      "zstd-15": {
+        "bytes": 174477791,
+        "saved_pct": 16.44527304888814,
+        "gap_to_shannon_pct": -2.5146721604104725
+      },
+      "zstd-22": {
+        "bytes": 174425018,
+        "saved_pct": 16.470545225823205,
+        "gap_to_shannon_pct": -2.6722109817834068
+      },
+      "zlib-9": {
+        "bytes": 174166128,
+        "saved_pct": 16.59452365961925,
+        "gap_to_shannon_pct": -3.4450536374072858
+      },
+      "bz2-9": {
+        "bytes": 182740683,
+        "saved_pct": 12.488301328134716,
+        "gap_to_shannon_pct": 22.151847969425766
+      },
+      "lzma-6": {
+        "bytes": 172976512,
+        "saved_pct": 17.164212440563716,
+        "gap_to_shannon_pct": -6.996314746807634
+      }
+    }
+  },
+  {
+    "model": "smollm2_1.7b",
+    "rho": 0.03,
+    "raw_bytes": 48245472,
+    "shannon_bytes": 40000395.527560316,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 40118611,
+        "saved_pct": 16.84481602750202,
+        "gap_to_shannon_pct": 1.433770479083313
+      },
+      "zstd-9": {
+        "bytes": 40229112,
+        "saved_pct": 16.615776916847242,
+        "gap_to_shannon_pct": 2.773976362793003
+      },
+      "zstd-15": {
+        "bytes": 40233778,
+        "saved_pct": 16.606105542920172,
+        "gap_to_shannon_pct": 2.8305677117707444
+      },
+      "zstd-22": {
+        "bytes": 40240492,
+        "saved_pct": 16.5921892110414,
+        "gap_to_shannon_pct": 2.911998126909312
+      },
+      "zlib-9": {
+        "bytes": 40177052,
+        "saved_pct": 16.72368341634216,
+        "gap_to_shannon_pct": 2.1425692415368474
+      },
+      "bz2-9": {
+        "bytes": 42139509,
+        "saved_pct": 12.65603329572566,
+        "gap_to_shannon_pct": 25.94413138058778
+      },
+      "lzma-6": {
+        "bytes": 39973336,
+        "saved_pct": 17.145932368533984,
+        "gap_to_shannon_pct": -0.3281901344489195
+      }
+    }
+  },
+  {
+    "model": "tinyllama",
+    "rho": 0.03,
+    "raw_bytes": 29052056,
+    "shannon_bytes": 24209180.143157106,
+    "codecs": {
+      "zstd-3": {
+        "bytes": 24304596,
+        "saved_pct": 16.341218673129365,
+        "gap_to_shannon_pct": 1.970231318402954
+      },
+      "zstd-9": {
+        "bytes": 24336885,
+        "saved_pct": 16.230076797318578,
+        "gap_to_shannon_pct": 2.63696325526184
+      },
+      "zstd-15": {
+        "bytes": 24339527,
+        "saved_pct": 16.22098277657182,
+        "gap_to_shannon_pct": 2.6915176167218164
+      },
+      "zstd-22": {
+        "bytes": 24344661,
+        "saved_pct": 16.20331104965514,
+        "gap_to_shannon_pct": 2.7975290064778795
+      },
+      "zlib-9": {
+        "bytes": 24299480,
+        "saved_pct": 16.358828442296822,
+        "gap_to_shannon_pct": 1.8645916086265577
+      },
+      "bz2-9": {
+        "bytes": 25449945,
+        "saved_pct": 12.398816111327887,
+        "gap_to_shannon_pct": 25.620414264588597
+      },
+      "lzma-6": {
+        "bytes": 24115712,
+        "saved_pct": 16.991375756676224,
+        "gap_to_shannon_pct": -1.9300131971179302
       }
     }
   }
