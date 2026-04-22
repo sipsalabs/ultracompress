@@ -1,0 +1,65 @@
+{
+  "claim": 21,
+  "mode": "row_order_invariance",
+  "model": "tinyllama",
+  "rho": 0.003,
+  "seed": 33,
+  "raw_sizes": {
+    "fp8": 2906112,
+    "idx": 4752,
+    "scale": 2376
+  },
+  "by_ordering": {
+    "sorted": {
+      "zstd-9": {
+        "fp8_bytes": 2501409,
+        "idx_bytes": 2173,
+        "scale_bytes": 1681
+      },
+      "lzma-6": {
+        "fp8_bytes": 2431192,
+        "idx_bytes": 1832,
+        "scale_bytes": 1892
+      },
+      "brotli-11": {
+        "fp8_bytes": 2394311,
+        "idx_bytes": 1702,
+        "scale_bytes": 1645
+      }
+    },
+    "shuffled": {
+      "zstd-9": {
+        "fp8_bytes": 2500793,
+        "idx_bytes": 2926,
+        "scale_bytes": 1683
+      },
+      "lzma-6": {
+        "fp8_bytes": 2431012,
+        "idx_bytes": 2588,
+        "scale_bytes": 1884
+      },
+      "brotli-11": {
+        "fp8_bytes": 2394133,
+        "idx_bytes": 2144,
+        "scale_bytes": 1645
+      }
+    },
+    "reversed": {
+      "zstd-9": {
+        "fp8_bytes": 2501241,
+        "idx_bytes": 2367,
+        "scale_bytes": 1685
+      },
+      "lzma-6": {
+        "fp8_bytes": 2431324,
+        "idx_bytes": 1976,
+        "scale_bytes": 1880
+      },
+      "brotli-11": {
+        "fp8_bytes": 2393769,
+        "idx_bytes": 1842,
+        "scale_bytes": 1645
+      }
+    }
+  }
+}

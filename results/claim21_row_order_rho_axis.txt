@@ -1,0 +1,52 @@
+Claim 21 row-order invariance ACROSS THE RHO AXIS
+================================================================================================
+
+For each rho: aggregate-compressed bytes across all models, orderings, codecs.
+'shuf-sort %' and 'rev-sort %' = percent change vs sorted.
+
+--- rho=0.003  (n=4 models: olmo2_1b, qwen3_1.7b, smollm2_1.7b, tinyllama) ---
+  codec       stream       sorted     shuffled     reversed  shuf-sort %   rev-sort %
+  zstd-9      fp8      12,846,950   12,845,517   12,845,841      -0.011%      -0.009%
+  zstd-9      idx          11,029       15,021       11,754     +36.195%      +6.574%
+  zstd-9      scale         8,690        8,680        8,688      -0.115%      -0.023%
+  lzma-6      fp8      12,544,440   12,544,144   12,543,744      -0.002%      -0.006%
+  lzma-6      idx           9,268       13,052        9,716     +40.829%      +4.834%
+  lzma-6      scale         9,328        9,308        9,336      -0.214%      +0.086%
+  brotli-11   fp8      12,372,653   12,371,938   12,372,000      -0.006%      -0.005%
+  brotli-11   idx           8,675       11,026        9,291     +27.101%      +7.101%
+  brotli-11   scale         8,065        8,076        8,063      +0.136%      -0.025%
+
+--- rho=0.01  (n=6 models: mistral_7b, olmo2_1b, qwen3_1.7b, qwen3_8b, smollm2_1.7b, tinyllama) ---
+  codec       stream       sorted     shuffled     reversed  shuf-sort %   rev-sort %
+  zstd-9      fp8     159,058,989  159,055,272  159,057,857      -0.002%      -0.001%
+  zstd-9      idx          64,656      116,530       66,972     +80.231%      +3.582%
+  zstd-9      scale        63,837       63,912       63,854      +0.117%      +0.027%
+  lzma-6      fp8     157,067,160  157,077,404  157,061,192      +0.007%      -0.004%
+  lzma-6      idx          53,280       96,556       54,516     +81.224%      +2.320%
+  lzma-6      scale        60,024       60,088       60,096      +0.107%      +0.120%
+  brotli-11   fp8     155,143,800  155,146,603  155,139,241      +0.002%      -0.003%
+  brotli-11   idx          61,555       85,692       62,365     +39.212%      +1.316%
+  brotli-11   scale        55,456       55,353       55,248      -0.186%      -0.375%
+
+--- rho=0.03  (n=4 models: olmo2_1b, qwen3_1.7b, smollm2_1.7b, tinyllama) ---
+  codec       stream       sorted     shuffled     reversed  shuf-sort %   rev-sort %
+  zstd-9      fp8     126,236,331  126,225,112  126,230,785      -0.009%      -0.004%
+  zstd-9      idx          66,560      140,979       68,128    +111.807%      +2.356%
+  zstd-9      scale        79,530       79,565       79,535      +0.044%      +0.006%
+  lzma-6      fp8     125,519,656  125,537,504  125,525,540      +0.014%      +0.005%
+  lzma-6      idx          55,120      114,060       52,664    +106.930%      -4.456%
+  lzma-6      scale        73,248       73,332       73,316      +0.115%      +0.093%
+  brotli-11   fp8     123,963,001  123,965,389  123,959,668      +0.002%      -0.003%
+  brotli-11   idx          62,895      105,600       63,182     +67.899%      +0.456%
+  brotli-11   scale        68,004       68,035       68,100      +0.046%      +0.141%
+
+================================================================================================
+KEY FINDING: fp8 + scale invariance holds AT EVERY RHO.
+------------------------------------------------------------------------------------------------
+  fp8 shuf-sort %    : should be < 0.05% at every rho (per-row local byte
+                       distribution, independent of how rows are sequenced).
+  scale shuf-sort %  : should be < 1% at every rho.
+  idx shuf-sort %    : monotone-decreasing with rho because higher rho means
+                       more rows per linear -> sorted delta sequence becomes
+                       MORE structured (smaller average delta) -> larger gap
+                       vs shuffle. Claim 21 always emits sorted -> zero cost.

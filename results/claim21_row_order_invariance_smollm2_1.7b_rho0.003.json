@@ -1,0 +1,65 @@
+{
+  "claim": 21,
+  "mode": "row_order_invariance",
+  "model": "smollm2_1.7b",
+  "rho": 0.003,
+  "seed": 33,
+  "raw_sizes": {
+    "fp8": 4816896,
+    "idx": 7680,
+    "scale": 3840
+  },
+  "by_ordering": {
+    "sorted": {
+      "zstd-9": {
+        "fp8_bytes": 4124302,
+        "idx_bytes": 3369,
+        "scale_bytes": 2622
+      },
+      "lzma-6": {
+        "fp8_bytes": 4017896,
+        "idx_bytes": 2868,
+        "scale_bytes": 2796
+      },
+      "brotli-11": {
+        "fp8_bytes": 3959380,
+        "idx_bytes": 2730,
+        "scale_bytes": 2329
+      }
+    },
+    "shuffled": {
+      "zstd-9": {
+        "fp8_bytes": 4123963,
+        "idx_bytes": 4737,
+        "scale_bytes": 2612
+      },
+      "lzma-6": {
+        "fp8_bytes": 4018016,
+        "idx_bytes": 4088,
+        "scale_bytes": 2776
+      },
+      "brotli-11": {
+        "fp8_bytes": 3959489,
+        "idx_bytes": 3529,
+        "scale_bytes": 2329
+      }
+    },
+    "reversed": {
+      "zstd-9": {
+        "fp8_bytes": 4123929,
+        "idx_bytes": 3611,
+        "scale_bytes": 2618
+      },
+      "lzma-6": {
+        "fp8_bytes": 4017700,
+        "idx_bytes": 2984,
+        "scale_bytes": 2792
+      },
+      "brotli-11": {
+        "fp8_bytes": 3960286,
+        "idx_bytes": 2902,
+        "scale_bytes": 2328
+      }
+    }
+  }
+}
