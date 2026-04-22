@@ -1,0 +1,21 @@
+{
+  "claim": 21,
+  "experiment": "scale_pair_decomp",
+  "model": "qwen3_1.7b",
+  "rho": 0.01,
+  "n_scales": 5656,
+  "n_bytes": 11312,
+  "byte0_H_bpB": 5.126635911242336,
+  "byte1_H_bpB": 3.068665709956384,
+  "byte_sum_bits_per_scale": 8.19530162119872,
+  "byte_sum_bpB": 4.09765081059936,
+  "joint_H_bits_per_scale": 7.927830200489063,
+  "joint_H_bpB": 3.9639151002445314,
+  "mutual_information_bits_per_scale": 0.2674714207096569,
+  "field_sign_H": -0.0,
+  "field_exp_H": 1.2940563254215354,
+  "field_mant_hi_H": 1.9847796740122052,
+  "field_mant_lo_H": 5.126635911242336,
+  "field_sum_bits_per_scale": 8.405471910676077,
+  "field_sum_bpB": 4.202735955338039
+}

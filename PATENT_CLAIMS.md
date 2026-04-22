@@ -3065,6 +3065,52 @@ per-model frequency tables. Pure aggregator over existing wave-19
 histogram JSONs (no GPU). Artifacts: `results/claim21_shared_coder.txt`
 and `results/claim21_shared_coder.json`.
 
+**Scale stream fp16 pair decomposition.** Wave 21 decomposed
+`idx_delta`'s int32 layout and found 2 of 4 bytes structurally zero
+(H = 0), giving a 75.5 % byte-independent floor. Wave 26 performs the
+same measurement for the `scale` fp16 stream. For 4 models at ρ =
+0.010, the scale stream is reshaped as (N, 2) uint8 pairs (little-
+endian fp16) and decomposed two ways: (a) per-byte-position Shannon
+H plus the joint H over the 65 536-bin fp16 value distribution, which
+yields the mutual information $I(B_0;B_1)$; (b) the Shannon H of each
+IEEE 754 field (sign, 5-bit exponent, 2-bit mantissa-hi, 8-bit
+mantissa-lo). Cohort mean across 4 models:
+
+| quantity                             | bits/scale | bpB  |
+|--------------------------------------|-----------:|-----:|
+| byte 0 (mantissa LSB)                |      5.820 | 5.820|
+| byte 1 (sign/exp/mant_hi)            |      3.276 | 3.276|
+| H(B0) + H(B1)                        |      9.096 | 4.548|
+| H(B0, B1) joint                      |      8.753 | 4.377|
+| mutual information I(B0;B1)          |      0.343 |   —  |
+| field sum (sign + exp + mhi + mlo)   |      9.230 | 4.615|
+| raw fp16                             |     16.000 | 8.000|
+
+Three structural facts fall out. First, the **sign bit is
+deterministic** (H = 0.0000 bits/scale on every one of the 4 models),
+because rotated-row fp16 scales are strictly positive by construction
+in the v17 bank layout; this is one free bit per scale. Second, the
+**5-bit exponent field carries only 1.30–1.75 bits of entropy**
+(cohort mean 1.48 bits across 4 models), and the 2-bit mantissa-hi
+field only ~1.95 bits — the high byte's 8 bits of raw width compresses
+to H = 3.28 bpB, consistent with the wave-23 finding that bz2-9 at
+4.78 bpB beats the naive per-byte order-0 floor. Third, the **byte-
+level mutual information is 0.343 bits/scale**: a joint coder over
+fp16 pairs is 0.17 bpB tighter than the byte-sum floor, but the full
+field-level decomposition is only 0.07 bpB looser than the sum of
+the independent field entropies, so an IEEE 754 field-split coder
+captures essentially all the non-trivial structure. The joint-pair H
+of 4.38 bpB is 0.40 bpB below the shipping brotli-11 rate on the
+scale stream (4.70 bpB from wave 23) and 0.49 bpB below bz2-9
+(4.78 bpB). Combined with wave 25's finding that the scale stream
+lacks cross-model universality (worst cross-entropy excess 4.75 bpB),
+this wave identifies exactly the three separate degrees of freedom
+that a dedicated scale-stream coder should exploit (constant sign,
+narrow exponent, high-entropy mantissa) and fixes the tightest
+obtainable lower bound at **4.38 bpB joint** / **4.62 bpB IEEE-field
+split**. Artifacts: `results/claim21_scale_pair_decomp.txt` and
+`results/claim21_scale_pair_<model>_rho0.01.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

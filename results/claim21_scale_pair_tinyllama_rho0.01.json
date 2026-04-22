@@ -1,0 +1,21 @@
+{
+  "claim": 21,
+  "experiment": "scale_pair_decomp",
+  "model": "tinyllama",
+  "rho": 0.01,
+  "n_scales": 3916,
+  "n_bytes": 7832,
+  "byte0_H_bpB": 5.159241562049656,
+  "byte1_H_bpB": 3.645955491204173,
+  "byte_sum_bits_per_scale": 8.80519705325383,
+  "byte_sum_bpB": 4.402598526626915,
+  "joint_H_bits_per_scale": 8.474547576930657,
+  "joint_H_bpB": 4.237273788465329,
+  "mutual_information_bits_per_scale": 0.3306494763231722,
+  "field_sign_H": -0.0,
+  "field_exp_H": 1.7470494141343273,
+  "field_mant_hi_H": 1.9414439326888162,
+  "field_mant_lo_H": 5.159241562049656,
+  "field_sum_bits_per_scale": 8.8477349088728,
+  "field_sum_bpB": 4.4238674544364
+}

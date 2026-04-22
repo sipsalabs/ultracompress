@@ -1,0 +1,30 @@
+Claim-21 wave 26: scale stream fp16 pair decomposition
+==========================================================================================
+
+Wave 21 showed idx_delta's int32 layout is 2/4 bytes
+structurally zero. This wave does the equivalent measurement
+for the fp16 scale stream: per-byte H, joint H over the
+65536-bin pair distribution, and mutual information between
+the two bytes of each fp16. Also reports the Shannon H of the
+sign (1-bit), exponent (5-bit), and mantissa-hi/lo (2+8-bit)
+fields, which is an information-theoretic tight lower bound
+on any independent-field coder.
+
+  model            byte0 H   byte1 H       sum     joint    I(B0;B1)   field sum  field bpB
+  olmo2_1b          7.8108    3.1458   10.9566   10.4513      0.5053     11.1226     5.5613
+  qwen3_1.7b        5.1266    3.0687    8.1953    7.9278      0.2675      8.4055     4.2027
+  smollm2_1.7b      5.1816    3.2436    8.4252    8.1582      0.2670      8.5443     4.2722
+  tinyllama         5.1592    3.6460    8.8052    8.4745      0.3306      8.8477     4.4239
+
+  Cohort (unweighted mean over 4 models):
+  mean              5.8196    3.2760    9.0956    8.7530      0.3426      9.2300     4.6150
+
+For context: wave 19 reported scale stream Shannon H (byte-level
+mixed across both byte positions) cohort-aggregate ~5.39 bpB. The
+per-byte-position H here is the actually-realisable floor for any
+positionally-aware coder; the joint H is the tightest achievable
+lower bound for any coder that sees both bytes of each fp16 as one
+unit; the field-decomposed H is the lower bound for any coder that
+splits fp16 into its IEEE 754 sign/exp/mantissa fields.
+
+==========================================================================================

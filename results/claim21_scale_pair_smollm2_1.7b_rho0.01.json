@@ -1,0 +1,21 @@
+{
+  "claim": 21,
+  "experiment": "scale_pair_decomp",
+  "model": "smollm2_1.7b",
+  "rho": 0.01,
+  "n_scales": 6336,
+  "n_bytes": 12672,
+  "byte0_H_bpB": 5.181594089485975,
+  "byte1_H_bpB": 3.243612716374295,
+  "byte_sum_bits_per_scale": 8.42520680586027,
+  "byte_sum_bpB": 4.212603402930135,
+  "joint_H_bits_per_scale": 8.158227830374292,
+  "joint_H_bpB": 4.079113915187146,
+  "mutual_information_bits_per_scale": 0.26697897548597815,
+  "field_sign_H": -0.0,
+  "field_exp_H": 1.4144923416819974,
+  "field_mant_hi_H": 1.9482496001009775,
+  "field_mant_lo_H": 5.181594089485975,
+  "field_sum_bits_per_scale": 8.54433603126895,
+  "field_sum_bpB": 4.272168015634475
+}

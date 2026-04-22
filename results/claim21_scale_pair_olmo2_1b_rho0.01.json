@@ -1,0 +1,21 @@
+{
+  "claim": 21,
+  "experiment": "scale_pair_decomp",
+  "model": "olmo2_1b",
+  "rho": 0.01,
+  "n_scales": 4224,
+  "n_bytes": 8448,
+  "byte0_H_bpB": 7.810818112541523,
+  "byte1_H_bpB": 3.1457787210878645,
+  "byte_sum_bits_per_scale": 10.956596833629387,
+  "byte_sum_bpB": 5.4782984168146935,
+  "joint_H_bits_per_scale": 10.451251787496311,
+  "joint_H_bpB": 5.2256258937481554,
+  "mutual_information_bits_per_scale": 0.5053450461330762,
+  "field_sign_H": -0.0,
+  "field_exp_H": 1.33255738136591,
+  "field_mant_hi_H": 1.979182927047647,
+  "field_mant_lo_H": 7.810818112541523,
+  "field_sum_bits_per_scale": 11.12255842095508,
+  "field_sum_bpB": 5.56127921047754
+}
