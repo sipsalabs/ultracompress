@@ -2402,6 +2402,61 @@ overlay-density operating points = **162 individual codec measurements**:
    explicitly disclosed as an *inadequate* codec for this payload
    (cohort-mean 0.02%), establishing the floor.
 
+### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
+
+To replace the earlier order-of-magnitude speed claim with a direct
+measurement, every codec was timed on random byte buffers of the exact
+sizes used in the Claim 21 sweep (random bytes are a lower bound on
+real-payload encode throughput for LZ coders — essentially worst case
+since there are no repeated matches to exploit). Savings are the real
+cohort-aggregate from the sweep JSONs; speeds are the measured medians
+per codec on 1 × 32-core host:
+
+| codec     | cohort savings | enc MB/s | dec MB/s | enc vs zstd-22 | dec vs zstd-22 |
+|-----------|---------------:|---------:|---------:|---------------:|---------------:|
+| zstd-3    |     **16.61 %** | **4798** | 8849     | **933 ×**      | 1.01 ×         |
+| zstd-9    |     16.31 %    |    2840  | 8349     | **552 ×**      | 0.95 ×         |
+| zstd-15   |     16.31 %    |     109  | 8947     | 21.2 ×         | 1.02 ×         |
+| zstd-22   |     16.33 %    |       5.1 | 8764    | 1.00 ×         | 1.00 ×         |
+| zlib-9    |     16.55 %    |      54  | 2416     | 10.6 ×         | 0.28 ×         |
+| bz2-9     |     12.42 %    |      20  |    34    |  3.8 ×         | 0.004 ×        |
+| lzma-6    |     17.08 %    |       3.7 | 1248    | 0.72 ×         | 0.14 ×         |
+| brotli-11 | **18.08 %**    |       2.4 | 3631    | 0.48 ×         | 0.41 ×         |
+| lz4-hc    |      0.03 %    |      66  | 4184     | 12.8 ×         | 0.48 ×         |
+
+**Concrete Pareto observations.**
+
+1. **zstd-3 is the correct default.** 933 × faster encoding than
+   zstd-22 for only **0.30 pp less savings** (16.61 % vs 16.33 % on
+   the cohort aggregate). Prior documentation said "~100 ×"; the
+   measured number is ~10 × stronger.
+
+2. **zstd-9 is nearly optimal within the zstd family:** 552 × faster
+   than zstd-22 for effectively identical savings (16.31 % vs
+   16.33 %). Zstd levels 9 and 22 differ by < 0.03 pp on this payload
+   while level 22 pays a > 500 × encode penalty — the search is not
+   finding additional matches at this sparsity.
+
+3. **lzma-6 is worth 0.75 pp savings at ~1300 × slower encode than
+   zstd-3.** A deployment willing to pay the CPU cost at write time
+   (one-off model encoding) and that can afford ~1200 MB/s decode
+   gets the lowest LZ-family code rate.
+
+4. **brotli-11 gets the best ratio (18.08 %) at 0.48 × zstd-22 encode
+   speed**, with decode comparable to zlib (3.6 GB/s) — making it the
+   correct choice when decode latency matters and write-time is
+   amortized over many reads.
+
+5. **LZ4-HC confirmed useless on this payload**: 66 MB/s encode is
+   fast, but 0.03 % savings is a rounding error — no operating
+   regime justifies it for Claim 21.
+
+6. **Decode is never the bottleneck** for any useful codec: every
+   strong-entropy coder decodes ≥ 1.2 GB/s (bz2 is the lone exception
+   at 34 MB/s and is already excluded on savings grounds).
+
+Artifact: `results/claim21_codec_throughput.{json,txt}`.
+
 ### Lossless-roundtrip verification (Claim 21 losslessness, 486/486)
 
 The "lossless" half of Claim 21 is verified directly. For every one
