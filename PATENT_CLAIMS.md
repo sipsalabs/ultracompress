@@ -2549,6 +2549,54 @@ Three orthogonal observations fall out of this table:
 
 Artifact: `results/claim21_codec_sweep_rho_axis.txt`.
 
+### Codec vs. order-0 Shannon bound — where the gains come from
+
+The codec-sweep JSONs carry empirical order-0 (memoryless) Shannon
+entropy per payload byte. Comparing each codec's actual bits-per-byte
+to that bound tells us whether the gain comes from exploiting byte-
+frequency imbalance alone (near-zero gap) or from higher-order
+context (negative gap — codec *beats* the memoryless bound). Cohort
+headline across 6 models × 3 ρ × 3 streams, size-weighted:
+
+| codec      | bpb    | gap vs Shannon | interpretation                |
+|------------|-------:|---------------:|-------------------------------|
+| brotli-11  | 6.554  | **−0.134**     | exploits higher-order context |
+| lzma-6     | 6.634  | −0.054         | exploits higher-order context |
+| zstd-3     | 6.671  | −0.017         | ≈ memoryless bound            |
+| zlib-9     | 6.676  | −0.012         | ≈ memoryless bound            |
+| zstd-22    | 6.693  | +0.006         | at bound                      |
+| zstd-15    | 6.695  | +0.008         | at bound                      |
+| zstd-9     | 6.696  | +0.008         | at bound                      |
+| bz2-9     | 7.007  | +0.319         | above bound (BWT ill-suited)  |
+| lz4-hc     | 7.998  | +1.310         | no entropy coding — control   |
+
+Per-stream detail shows where the higher-order structure lives. At
+ρ=0.030, cohort-aggregate (n=6 models):
+
+| stream     | order-0 Shannon | best codec bpb | best gap    |
+|------------|----------------:|---------------:|------------:|
+| fp8        | 6.662           | 6.552 (brotli) | **−0.110**  |
+| idx_delta  | 4.180           | 3.289 (lzma-6) | **−0.891**  |
+| scale      | 5.207           | 4.240 (brotli) | **−0.967**  |
+
+**Every entropy coder tested beats the order-0 bound on idx_delta
+and scale.** The idx_delta stream is delta-coded sorted indices — the
+delta run has strong sequential structure (consecutive rows within a
+linear tend to sit near one another in the W matrix, and the per-row
+Bayesian update produces short runs of similar deltas) that order-0
+entropy cannot see. The scale stream shows even larger gaps because
+per-row fp16 scales are highly autocorrelated between neighbouring
+restored rows. The fp8 stream is much closer to memoryless (−0.11 bpb
+for brotli is modest), confirming that the 17–18 % fp8 savings are a
+*pure entropy-deficit* effect (the fp8 bytes are not uniform random)
+rather than a block-correlation effect — which is why shuffling the
+rows doesn't hurt fp8 but does hurt idx_delta.
+
+`lz4-hc` sits +1.31 bpb *above* the memoryless bound in aggregate
+— a fast dictionary coder performs essentially no entropy coding on
+this payload, closing the loop on the negative control. Artifact:
+`results/claim21_shannon_gap.txt`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
