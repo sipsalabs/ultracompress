@@ -1,0 +1,63 @@
+{
+  "name": "Qwen3-1.7B",
+  "tier": "hifi+adaptive-overlay",
+  "rho": 0.01,
+  "score_mode": "weighted",
+  "n": 80,
+  "seq_len": 128,
+  "teacher_ppl": 47.49363505049555,
+  "teacher_t1": 0.32109375,
+  "teacher_t10": 0.65859375,
+  "v17_ppl": 58.705544644347064,
+  "v17_t1": 0.3017578125,
+  "v17_t10": 0.63544921875,
+  "v17_t1_vs_teacher": 0.7001953125,
+  "ppl_ratio": 1.236071835350799,
+  "t1_ret": 0.9397810218978102,
+  "t10_ret": 0.9648576512455517,
+  "overlay": {
+    "n_restored_rows": 5741,
+    "n_total_rows": 573440,
+    "rows_pct": 1.0011509486607142,
+    "overlay_bpw": 0.06468926157270158,
+    "base_bpw": 2.7708333333333335,
+    "effective_bpw": 2.835522594906035,
+    "role_share": {
+      "q_proj": {
+        "rows_restored": 1191,
+        "rows_total": 57344,
+        "energy": 16221.77548122406
+      },
+      "k_proj": {
+        "rows_restored": 460,
+        "rows_total": 28672,
+        "energy": 6282.611184120178
+      },
+      "v_proj": {
+        "rows_restored": 550,
+        "rows_total": 28672,
+        "energy": 7483.3385763168335
+      },
+      "o_proj": {
+        "rows_restored": 301,
+        "rows_total": 57344,
+        "energy": 4098.021293640137
+      },
+      "gate_proj": {
+        "rows_restored": 959,
+        "rows_total": 172032,
+        "energy": 13092.615509033203
+      },
+      "up_proj": {
+        "rows_restored": 907,
+        "rows_total": 172032,
+        "energy": 12378.661827087402
+      },
+      "down_proj": {
+        "rows_restored": 1373,
+        "rows_total": 57344,
+        "energy": 18750.209197998047
+      }
+    }
+  }
+}

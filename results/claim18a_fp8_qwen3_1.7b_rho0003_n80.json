@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Qwen3-1.7B",
+    "model_id": "Qwen/Qwen3-1.7B",
+    "fit": "v17hi_fit_qwen3_1.7b.pt",
+    "rho": 0.003,
+    "score_mode": "weighted",
+    "n": 80,
+    "seq_len": 128,
+    "teacher_ppl": 47.49363505049555,
+    "teacher_t1": 0.32109375,
+    "teacher_t10": 0.65859375,
+    "v17_ppl": 57.8377456554348,
+    "v17_t1": 0.303515625,
+    "v17_t10": 0.63388671875,
+    "v17_t1_vs_teacher": 0.70234375,
+    "ppl_ratio": 1.2177999345373611,
+    "t1_ret": 0.9452554744525548,
+    "t10_ret": 0.962485172004745,
+    "tier": "hifi+fp8-overlay",
+    "n_restored_rows": 1680,
+    "n_total_rows": 573440,
+    "rows_pct": 0.29296875,
+    "params_pct": 0.29296875,
+    "overlay_bpw": 0.015377044677734375,
+    "base_bpw": 2.7708333333333335,
+    "effective_bpw": 2.786210378011068
+  }
+]

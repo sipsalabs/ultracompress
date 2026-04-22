@@ -1,0 +1,63 @@
+{
+  "name": "Qwen3-1.7B",
+  "tier": "hifi+adaptive-overlay",
+  "rho": 0.003,
+  "score_mode": "weighted",
+  "n": 80,
+  "seq_len": 128,
+  "teacher_ppl": 47.49363505049555,
+  "teacher_t1": 0.32109375,
+  "teacher_t10": 0.65859375,
+  "v17_ppl": 58.33835490435268,
+  "v17_t1": 0.30302734375,
+  "v17_t10": 0.63515625,
+  "v17_t1_vs_teacher": 0.7005859375,
+  "ppl_ratio": 1.2283404890429412,
+  "t1_ret": 0.943734793187348,
+  "t10_ret": 0.9644128113879004,
+  "overlay": {
+    "n_restored_rows": 1714,
+    "n_total_rows": 573440,
+    "rows_pct": 0.2988978794642857,
+    "overlay_bpw": 0.019344942910330634,
+    "base_bpw": 2.7708333333333335,
+    "effective_bpw": 2.790178276243664,
+    "role_share": {
+      "q_proj": {
+        "rows_restored": 354,
+        "rows_total": 57344,
+        "energy": 16221.77548122406
+      },
+      "k_proj": {
+        "rows_restored": 137,
+        "rows_total": 28672,
+        "energy": 6282.611184120178
+      },
+      "v_proj": {
+        "rows_restored": 163,
+        "rows_total": 28672,
+        "energy": 7483.3385763168335
+      },
+      "o_proj": {
+        "rows_restored": 87,
+        "rows_total": 57344,
+        "energy": 4098.021293640137
+      },
+      "gate_proj": {
+        "rows_restored": 289,
+        "rows_total": 172032,
+        "energy": 13092.615509033203
+      },
+      "up_proj": {
+        "rows_restored": 272,
+        "rows_total": 172032,
+        "energy": 12378.661827087402
+      },
+      "down_proj": {
+        "rows_restored": 412,
+        "rows_total": 57344,
+        "energy": 18750.209197998047
+      }
+    }
+  }
+}
