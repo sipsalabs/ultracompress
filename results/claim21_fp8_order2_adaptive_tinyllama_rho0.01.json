@@ -1,0 +1,9 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order2_adaptive",
+  "model": "tinyllama",
+  "rho": 0.01,
+  "n_bytes": 9596928,
+  "total_bits": 68733083.66643296,
+  "adaptive_order2_bpB": 7.1619880514298915
+}

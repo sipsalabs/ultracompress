@@ -1,0 +1,9 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order2_adaptive",
+  "model": "olmo2_1b",
+  "rho": 0.01,
+  "n_bytes": 10616832,
+  "total_bits": 74780879.41333753,
+  "adaptive_order2_bpB": 7.04361521528621
+}

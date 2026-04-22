@@ -3367,6 +3367,34 @@ current payload volumes. Wave 32 charts the sample-size boundary that
 makes order 2 the safe-to-claim floor. Artifacts:
 `results/claim21_fp8_order3.txt` and `results/claim21_fp8_order3.json`.
 
+**Naive adaptive order-2 Laplace-1 coder does NOT realize the wave-31
+theoretical advantage.**
+Wave 33 simulates the simplest deployable order-2 arithmetic coder:
+65,536 byte-pair contexts, each a 256-symbol histogram initialized
+Laplace-1 (all ones), charged $-\log_2(c_{ctx,b}/s_{ctx})$ per byte
+with online count updates. Cohort rate is **7.058 bpB**, which is
+**+0.500 bpB worse than brotli-11** (6.558) and **+0.655 bpB above
+the wave-31 Shannon floor** (6.403). That 0.655 bpB gap is the
+"learning tax": with 65,536 contexts and only ~10–16 M fp8 bytes per
+model, each context accumulates only ~150–240 observations on average
+— not enough for Laplace-1 histograms to converge away from uniform.
+Brotli-11, despite being an LZ coder rather than an explicit order-2
+model, benefits from its integrated byte-level context model and fixed
+Huffman alphabet, which effectively amortize learning across the
+entire stream. **Operational conclusion:** to actually realize the
+−0.155 bpB advantage measured in wave 31, the order-2 fp8 coder MUST
+either (a) ship with pre-trained universal context tables — wave 26's
+cross-model histogram correlation $r > 0.9995$ proves this is
+feasible — or (b) use a PPM-style escape / blend mechanism that falls
+back to order-1 and order-0 for under-trained contexts. Any
+zero-initialized adaptive coder leaves the entire theoretical
+advantage on the table. This wave RULES OUT the naive implementation
+path and SHARPENS the patent-relevant sub-brotli design: an
+order-2 fp8 coder must **carry or bootstrap its context priors**
+rather than learn them from scratch. Artifacts:
+`results/claim21_fp8_order2_adaptive.txt` and
+`results/claim21_fp8_order2_adaptive.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

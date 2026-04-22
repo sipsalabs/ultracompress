@@ -1,0 +1,9 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order2_adaptive",
+  "model": "qwen3_1.7b",
+  "rho": 0.01,
+  "n_bytes": 13877248,
+  "total_bits": 97611195.214004,
+  "adaptive_order2_bpB": 7.0339014777284365
+}
