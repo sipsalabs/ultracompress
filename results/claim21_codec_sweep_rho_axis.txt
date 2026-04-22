@@ -1,0 +1,72 @@
+Claim-21 codec-sweep cohort savings across the rho axis
+==============================================================================
+Cohort = all models at that rho. Savings vs raw_bytes, summed over
+all 3 streams (fp8, idx_delta, scale).
+
+--- rho=0.003  (n=6 models: mistral_7b, olmo2_1b, qwen3_1.7b, qwen3_8b, smollm2_1.7b, tinyllama) ---
+  codec                 raw_B          cmp_B    saved_%
+  -----------------------------------------------------
+  zstd-3           56,473,616     47,593,107    15.725%
+  zstd-9           56,473,616     48,156,025    14.728%
+  zstd-15          56,473,616     48,150,864    14.737%
+  zstd-22          56,473,616     48,062,452    14.894%
+  zlib-9           56,473,616     47,618,843    15.679%
+  bz2-9            56,473,616     50,061,262    11.355%
+  lzma-6           56,473,616     47,044,160    16.697%
+  brotli-11        56,473,616     46,439,614    17.768%
+  lz4-hc           56,473,616     56,471,219     0.004%
+
+--- rho=0.01  (n=6 models: mistral_7b, olmo2_1b, qwen3_1.7b, qwen3_8b, smollm2_1.7b, tinyllama) ---
+  codec                 raw_B          cmp_B    saved_%
+  -----------------------------------------------------
+  zstd-3          189,324,256    158,387,157    16.341%
+  zstd-9          189,324,256    159,181,948    15.921%
+  zstd-15         189,324,256    159,165,327    15.930%
+  zstd-22         189,324,256    159,079,456    15.975%
+  zlib-9          189,324,256    158,453,653    16.306%
+  bz2-9           189,324,256    166,449,517    12.082%
+  lzma-6          189,324,256    157,179,992    16.978%
+  brotli-11       189,324,256    155,250,625    17.997%
+  lz4-hc          189,324,256    189,285,867     0.020%
+
+--- rho=0.03  (n=6 models: mistral_7b, olmo2_1b, qwen3_1.7b, qwen3_8b, smollm2_1.7b, tinyllama) ---
+  codec                 raw_B          cmp_B    saved_%
+  -----------------------------------------------------
+  zstd-3          570,180,088    474,425,057    16.794%
+  zstd-9          570,180,088    475,587,044    16.590%
+  zstd-15         570,180,088    475,574,800    16.592%
+  zstd-22         570,180,088    475,554,000    16.596%
+  zlib-9          570,180,088    474,827,913    16.723%
+  bz2-9           570,180,088    498,130,721    12.636%
+  lzma-6          570,180,088    472,374,152    17.154%
+  brotli-11       570,180,088    466,789,690    18.133%
+  lz4-hc          570,180,088    569,980,374     0.035%
+
+==============================================================================
+Per-codec cohort savings (%) by rho
+------------------------------------------------------------------------------
+  codec          rho=0.003    rho=0.01    rho=0.03
+  zstd-3           15.725%     16.341%     16.794%
+  zstd-9           14.728%     15.921%     16.590%
+  zstd-15          14.737%     15.930%     16.592%
+  zstd-22          14.894%     15.975%     16.596%
+  zlib-9           15.679%     16.306%     16.723%
+  bz2-9            11.355%     12.082%     12.636%
+  lzma-6           16.697%     16.978%     17.154%
+  brotli-11        17.768%     17.997%     18.133%
+  lz4-hc            0.004%      0.020%      0.035%
+
+KEY OBSERVATIONS
+----------------
+- brotli-11 and lzma-6 dominate at every rho (top-2 savings).
+- zstd-22 very close to lzma-6 but with much faster decode.
+- lz4-hc saves ~0% - NEGATIVE CONTROL. The payload does NOT
+  compress under fast dictionary coders, confirming the gains
+  above are true entropy-coder savings on structured content,
+  not accidental low-hanging fruit.
+- bz2-9 trails the entropy coders by ~5 percentage points at
+  every rho - BWT is a poor fit for the fp8 float-byte tail,
+  evidence that savings are codec-family-specific.
+- Savings are MONOTONE-INCREASING with rho for every codec,
+  showing Claim-21 scales cleanly as the restored-row budget
+  grows (larger payload -> richer context for the coder).
