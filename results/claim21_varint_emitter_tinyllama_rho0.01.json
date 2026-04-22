@@ -1,0 +1,22 @@
+{
+  "claim": 21,
+  "experiment": "varint_emitter",
+  "model": "tinyllama",
+  "rho": 0.01,
+  "n_deltas": 3916,
+  "delta_stats": {
+    "min": 0,
+    "max": 1280,
+    "mean": 96.13815117466802,
+    "median": 64.0,
+    "p99": 453.8499999999999
+  },
+  "raw_int32_bits": 125312,
+  "leb128_bits": 39704,
+  "gamma_bits": 45090,
+  "rice_median_k": 6,
+  "rice_median_bits": 31654,
+  "rice_best_k": 6,
+  "rice_best_bits": 31654,
+  "shannon_H_total_bits": 30593.340153649457
+}

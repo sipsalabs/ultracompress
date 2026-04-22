@@ -1,0 +1,22 @@
+{
+  "claim": 21,
+  "experiment": "varint_emitter",
+  "model": "qwen3_1.7b",
+  "rho": 0.01,
+  "n_deltas": 5656,
+  "delta_stats": {
+    "min": 0,
+    "max": 951,
+    "mean": 96.51467468175389,
+    "median": 62.0,
+    "p99": 480.0
+  },
+  "raw_int32_bits": 180992,
+  "leb128_bits": 57264,
+  "gamma_bits": 64756,
+  "rice_median_k": 5,
+  "rice_median_bits": 48465,
+  "rice_best_k": 6,
+  "rice_best_bits": 45697,
+  "shannon_H_total_bits": 44532.341952523464
+}

@@ -1,0 +1,69 @@
+Claim-21 varint/rice idx_delta emitter measurement
+======================================================================================
+
+Wave 23 predicted that a simple bit-level variable-length
+integer encoder would close most of the 1.55 bpB gap between
+observed brotli-11 idx_delta rate (4.34 bpB) and the Shannon
+order-0 floor (2.78 bpB). This wave measures the gap directly.
+
+All sizes reported in 'bpB(4-byte ref)' = total bits divided
+by the int32 raw size (so 8.0 = no compression; 2.78 = floor).
+
+--- olmo2_1b  n_deltas=4,224 ---
+  delta_stats: min=0  max=1160  median=58.0  p99=543.7
+  int32 LE (raw)                32.000 bpd    8.000 bpB
+  LEB128 varint                 10.055 bpd    2.514 bpB
+  Elias gamma                   11.217 bpd    2.804 bpB
+  Rice k=5 (med)                 8.574 bpd    2.144 bpB
+  Rice k=6 (best)                8.088 bpd    2.022 bpB
+  Shannon H (floor)              7.830 bpd    1.957 bpB
+
+--- qwen3_1.7b  n_deltas=5,656 ---
+  delta_stats: min=0  max=951  median=62.0  p99=480.0
+  int32 LE (raw)                32.000 bpd    8.000 bpB
+  LEB128 varint                 10.124 bpd    2.531 bpB
+  Elias gamma                   11.449 bpd    2.862 bpB
+  Rice k=5 (med)                 8.569 bpd    2.142 bpB
+  Rice k=6 (best)                8.079 bpd    2.020 bpB
+  Shannon H (floor)              7.873 bpd    1.968 bpB
+
+--- smollm2_1.7b  n_deltas=6,336 ---
+  delta_stats: min=0  max=1499  median=65.0  p99=499.6
+  int32 LE (raw)                32.000 bpd    8.000 bpB
+  LEB128 varint                 10.054 bpd    2.514 bpB
+  Elias gamma                   11.462 bpd    2.865 bpB
+  Rice k=6 (med)                 8.104 bpd    2.026 bpB
+  Rice k=6 (best)                8.104 bpd    2.026 bpB
+  Shannon H (floor)              7.842 bpd    1.960 bpB
+
+--- tinyllama  n_deltas=3,916 ---
+  delta_stats: min=0  max=1280  median=64.0  p99=453.8
+  int32 LE (raw)                32.000 bpd    8.000 bpB
+  LEB128 varint                 10.139 bpd    2.535 bpB
+  Elias gamma                   11.514 bpd    2.879 bpB
+  Rice k=6 (med)                 8.083 bpd    2.021 bpB
+  Rice k=6 (best)                8.083 bpd    2.021 bpB
+  Shannon H (floor)              7.812 bpd    1.953 bpB
+
+======================================================================================
+COHORT  (n_deltas total=20,132)
+--------------------------------------------------------------------------------------
+  scheme                      bpd       bpB(4-byte ref)   savings vs raw
+  int32 LE (raw)                32.000         8.000         0.000 %
+  LEB128 varint                 10.091         2.523        68.467 %
+  Elias gamma                   11.417         2.854        64.322 %
+  Rice best (search)             8.090         2.022        74.720 %
+  Shannon H (floor)              7.842         1.961        75.492 %
+
+Comparison points (for context):
+  brotli-11 observed cohort rate  (wave 23)  =  4.339 bpB   = 17.356 bpd
+  Shannon order-0 floor            (wave 19)  =  2.784 bpB   = 11.138 bpd
+
+INTERPRETATION
+--------------------------------------------------------------------------------------
+- If LEB128 / Rice-best bpB is below 4.339 bpB, a bit-level coder
+  SHIPS savings beyond brotli-11 on idx_delta. The margin is the
+  direct empirical validation of the wave-23 prediction.
+- If Rice-best is near the Shannon floor, the distribution is well
+  modelled by a geometric distribution, confirming wave 21's
+  picture of small-positive-integer deltas.

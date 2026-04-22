@@ -1,0 +1,22 @@
+{
+  "claim": 21,
+  "experiment": "varint_emitter",
+  "model": "smollm2_1.7b",
+  "rho": 0.01,
+  "n_deltas": 6336,
+  "delta_stats": {
+    "min": 0,
+    "max": 1499,
+    "mean": 96.96559343434343,
+    "median": 65.0,
+    "p99": 499.64999999999964
+  },
+  "raw_int32_bits": 202752,
+  "leb128_bits": 63704,
+  "gamma_bits": 72622,
+  "rice_median_k": 6,
+  "rice_median_bits": 51345,
+  "rice_best_k": 6,
+  "rice_best_bits": 51345,
+  "shannon_H_total_bits": 49684.11880683253
+}

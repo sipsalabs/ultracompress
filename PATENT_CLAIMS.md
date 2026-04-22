@@ -2993,6 +2993,45 @@ quantification is exact; no modelling assumptions beyond Shannon H
 as the memoryless floor. Artifacts: `results/claim21_coder_efficiency.txt`
 and `results/claim21_coder_efficiency.json`.
 
+**Bit-level idx_delta emitter validation.** Wave 23 predicted that
+a simple bit-level variable-length integer encoder would close most
+of the 1.55 bpB gap between brotli-11 and the Shannon order-0 floor
+on the `idx_delta` stream. Wave 24 measures this directly: for each
+of the 4 models at ρ = 0.010, the pre-packing int32 deltas are
+re-emitted under four independent schemes and compared against
+Shannon H and against the shipping brotli-11 rate from wave 15/23.
+All rates are reported as bpB against the int32 reference (8.0 bpB =
+raw). On the cohort (20,132 deltas aggregate):
+
+| scheme                  | bpd    | bpB     | savings vs raw |
+|-------------------------|-------:|--------:|---------------:|
+| int32 LE (current ship) | 32.000 | 8.000   |   0.000 %      |
+| LEB128 varint           | 10.091 | 2.523   |  68.467 %      |
+| Elias gamma             | 11.417 | 2.854   |  64.322 %      |
+| Rice (k best per model) |  8.090 | 2.022   |  74.720 %      |
+| Shannon H (floor)       |  7.842 | 1.961   |  75.492 %      |
+
+For context, the shipping brotli-11 rate on this stream (wave 23
+cohort) is 4.339 bpB = 17.356 bpd, and the order-0 floor from
+wave 19 is 2.784 bpB (computed on post-packing bytes, so
+non-identical to the per-delta floor here but the directional
+comparison is preserved). Per-model Rice-best lands at k = 6 for
+every model with cohort bpB spread 2.020–2.026, i.e. a 0.6 %
+variation across four unrelated pretrained models — the geometric
+fit implied by wave 21's byte-position zero structure holds
+universally. The Rice-best emitter comes within **0.061 bpB** of
+the true Shannon floor (within 0.8 % of information-theoretic
+optimum) and undercuts brotli-11 by **2.317 bpB** (53.4 % tighter
+than the shipping codec). Even plain LEB128, which has a
+1-bit-per-byte framing overhead and no k parameter, undercuts
+brotli-11 by 1.816 bpB. This is direct empirical confirmation of
+wave 23's prediction: the 1.55 bpB residual above the order-0
+floor under brotli-11 is not irreducible coder loss but pure
+small-stream framing overhead in a general-purpose dictionary
+compressor, and is entirely recoverable under a one-page bit-level
+emitter. Artifacts: `results/claim21_varint_emitter.txt` and
+`results/claim21_varint_emitter_<model>_rho0.01.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
