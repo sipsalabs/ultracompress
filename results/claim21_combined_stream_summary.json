@@ -1,0 +1,162 @@
+{
+  "claim": 21,
+  "wave": 41,
+  "cohort": {
+    "n_total": 50137048,
+    "brotli11_sum_bytes": 41053846,
+    "brotli11_concat_A_bytes": 41050676,
+    "brotli11_concat_B_bytes": 41049442,
+    "brotli11_cross_stream_gain_A_bpB": 0.0005058135851955225,
+    "brotli11_cross_stream_gain_B_bpB": 0.0007027138893378805
+  },
+  "rows": [
+    {
+      "model": "olmo2_1b",
+      "n_fp8": 10616832,
+      "n_idx": 16896,
+      "n_scl": 8448,
+      "n_total": 10642176,
+      "brotli11": {
+        "per_stream_bytes": {
+          "fp8": 8666274,
+          "idx": 5589,
+          "scl": 6567,
+          "sum": 8678430
+        },
+        "concat_A_bytes": 8677749,
+        "concat_B_bytes": 8675916,
+        "cross_stream_gain_A_bpB": 0.0005119253806740276,
+        "cross_stream_gain_B_bpB": 0.0018898390705058814,
+        "sum_bpB": 6.52380114743451,
+        "concat_A_bpB": 6.523289222053836,
+        "concat_B_bpB": 6.521911308364004
+      },
+      "zstd22": {
+        "per_stream_bytes": {
+          "fp8": 8834531,
+          "idx": 5749,
+          "scl": 6842,
+          "sum": 8847122
+        },
+        "concat_A_bytes": 8847026,
+        "concat_B_bytes": 8846255,
+        "cross_stream_gain_A_bpB": 7.216569242981887e-05,
+        "cross_stream_gain_B_bpB": 0.0006517464097568017,
+        "sum_bpB": 6.6506113035529575,
+        "concat_A_bpB": 6.650539137860528,
+        "concat_B_bpB": 6.649959557143201
+      }
+    },
+    {
+      "model": "qwen3_1.7b",
+      "n_fp8": 13877248,
+      "n_idx": 22624,
+      "n_scl": 11312,
+      "n_total": 13911184,
+      "brotli11": {
+        "per_stream_bytes": {
+          "fp8": 11392074,
+          "idx": 7321,
+          "scl": 6174,
+          "sum": 11405569
+        },
+        "concat_A_bytes": 11404831,
+        "concat_B_bytes": 11405371,
+        "cross_stream_gain_A_bpB": 0.0004244067219583897,
+        "cross_stream_gain_B_bpB": 0.00011386521808639724,
+        "sum_bpB": 6.55907879588107,
+        "concat_A_bpB": 6.558654389159111,
+        "concat_B_bpB": 6.558964930662983
+      },
+      "zstd22": {
+        "per_stream_bytes": {
+          "fp8": 11651777,
+          "idx": 7481,
+          "scl": 7113,
+          "sum": 11666371
+        },
+        "concat_A_bytes": 11666292,
+        "concat_B_bytes": 11671200,
+        "cross_stream_gain_A_bpB": 4.5431071862754455e-05,
+        "cross_stream_gain_B_bpB": -0.002777046152218244,
+        "sum_bpB": 6.70905999086778,
+        "concat_A_bpB": 6.709014559795917,
+        "concat_B_bpB": 6.711837037019998
+      }
+    },
+    {
+      "model": "smollm2_1.7b",
+      "n_fp8": 15925248,
+      "n_idx": 25344,
+      "n_scl": 12672,
+      "n_total": 15963264,
+      "brotli11": {
+        "per_stream_bytes": {
+          "fp8": 13059877,
+          "idx": 8148,
+          "scl": 7950,
+          "sum": 13075975
+        },
+        "concat_A_bytes": 13074592,
+        "concat_B_bytes": 13074760,
+        "cross_stream_gain_A_bpB": 0.0006930913377113853,
+        "cross_stream_gain_B_bpB": 0.0006088980298765967,
+        "sum_bpB": 6.553033264375005,
+        "concat_A_bpB": 6.552340173037294,
+        "concat_B_bpB": 6.552424366345129
+      },
+      "zstd22": {
+        "per_stream_bytes": {
+          "fp8": 13421516,
+          "idx": 8285,
+          "scl": 8123,
+          "sum": 13437924
+        },
+        "concat_A_bytes": 13438034,
+        "concat_B_bytes": 13427019,
+        "cross_stream_gain_A_bpB": -5.512657060611163e-05,
+        "cross_stream_gain_B_bpB": 0.005465047749633157,
+        "sum_bpB": 6.734424238050564,
+        "concat_A_bpB": 6.73447936462117,
+        "concat_B_bpB": 6.728959190300931
+      }
+    },
+    {
+      "model": "tinyllama",
+      "n_fp8": 9596928,
+      "n_idx": 15664,
+      "n_scl": 7832,
+      "n_total": 9620424,
+      "brotli11": {
+        "per_stream_bytes": {
+          "fp8": 7884189,
+          "idx": 5080,
+          "scl": 4603,
+          "sum": 7893872
+        },
+        "concat_A_bytes": 7893504,
+        "concat_B_bytes": 7893395,
+        "cross_stream_gain_A_bpB": 0.0003060156184384389,
+        "cross_stream_gain_B_bpB": 0.00039665611411721563,
+        "sum_bpB": 6.564261200961621,
+        "concat_A_bpB": 6.563955185343183,
+        "concat_B_bpB": 6.563864544847504
+      },
+      "zstd22": {
+        "per_stream_bytes": {
+          "fp8": 8120919,
+          "idx": 5215,
+          "scl": 5281,
+          "sum": 8131415
+        },
+        "concat_A_bytes": 8131472,
+        "concat_B_bytes": 8131228,
+        "cross_stream_gain_A_bpB": -4.739915829073646e-05,
+        "cross_stream_gain_B_bpB": 0.00015550250176083716,
+        "sum_bpB": 6.761793451099453,
+        "concat_A_bpB": 6.761840850257744,
+        "concat_B_bpB": 6.761637948597691
+      }
+    }
+  ]
+}

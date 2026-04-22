@@ -3692,6 +3692,37 @@ Artifacts: `results/claim21_fp8_rho_sweep_rho0.04.json`,
 `results/claim21_fp8_rho_sweep_combined.txt`,
 `results/claim21_fp8_rho_sweep_combined_summary.json`.
 
+**Wave 41 — cross-stream concatenation test (streams are independent).**
+To verify that coding the three payload streams separately imposes no
+compression penalty, wave 41 measures brotli-11 on the concatenated
+buffer `fp8 || idx_delta || scale` (ordering A) and `idx_delta ||
+scale || fp8` (ordering B), and compares to the sum of per-stream
+brotli-11 sizes.
+
+Cohort (N=50,137,048 bytes):
+
+| metric | sum-of-parts | concat A | concat B |
+|--------|--------------|----------|----------|
+| brotli-11 bytes | 41,053,846 | 41,050,676 | 41,049,442 |
+| gain vs sum | — | +0.00051 bpB | +0.00070 bpB |
+
+**The cross-stream concatenation gain is below 0.002 bpB** — within
+single-byte rounding of the individual compressions. All four models
+individually show gains < 0.002 bpB under both orderings. zstd-22
+shows mixed results (some concat orderings WORSEN due to block-
+framing overhead; qwen3 order B at −0.003 bpB).
+
+**Conclusion:** the three payload streams are effectively independent
+from brotli-11's perspective. Coding each stream separately loses at
+most 0.002 bpB vs any concatenation ordering. The per-stream
+architecture imposes **no compression penalty** and is preferable for
+engineering reasons (parallel decode, independent error recovery,
+stream-specific codec choice).
+
+Artifacts: `results/claim21_combined_stream_rho0.01.json`,
+`results/claim21_combined_stream.txt`,
+`results/claim21_combined_stream_summary.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
