@@ -1,0 +1,10 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order2",
+  "model": "olmo2_1b",
+  "rho": 0.01,
+  "n_fp8_bytes": 10616832,
+  "H_joint3": 19.57229808374573,
+  "H_joint2": 13.225969427692709,
+  "order2_H_bpB": 6.34632865605302
+}

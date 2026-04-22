@@ -1,0 +1,10 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order2",
+  "model": "qwen3_1.7b",
+  "rho": 0.01,
+  "n_fp8_bytes": 13877248,
+  "H_joint3": 19.74008304333041,
+  "H_joint2": 13.321363236292122,
+  "order2_H_bpB": 6.41871980703829
+}

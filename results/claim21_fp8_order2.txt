@@ -1,0 +1,37 @@
+Claim-21 wave 31: fp8 order-2 conditional entropy
+====================================================================================================
+
+Extends wave 30 one context position deeper:
+  H(B_i | B_{i-1}, B_{i-2}) via the empirical 256^3
+joint histogram. Tells us how much of brotli-11's
+sub-order-1 advantage is attributable to order-2.
+
+  model                n_bytes   order-0   order-1   order-2   brotli-11   br - H2
+  olmo2_1b          10,616,832    6.6218    6.6042    6.3463      6.5302   +0.1839
+  qwen3_1.7b        13,877,248    6.6720    6.6494    6.4187      6.5673   +0.1486
+  smollm2_1.7b      15,925,248    6.7119    6.6764    6.4462      6.5606   +0.1144
+  tinyllama          9,596,928    6.7582    6.7078    6.3725      6.5723   +0.1998
+
+  COHORT            50,016,256    6.6906    6.6596    6.4032      6.5583   +0.1550
+
+Context gains per model:
+  model             H0 -> H1    H1 -> H2    H0 -> H2
+  olmo2_1b           +0.0176     +0.2578     +0.2755
+  qwen3_1.7b         +0.0226     +0.2306     +0.2533
+  smollm2_1.7b       +0.0355     +0.2302     +0.2657
+  tinyllama          +0.0503     +0.3354     +0.3857
+  COHORT             +0.0310     +0.2564     +0.2874
+
+====================================================================================================
+INTERPRETATION
+----------------------------------------------------------------------------------------------------
+- order-2 H is the tight lower bound for any coder that
+  conditions on 2 previous bytes (65536 contexts x 256
+  symbols = 16.8M states).
+- 'br - H2' is how far brotli-11 sits above that floor.
+  Still negative => brotli-11 is using order >= 3 context.
+  Near-zero or positive => brotli-11 is essentially
+  capturing all context-2 and no more.
+- H1 -> H2 marginal gain quantifies how much additional
+  savings a context-2 coder gets over a context-1 coder.
+

@@ -1,0 +1,10 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order2",
+  "model": "tinyllama",
+  "rho": 0.01,
+  "n_fp8_bytes": 9596928,
+  "H_joint3": 19.83847727870353,
+  "H_joint2": 13.466004722030892,
+  "order2_H_bpB": 6.372472556672637
+}

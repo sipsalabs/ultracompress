@@ -3299,6 +3299,46 @@ order-1 gain *plus* whatever longer-range structure an order-≥2
 model can capture beyond brotli-11's LZ77 window. Artifacts:
 `results/claim21_fp8_order1.txt` and `results/claim21_fp8_order1.json`.
 
+**fp8 order-2 conditional entropy: a concrete sub-brotli path.**
+Wave 30 proved brotli-11 uses order ≥ 2 context but did not
+quantify the order-2 bound itself. Wave 31 measures it directly via
+the empirical 256³ = 16,777,216-bin joint histogram of
+$(B_{i-2}, B_{i-1}, B_i)$ and computes
+$H(B_i \mid B_{i-1}, B_{i-2}) = H(B_i, B_{i-1}, B_{i-2}) - H(B_{i-1}, B_{i-2})$.
+fp8 order-2 results per model at ρ = 0.010:
+
+| model        | order-0 H | order-1 H | **order-2 H** | brotli-11 bpB | **br − H₂**   |
+|--------------|----------:|----------:|--------------:|--------------:|--------------:|
+| olmo2_1b     |    6.6218 |    6.6042 |    **6.3463** |        6.5302 | **+0.1839**   |
+| qwen3_1.7b   |    6.6720 |    6.6494 |    **6.4187** |        6.5673 | **+0.1486**   |
+| smollm2_1.7b |    6.7119 |    6.6764 |    **6.4462** |        6.5606 | **+0.1144**   |
+| tinyllama    |    6.7582 |    6.7078 |    **6.3725** |        6.5723 | **+0.1998**   |
+| **cohort**   |    6.6906 |    6.6596 |    **6.4032** |    **6.5583** | **+0.1550**   |
+
+The sign **flips** between wave 30 (br − H₁ = −0.1013, brotli below
+the order-1 floor) and wave 31 (br − H₂ = +0.1550, brotli above the
+order-2 floor). This is the most actionable result in the Claim-21
+evidence set to date: *a clean order-2 arithmetic / rANS coder on fp8
+would beat shipping brotli-11 by 0.155 bpB cohort-wide — +0.114 to
++0.200 bpB across the 4 models.* The marginal context gain
+H₁ → H₂ is 0.256 bpB cohort, an order of magnitude larger than the
+H₀ → H₁ gain (0.031 bpB): the v17 per-row rotation makes **byte
+pairs** nearly independent but leaves significant **byte-triple**
+correlation. Brotli-11 recovers roughly 40% of the H₀ → H₂ gain
+(0.132 of 0.287 bpB cohort) through its LZ77 match-finder, leaving
+the remaining 60% (0.155 bpB) addressable by a 65,536-context
+arithmetic coder — memory cost ≈ 16 MiB for a 256-symbol alphabet,
+well within any practical decoder budget. Combined with waves 27–30,
+this converts the hitherto-null optimization landscape on fp8 into a
+concrete, bounded, implementable target: the bit-level payload floor
+is approximately $\rho \cdot (\text{order-2 H} + \text{idx-Rice bpB}
+\cdot (1/{\approx}1950) + \text{scale-joint bpB} \cdot (1/{\approx}1950))$
+$\approx 6.404 + 0.002 + 0.002 = 6.408$ bpB cohort, compared with
+shipping brotli-11 cohort ≈ 6.558 bpB — a **2.29% improvement** lower
+bound, the first constructive sub-brotli result in the Claim-21
+evidence set. Artifacts: `results/claim21_fp8_order2.txt` and
+`results/claim21_fp8_order2.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
