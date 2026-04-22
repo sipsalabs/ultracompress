@@ -1,0 +1,1072 @@
+{
+  "n_sweep_files": 18,
+  "total_codec_tests": 486,
+  "total_lossless": 486,
+  "lossless_rate": 1.0,
+  "total_elapsed_s": 819.73,
+  "rows": [
+    {
+      "model": "mistral_7b",
+      "rho": 0.003,
+      "seed": 3760083608,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 20709376,
+          "sha256_input": "118e38d17b4ab132ae81494661af8095a2879071cb9fab62fab67ddab940e60d",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 17.942
+        },
+        "idx_delta": {
+          "raw_bytes": 8192,
+          "sha256_input": "543a82266c8879df14271f1cae7d6301d4b5e6b468bb913c3dc016aa971b7522",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.012
+        },
+        "scale": {
+          "raw_bytes": 8192,
+          "sha256_input": "cf16ae3257bdd01fb3646cf78b335e583fbeed5b8891b4f72f59f8da2aa6a0e7",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.012
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "mistral_7b",
+      "rho": 0.01,
+      "seed": 1653289979,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 69664768,
+          "sha256_input": "06ddfe0d5205e655cfd6f6996c693466252f79ab5a673799d9aabf34ecb12a63",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 69.726
+        },
+        "idx_delta": {
+          "raw_bytes": 27456,
+          "sha256_input": "226e8fbcd95b05810e02a6990ddebce3930c10d7df63d70e78be3232f305bca4",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.06
+        },
+        "scale": {
+          "raw_bytes": 27456,
+          "sha256_input": "eef498402c311bfe0761e5285afde5da41e21c4b630c265f1bf54be2d6e52430",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.053
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "mistral_7b",
+      "rho": 0.03,
+      "seed": 1582753261,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 209518592,
+          "sha256_input": "82e0b7a663100359aefcd3762b0eb55e960902a59f0a499eb50e5193a5b36402",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 228.964
+        },
+        "idx_delta": {
+          "raw_bytes": 82624,
+          "sha256_input": "7a060cb1f912402e2234ee45d26cde466d371eac88681f2d5c6ced28fc2b9105",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.036
+        },
+        "scale": {
+          "raw_bytes": 82624,
+          "sha256_input": "4f85a14ea7321b891a558cc10bbf1cc0e05a901c7d892acbaa5cac7e2ac2075a",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.035
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "olmo2_1b",
+      "rho": 0.003,
+      "seed": 3423514441,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 3211264,
+          "sha256_input": "f7ef6174723002f5d6072945823079486b7bc9416bb2a15101033aefcf19cdec",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 1.776
+        },
+        "idx_delta": {
+          "raw_bytes": 2560,
+          "sha256_input": "fd6d03315f7542359d1bbaf1235c60fb3b11c0e61f4b16a2b0bda9d32491bcad",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.005
+        },
+        "scale": {
+          "raw_bytes": 2560,
+          "sha256_input": "35a7ccf40735d4ea1e13d8a9e7eb435267be212b7716e0f273d0978b64186f51",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.005
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "olmo2_1b",
+      "rho": 0.01,
+      "seed": 3464204460,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 10616832,
+          "sha256_input": "2d732695ca0defa1098a39f5c8341e4e3ac6e5368ae62b4428b177edb387ab74",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 8.276
+        },
+        "idx_delta": {
+          "raw_bytes": 8448,
+          "sha256_input": "16227e47fab7b61697abd67925abb35a16c789df110b570868133a4fee1df0f8",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.013
+        },
+        "scale": {
+          "raw_bytes": 8448,
+          "sha256_input": "511bdc3ec2ea902b7a6974980be4548e421ad294ed1c9bc76dc95705b7a43c29",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.013
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "olmo2_1b",
+      "rho": 0.03,
+      "seed": 4066806076,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 32112640,
+          "sha256_input": "6f250d8fa09a330e4ea041ee3fe8ddf236e75eb66026723eab1573bd14f00c21",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 28.97
+        },
+        "idx_delta": {
+          "raw_bytes": 25504,
+          "sha256_input": "544731bc2b1ce0be6dc7e60811ff3fc7cf227e7d23df705962d5dd27343e7d1f",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.053
+        },
+        "scale": {
+          "raw_bytes": 25504,
+          "sha256_input": "18e311c9c35a3ab8f4ac7928828fab98d2723fe94980a23dc39d6f687737eaa9",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.045
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "qwen3_1.7b",
+      "rho": 0.003,
+      "seed": 28166797,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 4128768,
+          "sha256_input": "70203ef30ed40725ca7e529d525d16ac54f3b042b4cebfddee69ab2ec082761a",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 2.427
+        },
+        "idx_delta": {
+          "raw_bytes": 3360,
+          "sha256_input": "73e291b18d76cc2978146a19b77f30c93fb06863334c84b4cf0bf19cf9320188",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.006
+        },
+        "scale": {
+          "raw_bytes": 3360,
+          "sha256_input": "ec8f5822f9fc5988af26401c257585c6dd41bd183aa8e7e16ad45e4c9a112f77",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.005
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "qwen3_1.7b",
+      "rho": 0.01,
+      "seed": 4126771593,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 13877248,
+          "sha256_input": "ece25ee60ad758279c4d3aebd15d0b4bee6b40b6481aac2ce36b6f948109fe0f",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 11.4
+        },
+        "idx_delta": {
+          "raw_bytes": 11312,
+          "sha256_input": "81548d754c351b3b14e43190523d83a5c806039ab65c83effcb2c814c9007f7c",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.016
+        },
+        "scale": {
+          "raw_bytes": 11312,
+          "sha256_input": "6bd36f67c0b4faa4ab6aac9b8bd554c217b93d527ac389d2e96ad83ca7b0d4f0",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.017
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "qwen3_1.7b",
+      "rho": 0.03,
+      "seed": 1227119759,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 42147840,
+          "sha256_input": "c61b569ab7777ef86621b033ed0e6320b233a2e77c96354708c40d823aaf758d",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 39.507
+        },
+        "idx_delta": {
+          "raw_bytes": 34328,
+          "sha256_input": "23821bf64f8263a8ca0af36a26d229fa377c63224d183ebfd16e0d641eb6ee20",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.016
+        },
+        "scale": {
+          "raw_bytes": 34328,
+          "sha256_input": "0ed3d1a35cc01d11ffbdba3a09179901efd9751ffbd47e0452e16ce5c6c983ab",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.016
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "qwen3_8b",
+      "rho": 0.003,
+      "seed": 795026536,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 20643840,
+          "sha256_input": "0b9a5d376589cded7c9105228930d671bc6b55ab04b5f088c1e4d1a448b15481",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 17.782
+        },
+        "idx_delta": {
+          "raw_bytes": 8352,
+          "sha256_input": "4d277d0a4335f969076130f3f18631bc0fd13c19eb26d617c2385c1a36f7b009",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.011
+        },
+        "scale": {
+          "raw_bytes": 8352,
+          "sha256_input": "712ea37558784aac4425cbeb261c658b00c10229fa5b5ba0fafb89734ce9e922",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.012
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "qwen3_8b",
+      "rho": 0.01,
+      "seed": 935055442,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 69451776,
+          "sha256_input": "ed1eb5b71f7956726390a5b70e87407202f45767b29c02af050894e22c89c9e3",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 69.615
+        },
+        "idx_delta": {
+          "raw_bytes": 28008,
+          "sha256_input": "253ca038cb3ffd0bd413f9e4f80ceeb2a766b6592c6b2c3fb405689d0ef627cb",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.064
+        },
+        "scale": {
+          "raw_bytes": 28008,
+          "sha256_input": "26f6ff23523eb5e8776140695494d92ea0357c4abb34acf08eb9bd6e1fe188ea",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.053
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "qwen3_8b",
+      "rho": 0.03,
+      "seed": 1993979498,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 208650240,
+          "sha256_input": "e3f284f1c27e4190b5287b9d50c0346ee1083967b3e02da9e11aa7c0f8489d57",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 225.564
+        },
+        "idx_delta": {
+          "raw_bytes": 84168,
+          "sha256_input": "7abe96d7548963215540d088f544633c21216682f559f5574008a092f47b4f56",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.04
+        },
+        "scale": {
+          "raw_bytes": 84168,
+          "sha256_input": "d0a1b4f837b049de80867fcaa7fe910e8f5f2a73d118cffcaa66633d406a7915",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.038
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "smollm2_1.7b",
+      "rho": 0.003,
+      "seed": 115271200,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 4816896,
+          "sha256_input": "e99f4166b7c4565f1694645f8fe5777dee0f16811149c12e75c2cbd95180579a",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 3.179
+        },
+        "idx_delta": {
+          "raw_bytes": 3840,
+          "sha256_input": "b80ea4dc68d121811cd92c6d10d6e24a3ad45ebf4265ecbfe6e6f3a331f7c49d",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.007
+        },
+        "scale": {
+          "raw_bytes": 3840,
+          "sha256_input": "65baba008a8af5fc912b2e9d5405e4e9b31fd32e4ab14bc69aee2152160f93fa",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.006
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "smollm2_1.7b",
+      "rho": 0.01,
+      "seed": 255300106,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 15925248,
+          "sha256_input": "99331a09e1d592ec4427bf78c225aaed9dc3417b28bcb340279ddb6dce811a9b",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 13.265
+        },
+        "idx_delta": {
+          "raw_bytes": 12672,
+          "sha256_input": "5d685e862cfb98a0b5a50bdef72f005ca0129f1a56b2be980a9071c19e0d4164",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.015
+        },
+        "scale": {
+          "raw_bytes": 12672,
+          "sha256_input": "f4167a43b2e3e6b53d89334804ba907876f10c14620480ee5628d6e11e5f3dcb",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.02
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "smollm2_1.7b",
+      "rho": 0.03,
+      "seed": 1314224162,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 48168960,
+          "sha256_input": "5117db0ba6962cce53569e6ea48c0ea3bb015f4f7d86d5ee459a3b6a0fc94874",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 45.103
+        },
+        "idx_delta": {
+          "raw_bytes": 38256,
+          "sha256_input": "73deea8c63634ce8b1baa6d03f7f566e7b422502d47fdfb9fc5573f1eb5cb874",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.019
+        },
+        "scale": {
+          "raw_bytes": 38256,
+          "sha256_input": "0fc3c6880df0b3cef32c19d2e444aeb054cbab47e8b982c14b7f265c3f278359",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.019
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "tinyllama",
+      "rho": 0.003,
+      "seed": 4202328913,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 2906112,
+          "sha256_input": "d962d89a499f852aa6ead86188b21bceae204da61b21113d7d737d63439a43b5",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 1.503
+        },
+        "idx_delta": {
+          "raw_bytes": 2376,
+          "sha256_input": "b4aece4ef4aed83c95c2977b75b5dec03e7f7334e708555704565f6c692e68a2",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.005
+        },
+        "scale": {
+          "raw_bytes": 2376,
+          "sha256_input": "47a922d4ef1f37f2aaa5b477961f9548cbd291804d4a0802df09a6e115173189",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.006
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "tinyllama",
+      "rho": 0.01,
+      "seed": 4247576773,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 9596928,
+          "sha256_input": "36e2e589f0f9cd1968305165cc8e0b3d3115e07477b612970c0f1b64911cc2ef",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 7.266
+        },
+        "idx_delta": {
+          "raw_bytes": 7832,
+          "sha256_input": "04cc5d25b5107029093dcd8296713d75928abfed02672cd884a2b1c6b0839ba0",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.01
+        },
+        "scale": {
+          "raw_bytes": 7832,
+          "sha256_input": "f22ee542a7e84f97b976415725aeef16fbc4c446b4542a2ef4964bff2846b80a",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.012
+        }
+      },
+      "all_lossless": true
+    },
+    {
+      "model": "tinyllama",
+      "rho": 0.03,
+      "seed": 1106314579,
+      "streams": {
+        "fp8": {
+          "raw_bytes": 29004800,
+          "sha256_input": "824cf532b608513f3cc624544ec1682e7009ff999db2ffa593381489b6b276b0",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 25.957
+        },
+        "idx_delta": {
+          "raw_bytes": 23628,
+          "sha256_input": "7755380ae6f03cbde0ed267dea1b01a0e3868531ce237c120025eaa50cd56720",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.038
+        },
+        "scale": {
+          "raw_bytes": 23628,
+          "sha256_input": "2db5adcbb31921c159e14f91dbc52dee2382a932fef707dbdf300b360feb8a16",
+          "all_lossless": true,
+          "per_codec_lossless": {
+            "zstd-3": true,
+            "zstd-9": true,
+            "zstd-15": true,
+            "zstd-22": true,
+            "zlib-9": true,
+            "bz2-9": true,
+            "lzma-6": true,
+            "brotli-11": true,
+            "lz4-hc": true
+          },
+          "elapsed_s": 0.049
+        }
+      },
+      "all_lossless": true
+    }
+  ],
+  "argument_for_sufficiency": "Every codec tested is a published, standards-compliant lossless codec (zstd RFC 8478, zlib RFC 1950/1951, bz2 spec, lzma/xz spec, brotli RFC 7932, lz4 frame spec). Losslessness is a universal property of the codec implementation and is input-distribution-invariant. A lossless roundtrip on random bytes of length N therefore implies a lossless roundtrip on the specific overlay payload bytes of length N used in the sweep."
+}

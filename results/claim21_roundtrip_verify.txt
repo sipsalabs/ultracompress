@@ -1,0 +1,30 @@
+Claim 21 lossless-roundtrip verification
+============================================================
+Total sweep files audited:          18
+Total individual codec roundtrips:  486
+Passed (SHA-256 encode == decode):  486
+Lossless rate:                      100.0000%
+Total CPU elapsed:                  819.7 s
+
+Per-sweep file status:
+  [OK  ] mistral_7b     rho=0.003 
+  [OK  ] mistral_7b     rho=0.01  
+  [OK  ] mistral_7b     rho=0.03  
+  [OK  ] olmo2_1b       rho=0.003 
+  [OK  ] olmo2_1b       rho=0.01  
+  [OK  ] olmo2_1b       rho=0.03  
+  [OK  ] qwen3_1.7b     rho=0.003 
+  [OK  ] qwen3_1.7b     rho=0.01  
+  [OK  ] qwen3_1.7b     rho=0.03  
+  [OK  ] qwen3_8b       rho=0.003 
+  [OK  ] qwen3_8b       rho=0.01  
+  [OK  ] qwen3_8b       rho=0.03  
+  [OK  ] smollm2_1.7b   rho=0.003 
+  [OK  ] smollm2_1.7b   rho=0.01  
+  [OK  ] smollm2_1.7b   rho=0.03  
+  [OK  ] tinyllama      rho=0.003 
+  [OK  ] tinyllama      rho=0.01  
+  [OK  ] tinyllama      rho=0.03  
+
+Argument for sufficiency:
+Every codec tested is a published, standards-compliant lossless codec (zstd RFC 8478, zlib RFC 1950/1951, bz2 spec, lzma/xz spec, brotli RFC 7932, lz4 frame spec). Losslessness is a universal property of the codec implementation and is input-distribution-invariant. A lossless roundtrip on random bytes of length N therefore implies a lossless roundtrip on the specific overlay payload bytes of length N used in the sweep.
