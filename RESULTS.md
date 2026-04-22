@@ -721,36 +721,37 @@ byte-entropy does not see. The 14.5%-17.3% savings are therefore a
 near-optimal realization of the information-theoretic limit, not a
 zstd-specific artifact.
 
-**Cross-codec validation (4 independent coder families, full 6-model × 3-ρ cohort = 18 measurement points).**
-The same three payload streams re-encoded with zstd-{3,9,15,22},
-zlib-9, bz2-9, and lzma-6 on every (model, rho) pair in the Claim-16
-cohort:
+**Cross-codec validation (6 independent coder families, 9 coders, full 6-model × 3-ρ cohort = 18 measurement points, 162 total measurements).**
+The same three payload streams re-encoded with **nine coders** from six
+distinct algorithmic families (LZ77+FSE: zstd-{3,9,15,22}; LZ77+Huffman:
+zlib-9; BWT+RLE+Huffman: bz2-9; LZMA+range: lzma-6; Brotli: brotli-11;
+LZ4+bytewise: lz4-hc):
 
-| model / rho             | zstd-3 | zstd-22 | zlib-9 | lzma-6 | bz2-9  | spread (ex-bz2) |
-|-------------------------|-------:|--------:|-------:|-------:|-------:|----------------:|
-| TinyLlama     / 0.003   | 14.66% |  14.42% | 14.98% | 16.35% | 11.06% |         1.69 pp |
-| SmolLM2-1.7B  / 0.003   | 15.43% |  14.52% | 15.36% | 16.60% | 11.43% |         2.08 pp |
-| Qwen3-1.7B    / 0.003   | 15.86% |  15.27% | 15.84% | 16.69% | 11.80% |         1.42 pp |
-| Mistral-7B    / 0.003   | 15.63% |  14.60% | 15.57% | 16.55% | 11.22% |         1.95 pp |
-| OLMo-2-1B     / 0.003   | 16.33% |  15.96% | 16.34% | 17.32% | 11.97% |         1.36 pp |
-| Qwen3-8B      / 0.003   | 15.92% |  15.11% | 15.82% | 16.82% | 11.33% |         1.71 pp |
-| **MEAN @ ρ=0.003 (n=6)** | **15.64%** | **14.98%** | **15.65%** | **16.72%** | **11.47%** | **1.74 pp** |
-| TinyLlama     / 0.010   | 15.68% |  15.41% | 15.82% | 16.71% | 11.73% |         1.30 pp |
-| SmolLM2-1.7B  / 0.010   | 16.37% |  15.76% | 16.21% | 16.93% | 12.08% |         1.17 pp |
-| Qwen3-1.7B    / 0.010   | 16.34% |  16.07% | 16.37% | 16.87% | 12.25% |         0.80 pp |
-| Mistral-7B    / 0.010   | 16.31% |  15.89% | 16.30% | 16.88% | 12.10% |         0.99 pp |
-| OLMo-2-1B     / 0.010   | 17.09% |  16.81% | 16.89% | 17.50% | 12.73% |         0.69 pp |
-| Qwen3-8B      / 0.010   | 16.34% |  16.04% | 16.30% | 17.06% | 11.99% |         1.02 pp |
-| **MEAN @ ρ=0.010 (n=6)** | **16.36%** | **16.00%** | **16.32%** | **16.99%** | **12.15%** | **0.99 pp** |
-| TinyLlama     / 0.030   | 16.34% |  16.20% | 16.36% | 16.99% | 12.40% |         0.79 pp |
-| SmolLM2-1.7B  / 0.030   | 16.84% |  16.59% | 16.72% | 17.15% | 12.66% |         0.56 pp |
-| Qwen3-1.7B    / 0.030   | 16.77% |  16.64% | 16.73% | 17.00% | 12.66% |         0.36 pp |
-| Mistral-7B    / 0.030   | 16.87% |  16.66% | 16.82% | 17.14% | 12.72% |         0.48 pp |
-| OLMo-2-1B     / 0.030   | 17.41% |  17.27% | 17.24% | 17.56% | 13.20% |         0.32 pp |
-| Qwen3-8B      / 0.030   | 16.67% |  16.47% | 16.59% | 17.16% | 12.49% |         0.69 pp |
-| **MEAN @ ρ=0.030 (n=6)** | **16.82%** | **16.64%** | **16.74%** | **17.17%** | **12.69%** | **0.53 pp** |
+| model / rho             | zstd-3 | zstd-22 | zlib-9 | lzma-6 | brotli-11 | bz2-9  | lz4-hc |
+|-------------------------|-------:|--------:|-------:|-------:|----------:|-------:|-------:|
+| TinyLlama     / 0.003   | 14.66% |  14.42% | 14.98% | 16.35% | **17.64%** | 11.06% | -0.01% |
+| SmolLM2-1.7B  / 0.003   | 15.43% |  14.52% | 15.36% | 16.60% | **17.84%** | 11.43% | -0.01% |
+| Qwen3-1.7B    / 0.003   | 15.86% |  15.27% | 15.84% | 16.69% | **17.84%** | 11.80% | -0.01% |
+| Mistral-7B    / 0.003   | 15.63% |  14.60% | 15.57% | 16.55% | **17.67%** | 11.22% | -0.01% |
+| OLMo-2-1B     / 0.003   | 16.33% |  15.96% | 16.34% | 17.32% | **18.26%** | 11.97% | +0.11% |
+| Qwen3-8B      / 0.003   | 15.92% |  15.11% | 15.82% | 16.82% | **17.78%** | 11.33% |  0.00% |
+| **MEAN @ ρ=0.003**       | **15.64%** | **14.98%** | **15.65%** | **16.72%** | **17.84%** | **11.47%** | **0.01%** |
+| TinyLlama     / 0.010   | 15.68% |  15.41% | 15.82% | 16.71% | **17.89%** | 11.73% |  0.00% |
+| SmolLM2-1.7B  / 0.010   | 16.37% |  15.76% | 16.21% | 16.93% | **18.03%** | 12.08% | +0.01% |
+| Qwen3-1.7B    / 0.010   | 16.34% |  16.07% | 16.37% | 16.87% | **17.95%** | 12.25% | +0.01% |
+| Mistral-7B    / 0.010   | 16.31% |  15.89% | 16.30% | 16.88% | **17.96%** | 12.10% |  0.00% |
+| OLMo-2-1B     / 0.010   | 17.09% |  16.81% | 16.89% | 17.50% | **18.40%** | 12.73% | +0.09% |
+| Qwen3-8B      / 0.010   | 16.34% |  16.04% | 16.30% | 17.06% | **17.99%** | 11.99% | +0.04% |
+| **MEAN @ ρ=0.010**       | **16.36%** | **16.00%** | **16.32%** | **16.99%** | **18.04%** | **12.14%** | **0.02%** |
+| TinyLlama     / 0.030   | 16.34% |  16.20% | 16.36% | 16.99% | **18.10%** | 12.40% | +0.02% |
+| SmolLM2-1.7B  / 0.030   | 16.84% |  16.59% | 16.72% | 17.15% | **18.20%** | 12.66% | +0.03% |
+| Qwen3-1.7B    / 0.030   | 16.77% |  16.64% | 16.73% | 17.00% | **18.04%** | 12.66% | +0.03% |
+| Mistral-7B    / 0.030   | 16.87% |  16.66% | 16.82% | 17.14% | **18.16%** | 12.72% | +0.01% |
+| OLMo-2-1B     / 0.030   | 17.41% |  17.27% | 17.24% | 17.56% | **18.47%** | 13.20% | +0.10% |
+| Qwen3-8B      / 0.030   | 16.67% |  16.47% | 16.59% | 17.16% | **18.07%** | 12.49% | +0.05% |
+| **MEAN @ ρ=0.030**       | **16.82%** | **16.64%** | **16.74%** | **17.17%** | **18.17%** | **12.69%** | **0.04%** |
 
-Across four LZ-family coders (zstd levels 3/9/15/22 + zlib) the
+**Brotli-11 wins on 18 of 18 rows** (best LZ-family coder, 17.64-18.47% savings, cohort-mean 17.84-18.17% across ρ). **LZ4-HC (ultra-fast LZ, weak entropy modeling) saves essentially zero** (cohort-mean 0.01-0.04%, per-row -0.01% to +0.11%) — a crucial negative control: "any byte-stream compressor works" is false; the payload requires a coder with genuine entropy modeling. Across four stronger LZ-family coders (zstd levels 3/9/15/22 + zlib) the
 savings agree to within **0.32-2.08 pp** on every single row of the
 **18-point cohort** (1.1B - 8B, three architecture families, three
 tokenizer/corpus pairings); LZMA-6 adds another 0.3-1.4 pp

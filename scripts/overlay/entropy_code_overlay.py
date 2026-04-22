@@ -269,6 +269,16 @@ def main():
     if args.codec_sweep:
         import zlib as _zlib, bz2 as _bz2, lzma as _lzma
         import zstandard as _zstd
+        try:
+            import brotli as _brotli
+            _have_brotli = True
+        except ImportError:
+            _have_brotli = False
+        try:
+            import lz4.frame as _lz4
+            _have_lz4 = True
+        except ImportError:
+            _have_lz4 = False
 
         def _zstd_at(buf, lvl):
             return _zstd.ZstdCompressor(level=lvl).compress(buf)
@@ -282,6 +292,11 @@ def main():
             ("bz2-9",   lambda b: _bz2.compress(b, 9)),
             ("lzma-6",  lambda b: _lzma.compress(b, preset=6)),
         ]
+        if _have_brotli:
+            CODECS.append(("brotli-11", lambda b: _brotli.compress(b, quality=11)))
+        if _have_lz4:
+            CODECS.append(("lz4-hc",    lambda b: _lz4.compress(b, compression_level=16)))
+
         streams = {"fp8": fp8_buf, "idx_delta": idx_buf, "scale": scale_buf}
         shannon = {"fp8": H_fp8, "idx_delta": H_idx, "scale": H_scale}
 

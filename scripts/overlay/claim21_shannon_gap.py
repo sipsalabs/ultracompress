@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RESULTS_DIR = ROOT / "results"
 PATTERN = re.compile(r"^claim21_codec_sweep_(?P<model>.+?)_rho(?P<rho>0\.[0-9]+)\.json$")
 
-LZ_CODERS = ["zstd-3", "zstd-9", "zstd-15", "zstd-22", "zlib-9", "lzma-6"]
+LZ_CODERS = ["zstd-3", "zstd-9", "zstd-15", "zstd-22", "zlib-9", "lzma-6", "brotli-11", "lz4-hc"]
 STREAMS = ["fp8", "idx_delta", "scale"]
 
 
@@ -65,8 +65,7 @@ def main() -> None:
                 "gap_pct": gap_pct,
                 "lzma6_bpb": coders["lzma-6"]["bits_per_byte"],
                 "lzma6_gap_pct": 100.0 * (coders["lzma-6"]["bits_per_byte"] - H) / H if H > 0 else float("nan"),
-            }
-        rows.append(row)
+            }        rows.append(row)
 
     rows.sort(key=lambda r: (r["rho"], r["model"]))
 

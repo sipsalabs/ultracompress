@@ -61,6 +61,14 @@
         "lzma-6": {
           "bytes": 2655208,
           "bits_per_byte": 6.6147361288265305
+        },
+        "brotli-11": {
+          "bytes": 2625459,
+          "bits_per_byte": 6.540624501753826
+        },
+        "lz4-hc": {
+          "bytes": 3207722,
+          "bits_per_byte": 7.991176060267857
         }
       }
     },
@@ -96,6 +104,14 @@
         "lzma-6": {
           "bytes": 1972,
           "bits_per_byte": 6.1625
+        },
+        "brotli-11": {
+          "bytes": 1623,
+          "bits_per_byte": 5.071875
+        },
+        "lz4-hc": {
+          "bytes": 2583,
+          "bits_per_byte": 8.071875
         }
       }
     },
@@ -131,6 +147,14 @@
         "lzma-6": {
           "bytes": 2156,
           "bits_per_byte": 6.7375
+        },
+        "brotli-11": {
+          "bytes": 2084,
+          "bits_per_byte": 6.5125
+        },
+        "lz4-hc": {
+          "bytes": 2583,
+          "bits_per_byte": 8.071875
         }
       }
     }

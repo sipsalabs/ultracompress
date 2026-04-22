@@ -15,7 +15,7 @@ REPO = HERE.parent.parent
 RESULTS = REPO / "results"
 
 PAT = re.compile(r"^claim21_codec_sweep_(?P<model>.+?)_rho(?P<rho>0\.[0-9]+)\.json$")
-CODECS = ["zstd-3", "zstd-9", "zstd-15", "zstd-22", "zlib-9", "bz2-9", "lzma-6"]
+CODECS = ["zstd-3", "zstd-9", "zstd-15", "zstd-22", "zlib-9", "bz2-9", "lzma-6", "brotli-11", "lz4-hc"]
 
 
 def main() -> None:
@@ -41,6 +41,9 @@ def main() -> None:
             "codecs": {},
         }
         for c in CODECS:
+            # skip codecs not present in this file (older sweeps had 7 codecs)
+            if c not in cs["fp8"]["codecs"]:
+                continue
             total = sum(cs[s]["codecs"][c]["bytes"] for s in ("fp8", "idx_delta", "scale"))
             saved_pct = 100 * (raw_bytes - total) / raw_bytes
             gap = 100 * (total * 8 - shannon_bytes * 8) / max(raw_bits - shannon_bytes * 8, 1)
@@ -57,14 +60,17 @@ def main() -> None:
     out_json.write_text(json.dumps(rows, indent=2))
 
     # text table
-    header_codecs = " ".join(f"{c:>7}" for c in CODECS)
+    header_codecs = " ".join(f"{c:>9}" for c in CODECS)
     hdr = f"{'model':<14} {'rho':>6} {'raw MB':>8} {header_codecs}"
     lines = [hdr, "-" * len(hdr)]
     for r in rows:
-        savings = " ".join(f"{r['codecs'][c]['saved_pct']:6.2f}%" for c in CODECS)
+        savings = " ".join(
+            (f"{r['codecs'][c]['saved_pct']:7.2f}% " if c in r['codecs'] else f"{'-':>9}")
+            for c in CODECS
+        )
         lines.append(f"{r['model']:<14} {r['rho']:>6.3f} {r['raw_bytes']/1e6:>8.2f} {savings}")
 
-    # cohort means (skip bz2 as outlier)
+    # cohort means
     from collections import defaultdict
     by_rho = defaultdict(list)
     for r in rows:
@@ -73,11 +79,14 @@ def main() -> None:
     lines.append("Cohort means (savings %):")
     lines.append(hdr)
     for rho, rs in sorted(by_rho.items()):
-        means = " ".join(
-            f"{sum(r['codecs'][c]['saved_pct'] for r in rs)/len(rs):6.2f}%"
-            for c in CODECS
-        )
-        lines.append(f"{'MEAN':<14} {rho:>6.3f} {sum(r['raw_bytes'] for r in rs)/len(rs)/1e6:>8.2f} {means}")
+        means = []
+        for c in CODECS:
+            vals = [r['codecs'][c]['saved_pct'] for r in rs if c in r['codecs']]
+            if vals:
+                means.append(f"{sum(vals)/len(vals):7.2f}% ")
+            else:
+                means.append(f"{'-':>9}")
+        lines.append(f"{'MEAN':<14} {rho:>6.3f} {sum(r['raw_bytes'] for r in rs)/len(rs)/1e6:>8.2f} {' '.join(means)}")
 
     out_txt = RESULTS / "claim21_codec_summary.txt"
     text = "\n".join(lines)
