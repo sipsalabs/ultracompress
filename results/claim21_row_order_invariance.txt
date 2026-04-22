@@ -1,0 +1,81 @@
+Claim 21 row-order invariance (ρ = 0.010, seed = 33)
+==========================================================================================
+
+For each (model, codec, stream): compressed bytes across 3 orderings of the
+per-linear restored rows. 'sorted' = natural ascending (Claim 21 default);
+'shuffled' = Fisher-Yates with seed=33; 'reversed' = descending.
+
+  model         codec       stream          raw      sorted    shuffled    reversed  shuf-sort %
+------------------------------------------------------------------------------------------------
+  qwen3_1.7b    zstd-9      fp8      13,877,248  11,656,441  11,658,296  11,658,749      +0.016%
+  qwen3_1.7b    zstd-9      idx          22,624       7,756      13,326       8,104     +71.815%
+  qwen3_1.7b    zstd-9      scale        11,312       7,154       7,161       7,162      +0.098%
+
+  qwen3_1.7b    lzma-6      fp8      13,877,248  11,542,288  11,543,484  11,542,360      +0.010%
+  qwen3_1.7b    lzma-6      idx          22,624       6,372      11,152       6,480     +75.016%
+  qwen3_1.7b    lzma-6      scale        11,312       6,964       6,972       6,964      +0.115%
+
+  qwen3_1.7b    brotli-11   fp8      13,877,248  11,392,074  11,392,470  11,392,889      +0.003%
+  qwen3_1.7b    brotli-11   idx          22,624       7,321       9,773       7,443     +33.493%
+  qwen3_1.7b    brotli-11   scale        11,312       6,174       6,163       6,194      -0.178%
+
+  qwen3_8b      zstd-9      fp8      69,451,776  58,401,004  58,403,313  58,405,990      +0.004%
+  qwen3_8b      zstd-9      idx          56,016      18,565      34,311      19,134     +84.816%
+  qwen3_8b      zstd-9      scale        28,008      17,810      17,835      17,817      +0.140%
+
+  qwen3_8b      lzma-6      fp8      69,451,776  57,615,676  57,617,468  57,612,428      +0.003%
+  qwen3_8b      lzma-6      idx          56,016      15,328      28,444      15,684     +85.569%
+  qwen3_8b      lzma-6      scale        28,008      16,592      16,636      16,600      +0.265%
+
+  qwen3_8b      brotli-11   fp8      69,451,776  56,974,940  56,976,595  56,969,231      +0.003%
+  qwen3_8b      brotli-11   idx          56,016      17,821      25,303      17,928     +41.984%
+  qwen3_8b      brotli-11   scale        28,008      14,911      14,909      14,919      -0.013%
+
+  tinyllama     zstd-9      fp8       9,596,928   8,127,342   8,127,846   8,127,107      +0.006%
+  tinyllama     zstd-9      idx          15,664       5,412       9,277       5,705     +71.415%
+  tinyllama     zstd-9      scale         7,832       5,283       5,285       5,285      +0.038%
+
+  tinyllama     lzma-6      fp8       9,596,928   7,996,212   7,997,860   7,996,176      +0.021%
+  tinyllama     lzma-6      idx          15,664       4,452       7,812       4,604     +75.472%
+  tinyllama     lzma-6      scale         7,832       5,232       5,260       5,244      +0.535%
+
+  tinyllama     brotli-11   fp8       9,596,928   7,884,189   7,884,239   7,884,664      +0.001%
+  tinyllama     brotli-11   idx          15,664       5,080       6,756       5,220     +32.992%
+  tinyllama     brotli-11   scale         7,832       4,603       4,604       4,600      +0.022%
+
+==========================================================================================
+Aggregate across 3 models (tinyllama + qwen3_1.7b + qwen3_8b)
+------------------------------------------------------------------------------------------
+  codec       stream       sorted     shuffled     reversed  shuf-sort %   rev-sort %
+  zstd-9      fp8      78,184,787   78,189,455   78,191,846      +0.006%      +0.009%
+  zstd-9      idx          31,733       56,914       32,943     +79.353%      +3.813%
+  zstd-9      scale        30,247       30,281       30,264      +0.112%      +0.056%
+
+  lzma-6      fp8      77,154,176   77,158,812   77,150,964      +0.006%      -0.004%
+  lzma-6      idx          26,152       47,408       26,768     +81.279%      +2.355%
+  lzma-6      scale        28,788       28,868       28,808      +0.278%      +0.069%
+
+  brotli-11   fp8      76,251,203   76,253,304   76,246,784      +0.003%      -0.006%
+  brotli-11   idx          30,222       41,832       30,591     +38.416%      +1.221%
+  brotli-11   scale        25,688       25,676       25,713      -0.047%      +0.097%
+
+INTERPRETATION
+------------------------------------------------------------------------------------------
+- fp8:   < 0.02% variation across orderings (order-invariant) -- per-row
+         local byte distribution is the dominant compressibility signal.
+- scale: < 0.5% variation (order-invariant).
+- idx:   shuffled order inflates idx bytes by +34%..+86% vs sorted;
+         reversed matches sorted to within 2-5%. Delta-coding of sorted
+         indices generates small positive deltas that compress well;
+         shuffling produces near-uniform random deltas. Reversed produces
+         small NEGATIVE deltas with identical |delta| distribution, which
+         encodes just as well.
+- TOTAL impact on Claim 21 savings: fp8 is ~98-99% of total compressed
+         bytes, so total savings are order-invariant to < 0.05%. The idx
+         sensitivity, while internally large, is on a stream that is 3-4
+         orders of magnitude smaller than fp8.
+
+CONCLUSION: Claim 21 fp8/scale savings come from per-row intrinsic byte-
+distribution structure, NOT from clever row ordering. The idx-stream
+savings ARE order-dependent, but the natural sort-by-index emission order
+is free (zero computational cost) and is what current Claim 21 uses.

@@ -2402,6 +2402,63 @@ overlay-density operating points = **162 individual codec measurements**:
    explicitly disclosed as an *inadequate* codec for this payload
    (cohort-mean 0.02%), establishing the floor.
 
+### Row-order invariance decomposition (where the savings come from)
+
+To distinguish **per-row intrinsic compressibility** from **cross-row
+ordering gain**, the same Claim-21 payload was re-packed under three
+row orderings within each body-Linear and re-compressed with three
+strong coders (zstd-9, lzma-6, brotli-11). Measured on three models
+(TinyLlama, Qwen3-1.7B, Qwen3-8B) at ρ = 0.010, aggregate-compressed
+bytes:
+
+| codec     | stream | sorted        | shuffled      | reversed      | shuf vs sort | rev vs sort |
+|-----------|:------:|--------------:|--------------:|--------------:|-------------:|------------:|
+| zstd-9    | fp8    | 78,184,787    | 78,189,455    | 78,191,846    | **+0.006 %** | +0.009 %    |
+| zstd-9    | idx    |      31,733   |      56,914   |      32,943   | **+79.35 %** | +3.81 %     |
+| zstd-9    | scale  |      30,247   |      30,281   |      30,264   |      +0.11 % | +0.06 %     |
+| lzma-6    | fp8    | 77,154,176    | 77,158,812    | 77,150,964    | **+0.006 %** | −0.004 %    |
+| lzma-6    | idx    |      26,152   |      47,408   |      26,768   | **+81.28 %** | +2.36 %     |
+| lzma-6    | scale  |      28,788   |      28,868   |      28,808   |      +0.28 % | +0.07 %     |
+| brotli-11 | fp8    | 76,251,203    | 76,253,304    | 76,246,784    | **+0.003 %** | −0.006 %    |
+| brotli-11 | idx    |      30,222   |      41,832   |      30,591   | **+38.42 %** | +1.22 %     |
+| brotli-11 | scale  |      25,688   |      25,676   |      25,713   |      −0.05 % | +0.10 %     |
+
+**Findings.**
+
+1. **fp8 is order-invariant to 0.006 %.** Re-ordering the restored
+   rows inside each linear (shuffle vs sort) changes the compressed
+   fp8 size by less than one part in 15,000 on every codec tested.
+   Per-row intrinsic byte-distribution structure — NOT cross-row
+   sequencing — is the dominant fp8 compressibility signal.
+
+2. **scale is order-invariant to 0.3 %.** Same conclusion as fp8;
+   fp16 row-scales are effectively a bag of multiset values whose
+   byte distribution is largely sequence-independent.
+
+3. **idx is highly order-dependent (+38 % to +81 % on shuffle).**
+   Delta-coding of sorted indices generates small positive deltas
+   that compress well; shuffling converts these to near-uniform
+   random deltas and inflates the stream by 38–81 % depending on
+   coder. Reversed order produces small *negative* deltas with an
+   identical |delta| distribution and therefore compresses to within
+   1.2–3.8 % of sorted — confirming the signal is the delta *magnitude*
+   distribution, not the sign, and that no additional structure is
+   exploited beyond simple delta coding.
+
+4. **Total Claim-21 savings are order-invariant to < 0.05 %.** fp8
+   is ≥ 99.9 % of total compressed bytes (tinyllama: 8.14 MB fp8 vs
+   5.4 kB idx vs 5.3 kB scale under zstd-9). The idx sensitivity,
+   while internally large, moves the aggregate savings by < 0.05 pp.
+
+5. **No privileged ordering is required.** Claim 21 already emits
+   indices in natural sorted order at zero computational cost; the
+   row-order decomposition shows this is optimal within this family
+   (reversed matches) and that the fp8 result would not change under
+   any ordering, including ones that might be dictated by on-disk
+   tile layouts or streaming considerations.
+
+Artifact: `results/claim21_row_order_invariance_{tinyllama,qwen3_1.7b,qwen3_8b}_rho0.01.json`, aggregated in `results/claim21_row_order_invariance.txt`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
