@@ -48,7 +48,8 @@ for f in files:
                 agg[c][s][o] += data["by_ordering"][o][c][k]
 
 lines.append("=" * 90)
-lines.append("Aggregate across 3 models (tinyllama + qwen3_1.7b + qwen3_8b)")
+model_names = sorted({json.loads(f.read_text())["model"] for f in files})
+lines.append(f"Aggregate across {len(model_names)} models ({' + '.join(model_names)})")
 lines.append("-" * 90)
 lines.append(f"  {'codec':<11} {'stream':<6} {'sorted':>12} {'shuffled':>12} {'reversed':>12} {'shuf-sort %':>12} {'rev-sort %':>12}")
 for c in CODECS:

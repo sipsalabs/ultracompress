@@ -2407,21 +2407,21 @@ overlay-density operating points = **162 individual codec measurements**:
 To distinguish **per-row intrinsic compressibility** from **cross-row
 ordering gain**, the same Claim-21 payload was re-packed under three
 row orderings within each body-Linear and re-compressed with three
-strong coders (zstd-9, lzma-6, brotli-11). Measured on three models
-(TinyLlama, Qwen3-1.7B, Qwen3-8B) at ρ = 0.010, aggregate-compressed
-bytes:
+strong coders (zstd-9, lzma-6, brotli-11). Measured on **all six
+models** (TinyLlama, SmolLM2-1.7B, OLMo2-1B, Qwen3-1.7B, Qwen3-8B,
+Mistral-7B) at ρ = 0.010, aggregate-compressed bytes:
 
 | codec     | stream | sorted        | shuffled      | reversed      | shuf vs sort | rev vs sort |
 |-----------|:------:|--------------:|--------------:|--------------:|-------------:|------------:|
-| zstd-9    | fp8    | 78,184,787    | 78,189,455    | 78,191,846    | **+0.006 %** | +0.009 %    |
-| zstd-9    | idx    |      31,733   |      56,914   |      32,943   | **+79.35 %** | +3.81 %     |
-| zstd-9    | scale  |      30,247   |      30,281   |      30,264   |      +0.11 % | +0.06 %     |
-| lzma-6    | fp8    | 77,154,176    | 77,158,812    | 77,150,964    | **+0.006 %** | −0.004 %    |
-| lzma-6    | idx    |      26,152   |      47,408   |      26,768   | **+81.28 %** | +2.36 %     |
-| lzma-6    | scale  |      28,788   |      28,868   |      28,808   |      +0.28 % | +0.07 %     |
-| brotli-11 | fp8    | 76,251,203    | 76,253,304    | 76,246,784    | **+0.003 %** | −0.006 %    |
-| brotli-11 | idx    |      30,222   |      41,832   |      30,591   | **+38.42 %** | +1.22 %     |
-| brotli-11 | scale  |      25,688   |      25,676   |      25,713   |      −0.05 % | +0.10 %     |
+| zstd-9    | fp8    | 159,058,989   | 159,055,272   | 159,057,857   | **−0.002 %** | −0.001 %    |
+| zstd-9    | idx    |      64,656   |     116,530   |      66,972   | **+80.23 %** | +3.58 %     |
+| zstd-9    | scale  |      63,837   |      63,912   |      63,854   |      +0.12 % | +0.03 %     |
+| lzma-6    | fp8    | 157,067,160   | 157,077,404   | 157,061,192   | **+0.007 %** | −0.004 %    |
+| lzma-6    | idx    |      53,280   |      96,556   |      54,516   | **+81.22 %** | +2.32 %     |
+| lzma-6    | scale  |      60,024   |      60,088   |      60,096   |      +0.11 % | +0.12 %     |
+| brotli-11 | fp8    | 155,143,800   | 155,146,603   | 155,139,241   | **+0.002 %** | −0.003 %    |
+| brotli-11 | idx    |      61,555   |      85,692   |      62,365   | **+39.21 %** | +1.32 %     |
+| brotli-11 | scale  |      55,456   |      55,353   |      55,248   |      −0.19 % | −0.38 %     |
 
 **Findings.**
 
@@ -2457,7 +2457,7 @@ bytes:
    any ordering, including ones that might be dictated by on-disk
    tile layouts or streaming considerations.
 
-Artifact: `results/claim21_row_order_invariance_{tinyllama,qwen3_1.7b,qwen3_8b}_rho0.01.json`, aggregated in `results/claim21_row_order_invariance.txt`.
+Artifact: `results/claim21_row_order_invariance_{tinyllama,smollm2_1.7b,olmo2_1b,qwen3_1.7b,qwen3_8b,mistral_7b}_rho0.01.json` (6 models × 9 stream-codec cells each), aggregated in `results/claim21_row_order_invariance.txt`.
 
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
