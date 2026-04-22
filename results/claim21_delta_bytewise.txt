@@ -1,0 +1,76 @@
+Claim-21 idx_delta per-byte-position diagnostic
+==================================================================================
+Reshape idx_delta as (N, 4) (little-endian int32 lanes) and
+compute Shannon H of each byte position independently.
+
+If the 4 byte lanes were mutually independent, any coder's
+achievable rate is bounded below by sum(H_pos_i) / 4 bits/byte.
+The gap between that bound and the as-emitted full-stream H
+measures cross-lane dependence (= joint savings beyond per-lane).
+
+--- olmo2_1b  rho=0.01 ---
+  n_deltas=4,224  bytes=16,896  full-stream H=2.7855 bpB (floor 65.18%)
+  deltas: min=0  max=1160  mean=96.00  median=58.0  p99=543.7
+  byte_pos    H (bpB)  floor %%  zero %%   comment
+     0      7.4457    6.93%    0.24%  LSB: primary entropy
+     1      0.4780   94.03%   91.60%  MSB-adjacent
+     2     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+     3     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+  sum per-byte H = 7.924 bits/int32  (= 0.990 bytes/int32; floor 75.24%)
+
+--- qwen3_1.7b  rho=0.01 ---
+  n_deltas=5,656  bytes=22,624  full-stream H=2.7906 bpB (floor 65.12%)
+  deltas: min=0  max=951  mean=96.51  median=62.0  p99=480.0
+  byte_pos    H (bpB)  floor %%  zero %%   comment
+     0      7.5033    6.21%    0.41%  LSB: primary entropy
+     1      0.4463   94.42%   91.96%  MSB-adjacent
+     2     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+     3     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+  sum per-byte H = 7.950 bits/int32  (= 0.994 bytes/int32; floor 75.16%)
+
+--- smollm2_1.7b  rho=0.01 ---
+  n_deltas=6,336  bytes=25,344  full-stream H=2.7822 bpB (floor 65.22%)
+  deltas: min=0  max=1499  mean=96.97  median=65.0  p99=499.6
+  byte_pos    H (bpB)  floor %%  zero %%   comment
+     0      7.4841    6.45%    0.09%  LSB: primary entropy
+     1      0.4263   94.67%   92.76%  MSB-adjacent
+     2     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+     3     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+  sum per-byte H = 7.910 bits/int32  (= 0.989 bytes/int32; floor 75.28%)
+
+--- tinyllama  rho=0.01 ---
+  n_deltas=3,916  bytes=15,664  full-stream H=2.7776 bpB (floor 65.28%)
+  deltas: min=0  max=1280  mean=96.14  median=64.0  p99=453.8
+  byte_pos    H (bpB)  floor %%  zero %%   comment
+     0      7.4958    6.30%    0.23%  LSB: primary entropy
+     1      0.4066   94.92%   92.93%  MSB-adjacent
+     2     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+     3     -0.0000  100.00%  100.00%  MSB lane (near-zero)
+  sum per-byte H = 7.902 bits/int32  (= 0.988 bytes/int32; floor 75.30%)
+
+==================================================================================
+COHORT  (n=4 runs, delta-weighted)
+----------------------------------------------------------------------------------
+  byte pos 0: nonzero_frac =  99.76%  zero_frac =   0.24%
+  byte pos 1: nonzero_frac =   7.68%  zero_frac =  92.32%
+  byte pos 2: nonzero_frac =   0.00%  zero_frac = 100.00%
+  byte pos 3: nonzero_frac =   0.00%  zero_frac = 100.00%
+  full-stream H (byte-weighted) = 2.7844 bpB  (floor 65.20%)
+  sum per-byte H (delta-weighted) = 7.923 bits/int32
+  bytes/int32 if bytes independent = 0.990
+  savings floor (32 - Hsum) / 32   = 75.24%
+
+INTERPRETATION
+----------------------------------------------------------------------------------
+- MSB lanes (bytes 2, 3) have near-100%% zeros: deltas are small
+  positive integers (sorted-row indices advance slowly; since
+  restored rows are sparse, gaps between adjacent indices are
+  a few hundred at most). This is why byte permutation kills
+  savings sharply (wave 17: lzma-6 idx_delta -14.0pp): the
+  position-of-zero-byte information is what lzma exploits.
+- LSB lane (byte 0) carries most of the entropy (H near 6-7 bpB)
+  because the low byte of a small integer is essentially random.
+- The gap between sum-per-byte savings floor and the full-stream
+  order-0 floor measures cross-lane dependence: if Hsum/4 (in bpB)
+  equals full_H, byte lanes are marginally independent; any
+  additional savings from positional structure come from here.

@@ -2835,6 +2835,67 @@ linear, not an artifact unique to attention projections or FFN
 gates. Artifact: `results/claim21_per_role.txt`; per-run JSONs:
 `results/claim21_per_role_<model>_rho0.01.json`.
 
+**idx_delta per-byte-position structure (intra-int32 decomposition).**
+The preceding diagnostics show that idx_delta has an extraordinary
+order-0 savings floor of 65.20 % (wave 19) with near-zero cross-model
+variance (0.16 pp). This wave decomposes idx_delta into its 4
+constituent byte lanes (little-endian int32) and measures Shannon H
+per byte position independently. Cohort of 4 models at ρ = 0.010,
+delta-weighted:
+
+| byte position | H (bpB) | order-0 floor  | zero-fraction |
+|---------------|---------|----------------|---------------|
+| 0 (LSB)       | 7.4822  |  6.47 %        |   0.24 %      |
+| 1             | 0.4393  | 94.51 %        |  92.32 %      |
+| 2             | 0.0000  | **100.00 %**   | **100.00 %**  |
+| 3 (MSB)       | 0.0000  | **100.00 %**   | **100.00 %**  |
+
+**Byte positions 2 and 3 are structurally zero across every single
+int32 delta in every model** (100.00 % zero-fraction, H = 0.0000 bpB).
+Byte position 1 is 92.32 % zero (H ≈ 0.44 bpB), and only byte 0
+carries substantial entropy (H ≈ 7.48 bpB). The sum-per-byte-H
+assuming byte independence is 7.923 bits/int32 = **0.990 bytes/int32**
+(savings floor 75.24 %) — strictly tighter than the full-stream
+order-0 floor of 65.20 %. This gap (75.24 % − 65.20 % = 10.04 pp) is
+attributable to coders being unable to fully exploit the positional
+zero-run structure with a byte-level symbol alphabet.
+
+**Mechanistic explanation of the entire idx_delta compression
+regime.** The deltas are gaps between sorted restored-row indices.
+Because restored rows are sparse (ρ = 0.010 selects ~1 % of rows) and
+indices are drawn from ≤ 65,535 = 2^16 possible rows, the deltas
+themselves are small positive integers with p99 ≤ 544 and mean ≈ 96.
+A small positive integer encoded as a 4-byte little-endian int32 has:
+(a) two high-order bytes that are *provably* zero (any value < 2^16
+fits in the low two bytes); (b) a third byte that is zero whenever
+the delta is < 256 (~93 % of the time given mean ≈ 96); (c) a low
+byte that is effectively uniform. This provides a **closed-form
+mechanistic derivation** of three previously independent
+observations:
+
+- The 65.2 % order-0 floor (wave 19) = three of the four byte lanes
+  are near-zero → aggregate byte histogram is sharply non-uniform.
+- The B = 4 block-shuffle saturation jump (wave 18) = the 4-byte
+  int32 lane structure is the primary context scale; shuffling at
+  any multiple of 4 preserves position-within-int32 and therefore
+  preserves virtually all savings.
+- Model-invariance at 0.16 pp spread (wave 19) = every model's
+  restored rows produce deltas in the same small-positive-integer
+  regime because sparsity ρ is shared; the byte histogram is
+  essentially a property of the encoding (int32 little-endian of a
+  small integer), not of the model.
+
+This is a rare case where diagnostic entropy measurements yield a
+fully deterministic explanation of the compression phenomenon, not
+just statistical evidence. A bit-packed variable-length integer
+encoding (e.g. varint) would reclaim most of the 10.04 pp gap, but
+the current 3-stream layout's compressibility floor is already
+75.24 % of the idx_delta raw size; in absolute terms idx_delta is a
+small fraction of the total payload (80,528 B vs 50,016,256 B fp8 =
+0.16 %) so this is a theoretical rather than practical optimization.
+Artifact: `results/claim21_delta_bytewise.txt`; per-run JSONs:
+`results/claim21_delta_bytewise_<model>_rho0.01.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
