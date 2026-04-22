@@ -2486,6 +2486,36 @@ that Claim-21's natural sorted emission is strictly optimal within
 the delta-coding family at every ρ. Artifact:
 `results/claim21_row_order_rho_axis.txt`.
 
+**Row-order invariance is not a shuffle-seed artifact.** To rule out
+the possibility that the idx shuffle penalty and fp8/scale invariance
+are artifacts of one particular Fisher-Yates seed, the ρ=0.010
+decomposition was repeated on four models (TinyLlama, SmolLM2-1.7B,
+OLMo2-1B, Qwen3-1.7B) across four independent shuffle seeds
+{7, 77, 1234, 31337} — **16 independent runs × 9 stream-codec cells
+= 144 additional measurements**. Cohort-aggregate shuf-sort% across
+all 16 (model, seed) pairs:
+
+| stream | codec     | mean %  | std %   | min %   | max %    |
+|--------|-----------|--------:|--------:|--------:|---------:|
+| fp8    | zstd-9    | −0.017  |  0.029  | −0.061  |  +0.024  |
+| fp8    | lzma-6    | +0.009  |  0.004  | +0.003  |  +0.016  |
+| fp8    | brotli-11 | +0.001  |  0.008  | −0.018  |  +0.012  |
+| scale  | zstd-9    | +0.084  |  0.106  | −0.076  |  +0.256  |
+| scale  | lzma-6    | +0.081  |  0.207  | −0.248  |  +0.517  |
+| scale  | brotli-11 | +0.088  |  0.309  | −0.365  |  +0.761  |
+| idx    | zstd-9    | +73.06  |  2.54   | +71.06  |  +77.71  |
+| idx    | lzma-6    | +75.39  |  2.80   | +70.08  |  +80.65  |
+| idx    | brotli-11 | +35.41  |  1.57   | +33.23  |  +38.60  |
+
+The fp8 stream has an order-of-magnitude-smaller inflation than scale,
+which is itself an order of magnitude smaller than idx. The fp8 mean
+inflation is **within ±0.02 %** — statistically indistinguishable
+from zero — and the spread across seeds is **≤0.029 %** (std). The
+idx seed-to-seed std is **≤2.8 %** on a mean of 35–75 %, so the
+order-dependence is a tight structural property, not a random-shuffle
+tail-event. Artifact: `results/claim21_row_order_seed.txt`
+(+16 files `results/claim21_row_order_invariance_<model>_rho0.01_seed<N>.json`).
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

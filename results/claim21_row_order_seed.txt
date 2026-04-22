@@ -1,0 +1,75 @@
+Claim-21 row-order invariance -- seed sweep @ rho=0.010
+Models : olmo2_1b, qwen3_1.7b, smollm2_1.7b, tinyllama
+Seeds  : [7, 77, 1234, 31337]
+Files  : 16
+
+--- stream = fp8 ---
+model            codec         mean(%)     std(%)     min(%)     max(%)  n
+--------------------------------------------------------------------------
+olmo2_1b         zstd-9         -0.041      0.017     -0.058     -0.022  4
+olmo2_1b         lzma-6          0.007      0.004      0.004      0.013  4
+olmo2_1b         brotli-11      -0.010      0.006     -0.018     -0.003  4
+qwen3_1.7b       zstd-9          0.016      0.004      0.012      0.024  4
+qwen3_1.7b       lzma-6          0.006      0.002      0.003      0.009  4
+qwen3_1.7b       brotli-11       0.007      0.003      0.003      0.011  4
+smollm2_1.7b     zstd-9         -0.038      0.015     -0.061     -0.017  4
+smollm2_1.7b     lzma-6          0.010      0.003      0.007      0.015  4
+smollm2_1.7b     brotli-11       0.001      0.004     -0.002      0.007  4
+tinyllama        zstd-9         -0.005      0.023     -0.042      0.015  4
+tinyllama        lzma-6          0.013      0.002      0.010      0.016  4
+tinyllama        brotli-11       0.008      0.003      0.003      0.012  4
+
+--- stream = idx ---
+model            codec         mean(%)     std(%)     min(%)     max(%)  n
+--------------------------------------------------------------------------
+olmo2_1b         zstd-9         71.480      0.054     71.393     71.543  4
+olmo2_1b         lzma-6         74.591      2.043     71.464     76.942  4
+olmo2_1b         brotli-11      34.416      0.288     34.121     34.872  4
+qwen3_1.7b       zstd-9         71.722      0.339     71.338     72.267  4
+qwen3_1.7b       lzma-6         73.886      0.259     73.572     74.200  4
+qwen3_1.7b       brotli-11      35.040      1.929     33.233     37.918  4
+smollm2_1.7b     zstd-9         77.426      0.204     77.170     77.705  4
+smollm2_1.7b     lzma-6         79.344      1.085     77.759     80.645  4
+smollm2_1.7b     brotli-11      37.248      1.035     35.849     38.598  4
+tinyllama        zstd-9         71.614      0.343     71.064     72.007  4
+tinyllama        lzma-6         73.742      2.149     70.081     75.562  4
+tinyllama        brotli-11      34.916      0.413     34.291     35.413  4
+
+--- stream = scale ---
+model            codec         mean(%)     std(%)     min(%)     max(%)  n
+--------------------------------------------------------------------------
+olmo2_1b         zstd-9          0.048      0.032      0.000      0.088  4
+olmo2_1b         lzma-6         -0.140      0.081     -0.248     -0.062  4
+olmo2_1b         brotli-11       0.270      0.258      0.030      0.700  4
+qwen3_1.7b       zstd-9          0.115      0.103     -0.042      0.238  4
+qwen3_1.7b       lzma-6          0.273      0.201      0.000      0.517  4
+qwen3_1.7b       brotli-11       0.312      0.318     -0.049      0.761  4
+smollm2_1.7b     zstd-9          0.195      0.066      0.085      0.256  4
+smollm2_1.7b     lzma-6          0.000      0.129     -0.203      0.152  4
+smollm2_1.7b     brotli-11      -0.082      0.194     -0.365      0.138  4
+tinyllama        zstd-9         -0.024      0.051     -0.076      0.057  4
+tinyllama        lzma-6          0.191      0.066      0.076      0.229  4
+tinyllama        brotli-11      -0.147      0.094     -0.239      0.000  4
+
+=== COHORT AGGREGATE (all models x all seeds) ===
+stream codec         mean(%)     std(%)     min(%)     max(%)  n
+----------------------------------------------------------------
+fp8    zstd-9         -0.017      0.029     -0.061      0.024  16
+fp8    lzma-6          0.009      0.004      0.003      0.016  16
+fp8    brotli-11       0.001      0.008     -0.018      0.012  16
+idx    zstd-9         73.061      2.536     71.064     77.705  16
+idx    lzma-6         75.391      2.797     70.081     80.645  16
+idx    brotli-11      35.405      1.565     33.233     38.598  16
+scale  zstd-9          0.084      0.106     -0.076      0.256  16
+scale  lzma-6          0.081      0.207     -0.248      0.517  16
+scale  brotli-11       0.088      0.309     -0.365      0.761  16
+
+KEY FINDING
+-----------
+Across independent Fisher-Yates seeds the fp8 and scale
+shuf-sort% remain vanishingly small (well below 1%), while
+the idx shuf-sort% is consistently large (tens of percent)
+with low seed-to-seed variance. This confirms that the
+order-invariance of fp8/scale and the order-dependence of
+idx are structural properties of the payload, not artifacts
+of a particular random shuffle.
