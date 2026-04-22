@@ -1,0 +1,68 @@
+Claim-21 wave 37: empirical amortization test -- K->inf limit
+================================================================================================
+
+Wave 36 argued THEORETICALLY that shipping priors once and reusing them
+over K>=5 payloads would make order-2 net-positive. Wave 37 tests that
+empirically. For each model, priors are fit on a prefix of the fp8
+stream and used to code the held-out suffix at alpha in {0.1, 0.01,
+0.001}. This is the K->inf limit: no side-info charged, only held-out
+payload coding.
+
+Cohort-aggregate held-out rates (bits per fp8 byte, held-out only):
+    prior_frac     alpha    order2   brotli-11      gain
+          0.25     0.001    8.0337      6.5550   -1.4787
+          0.25      0.01    7.5033      6.5550   -0.9483
+          0.25       0.1    7.1039      6.5550   -0.5488
+          0.50     0.001    7.5143      6.5551   -0.9592
+          0.50      0.01    7.1895      6.5551   -0.6344
+          0.50       0.1    6.9408      6.5551   -0.3857
+          0.75     0.001    7.3438      6.5497   -0.7941
+          0.75      0.01    7.0878      6.5497   -0.5381
+          0.75       0.1    6.8899      6.5497   -0.3402
+
+Per-model best (prior_frac, alpha) gain:
+  olmo2_1b        prior=0.50 alpha=0.1     order2=6.9581  brotli-11=6.5284  gain=-0.4297
+  qwen3_1.7b      prior=0.75 alpha=0.1     order2=6.8519  brotli-11=6.5615  gain=-0.2904
+  smollm2_1.7b    prior=0.75 alpha=0.1     order2=6.8375  brotli-11=6.5535  gain=-0.2841
+  tinyllama       prior=0.75 alpha=0.1     order2=6.9564  brotli-11=6.5599  gain=-0.3965
+
+================================================================================================
+INTERPRETATION -- THIS OVERTURNS THE WAVE-36 AMORTIZATION CLAIM
+------------------------------------------------------------------------------------------------
+- EVERY (prior_frac, alpha) cell is net-WORSE than brotli-11 on its own
+  held-out bytes. Gains range from -0.28 to -1.85 bpB.
+- Best configuration cohort-wide: prior=0.75 alpha=0.1 at +0.3402 bpB worse
+  than brotli-11 (still a loss).
+- The 65,536 x 256 = 16.7M-cell count table is UNDER-SAMPLED even at 75 %
+  of a 10-16 M byte payload (~0.7-1.2 samples per cell on average, but
+  heavy-tailed with most cells at zero). Priors fit on the prefix fail to
+  generalize to the suffix with enough precision to beat brotli-11's
+  deeper context model (which is stream-adaptive and uses context of
+  variable order up to ~16 with Huffman/ANS substitutional coding).
+- Wave 34 oracle (a=0.01, fit AND tested on same stream) achieved 6.35-6.45
+  bpB vs brotli-11 6.53-6.57. Wave 37 (a=0.01, prior=0.75) achieves
+  6.99-7.22 bpB -- a ~0.6 bpB overfit penalty from train-on-test to
+  hold-out within the same model. That overfit penalty exceeds the
+  0.155 bpB theoretical Shannon advantage by a factor of 4x.
+
+CORRECTED CLAIM-21 FINAL STATEMENT ON ORDER-2 CONTEXT CODING:
+  The -0.155 bpB theoretical order-2 Shannon advantage on fp8 streams is
+  NOT operationally realizable at current payload volumes (10-16 M bytes
+  per model at rho=0.010) by ANY of the coder families we tested:
+    - payload-only adaptive Laplace coders  (wave 33)
+    - cross-model universal priors          (wave 34)
+    - own-model self-bootstrap two-pass     (wave 35)
+    - one-shot priors as side information   (wave 36)
+    - amortized (K->inf) held-out priors    (wave 37)  <-- overturns wave 36
+  brotli-11 sits effectively AT the operational floor for fp8 byte
+  streams of this scale. The -0.155 bpB theoretical gap is a statistical-
+  mechanical artifact of infinite-sample entropy estimation, not an
+  exploitable engineering margin.
+
+  This finding RETRACTS the wave-36 'amortization crossover at K>=5'
+  suggestion. The order-2 context-coding programme for fp8 is closed
+  with a NEGATIVE RESULT. Claim 21 should rely on the already-proven
+  brotli-11 baseline and pivot any further compression work to other
+  streams (idx_delta, scale) or other techniques (wave 15/23 hybrid
+  serialization, bit-plane decomposition).
+
