@@ -1,0 +1,70 @@
+Claim-21 per-role savings breakdown
+==================================================================================
+Compress the Claim 21 payload separately for each linear role.
+Tests whether brotli-11 ~18% savings is uniform across roles
+or concentrated in attention vs MLP.
+
+--- olmo2_1b  rho=0.01 ---
+  role            n_lin   raw_B         zstd-9       lzma-6    brotli-11
+  q_proj            16   657,280      16.686%      20.127%      20.348%
+  k_proj            16   657,280      17.261%      17.507%      18.552%
+  v_proj            16   657,280      17.474%      17.372%      18.359%
+  o_proj            16   657,280      15.686%      16.510%      17.820%
+  gate_proj         16  2,694,848      17.469%      17.510%      18.454%
+  up_proj           16  2,694,848      17.562%      17.516%      18.430%
+  down_proj         16  2,623,360      15.392%      17.222%      18.172%
+
+--- qwen3_1.7b  rho=0.01 ---
+  role            n_lin   raw_B         zstd-9       lzma-6    brotli-11
+  q_proj            28  1,150,240      17.544%      17.393%      18.339%
+  k_proj            28   575,120      15.457%      16.609%      17.670%
+  v_proj            28   575,120      17.027%      16.810%      17.794%
+  o_proj            28  1,150,240      14.891%      15.885%      17.764%
+  gate_proj         28  3,508,232      16.548%      17.042%      18.122%
+  up_proj           28  3,508,232      17.194%      17.241%      18.228%
+  down_proj         28  3,444,000      15.523%      16.690%      17.756%
+
+--- smollm2_1.7b  rho=0.01 ---
+  role            n_lin   raw_B         zstd-9       lzma-6    brotli-11
+  q_proj            24   985,920      14.641%      16.576%      17.743%
+  k_proj            24   985,920      16.476%      17.046%      18.090%
+  v_proj            24   985,920      17.325%      17.240%      18.220%
+  o_proj            24   985,920      14.649%      15.690%      17.152%
+  gate_proj         24  4,042,272      16.433%      17.087%      18.219%
+  up_proj           24  4,042,272      16.804%      17.236%      18.318%
+  down_proj         24  3,935,040      15.492%      16.939%      18.018%
+
+--- tinyllama  rho=0.01 ---
+  role            n_lin   raw_B         zstd-9       lzma-6    brotli-11
+  q_proj            22   903,760      15.094%      16.354%      17.434%
+  k_proj            22   135,564      14.963%      16.060%      17.049%
+  v_proj            22   135,564      16.350%      16.423%      17.514%
+  o_proj            22   903,760      14.443%      15.712%      17.353%
+  gate_proj         22  2,530,528      16.592%      17.103%      18.237%
+  up_proj           22  2,530,528      16.147%      17.005%      18.226%
+  down_proj         22  2,480,720      14.826%      16.721%      17.804%
+
+==================================================================================
+COHORT  (n=4 runs, byte-weighted)
+----------------------------------------------------------------------------------
+  role            raw_B             zstd-9       lzma-6    brotli-11
+  q_proj            3,697,200      16.019%      17.407%      18.316%
+  k_proj            2,353,884      16.360%      17.011%      18.056%
+  v_proj            2,353,884      17.238%      17.125%      18.114%
+  o_proj            3,697,200      14.858%      15.902%      17.510%
+  gate_proj        12,775,880      16.715%      17.167%      18.245%
+  up_proj          12,775,880      16.941%      17.251%      18.299%
+  down_proj        12,483,120      15.347%      16.886%      17.936%
+
+SPREAD across roles per codec (cohort):
+  zstd-9        min=14.858%  max=17.238%  range=2.380pp  mean=16.211%
+  lzma-6        min=15.902%  max=17.407%  range=1.505pp  mean=16.964%
+  brotli-11     min=17.510%  max=18.316%  range=0.806pp  mean=18.068%
+
+INTERPRETATION
+----------------------------------------------------------------------------------
+- A small range across roles means the Claim 21 savings mechanism
+  is uniformly applicable to every transformer linear, not a
+  role-specific trick (e.g. not unique to attention or to MLP).
+- A large range would indicate the effect is concentrated in a
+  subset of roles; the split should then be reported by role.

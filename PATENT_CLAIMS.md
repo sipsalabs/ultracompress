@@ -2811,6 +2811,30 @@ Artifact: `results/claim21_fp8_histogram.txt`; per-model JSONs with
 full 256-bin histograms:
 `results/claim21_fp8_histogram_<model>_rho0.01.json`.
 
+**Per-role savings breakdown.** Split the payload by the 7 transformer
+linear roles and compress each independently. Cohort (4 models at
+ρ = 0.010, byte-weighted):
+
+| role       | raw bytes    | zstd-9   | lzma-6   | brotli-11 |
+|------------|--------------|----------|----------|-----------|
+| q_proj     |  3,697,200   | 16.019 % | 17.407 % | 18.316 %  |
+| k_proj     |  2,353,884   | 16.360 % | 17.011 % | 18.056 %  |
+| v_proj     |  2,353,884   | 17.238 % | 17.125 % | 18.114 %  |
+| o_proj     |  3,697,200   | 14.858 % | 15.902 % | 17.510 %  |
+| gate_proj  | 12,775,880   | 16.715 % | 17.167 % | 18.245 %  |
+| up_proj    | 12,775,880   | 16.941 % | 17.251 % | 18.299 %  |
+| down_proj  | 12,483,120   | 15.347 % | 16.886 % | 17.936 %  |
+
+Brotli-11 spread across all 7 roles is **0.806 pp** (min 17.510 % on
+o_proj, max 18.316 % on q_proj); lzma-6 spread is 1.505 pp; zstd-9
+spread is 2.380 pp. The effect is uniform across attention
+(q/k/v/o_proj) and MLP (gate/up/down_proj) roles — **the Claim 21
+savings mechanism is not role-specific**. It is a property of the
+row-restored-overflow payload structure common to every transformer
+linear, not an artifact unique to attention projections or FFN
+gates. Artifact: `results/claim21_per_role.txt`; per-run JSONs:
+`results/claim21_per_role_<model>_rho0.01.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

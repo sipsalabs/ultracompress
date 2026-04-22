@@ -1,0 +1,232 @@
+{
+  "claim": 21,
+  "experiment": "per_role",
+  "model": "smollm2_1.7b",
+  "rho": 0.01,
+  "roles": {
+    "down_proj": {
+      "n_linears": 24,
+      "raw_bytes": {
+        "fp8": 3932160,
+        "idx_delta": 1920,
+        "scale": 960,
+        "total": 3935040
+      },
+      "codecs": {
+        "zstd-9": {
+          "fp8_bytes": 3323963,
+          "idx_bytes": 781,
+          "scale_bytes": 696,
+          "total_bytes": 3325440,
+          "saved_pct": 15.491583313003172
+        },
+        "lzma-6": {
+          "fp8_bytes": 3266944,
+          "idx_bytes": 660,
+          "scale_bytes": 876,
+          "total_bytes": 3268480,
+          "saved_pct": 16.939090835163046
+        },
+        "brotli-11": {
+          "fp8_bytes": 3224655,
+          "idx_bytes": 667,
+          "scale_bytes": 689,
+          "total_bytes": 3226011,
+          "saved_pct": 18.01834288850939
+        }
+      }
+    },
+    "gate_proj": {
+      "n_linears": 24,
+      "raw_bytes": {
+        "fp8": 4030464,
+        "idx_delta": 7872,
+        "scale": 3936,
+        "total": 4042272
+      },
+      "codecs": {
+        "zstd-9": {
+          "fp8_bytes": 3372554,
+          "idx_bytes": 2913,
+          "scale_bytes": 2545,
+          "total_bytes": 3378012,
+          "saved_pct": 16.43283777044197
+        },
+        "lzma-6": {
+          "fp8_bytes": 3346448,
+          "idx_bytes": 2368,
+          "scale_bytes": 2768,
+          "total_bytes": 3351584,
+          "saved_pct": 17.0866285099073
+        },
+        "brotli-11": {
+          "fp8_bytes": 3300693,
+          "idx_bytes": 2672,
+          "scale_bytes": 2448,
+          "total_bytes": 3305813,
+          "saved_pct": 18.218937270920907
+        }
+      }
+    },
+    "k_proj": {
+      "n_linears": 24,
+      "raw_bytes": {
+        "fp8": 983040,
+        "idx_delta": 1920,
+        "scale": 960,
+        "total": 985920
+      },
+      "codecs": {
+        "zstd-9": {
+          "fp8_bytes": 822109,
+          "idx_bytes": 694,
+          "scale_bytes": 673,
+          "total_bytes": 823476,
+          "saved_pct": 16.476387536514117
+        },
+        "lzma-6": {
+          "fp8_bytes": 816376,
+          "idx_bytes": 644,
+          "scale_bytes": 844,
+          "total_bytes": 817864,
+          "saved_pct": 17.045602077247647
+        },
+        "brotli-11": {
+          "fp8_bytes": 806277,
+          "idx_bytes": 625,
+          "scale_bytes": 668,
+          "total_bytes": 807570,
+          "saved_pct": 18.089703018500487
+        }
+      }
+    },
+    "o_proj": {
+      "n_linears": 24,
+      "raw_bytes": {
+        "fp8": 983040,
+        "idx_delta": 1920,
+        "scale": 960,
+        "total": 985920
+      },
+      "codecs": {
+        "zstd-9": {
+          "fp8_bytes": 840129,
+          "idx_bytes": 664,
+          "scale_bytes": 699,
+          "total_bytes": 841492,
+          "saved_pct": 14.649058747160012
+        },
+        "lzma-6": {
+          "fp8_bytes": 829760,
+          "idx_bytes": 572,
+          "scale_bytes": 900,
+          "total_bytes": 831232,
+          "saved_pct": 15.689711132749107
+        },
+        "brotli-11": {
+          "fp8_bytes": 815598,
+          "idx_bytes": 561,
+          "scale_bytes": 654,
+          "total_bytes": 816813,
+          "saved_pct": 17.152203018500487
+        }
+      }
+    },
+    "q_proj": {
+      "n_linears": 24,
+      "raw_bytes": {
+        "fp8": 983040,
+        "idx_delta": 1920,
+        "scale": 960,
+        "total": 985920
+      },
+      "codecs": {
+        "zstd-9": {
+          "fp8_bytes": 840222,
+          "idx_bytes": 658,
+          "scale_bytes": 688,
+          "total_bytes": 841568,
+          "saved_pct": 14.641350210970463
+        },
+        "lzma-6": {
+          "fp8_bytes": 821000,
+          "idx_bytes": 604,
+          "scale_bytes": 888,
+          "total_bytes": 822492,
+          "saved_pct": 16.576192794547225
+        },
+        "brotli-11": {
+          "fp8_bytes": 809793,
+          "idx_bytes": 572,
+          "scale_bytes": 619,
+          "total_bytes": 810984,
+          "saved_pct": 17.743427458617333
+        }
+      }
+    },
+    "up_proj": {
+      "n_linears": 24,
+      "raw_bytes": {
+        "fp8": 4030464,
+        "idx_delta": 7872,
+        "scale": 3936,
+        "total": 4042272
+      },
+      "codecs": {
+        "zstd-9": {
+          "fp8_bytes": 3357659,
+          "idx_bytes": 2917,
+          "scale_bytes": 2439,
+          "total_bytes": 3363015,
+          "saved_pct": 16.80384199776759
+        },
+        "lzma-6": {
+          "fp8_bytes": 3340580,
+          "idx_bytes": 2376,
+          "scale_bytes": 2572,
+          "total_bytes": 3345528,
+          "saved_pct": 17.236445246633576
+        },
+        "brotli-11": {
+          "fp8_bytes": 3297012,
+          "idx_bytes": 2667,
+          "scale_bytes": 2122,
+          "total_bytes": 3301801,
+          "saved_pct": 18.318188385145778
+        }
+      }
+    },
+    "v_proj": {
+      "n_linears": 24,
+      "raw_bytes": {
+        "fp8": 983040,
+        "idx_delta": 1920,
+        "scale": 960,
+        "total": 985920
+      },
+      "codecs": {
+        "zstd-9": {
+          "fp8_bytes": 813784,
+          "idx_bytes": 657,
+          "scale_bytes": 664,
+          "total_bytes": 815105,
+          "saved_pct": 17.32544222654982
+        },
+        "lzma-6": {
+          "fp8_bytes": 814504,
+          "idx_bytes": 616,
+          "scale_bytes": 828,
+          "total_bytes": 815948,
+          "saved_pct": 17.239938331710484
+        },
+        "brotli-11": {
+          "fp8_bytes": 805018,
+          "idx_bytes": 611,
+          "scale_bytes": 661,
+          "total_bytes": 806290,
+          "saved_pct": 18.219530996429732
+        }
+      }
+    }
+  }
+}
