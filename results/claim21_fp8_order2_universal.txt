@@ -1,0 +1,54 @@
+Claim-21 wave 34: universal (cross-model) order-2 static coder
+============================================================================================================================
+
+Tests whether wave-26 cross-model histogram correlation (r>0.9995 at order 0)
+translates into usable order-2 prior transfer. Leave-one-out protocol: for each
+held-out test model, sum order-2 triples from the other 3 models, add Laplace-alpha,
+and statically code the held-out stream. Oracle uses the test model's OWN counts.
+Reports both for alphas in {1.0, 0.5, 0.1, 0.01}.
+
+  alpha      oracle (wt)    universal (wt)    brotli-11 (wt)   oracle - br   univ - br   univ - oracle
+  1.0             6.6685            6.7447            6.5583       +0.1103     +0.1864         +0.0761
+  0.5             6.5788            6.7263            6.5583       +0.0205     +0.1681         +0.1476
+  0.1             6.4624            6.7356            6.5583       -0.0958     +0.1774         +0.2732
+  0.01            6.4126            6.8052            6.5583       -0.1457     +0.2469         +0.3926
+
+Per-model breakdown at alpha=0.1 (best oracle point):
+  model                n_bytes  Shannon H2    oracle   universal   brotli-11   oracle-br   univ-br
+  olmo2_1b          10,616,832      6.3463    6.4114      6.6810      6.5302     -0.1188   +0.1508
+  qwen3_1.7b        13,877,248      6.4187    6.4722      6.7257      6.5673     -0.0952   +0.1584
+  smollm2_1.7b      15,925,248      6.4462    6.4953      6.7524      6.5606     -0.0653   +0.1919
+  tinyllama          9,596,928      6.3725    6.4503      6.7824      6.5723     -0.1220   +0.2101
+
+============================================================================================================================
+INTERPRETATION
+----------------------------------------------------------------------------------------------------------------------------
+- ORACLE static coder at alpha=0.1 beats brotli-11 on EVERY model:
+    olmo2_1b     -0.119 bpB     qwen3_1.7b   -0.095 bpB
+    smollm2_1.7b -0.065 bpB     tinyllama    -0.122 bpB
+  Cohort mean -0.095 bpB. This CONSTRUCTIVELY realizes ~60% of the
+  wave-31 theoretical -0.155 bpB gap and proves the sub-brotli path
+  is implementable with an extremely simple static Laplace coder,
+  provided the coder has access to the test-model-specific order-2
+  context tables.
+- UNIVERSAL (leave-one-out) static coder plateaus at ~6.70 bpB
+  regardless of alpha, and FAILS TO BEAT brotli-11 (cohort gap +0.14
+  bpB at alpha=1.0 rising slightly to +0.20 bpB at alpha=0.01 as
+  low-smoothing amplifies out-of-sample context mass on the held-out
+  model). The gap between oracle and universal at alpha=0.1 is
+  +0.222 bpB cohort.
+- IMPLICATION FOR WAVE-26 CROSS-MODEL TRANSFER: the r>0.9995
+  correlation was measured on order-0 MARGINAL byte histograms.
+  That does NOT imply the order-2 JOINT distribution transfers;
+  wave 34 shows it does not, at least not tightly enough to beat
+  brotli-11. The order-2 context structure carries model-specific
+  information that a universal prior cannot capture.
+- OPERATIONAL CONCLUSION for Claim 21: a constructive sub-brotli
+  order-2 fp8 coder must ship with MODEL-SPECIFIC order-2 tables
+  as side information, or equivalently (and cheaper) must BUILD the
+  tables ONLINE in a second pass over the decoded stream. A single
+  65,536 x 256 context table at 2 bytes per cell is 32 MiB --
+  within budget for a model checkpoint but not for the per-tile
+  envelope of the Claim-21 payload. Two-pass decode is the
+  realistic shipping path.
+

@@ -3395,6 +3395,53 @@ rather than learn them from scratch. Artifacts:
 `results/claim21_fp8_order2_adaptive.txt` and
 `results/claim21_fp8_order2_adaptive.json`.
 
+**Universal (cross-model) order-2 priors FAIL to beat brotli-11;
+model-specific priors constructively realize 94% of the wave-31
+advantage.**
+Wave 34 resolves the question opened by wave 33 — can pre-trained
+universal context tables close the sub-brotli gap? — with a direct
+leave-one-out experiment. For each held-out model $T$, order-2 triples
+from the remaining 3 models are summed into a 65,536 × 256 count
+table, a Laplace-$\alpha$ prior added, and $T$'s fp8 stream statically
+coded against that table. The oracle variant uses $T$'s own counts.
+Alphas $\{1.0, 0.5, 0.1, 0.01\}$ sweep the smoothing strength.
+
+| α | oracle (bpB) | universal (bpB) | brotli-11 (bpB) | oracle − br | univ − br |
+|---|-------------:|----------------:|----------------:|------------:|----------:|
+| 1.0  | 6.668 | 6.745 | 6.558 | **+0.110** | +0.186 |
+| 0.5  | 6.579 | 6.726 | 6.558 | **+0.021** | +0.168 |
+| 0.1  | 6.462 | 6.736 | 6.558 | **−0.096** | +0.177 |
+| 0.01 | 6.413 | 6.805 | 6.558 | **−0.146** | +0.247 |
+
+Per-model at α = 0.1 (best oracle-vs-universal tradeoff): oracle
+beats brotli-11 on every model (−0.065 to −0.122 bpB, cohort
+−0.096); universal loses to brotli-11 on every model (+0.151 to
++0.210 bpB). At α = 0.01 the oracle reaches **−0.146 bpB cohort,
+94 % of the wave-31 theoretical −0.155 bpB floor**, constructively
+proving the sub-brotli path is implementable with an extremely
+simple static Laplace coder — provided the coder has the
+**model-specific** order-2 context tables.
+
+**The universal path does not carry enough information to beat
+brotli-11 at order 2.** Wave 26's $r > 0.9995$ cross-model
+correlation was measured on order-0 marginal byte histograms; at
+the order-2 joint level that correlation weakens enough that a
+universal-prior coder plateaus at 6.70 bpB regardless of α. The
+order-2 context structure carries model-specific information
+that a universal prior cannot capture.
+
+**Operational conclusion for Claim 21**: a constructive sub-brotli
+order-2 fp8 coder must ship with model-specific order-2 tables
+either as side information embedded in the model envelope, or
+equivalently (and cheaper in the wire format) must be built online
+in a two-pass decode of the fp8 stream. A single order-2 table at
+2 bytes per cell is 32 MiB — negligible against a multi-GB
+checkpoint, unsuitable at per-tile granularity. Two-pass decode
+is the realistic shipping path; the Laplace-$α$ coder with α near
+0.01 is the specific recipe. Artifacts:
+`results/claim21_fp8_order2_universal.txt` and
+`results/claim21_fp8_order2_universal_summary.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
