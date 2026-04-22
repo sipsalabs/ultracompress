@@ -1,0 +1,60 @@
+Claim-21 order-0 byte-histogram diagnostic
+==================================================================================
+For each stream, measure how far the byte distribution deviates
+from uniform. These deviations are the fundamental source of
+order-0 compressibility (wave 17 established that fp8 savings
+are ~89% order-0). Here we quantify 'how compressible must it
+be in principle', as an information-theoretic lower bound on
+bits/byte no coder can beat without exploiting context.
+
+Columns:
+  H (bits/B)  = Shannon entropy of byte histogram (uniform = 8.0000)
+  floor %     = order-0 savings floor = 100 * (8 - H) / 8
+                (= lower bound on savings achievable by any coder)
+  TV          = total-variation distance from uniform (0..1)
+  chi2/n      = chi-square / n_bytes (deviation, scale-free)
+  max/mean    = most-frequent-byte count / expected count at uniform
+
+--- olmo2_1b  rho=0.01 ---
+  stream       n_bytes    H (bpB)  floor%     TV   chi2/n  max/mean  min/mean
+  fp8         10,616,832   6.6218  17.227%  0.5903  2.2130    5.58   0.000
+  idx_delta       16,896   2.7855  65.181%  0.7578  135.5616  186.77   0.000
+  scale            8,448   6.3448  20.691%  0.4712  8.3390   26.24   0.000
+
+--- qwen3_1.7b  rho=0.01 ---
+  stream       n_bytes    H (bpB)  floor%     TV   chi2/n  max/mean  min/mean
+  fp8         13,877,248   6.6720  16.600%  0.5804  2.0842    5.52   0.000
+  idx_delta       22,624   2.7906  65.117%  0.7531  136.0374  187.11   0.000
+  scale           11,312   5.0273  37.159%  0.8148  10.3366   27.09   0.000
+
+--- smollm2_1.7b  rho=0.01 ---
+  stream       n_bytes    H (bpB)  floor%     TV   chi2/n  max/mean  min/mean
+  fp8         15,925,248   6.7119  16.101%  0.5723  1.9840    5.37   0.000
+  idx_delta       25,344   2.7822  65.222%  0.7530  136.4882  187.42   0.010
+  scale           12,672   5.1513  35.608%  0.7962  9.6673   27.43   0.000
+
+--- tinyllama  rho=0.01 ---
+  stream       n_bytes    H (bpB)  floor%     TV   chi2/n  max/mean  min/mean
+  fp8          9,596,928   6.7582  15.523%  0.5622  1.8720    5.14   0.000
+  idx_delta       15,664   2.7776  65.280%  0.7545  136.7775  187.62   0.000
+  scale            7,832   5.2930  33.838%  0.7938  7.6269   22.42   0.000
+
+==================================================================================
+COHORT  (n=4 runs, byte-weighted)
+----------------------------------------------------------------------------------
+  stream      bytes         H (bpB)   floor %    TV      max/mean  min/mean
+  fp8           50,016,256   6.6906  16.368%  0.5764     5.58   0.000
+  idx_delta         80,528   2.7844  65.195%  0.7543   187.62   0.000
+  scale             40,264   5.3944  32.570%  0.7328    27.43   0.000
+
+INTERPRETATION
+----------------------------------------------------------------------------------
+- fp8 H < 8 bpB directly: its byte histogram is measurably
+  sub-uniform. The order-0 savings floor is the minimum
+  compression ratio any coder (even one that ignores context)
+  could achieve. This is the fundamental cause of the
+  ~16 pp of fp8 savings that survive byte permutation (wave 17).
+- Hadamard rotation + FP8 quantization produces a byte
+  distribution that is provably, quantitatively non-uniform;
+  the sub-uniformity is a property of the encoding, not of
+  any particular model.

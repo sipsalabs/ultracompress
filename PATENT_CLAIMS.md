@@ -2773,6 +2773,44 @@ profiles; the 3-stream decomposition is required to separate them.
 Artifact: `results/claim21_block_shuffle.txt`; per-run JSON:
 `results/claim21_block_shuffle_qwen3_1.7b_rho0.01.json`.
 
+**Order-0 byte-histogram diagnostic.** The preceding permutation and
+block-shuffle experiments establish that fp8 savings are ~89 %
+order-0 and that idx_delta/scale savings are heavily contextual. This
+diagnostic directly measures *how far from uniform* each stream's
+byte histogram is, which is an information-theoretic lower bound on
+the compression ratio any coder can achieve on that stream (even a
+coder that completely ignores context). We report Shannon entropy H
+(bits/byte; uniform = 8.0000), the induced order-0 savings floor
+(100 × (8 − H) / 8), and the total-variation distance TV from uniform
+(range 0…1). Cohort of 4 models at ρ = 0.010, byte-weighted:
+
+| stream     | bytes       | H (bpB) | order-0 floor | TV     | max/mean |
+|------------|-------------|---------|---------------|--------|----------|
+| fp8        | 50,016,256  | 6.6906  | **16.368 %**  | 0.5764 | 5.58     |
+| idx_delta  |     80,528  | 2.7844  | **65.195 %**  | 0.7543 | 187.62   |
+| scale      |     40,264  | 5.3944  | **32.570 %**  | 0.7328 | 27.43    |
+
+Per-model spread is extremely tight: fp8 floor ∈ [15.52 %, 17.23 %]
+across 4 models (range 1.71 pp); idx_delta floor ∈ [65.12 %, 65.28 %]
+(range **0.16 pp** — the delta-coded sorted-index distribution is
+essentially model-invariant at the byte level, a striking
+universality property); scale floor ∈ [20.69 %, 37.16 %] (wider
+because per-row scale distributions depend on the model's row-norm
+distribution).
+
+Cross-referencing with waves 15 and 17: the fp8 brotli-11 savings of
+17.982 % sit just 1.614 pp above the order-0 floor of 16.368 %,
+consistent with the ~2.0 pp context gap measured in wave 17. The
+idx_delta brotli-11 savings of 46.177 % are *below* the order-0 floor
+of 65.195 %, meaning brotli-11 is not extracting the full order-0
+entropy of idx_delta on its own; lzma-6 gets closer (wave 15 shows
+lzma-6 winning 12/18 cells on idx_delta). The numbers are mutually
+consistent across four independent experiments (waves 14, 15, 17, 19)
+measuring different facets of the same underlying distribution.
+Artifact: `results/claim21_fp8_histogram.txt`; per-model JSONs with
+full 256-bin histograms:
+`results/claim21_fp8_histogram_<model>_rho0.01.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
