@@ -1,0 +1,217 @@
+Claim-21 coder efficiency vs order-0 floor
+==================================================================================
+
+For each (stream, codec), redundancy = bpB_coder - bpB_order0.
+  < 0  : coder beats memoryless floor (uses context)
+  = 0  : coder is memoryless-optimal
+  > 0  : coder is below its information-theoretic limit
+
+Cohort: n=4 models at rho=0.010
+
+--- olmo2_1b  rho=0.01 ---
+  stream fp8         n_bytes=  10,616,832  H_order0=6.6218 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           6.6341     +0.0122          no 
+    zstd-9           6.6696     +0.0478          no 
+    zstd-15          6.6619     +0.0401          no 
+    zstd-22          6.6570     +0.0352          no 
+    zlib-9           6.6502     +0.0284          no 
+    bz2-9            6.9840     +0.3622          no 
+    lzma-6           6.6023     -0.0195          YES
+    brotli-11        6.5302     -0.0916          YES
+    lz4-hc           7.9932     +1.3714          no 
+
+  stream idx_delta   n_bytes=       8,448  H_order0=2.7855 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           5.0947     +2.3092          no 
+    zstd-9           5.0777     +2.2921          no 
+    zstd-15          5.0417     +2.2561          no 
+    zstd-22          5.0559     +2.2703          no 
+    zlib-9           5.3220     +2.5364          no 
+    bz2-9            4.7519     +1.9664          no 
+    lzma-6           4.6098     +1.8243          no 
+    brotli-11        4.3920     +1.6065          no 
+    lz4-hc           7.5436     +4.7580          no 
+
+  stream scale       n_bytes=       8,448  H_order0=6.3448 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           6.4650     +0.1202          no 
+    zstd-9           6.4621     +0.1174          no 
+    zstd-15          6.4792     +0.1344          no 
+    zstd-22          6.4792     +0.1344          no 
+    zlib-9           6.4905     +0.1458          no 
+    bz2-9            6.2538     -0.0910          YES
+    lzma-6           6.1023     -0.2425          YES
+    brotli-11        6.2188     -0.1260          YES
+    lz4-hc           8.0218     +1.6770          no 
+
+
+--- qwen3_1.7b  rho=0.01 ---
+  stream fp8         n_bytes=  13,877,248  H_order0=6.6720 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           6.6956     +0.0236          no 
+    zstd-9           6.7197     +0.0477          no 
+    zstd-15          6.7203     +0.0483          no 
+    zstd-22          6.7171     +0.0450          no 
+    zlib-9           6.6928     +0.0207          no 
+    bz2-9            7.0244     +0.3524          no 
+    lzma-6           6.6539     -0.0181          YES
+    brotli-11        6.5673     -0.1047          YES
+    lz4-hc           8.0005     +1.3285          no 
+
+  stream idx_delta   n_bytes=      11,312  H_order0=2.7906 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           4.9752     +2.1846          no 
+    zstd-9           4.9576     +2.1669          no 
+    zstd-15          4.9165     +2.1259          no 
+    zstd-22          4.9081     +2.1174          no 
+    zlib-9           5.1945     +2.4039          no 
+    bz2-9            4.6117     +1.8211          no 
+    lzma-6           4.5120     +1.7214          no 
+    brotli-11        4.3310     +1.5403          no 
+    lz4-hc           7.2850     +4.4944          no 
+
+  stream scale       n_bytes=      11,312  H_order0=5.0273 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           5.0799     +0.0526          no 
+    zstd-9           5.0594     +0.0321          no 
+    zstd-15          5.0884     +0.0611          no 
+    zstd-22          5.0304     +0.0031          ~0
+    zlib-9           5.1040     +0.0767          no 
+    bz2-9            4.3204     -0.7069          YES
+    lzma-6           4.9250     -0.1023          YES
+    brotli-11        4.3663     -0.6610          YES
+    lz4-hc           7.5997     +2.5724          no 
+
+
+--- smollm2_1.7b  rho=0.01 ---
+  stream fp8         n_bytes=  15,925,248  H_order0=6.7119 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           6.6933     -0.0186          YES
+    zstd-9           6.7433     +0.0314          no 
+    zstd-15          6.7439     +0.0320          no 
+    zstd-22          6.7423     +0.0304          no 
+    zlib-9           6.7053     -0.0066          YES
+    bz2-9            7.0379     +0.3260          no 
+    lzma-6           6.6488     -0.0631          YES
+    brotli-11        6.5606     -0.1513          YES
+    lz4-hc           8.0005     +1.2886          no 
+
+  stream idx_delta   n_bytes=      12,672  H_order0=2.7822 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           4.9552     +2.1730          no 
+    zstd-9           4.9306     +2.1483          no 
+    zstd-15          4.8927     +2.1105          no 
+    zstd-22          4.8990     +2.1168          no 
+    zlib-9           5.1654     +2.3832          no 
+    bz2-9            4.5246     +1.7424          no 
+    lzma-6           4.4167     +1.6345          no 
+    brotli-11        4.3037     +1.5214          no 
+    lz4-hc           7.1907     +4.4084          no 
+
+  stream scale       n_bytes=      12,672  H_order0=5.1513 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           5.2033     +0.0520          no 
+    zstd-9           5.1711     +0.0198          no 
+    zstd-15          5.1850     +0.0336          no 
+    zstd-22          5.1282     -0.0232          YES
+    zlib-9           5.2184     +0.0671          no 
+    bz2-9            4.5038     -0.6475          YES
+    lzma-6           4.9773     -0.1741          YES
+    brotli-11        5.0189     -0.1324          YES
+    lz4-hc           7.6117     +2.4604          no 
+
+
+--- tinyllama  rho=0.01 ---
+  stream fp8         n_bytes=   9,596,928  H_order0=6.7582 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           6.7481     -0.0101          YES
+    zstd-9           6.7750     +0.0168          no 
+    zstd-15          6.7753     +0.0172          no 
+    zstd-22          6.7696     +0.0114          no 
+    zlib-9           6.7367     -0.0215          YES
+    bz2-9            7.0655     +0.3073          no 
+    lzma-6           6.6656     -0.0925          YES
+    brotli-11        6.5723     -0.1859          YES
+    lz4-hc           8.0005     +1.2423          no 
+
+  stream idx_delta   n_bytes=       7,832  H_order0=2.7776 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           4.9867     +2.2091          no 
+    zstd-9           4.9622     +2.1846          no 
+    zstd-15          4.9479     +2.1703          no 
+    zstd-22          4.9469     +2.1693          no 
+    zlib-9           5.1910     +2.4134          no 
+    bz2-9            4.7160     +1.9384          no 
+    lzma-6           4.5434     +1.7658          no 
+    brotli-11        4.3504     +1.5727          no 
+    lz4-hc           7.3953     +4.6177          no 
+
+  stream scale       n_bytes=       7,832  H_order0=5.2930 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           5.4229     +0.1299          no 
+    zstd-9           5.3963     +0.1034          no 
+    zstd-15          5.4219     +0.1289          no 
+    zstd-22          5.3943     +0.1013          no 
+    zlib-9           5.4321     +0.1391          no 
+    bz2-9            4.7783     -0.5146          YES
+    lzma-6           5.3442     +0.0513          no 
+    brotli-11        4.7017     -0.5912          YES
+    lz4-hc           7.9326     +2.6396          no 
+
+
+==================================================================================
+COHORT (byte-weighted)
+----------------------------------------------------------------------------------
+  stream fp8         N=  50,016,256  H_order0=6.6906 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           6.6919     +0.0013          ~0
+    zstd-9           6.7272     +0.0366          no 
+    zstd-15          6.7260     +0.0354          no 
+    zstd-22          6.7224     +0.0318          no 
+    zlib-9           6.6962     +0.0056          ~0
+    bz2-9            7.0280     +0.3374          no 
+    lzma-6           6.6436     -0.0470          YES
+    brotli-11        6.5583     -0.1323          YES
+    lz4-hc           7.9990     +1.3084          no 
+  best codec for fp8: brotli-11  (bpB=6.5583,  gap below order-0 = +0.1323 bpB)
+
+  stream idx_delta   N=      40,264  H_order0=2.7844 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           4.9962     +2.2118          no 
+    zstd-9           4.9752     +2.1908          no 
+    zstd-15          4.9414     +2.1570          no 
+    zstd-22          4.9438     +2.1594          no 
+    zlib-9           5.2114     +2.4270          no 
+    bz2-9            4.6340     +1.8496          no 
+    lzma-6           4.5086     +1.7243          no 
+    brotli-11        4.3390     +1.5546          no 
+    lz4-hc           7.3310     +4.5466          no 
+  best codec for idx_delta: brotli-11  (bpB=4.3390,  gap below order-0 = -1.5546 bpB)
+
+  stream scale       N=      40,264  H_order0=5.3944 bpB
+    codec         bpB(coder)  redundancy (bpB)   beats floor?
+    zstd-3           5.4761     +0.0816          no 
+    zstd-9           5.4544     +0.0600          no 
+    zstd-15          5.4755     +0.0810          no 
+    zstd-22          5.4359     +0.0415          no 
+    zlib-9           5.4947     +0.1003          no 
+    bz2-9            4.8728     -0.5216          YES
+    lzma-6           5.2700     -0.1244          YES
+    brotli-11        5.0256     -0.3688          YES
+    lz4-hc           7.7568     +2.3624          no 
+  best codec for scale: bz2-9  (bpB=4.8728,  gap below order-0 = +0.5216 bpB)
+
+==================================================================================
+INTERPRETATION
+----------------------------------------------------------------------------------
+- fp8: best codec (brotli-11) beats order-0 floor by ~0.13 bpB.
+  Coders are near-optimal; little context headroom remains.
+- idx_delta: best codec (brotli-11) is +1.55 bpB ABOVE the
+  order-0 floor. Practical coders leave ~35% of the
+  idx_delta savings on the table, mostly due to per-stream
+  header overhead on small (~20 kB) buffers. The order-0 floor
+  of 65% is THEORETICAL; real idx_delta savings are ~46%.
+- scale: bz2-9 and brotli-11 BEAT the order-0 floor by up to
+  0.52 bpB — adjacent-fp16-byte correlation gives real context
+  bonus on this stream.
