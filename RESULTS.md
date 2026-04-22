@@ -761,6 +761,34 @@ audit. Practical consequence: deploying with **zstd-3** (~100x faster
 compression than zstd-22) costs <0.5 pp of savings on every
 measurement, so the claim is insensitive to compression-time budget.
 
+**Per-stream Shannon-gap analysis (cohort-wide sub-Shannon evidence).**
+For each of the 18 (model, rho) pairs, the best LZ-family coder
+(min over zstd-3/9/15/22, zlib-9, lzma-6) was compared to the marginal
+byte-entropy Shannon floor `H` of each payload stream. Negative gap =
+coder is **below** the marginal Shannon floor — proof that the coder is
+exploiting multi-byte Markov structure that marginal byte-entropy
+cannot see. Cohort-mean results (n=6 per rho):
+
+| ρ      | fp8 H → LZ* (gap) | idx_delta H → LZ* (gap) | scale H → LZ* (gap) |
+|:-------|:-----------------:|:-----------------------:|:-------------------:|
+| 0.003  | 6.795 → 6.663 (**-1.94%**) | 5.609 → 5.735 (+2.26%)  | 5.492 → 5.655 (+2.92%) |
+| 0.010  | 6.710 → 6.643 (**-0.99%**) | 4.892 → 4.462 (**-8.80%**) | 5.404 → 5.169 (**-4.33%**) |
+| 0.030  | 6.641 → 6.630 (**-0.17%**) | 4.176 → 3.307 (**-20.81%**) | 5.277 → 4.733 (**-10.37%**) |
+
+**42 of 54 stream-rows** (18 × 3 streams) are sub-Shannon:
+fp8 16/18, idx_delta 14/18, scale 12/18. The fp8 stream sits within
+~2% of the marginal floor (near-entropy E4M3 payload). The idx_delta
+stream exhibits a **monotone-with-ρ sub-Shannon gain** reaching
+**-20.8% cohort-mean at ρ=0.030**, a direct signature of restored-row
+clustering: higher ρ means more rows are restored in the same
+activation-energy-heavy roles, so the delta sequences become long runs
+with strong long-range dependencies that LZ repetition matching
+exploits. The scale stream shows the same effect (-10.4% at ρ=0.030)
+from per-row scale-bin clustering. This quantifies *why* Claim 21
+savings scale with ρ: the multi-byte context gain on the idx/scale
+streams grows from ~+2% (below Shannon — no gain) at ρ=0.003 to ~-15%
+to -20% (deep sub-Shannon) at ρ=0.030.
+
 **Read-out.** Entropy coding the overlay payload reduces overlay bits
 by 14.5%-17.3% across every (model, rho) pair with zero quality change
 (it is a lossless re-encoding of the same bytes). The savings scale
