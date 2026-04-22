@@ -3607,6 +3607,45 @@ Artifacts: `results/claim21_streams_order2_rho0.01.json`,
 `results/claim21_streams_order2.txt`,
 `results/claim21_streams_order2_summary.json`.
 
+**Wave 39 — rho-sweep explains the vanishing Shannon gap (theoretical
+closure):** Waves 30–38 analyzed fp8 only at ρ=0.010. Wave 39 sweeps
+ρ ∈ {0.005, 0.010, 0.020} to test whether the reported sub-brotli-11
+Shannon gap is stable across operating points. Cohort-aggregate H₂ MM
+− brotli-11 gaps:
+
+| ρ | N total | H₂ MM | brotli-11 | H₂ − brotli | 3-gram singleton frac |
+|---|---------|-------|-----------|-------------|-----------------------|
+| 0.005 | 25,020,416 | 6.4428 | 6.5649 | **−0.1221** | 43–47 % |
+| 0.010 | 50,016,256 | 6.5147 | 6.5583 | **−0.0435** | 38–42 % |
+| 0.020 | 101,303,296 | 6.5454 | 6.5521 | **−0.0067** | 34–37 % |
+
+The gap **contracts by a factor of 18× as the sample size quadruples**
+from 25 MB to 101 MB. At ρ=0.020 smollm2_1.7b individually has
+H₂ MM = 6.5654 *above* brotli-11 = 6.5528 (gap flips to +0.013 bpB):
+brotli-11 codes **below** the order-2 Shannon floor estimate on that
+model. The trigram-singleton fraction corroborates: 34–47 % of
+observed 3-grams appear exactly once even at 32 MB per model,
+confirming the 256³ = 16.7 M-cell 3-gram space is far from saturation
+at all tested payload sizes.
+
+**This provides the theoretical explanation for waves 33–37's
+uniform failure:** the reported −0.155 bpB cohort gap at wave 31
+(plug-in, no Miller-Madow) was inflated by plug-in bias. The
+MM-corrected baseline gap at ρ=0.010 is only −0.044 bpB, and the
+rho-sweep shows it vanishes toward zero as sample size grows. The
+asymptotic H₂ on fp8 is **at or above brotli-11**. Claim 21's
+compression floor is correctly reported as brotli-11 with no
+sub-brotli-11 Shannon advantage available at realistic payload
+volumes. Waves 33–37 independently confirmed this operationally via
+five different coder families that all failed to beat brotli-11 on
+fp8; wave 39 now provides the theoretical reason: **there was never
+an operational sub-brotli target to hit — the apparent target was a
+small-sample plug-in-bias illusion.**
+
+Artifacts: `results/claim21_fp8_rho_sweep.json`,
+`results/claim21_fp8_rho_sweep.txt`,
+`results/claim21_fp8_rho_sweep_summary.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
