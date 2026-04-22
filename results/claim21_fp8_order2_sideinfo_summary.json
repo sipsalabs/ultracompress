@@ -1,0 +1,92 @@
+{
+  "claim": 21,
+  "wave": 36,
+  "experiment": "fp8_order2_sideinfo_summary",
+  "rho": 0.01,
+  "cohort": {
+    "n_bytes": 50016256,
+    "oracle_alpha001_bpB": 6.412580600354403,
+    "side_info_bpB": 0.7818488453034149,
+    "net_rate_bpB": 7.194429445657818,
+    "brotli11_bpB": 6.55825402045287,
+    "net_minus_brotli_bpB": 0.6361754252049474
+  },
+  "per_model": [
+    {
+      "model": "olmo2_1b",
+      "n_bytes": 10616832,
+      "observed_nonzero_cells": 1752366,
+      "encodings": {
+        "raw_int32": 67108864,
+        "varint": 16777250,
+        "zlib9_int32": 1817025,
+        "brotli11_int32": 1428931,
+        "brotli11_varint": 1086659
+      },
+      "best_encoder": "brotli11_varint",
+      "best_side_info_bytes": 1086659,
+      "oracle_alpha001_bpB": 6.356688785194888,
+      "brotli11_bpB": 6.530214662905093,
+      "side_info_bits_per_payload_byte": 0.8188197759934414,
+      "net_rate_bpB": 7.175508561188329,
+      "net_gain_vs_brotli11_bpB": -0.6452938982832368
+    },
+    {
+      "model": "qwen3_1.7b",
+      "n_bytes": 13877248,
+      "observed_nonzero_cells": 2044214,
+      "encodings": {
+        "raw_int32": 67108864,
+        "varint": 16777535,
+        "zlib9_int32": 2098820,
+        "brotli11_int32": 1647397,
+        "brotli11_varint": 1263250
+      },
+      "best_encoder": "brotli11_varint",
+      "best_side_info_bytes": 1263250,
+      "oracle_alpha001_bpB": 6.427120283089601,
+      "brotli11_bpB": 6.567338999778631,
+      "side_info_bits_per_payload_byte": 0.7282423719746163,
+      "net_rate_bpB": 7.155362655064217,
+      "net_gain_vs_brotli11_bpB": -0.5880236552855864
+    },
+    {
+      "model": "smollm2_1.7b",
+      "n_bytes": 15925248,
+      "observed_nonzero_cells": 2229470,
+      "encodings": {
+        "raw_int32": 67108864,
+        "varint": 16777955,
+        "zlib9_int32": 2280512,
+        "brotli11_int32": 1790603,
+        "brotli11_varint": 1379167
+      },
+      "best_encoder": "brotli11_varint",
+      "best_side_info_bytes": 1379167,
+      "oracle_alpha001_bpB": 6.453841281255352,
+      "brotli11_bpB": 6.560589574492027,
+      "side_info_bits_per_payload_byte": 0.692820356706533,
+      "net_rate_bpB": 7.146661637961885,
+      "net_gain_vs_brotli11_bpB": -0.5860720634698584
+    },
+    {
+      "model": "tinyllama",
+      "n_bytes": 9596928,
+      "observed_nonzero_cells": 1892905,
+      "encodings": {
+        "raw_int32": 67108864,
+        "varint": 16777216,
+        "zlib9_int32": 1916329,
+        "brotli11_int32": 1514259,
+        "brotli11_varint": 1159068
+      },
+      "best_encoder": "brotli11_varint",
+      "best_side_info_bytes": 1159068,
+      "oracle_alpha001_bpB": 6.384919316719627,
+      "brotli11_bpB": 6.572260623399488,
+      "side_info_bits_per_payload_byte": 0.9661991837387964,
+      "net_rate_bpB": 7.351118500458424,
+      "net_gain_vs_brotli11_bpB": -0.778857877058936
+    }
+  ]
+}

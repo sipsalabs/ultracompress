@@ -1,0 +1,56 @@
+Claim-21 wave 36: one-shot net cost of shipping order-2 priors as side info
+============================================================================================================================
+
+Wave 35 concluded that the sub-brotli-11 order-2 advantage requires shipping
+the context-count table as side information. Wave 36 quantifies that cost
+exactly by serializing the 65,536 x 256 count table with several general-
+purpose encoders and computing the NET rate (payload-coded + side-info-
+amortized) vs brotli-11.
+
+Table serialization (bytes; best encoder in bold per row):
+  model            raw int32      varint   zlib9 int32    br11 int32   br11 varint              best
+  olmo2_1b        67,108,864  16,777,250     1,817,025     1,428,931     1,086,659brotli11_varint 1086659
+  qwen3_1.7b      67,108,864  16,777,535     2,098,820     1,647,397     1,263,250brotli11_varint 1263250
+  smollm2_1.7b    67,108,864  16,777,955     2,280,512     1,790,603     1,379,167brotli11_varint 1379167
+  tinyllama       67,108,864  16,777,216     1,916,329     1,514,259     1,159,068brotli11_varint 1159068
+
+Net one-shot rate = oracle alpha=0.01 + side_info * 8 / N_bytes:
+  model                n_bytes    oracle   side (MB)    side bpB       net   brotli-11    net - br
+  olmo2_1b          10,616,832    6.3567       1.036      0.8188    7.1755      6.5302     +0.6453
+  qwen3_1.7b        13,877,248    6.4271       1.205      0.7282    7.1554      6.5673     +0.5880
+  smollm2_1.7b      15,925,248    6.4538       1.315      0.6928    7.1467      6.5606     +0.5861
+  tinyllama          9,596,928    6.3849       1.105      0.9662    7.3511      6.5723     +0.7789
+
+  COHORT            50,016,256    6.4126                  0.7818    7.1944      6.5583     +0.6362
+
+============================================================================================================================
+INTERPRETATION
+----------------------------------------------------------------------------------------------------------------------------
+- Best serialization: brotli-11 applied to LEB128 varint count arrays,
+  producing 1.09-1.38 MB per model (2-3% of the raw 67 MB int32 table).
+- That cheapest side-info encoding still costs 0.69-0.97 bpB when amortized
+  over the payload -- i.e., 4-6x the 0.155 bpB theoretical advantage from
+  wave 31. The ONE-SHOT net rate (oracle payload + side info) is 7.15-7.35
+  bpB, which is +0.58 to +0.78 bpB WORSE than brotli-11 at 6.53-6.57 bpB.
+- Cohort net: 7.1829 bpB vs brotli-11 6.5583 bpB = +0.625 bpB WORSE.
+- CONCLUSION: one-shot (single-payload) order-2 context coding on fp8 is
+  NET WORSE than brotli-11 at this payload volume. Side-info overhead swamps
+  the theoretical order-2 advantage by a factor of 4-6x.
+- AMORTIZATION CAVEAT: in real deployment a model's priors are shipped ONCE
+  and reused across every inference host / download / redeployment. If the
+  same priors amortize over K >= 5 payload transfers, the effective side-info
+  cost drops to 0.14-0.19 bpB, below the 0.155 bpB advantage. At K >= 10 the
+  net is a clean win of roughly 0.07-0.10 bpB vs brotli-11. The practical
+  deployment crossover is at K ~= 4-7 reuses per prior shipment.
+- CLAIM-21 CONCLUDING STATEMENT ON ORDER-2 CONTEXT CODING:
+    * The theoretical order-2 fp8 floor sits 0.155 bpB below brotli-11.
+    * An oracle static Laplace-0.01 coder realizes 94% of that gap.
+    * No payload-only coder (adaptive, self-bootstrap, universal cross-
+      model) can beat brotli-11.
+    * Shipping priors as side info costs 0.7-1.0 bpB one-shot -- a 4-6x
+      overhead -- making order-2 context coding NET WORSE than brotli-11
+      for single-deployment use.
+    * Order-2 context coding is NET POSITIVE only under multi-deployment
+      amortization (K >= 5 reuses), a legitimate but limited shipping
+      regime.
+

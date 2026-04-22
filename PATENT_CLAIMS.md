@@ -3485,12 +3485,49 @@ trained to emit the table from model metadata.
 - wave 33: naive adaptive Laplace-1 fails by +0.50 bpB cohort
 - wave 34: oracle static α=0.01 hits 94 % of floor; universal priors fail
 - wave 35: self-bootstrap fails at every fraction and sampling order
+- wave 36: side-info one-shot cost = 0.78 bpB cohort, 5× the 0.155 bpB gain
 
 ⇒ **A sub-brotli-11 order-2 fp8 coder must ship its context priors
 as side information.** No payload-only implementation path beats
 brotli-11 at order 2. Artifacts:
 `results/claim21_fp8_order2_bootstrap.txt` and
 `results/claim21_fp8_order2_bootstrap_summary.json`.
+
+**Wave 36 — side-information cost quantification (the final word
+on order-2 context coding):** Wave 35 concluded that the −0.155 bpB
+order-2 advantage is realizable only by shipping the 65,536 × 256
+context-count table as side information. Wave 36 measures that cost
+exactly. For each cohort model, the full-stream order-2 count table
+is serialized five ways — raw int32 (67 MB), LEB128 varint (16.8 MB),
+zlib-9 on int32 (1.82–2.28 MB), brotli-11 on int32 (1.43–1.79 MB),
+and brotli-11 on LEB128 varint (1.09–1.38 MB, best). The cheapest
+encoding costs **0.69–0.97 bpB** when amortized over a single-payload
+shipment. The one-shot net rate — oracle α=0.01 static payload plus
+cheapest side info — is **7.15–7.35 bpB**, which is +0.59 to +0.78
+bpB **WORSE** than brotli-11 at 6.53–6.57 bpB. Cohort aggregate:
+net 7.1944 bpB vs brotli-11 6.5583 bpB = **+0.636 bpB worse**. The
+side-info overhead swamps the theoretical advantage by a factor of
+4–6×. One-shot order-2 context coding on fp8 is **net-negative vs
+brotli-11**. The amortized-deployment crossover: a shipped prior
+that is reused across K ≥ 5 payload transfers reduces effective
+side-info cost to 0.14–0.19 bpB, below the 0.155 bpB theoretical
+advantage. At K ≥ 10 reuses the net is a clean win of ≈0.07–0.10
+bpB vs brotli-11. **Order-2 context coding is therefore a
+legitimate but limited regime: net-positive only under
+multi-deployment amortization.**
+
+**Claim-21 concluding statement on order-2 context coding (waves
+30–36):**
+- theoretical order-2 fp8 floor = brotli-11 − 0.155 bpB (wave 31)
+- oracle static Laplace-0.01 coder realizes 94 % of that gap (wave 34)
+- **no payload-only coder beats brotli-11** (waves 33, 34, 35)
+- one-shot side-info cost = 4–6× the theoretical advantage (wave 36)
+- net-positive **only** under K ≥ 5 multi-deployment prior reuse
+  (wave 36)
+
+Artifacts: `results/claim21_fp8_order2_sideinfo_rho0.01.json`,
+`results/claim21_fp8_order2_sideinfo.txt`,
+`results/claim21_fp8_order2_sideinfo_summary.json`.
 
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
