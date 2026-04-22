@@ -774,6 +774,21 @@ RFC 7932, LZ4 frame spec), this verifies the "lossless" half of
 Claim 21 directly: the compressed overlay payloads are bit-exact
 invertible. Artifact: `results/claim21_roundtrip_verify.{json,txt}`.
 
+**Empirical roundtrip on REAL payload (108/108).** To strengthen the
+standards-sufficiency argument with a direct measurement on the
+production byte distribution, the actual Claim-21 overlay payload was
+built end-to-end on four representative models (TinyLlama, SmolLM2-1.7B,
+OLMo2-1B, Qwen3-1.7B) at ρ=0.010 and every (stream × codec) pair was
+SHA-256-roundtripped: 4 × 3 × 9 = **108/108 PASS** (100.0000%).
+Aggregate compressed bytes on real payload confirm the random-sweep
+savings: brotli-11 18.02% on fp8, lzma-6 16.96%, zstd-3 16.35%; the
+idx_delta stream compresses to 29–38% of raw and scale to 61–69% of
+raw. Savings on real bytes match the random-buffer sweep to within
+sampling noise, verifying that the earlier 486/486 standards argument
+correctly predicts real-world savings AND that the claim is lossless
+on the exact byte distribution it emits. Artifact:
+`results/claim21_real_payload_roundtrip.{json,txt}`.
+
 **Per-stream Shannon-gap analysis (cohort-wide sub-Shannon evidence).**
 For each of the 18 (model, rho) pairs, the best LZ-family coder
 (min over zstd-3/9/15/22, zlib-9, lzma-6) was compared to the marginal

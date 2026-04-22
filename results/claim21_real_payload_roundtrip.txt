@@ -1,0 +1,81 @@
+Claim 21 EMPIRICAL lossless-roundtrip verification on REAL payload bytes
+================================================================================================
+
+Each row: SHA-256(dec(enc(stream))) == SHA-256(stream) on the ACTUAL
+Claim-21 overlay payload (not random bytes). 9 codecs x 3 streams per model.
+
+--- olmo2_1b  rho=0.01  (raw: fp8=10,616,832  idx_delta=16,896  scale=8,448) ---
+  codec           fp8 comp   idx comp  scale comp  fp8 ok  idx ok  scale ok
+  zstd-3         8,804,078      6,194       6,827    True    True      True
+  zstd-9         8,851,231      6,002       6,824    True    True      True
+  zstd-15        8,841,061      6,078       6,842    True    True      True
+  zstd-22        8,834,531      5,749       6,842    True    True      True
+  zlib-9         8,825,556      6,207       6,854    True    True      True
+  bz2-9          9,268,433      5,046       6,604    True    True      True
+  lzma-6         8,761,892      4,892       6,444    True    True      True
+  brotli-11      8,666,274      5,589       6,567    True    True      True
+  lz4-hc        10,607,833      8,446       8,471    True    True      True
+  [summary] 27/27 PASS
+
+--- qwen3_1.7b  rho=0.01  (raw: fp8=13,877,248  idx_delta=22,624  scale=11,312) ---
+  codec           fp8 comp   idx comp  scale comp  fp8 ok  idx ok  scale ok
+  zstd-3        11,614,482      8,069       7,183    True    True      True
+  zstd-9        11,656,441      7,756       7,154    True    True      True
+  zstd-15       11,657,480      7,958       7,195    True    True      True
+  zstd-22       11,651,777      7,481       7,113    True    True      True
+  zlib-9        11,609,620      8,049       7,217    True    True      True
+  bz2-9         12,184,875      6,475       6,109    True    True      True
+  lzma-6        11,542,288      6,372       6,964    True    True      True
+  brotli-11     11,392,074      7,321       6,174    True    True      True
+  lz4-hc        13,878,115     10,828      10,746    True    True      True
+  [summary] 27/27 PASS
+
+--- smollm2_1.7b  rho=0.01  (raw: fp8=15,925,248  idx_delta=25,344  scale=12,672) ---
+  codec           fp8 comp   idx comp  scale comp  fp8 ok  idx ok  scale ok
+  zstd-3        13,324,021      9,022       8,242    True    True      True
+  zstd-9        13,423,590      8,594       8,191    True    True      True
+  zstd-15       13,424,696      8,846       8,213    True    True      True
+  zstd-22       13,421,516      8,285       8,123    True    True      True
+  zlib-9        13,348,002      8,957       8,266    True    True      True
+  bz2-9         14,009,945      7,122       7,134    True    True      True
+  lzma-6        13,235,400      7,068       7,884    True    True      True
+  brotli-11     13,059,877      8,148       7,950    True    True      True
+  lz4-hc        15,926,239     11,907      12,057    True    True      True
+  [summary] 27/27 PASS
+
+--- tinyllama  rho=0.01  (raw: fp8=9,596,928  idx_delta=15,664  scale=7,832) ---
+  codec           fp8 comp   idx comp  scale comp  fp8 ok  idx ok  scale ok
+  zstd-3         8,095,103      6,116       5,309    True    True      True
+  zstd-9         8,127,342      5,412       5,283    True    True      True
+  zstd-15        8,127,800      5,263       5,308    True    True      True
+  zstd-22        8,120,919      5,215       5,281    True    True      True
+  zlib-9         8,081,416      5,596       5,318    True    True      True
+  bz2-9          8,475,848      4,635       4,678    True    True      True
+  lzma-6         7,996,212      4,452       5,232    True    True      True
+  brotli-11      7,884,189      5,080       4,603    True    True      True
+  lz4-hc         9,597,535      7,676       7,766    True    True      True
+  [summary] 27/27 PASS
+
+================================================================================================
+Aggregate across 4 model(s): 108/108 SHA-256 roundtrips PASSED  (100.0000%)
+------------------------------------------------------------------------------------------------
+  codec              fp8 raw       fp8 comp  fp8 save%     idx raw   idx comp  idx save%    scl raw  scl comp  scl save%
+  zstd-3          50,016,256     41,837,684     16.35%      80,528     29,401     63.49%     40,264    27,561     31.55%
+  zstd-9          50,016,256     42,058,604     15.91%      80,528     27,764     65.52%     40,264    27,452     31.82%
+  zstd-15         50,016,256     42,051,037     15.93%      80,528     28,145     65.05%     40,264    27,558     31.56%
+  zstd-22         50,016,256     42,028,743     15.97%      80,528     26,730     66.81%     40,264    27,359     32.05%
+  zlib-9          50,016,256     41,864,594     16.30%      80,528     28,809     64.22%     40,264    27,655     31.32%
+  bz2-9           50,016,256     43,939,101     12.15%      80,528     23,278     71.09%     40,264    24,525     39.09%
+  lzma-6          50,016,256     41,535,792     16.96%      80,528     22,784     71.71%     40,264    26,524     34.12%
+  brotli-11       50,016,256     41,002,414     18.02%      80,528     26,138     67.54%     40,264    25,294     37.18%
+  lz4-hc          50,016,256     50,009,722      0.01%      80,528     38,857     51.75%     40,264    39,040      3.04%
+
+INTERPRETATION
+------------------------------------------------------------------------------------------------
+- Every codec is a published lossless standard (zstd RFC 8478, zlib RFC
+  1950/51, bzip2 spec, LZMA/xz, brotli RFC 7932, LZ4 frame). The SHA-256
+  match on the REAL Claim-21 payload bytes (as opposed to the earlier
+  random-buffer verification) is the strongest empirical evidence of
+  losslessness: bit-exact recovery on the distribution the claim produces.
+- Savings here use the real payload byte distribution, so aggregate
+  percentages reflect the actual Claim-21 deployment shape (not random).

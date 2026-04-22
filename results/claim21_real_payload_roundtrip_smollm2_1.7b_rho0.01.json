@@ -1,0 +1,199 @@
+{
+  "model": "smollm2_1.7b",
+  "rho": 0.01,
+  "raw_bytes": {
+    "fp8": 15925248,
+    "idx_delta": 25344,
+    "scale": 12672
+  },
+  "raw_sha256": {
+    "fp8": "cc72dcdcbee2554ac1f5a7a2e53af44dede700a1ad8b9a876235718c0170e9fe",
+    "idx_delta": "2da0e63b5cf87923b4fff13c3e15f1517fadfd9a83ccd8961cdd80b4fdf77093",
+    "scale": "9b3f4f60e87bbc8712c961b929417833e987112054db6b2054caaad29483d245"
+  },
+  "codecs": {
+    "zstd-3": {
+      "fp8": {
+        "compressed_bytes": 13324021,
+        "enc_s": 0.015021800994873047,
+        "dec_s": 0.013010978698730469,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 9022,
+        "enc_s": 0.0004985332489013672,
+        "dec_s": 0.0014994144439697266,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 8242,
+        "enc_s": 0.0,
+        "dec_s": 0.0,
+        "sha256_match": true
+      }
+    },
+    "zstd-9": {
+      "fp8": {
+        "compressed_bytes": 13423590,
+        "enc_s": 0.018515348434448242,
+        "dec_s": 0.013511180877685547,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 8594,
+        "enc_s": 0.0010669231414794922,
+        "dec_s": 0.0009326934814453125,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 8191,
+        "enc_s": 0.0,
+        "dec_s": 0.0,
+        "sha256_match": true
+      }
+    },
+    "zstd-15": {
+      "fp8": {
+        "compressed_bytes": 13424696,
+        "enc_s": 0.09613823890686035,
+        "dec_s": 0.014014482498168945,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 8846,
+        "enc_s": 0.0019989013671875,
+        "dec_s": 0.0009996891021728516,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 8213,
+        "enc_s": 0.0005013942718505859,
+        "dec_s": 0.0,
+        "sha256_match": true
+      }
+    },
+    "zstd-22": {
+      "fp8": {
+        "compressed_bytes": 13421516,
+        "enc_s": 2.3252124786376953,
+        "dec_s": 0.01401209831237793,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 8285,
+        "enc_s": 0.00449824333190918,
+        "dec_s": 0.0010039806365966797,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 8123,
+        "enc_s": 0.0004961490631103516,
+        "dec_s": 0.0,
+        "sha256_match": true
+      }
+    },
+    "zlib-9": {
+      "fp8": {
+        "compressed_bytes": 13348002,
+        "enc_s": 0.44481873512268066,
+        "dec_s": 0.04604530334472656,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 8957,
+        "enc_s": 0.011005163192749023,
+        "dec_s": 0.0004999637603759766,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 8266,
+        "enc_s": 0.0,
+        "dec_s": 0.000499725341796875,
+        "sha256_match": true
+      }
+    },
+    "bz2-9": {
+      "fp8": {
+        "compressed_bytes": 14009945,
+        "enc_s": 0.7458279132843018,
+        "dec_s": 0.5309429168701172,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 7122,
+        "enc_s": 0.0014944076538085938,
+        "dec_s": 0.0010006427764892578,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 7134,
+        "enc_s": 0.0005002021789550781,
+        "dec_s": 0.0004990100860595703,
+        "sha256_match": true
+      }
+    },
+    "lzma-6": {
+      "fp8": {
+        "compressed_bytes": 13235400,
+        "enc_s": 2.8897576332092285,
+        "dec_s": 0.5303225517272949,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 7068,
+        "enc_s": 0.008013486862182617,
+        "dec_s": 0.0010035037994384766,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 7884,
+        "enc_s": 0.004500150680541992,
+        "dec_s": 0.0004990100860595703,
+        "sha256_match": true
+      }
+    },
+    "brotli-11": {
+      "fp8": {
+        "compressed_bytes": 13059877,
+        "enc_s": 14.38823938369751,
+        "dec_s": 0.08005571365356445,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 8148,
+        "enc_s": 0.024013996124267578,
+        "dec_s": 0.0004999637603759766,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 7950,
+        "enc_s": 0.0075070858001708984,
+        "dec_s": 0.0,
+        "sha256_match": true
+      }
+    },
+    "lz4-hc": {
+      "fp8": {
+        "compressed_bytes": 15926239,
+        "enc_s": 0.26771044731140137,
+        "dec_s": 0.003998756408691406,
+        "sha256_match": true
+      },
+      "idx_delta": {
+        "compressed_bytes": 11907,
+        "enc_s": 0.0009987354278564453,
+        "dec_s": 0.0005011558532714844,
+        "sha256_match": true
+      },
+      "scale": {
+        "compressed_bytes": 12057,
+        "enc_s": 0.0,
+        "dec_s": 0.0,
+        "sha256_match": true
+      }
+    }
+  },
+  "pass": 27,
+  "total": 27,
+  "pass_rate": 1.0
+}
