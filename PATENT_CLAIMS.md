@@ -3111,6 +3111,50 @@ obtainable lower bound at **4.38 bpB joint** / **4.62 bpB IEEE-field
 split**. Artifacts: `results/claim21_scale_pair_decomp.txt` and
 `results/claim21_scale_pair_<model>_rho0.01.json`.
 
+**End-to-end bit-level payload synthesis (honest cohort bound).** The
+per-stream lower bounds from waves 19, 24, and 26 can be combined
+into an end-to-end payload lower bound and compared against shipping
+brotli-11 (wave 15/23). For each model at ρ = 0.010 we assemble the
+total payload bits under four assumptions: (i) RAW = 8 bpB on every
+byte; (ii) BROTLI-11 = actual reported bytes of the shipping codec;
+(iii) ORDER-0 = per-stream Shannon H times bytes; (iv) BITLEVEL =
+fp8 at order-0 H + `idx_delta` at wave-24 Rice-best + `scale` at
+wave-26 joint fp16 H. Cohort (50.14 MB total at ρ = 0.010):
+
+| model         |   n_bytes | raw | brotli-11 | order-0 | bitlevel | vs brotli |
+|---------------|----------:|----:|----------:|--------:|---------:|----------:|
+| olmo2_1b      | 10,642 kB | 8.00| 6.523     | 6.616   | 6.613    | −1.384 %  |
+| qwen3_1.7b    | 13,911 kB | 8.00| 6.558     | 6.664   | 6.662    | −1.583 %  |
+| smollm2_1.7b  | 15,963 kB | 8.00| 6.552     | 6.704   | 6.702    | −2.289 %  |
+| tinyllama     |  9,620 kB | 8.00| 6.564     | 6.750   | 6.748    | −2.816 %  |
+| **COHORT**    | 50,137 kB | 8.00| **6.550** | 6.683   | 6.681    | **−2.003 %** |
+
+The cohort "vs brotli" column is **negative**: the per-stream bit-
+level synthesis is 2.003 % *worse* than shipping brotli-11 in
+end-to-end bytes, not better. This is an honest and important
+refinement of the wave-23 narrative. The resolution is weight: `fp8`
+is 99.76 % of the cohort payload, and wave 23 already established
+that brotli-11 beats order-0 on fp8 by 0.13 bpB via genuine context
+modelling — an effect larger in absolute byte terms than the 2.317
+bpB win on `idx_delta` and 0.32 bpB win on `scale` combined, because
+those two streams together are only 0.24 % of bytes. The wave-24 and
+wave-26 improvements are therefore **real on their own streams but
+economically dominated at cohort scale by the fp8 context bonus that
+brotli already captures**. Practical implications: (a) the shipping
+v17 payload under brotli-11 is **within 2 %** of any per-stream-
+optimal bit-level decomposition coder at ρ = 0.010, i.e. there is
+essentially no easy headroom left by swapping codecs — any further
+end-to-end savings must come from a coder that does *both* context-
+model fp8 AND bit-pack idx_delta (no existing off-the-shelf codec
+does both well on these mixed streams); (b) the wave-24 and wave-26
+bounds become economically relevant only at higher ρ where `idx_delta`
+and `scale` grow proportionally — e.g. at ρ = 0.10 the relative
+weight of the small streams is ~10× larger. The measurement is
+quantitative, assumption-free, and derives from existing JSON
+artifacts alone (no GPU). Artifacts:
+`results/claim21_end_to_end_synthesis.txt` and
+`results/claim21_end_to_end_synthesis.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

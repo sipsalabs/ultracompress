@@ -1,0 +1,30 @@
+Claim-21 wave 27: end-to-end bit-level payload synthesis
+==================================================================================================
+
+Combines wave-24 (Rice idx_delta 2.022 bpB cohort) +
+wave-26 (joint fp16 scale 4.377 bpB cohort) +
+wave-19 (fp8 order-0 H 6.691 bpB cohort) into a single
+end-to-end payload lower bound per model, compared against
+raw (8 bpB), shipping brotli-11, and per-stream order-0.
+
+  model              n_bytes   raw bpB  brotli bpB  order0 bpB  bitlvl bpB  vs brotli %   vs raw %
+  olmo2_1b        10,642,176    8.0000      6.5231      6.6155      6.6134      -1.384%    17.333%
+  qwen3_1.7b      13,911,184    8.0000      6.5584      6.6644      6.6622      -1.583%    16.722%
+  smollm2_1.7b    15,963,264    8.0000      6.5524      6.7044      6.7024      -2.289%    16.220%
+  tinyllama        9,620,424    8.0000      6.5636      6.7505      6.7484      -2.816%    15.645%
+
+  COHORT          50,137,048    8.0000      6.5500      6.6833      6.6812      -2.003%    16.485%
+
+Additional cohort figures:
+  absolute cohort payload: raw = 50,137,048 B  brotli-11 = 41,049,546 B  bitlevel = 41,871,841 B
+  bitlevel saves -822,295 B over brotli-11 shipping payload (cohort)
+  bitlevel closes -657836269.6% of the brotli-to-order0 gap
+
+Bit-level construction used:  fp8 = order-0 Shannon H (wave 19),
+idx_delta = Rice-best (wave 24, k=6 on all 4 models),  scale =
+joint 16-bit pair H (wave 26). These are per-stream information-
+theoretic bounds reachable by an arithmetic coder on each stream's
+own distribution (and in wave 24's case, a concrete bit-packed
+Rice emitter also achieves the bound within 0.06 bpB).
+
+==================================================================================================
