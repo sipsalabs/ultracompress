@@ -3339,6 +3339,34 @@ bound, the first constructive sub-brotli result in the Claim-21
 evidence set. Artifacts: `results/claim21_fp8_order2.txt` and
 `results/claim21_fp8_order2.json`.
 
+**fp8 order-3 entropy: sample-size boundary of the context-entropy
+programme.**
+Wave 32 extends the conditional-entropy ladder one more step to
+$H(B_i \mid B_{i-1}, B_{i-2}, B_{i-3})$ via sparse unique-value 4-gram
+counting. The order-3 state space is $256^4 = 4.29 \times 10^9$, so the
+available ≈10–16 M fp8 bytes per model severely undersample the joint
+distribution: 4-gram singleton fractions land between **0.867 and
+0.916**, meaning nearly every observed 4-gram appears exactly once. The
+plug-in conditional entropy estimate (**3.17 – 3.77 bpB** per model,
+**3.57 bpB cohort**) is therefore biased strongly downward. Applying
+the Miller-Madow correction $\hat H_{\text{MM}} = \hat H_{\text{plug}} +
+(K-1)/(2 N \ln 2)$ to each joint estimate before differencing raises
+the conditional entropy to **3.68 – 4.28 bpB** per model (**4.09 bpB
+cohort**), but even this conservative value sits far below the
+wave-31 order-2 floor (6.40 bpB) and brotli-11 (6.56 bpB) — an
+implausible 2.47 bpB gap that the finite-sample bias almost certainly
+explains rather than any real coder opportunity. The true $H_3$ almost
+certainly lies between the MM estimate and the order-2 floor and is
+unresolvable at this sample size without a low-bias nonparametric
+estimator (NSB, coverage-adjusted, or similar). **Operational
+conclusion:** the wave-31 order-2 result (−0.155 bpB vs brotli-11)
+remains the only provable sub-brotli improvement in the Claim-21
+evidence set, and any patent language about context-entropy headroom
+should cite the order-2 bound rather than higher-order estimates at
+current payload volumes. Wave 32 charts the sample-size boundary that
+makes order 2 the safe-to-claim floor. Artifacts:
+`results/claim21_fp8_order3.txt` and `results/claim21_fp8_order3.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

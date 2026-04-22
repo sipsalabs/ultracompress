@@ -1,0 +1,37 @@
+Claim-21 wave 32: fp8 order-3 conditional entropy (sample-limited)
+================================================================================================================
+
+Measures H(B_i | B_{i-1}, B_{i-2}, B_{i-3}) over the fp8 byte stream
+using sparse unique-value counting. State space is 256^4 = 4.29e9, so
+with only ~10-16M fp8 bytes per model the 4-gram histogram is severely
+undersampled (singleton fraction ~0.87-0.92). Plug-in entropy is biased
+DOWNWARD; Miller-Madow correction adds (K-1)/(2N ln 2) bits to each
+joint-entropy estimate before taking the difference.
+
+  model                n_bytes    obs-4grams   sing.frac   order-2 H   H3 plugin       H3 MM   brotli-11   br - H3mm
+  olmo2_1b          10,616,832     9,287,523      0.8848      6.3463      3.4955      4.0074      6.5302     +2.5228
+  qwen3_1.7b        13,877,248    11,957,048      0.8734      6.4187      3.6831      4.1984      6.5673     +2.3689
+  smollm2_1.7b      15,925,248    13,592,618      0.8666      6.4462      3.7678      4.2825      6.5606     +2.2781
+  tinyllama          9,596,928     8,740,882      0.9156      6.3725      3.1669      3.6816      6.5723     +2.8906
+
+  COHORT            50,016,256                                6.4032      3.5712      4.0855      6.5583     +2.4728
+
+================================================================================================================
+INTERPRETATION
+----------------------------------------------------------------------------------------------------------------
+- 4-gram singleton fraction >0.85 on every model means the plug-in H3 estimate is
+  heavily biased DOWN: most observed 4-grams appear exactly once, so the joint
+  distribution looks artificially peaky. Plug-in H3 of 3.17-3.77 bpB is a LOWER
+  BOUND that cannot be trusted as a coder floor.
+- Miller-Madow correction shifts the estimate up to 3.68-4.28 bpB. Even this
+  conservative correction sits FAR BELOW the order-2 floor (6.40 bpB cohort) and
+  the brotli-11 shipping rate (6.56 bpB cohort). The true H3 almost certainly
+  lies between the MM estimate and the order-2 floor -- unresolvable at this
+  sample size without a better estimator (NSB, coverage-adjusted).
+- Operational conclusion for Claim 21: the constructive sub-brotli path at
+  order 2 (wave 31, -0.155 bpB) is the RELIABLE lower-bound improvement.
+  Order >=3 coding may unlock more, but proving it requires either more data
+  per model or a low-bias nonparametric entropy estimator. This wave CHARTS
+  the sample-size boundary of the context-entropy programme, and makes the
+  order-2 result the provable floor that the patent can safely rely on.
+

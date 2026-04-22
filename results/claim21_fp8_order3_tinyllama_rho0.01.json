@@ -1,0 +1,16 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order3",
+  "model": "tinyllama",
+  "rho": 0.01,
+  "n_fp8_bytes": 9596928,
+  "observed_quad_states": 8740882,
+  "observed_ctx3_states": 1892904,
+  "quad_singleton_frac": 0.9155929573239863,
+  "H_joint4_plugin": 23.005393816292067,
+  "H_joint3_plugin": 19.838476778714345,
+  "H_joint4_mm": 23.6623972664441,
+  "H_joint3_mm": 19.98075577802839,
+  "order3_H_bpB_plugin": 3.166917037577722,
+  "order3_H_bpB_mm": 3.6816414884157105
+}

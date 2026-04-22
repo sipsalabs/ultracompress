@@ -1,0 +1,16 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order3",
+  "model": "olmo2_1b",
+  "rho": 0.01,
+  "n_fp8_bytes": 10616832,
+  "observed_quad_states": 9287523,
+  "observed_ctx3_states": 1752366,
+  "quad_singleton_frac": 0.8848379702532096,
+  "H_joint4_plugin": 23.067772337305563,
+  "H_joint3_plugin": 19.572298034739493,
+  "H_joint4_mm": 23.69880171206271,
+  "H_joint3_mm": 19.691360341164856,
+  "order3_H_bpB_plugin": 3.4954743025660697,
+  "order3_H_bpB_mm": 4.007441370897855
+}
