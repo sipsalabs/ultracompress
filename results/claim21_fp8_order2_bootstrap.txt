@@ -1,0 +1,51 @@
+Claim-21 wave 35: self-bootstrap order-2 coder fails to beat brotli-11
+============================================================================================================================
+
+Tests whether a deployable coder can BOOTSTRAP order-2 counts from a
+fraction F of the fp8 stream (no side information) and code the
+remainder with the learned counts. Two sampling modes:
+  contiguous : first F of stream is the bootstrap (coded at brotli-11)
+  interleaved: every 1/F-th byte is the bootstrap (coded at brotli-11)
+Both modes charge brotli-11 on the bootstrap bytes. Combined rate =
+F * brotli + (1-F) * order2_tail. Oracle = full-stream static alpha=0.01.
+
+--- cohort combined rate @ alpha=0.1 (brotli-11=6.5583, oracle=6.4126) ---
+  mode                F=0.05       F=0.1      F=0.25       F=0.5      F=0.75
+  contiguous          7.6309      7.3302      6.9675      6.7495      6.6412
+  interleaved         7.5833      7.3062      6.9672      6.7521      6.6552
+
+--- cohort combined rate @ alpha=0.01 (brotli-11=6.5583, oracle=6.4126) ---
+  mode                F=0.05       F=0.1      F=0.25       F=0.5      F=0.75
+  contiguous          8.6076      7.9768      7.2671      6.8739      6.6906
+  interleaved         8.5170      7.9379      7.2699      6.8787      6.7185
+
+============================================================================================================================
+INTERPRETATION
+----------------------------------------------------------------------------------------------------------------------------
+- At EVERY fraction F in {0.05, 0.1, 0.25, 0.5, 0.75} and at BOTH alphas
+  (0.1 and 0.01), the combined rate is WORSE than pure brotli-11. The best
+  combined rate (alpha=0.1, F=0.75, contiguous) is ~6.64 bpB cohort -- still
+  above brotli-11 shipping at 6.558 bpB.
+- Contiguous vs interleaved bootstrap are within 0.01-0.03 bpB of each other
+  at every (F, alpha) combination. This RULES OUT non-stationarity of the
+  fp8 stream as the failure mode. The failure is fundamental: the 65,536 x
+  256 order-2 context table requires essentially the FULL stream to populate
+  adequately. With 50-75% of bytes the table has too many sparsely-covered
+  contexts where smoothing dominates the coded length.
+- IMPLICATION: wave-34's implied 'two-pass decode' shipping path does NOT
+  work -- there is no way to code the payload at sub-brotli-11 rate using only
+  order-2 counts derived from the payload itself, regardless of sampling order.
+  The -0.155 bpB theoretical gap from wave 31 is REALIZABLE only by shipping
+  the order-2 context table as side information (~32 MiB per model, 0.8% of
+  a 4 GiB checkpoint, cheap in absolute terms) or by training a compact neural
+  context model that emits the table from model metadata.
+- CLAIM-21 CONTEXT-CODER DESIGN SPACE (waves 30-35 summary):
+    wave 30: brotli-11 uses order >= 2 context (rules out order-1 coders)
+    wave 31: Shannon H2 floor = 6.40 bpB, -0.155 bpB vs brotli-11
+    wave 32: order-3 estimator sample-limited; order-2 is the safe floor
+    wave 33: naive adaptive Laplace-1 fails by +0.50 bpB cohort
+    wave 34: oracle static alpha=0.01 hits 94% of floor (-0.146 bpB)
+             universal cross-model priors fail (plateau at +0.14 vs brotli)
+    wave 35: self-bootstrap fails regardless of sampling order
+  => sub-brotli-11 order-2 fp8 coder REQUIRES side-information priors.
+

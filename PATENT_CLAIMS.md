@@ -3442,6 +3442,56 @@ is the realistic shipping path; the Laplace-$α$ coder with α near
 `results/claim21_fp8_order2_universal.txt` and
 `results/claim21_fp8_order2_universal_summary.json`.
 
+**Self-bootstrap fails: the order-2 coder cannot beat brotli-11
+using counts derived from the payload itself.**
+Wave 35 tests the two-pass-decode path directly. The encoder codes
+the first fraction $F$ of the fp8 stream with brotli-11 (realistic
+bootstrap coder), uses those bytes to build an order-2 Laplace-$\alpha$
+count table, then statically codes the remaining $(1-F)$ fraction.
+Combined rate is $F \cdot \text{brotli} + (1-F) \cdot \text{tail}$.
+Two sampling modes test whether the fp8 stream is non-stationary:
+contiguous (first $F$) and interleaved (every $1/F$-th byte).
+
+| F | contiguous α=0.1 | interleaved α=0.1 | contiguous α=0.01 | interleaved α=0.01 |
+|---|-----------------:|------------------:|------------------:|-------------------:|
+| 0.05 | 7.631 | 7.583 | 8.608 | 8.517 |
+| 0.10 | 7.330 | 7.306 | 7.977 | 7.938 |
+| 0.25 | 6.968 | 6.967 | 7.267 | 7.270 |
+| 0.50 | 6.750 | 6.752 | 6.874 | 6.879 |
+| 0.75 | 6.641 | 6.655 | 6.691 | 6.719 |
+
+**At every fraction and every alpha, the combined rate exceeds
+brotli-11's 6.558 bpB cohort.** The best combined rate (α=0.1,
+F=0.75, contiguous) is 6.641 bpB — still 0.083 bpB above brotli.
+Contiguous and interleaved agree within 0.01–0.03 bpB at every
+$(F, \alpha)$, **ruling out non-stationarity as the cause**: the
+failure is a fundamental sample-completeness issue, not an ordering
+artifact. The 65,536 × 256 order-2 table simply requires essentially
+the full stream to populate densely enough that smoothing does not
+dominate on rare contexts.
+
+**This falsifies the two-pass-decode path proposed in wave 34.**
+The −0.155 bpB theoretical gap from wave 31 is realizable only if
+the order-2 context table is transmitted as side information
+alongside the payload (≈ 32 MiB per model — 0.8 % of a 4 GiB
+checkpoint; negligible in absolute terms but a real wire-format
+cost), or alternatively if a compact neural context model is
+trained to emit the table from model metadata.
+
+**Claim-21 context-coder design space (waves 30–35, definitive):**
+- wave 30: brotli-11 exploits order ≥ 2 — rules out order-1 coders
+- wave 31: Shannon $H_2$ floor = 6.40 bpB, −0.155 bpB vs brotli-11
+- wave 32: order-3 estimator sample-limited — order-2 is the safe floor
+- wave 33: naive adaptive Laplace-1 fails by +0.50 bpB cohort
+- wave 34: oracle static α=0.01 hits 94 % of floor; universal priors fail
+- wave 35: self-bootstrap fails at every fraction and sampling order
+
+⇒ **A sub-brotli-11 order-2 fp8 coder must ship its context priors
+as side information.** No payload-only implementation path beats
+brotli-11 at order 2. Artifacts:
+`results/claim21_fp8_order2_bootstrap.txt` and
+`results/claim21_fp8_order2_bootstrap_summary.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
