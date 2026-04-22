@@ -2625,6 +2625,38 @@ of the restored-overflow payload. Artifact:
 `results/claim21_stream_independence.txt`; per-run JSONs:
 `results/claim21_stream_independence_<model>_rho0.01.json`.
 
+**Cross-codec correlation and dominance.** A further useful property
+for deployment: brotli-11 is Pareto-best-for-size on 43 of the 54
+(model, ρ, stream) cells in the codec sweep — all 18 fp8 cells, 12 of
+18 idx_delta cells (lzma-6 wins the other 6), and 13 of 18 scale cells
+(bz2-9 wins 4, lzma-6 wins 1). Per-codec mean savings %:
+
+| stream    | zstd-22 | zlib-9 | bz2-9  | lzma-6 | brotli-11 | lz4-hc |
+|-----------|---------|--------|--------|--------|-----------|--------|
+| fp8       | 15.846  | 16.215 | 12.063 | 16.933 | **17.982**| 0.014  |
+| idx_delta | 39.120  | 35.922 | 41.366 | 43.298 | **46.177**| 14.617 |
+| scale     | 32.437  | 31.471 | 39.130 | 34.006 | **39.896**| 5.358  |
+
+The Pearson correlation of per-cell savings-% across the 18 cells
+shows the structural families each stream presents:
+
+- On **fp8**, the strong coders cluster (brotli-11 ↔ lzma-6 r = 0.968)
+  while `lz4-hc` sits far from every other codec (r = 0.31–0.77) —
+  `lz4-hc` does essentially no entropy coding, so its residual
+  variation across cells is uncorrelated with what the strong coders
+  actually extract.
+- On **idx_delta**, every strong coder correlates near 1 (brotli-11 ↔
+  lzma-6 r = 0.993; lzma-6 ↔ bz2-9 r = 0.997), because the delta-coded
+  sorted-indices stream has a well-defined order-0 entropy that every
+  reasonable coder approaches from the same side.
+- On **scale**, lzma-6 correlates less tightly with the LZ77-family
+  coders (r = 0.82–0.87 vs. zstd/zlib) — context-model coders see
+  stream-specific structure differently from pure-dictionary coders.
+  This is consistent with the scale stream being the only one where
+  a Pareto-multi-codec emission ever pays off materially.
+
+Artifact: `results/claim21_codec_correlation.txt`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
