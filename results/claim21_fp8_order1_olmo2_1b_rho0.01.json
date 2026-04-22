@@ -1,0 +1,11 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order1",
+  "model": "olmo2_1b",
+  "rho": 0.01,
+  "n_fp8_bytes": 10616832,
+  "order0_H_bpB": 6.621802893059548,
+  "order1_H_bpB": 6.6041667323416595,
+  "context_gain_bpB": 0.017636160717888316,
+  "sanity_marginal_sum": 1.0
+}

@@ -1,0 +1,11 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order1",
+  "model": "tinyllama",
+  "rho": 0.01,
+  "n_fp8_bytes": 9596928,
+  "order0_H_bpB": 6.758170213768636,
+  "order1_H_bpB": 6.707834922624125,
+  "context_gain_bpB": 0.05033529114451163,
+  "sanity_marginal_sum": 1.0
+}

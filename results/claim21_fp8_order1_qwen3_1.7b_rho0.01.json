@@ -1,0 +1,11 @@
+{
+  "claim": 21,
+  "experiment": "fp8_order1",
+  "model": "qwen3_1.7b",
+  "rho": 0.01,
+  "n_fp8_bytes": 13877248,
+  "order0_H_bpB": 6.6720034528121825,
+  "order1_H_bpB": 6.649360284681933,
+  "context_gain_bpB": 0.02264316813024969,
+  "sanity_marginal_sum": 1.0
+}

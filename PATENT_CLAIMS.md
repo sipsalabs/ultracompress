@@ -3259,6 +3259,46 @@ any workload-level improvement extractable without training a new
 context model on fp8. Artifacts: `results/claim21_per_role_coder.txt`
 and `results/claim21_per_role_coder.json`.
 
+**fp8 order-1 conditional entropy: brotli-11 is already sub-order-1.**
+Waves 27–29 left one question open: *how much byte-context is
+actually available on fp8, and how much of it has brotli-11 already
+captured?* Wave 30 measures this directly. For each of the 4 cohort
+models at ρ = 0.010, the full fp8 byte stream is folded into its
+256 × 256 joint histogram of adjacent byte pairs; the empirical
+conditional entropy $H(B_i \mid B_{i-1})$ is the tight
+information-theoretic lower bound achievable by *any* coder that
+conditions only on the previous byte (a 65 536-state arithmetic /
+rANS / PPM-1 coder). fp8 order-1 results per model:
+
+| model        | n_fp8 bytes | order-0 H | **order-1 H** | gain   | brotli-11 bpB | **br − H₁**   |
+|--------------|------------:|----------:|--------------:|-------:|--------------:|--------------:|
+| olmo2_1b     |  10,616,832 |    6.6218 |    **6.6042** | 0.0176 |        6.5302 | **−0.0740**   |
+| qwen3_1.7b   |  13,877,248 |    6.6720 |    **6.6494** | 0.0226 |        6.5673 | **−0.0820**   |
+| smollm2_1.7b |  15,925,248 |    6.7119 |    **6.6764** | 0.0355 |        6.5606 | **−0.1158**   |
+| tinyllama    |   9,596,928 |    6.7582 |    **6.7078** | 0.0503 |        6.5723 | **−0.1356**   |
+| **cohort**   |  50,016,256 |    6.6906 |    **6.6596** | 0.0310 |    **6.5583** | **−0.1013**   |
+
+Two conclusions follow. **First**, the order-1 context gain on fp8 is
+small in absolute terms: byte $B_{i-1}$ only reduces uncertainty about
+$B_i$ by 0.031 bpB cohort (0.018–0.050 bpB per model). This is a
+property of the v17 per-row rotation + bank assignment: consecutive
+fp8 bytes are nearly independent because `pack_streams_with_order`
+interleaves rows from many restored linears. **Second — and
+decisively** — brotli-11 ships fp8 at **0.101 bpB below the order-1
+floor** cohort-wide (and 0.074–0.136 bpB below per-model). By the
+data-processing inequality, *no* order-1 coder, no matter how
+perfectly tuned to each model's empirical joint, can match
+brotli-11 on this payload. Brotli-11 is therefore provably exploiting
+order ≥ 2 byte context on fp8 (likely through its LZ77 match-finder
+over 16 KiB+ windows). This sharpens the wave-27/28/29 conclusion into
+a concrete design directive: the only way to improve fp8 compression
+without paying brotli-11's dictionary overhead is a coder that
+conditions on at least two prior bytes — and the available headroom
+below that, per waves 23 and 25, is at most the 0.03-0.05 bpB of
+order-1 gain *plus* whatever longer-range structure an order-≥2
+model can capture beyond brotli-11's LZ77 window. Artifacts:
+`results/claim21_fp8_order1.txt` and `results/claim21_fp8_order1.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
