@@ -1,0 +1,61 @@
+Claim-21 block-shuffle: characteristic context scale per stream
+==================================================================================
+Shuffle each stream in blocks of size B, then compress.
+B=1   : full byte permutation (order-0 only).
+B=full: as-emitted.
+The block size at which savings saturate to within codec noise
+of as-emitted is the characteristic context scale for that coder/stream.
+
+--- qwen3_1.7b  rho=0.01 ---
+  raw: fp8=13,877,248  idx_delta=22,624  scale=11,312
+  stream = fp8
+      block       zstd-9       lzma-6    brotli-11
+          1      15.718%      15.223%      16.252%
+          4      15.714%      15.324%      16.289%
+         16      15.715%      15.406%      16.333%
+         64      15.717%      15.535%      16.936%
+        256      15.723%      15.857%      17.563%
+       1024      15.728%      16.373%      17.815%
+       4096      15.747%      16.701%      17.885%
+      16384      15.779%      16.785%      17.898%
+      65536      15.934%      16.816%      17.901%
+       full      16.003%      16.826%      17.908%
+    characteristic scale B* (pct within 0.2pp of full):
+      zstd-9       B* = 65536
+      lzma-6       B* = 4096
+      brotli-11    B* = 1024
+
+  stream = idx_delta
+      block       zstd-9       lzma-6    brotli-11
+          1      56.056%      57.567%      62.703%
+          4      65.152%      71.482%      66.792%
+         16      65.165%      71.464%      66.787%
+         64      65.581%      71.658%      67.411%
+        256      65.532%      71.782%      67.450%
+       1024      65.687%      71.853%      67.521%
+       4096      65.771%      71.800%      67.539%
+      16384      65.718%      71.835%      67.641%
+      65536      65.718%      71.835%      67.641%
+       full      65.718%      71.835%      67.641%
+    characteristic scale B* (pct within 0.2pp of full):
+      zstd-9       B* = 64
+      lzma-6       B* = 64
+      brotli-11    B* = 256
+
+  stream = scale
+      block       zstd-9       lzma-6    brotli-11
+          1      35.334%      25.707%      36.315%
+          4      36.271%      37.942%      44.669%
+         16      36.519%      38.013%      45.244%
+         64      36.563%      38.472%      45.421%
+        256      36.607%      38.614%      45.209%
+       1024      36.669%      38.260%      45.164%
+       4096      36.616%      38.508%      45.279%
+      16384      36.757%      38.437%      45.421%
+      65536      36.757%      38.437%      45.421%
+       full      36.757%      38.437%      45.421%
+    characteristic scale B* (pct within 0.2pp of full):
+      zstd-9       B* = 64
+      lzma-6       B* = 64
+      brotli-11    B* = 16
+
