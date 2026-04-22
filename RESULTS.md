@@ -802,6 +802,59 @@ savings scale with ρ: the multi-byte context gain on the idx/scale
 streams grows from ~+2% (below Shannon — no gain) at ρ=0.003 to ~-15%
 to -20% (deep sub-Shannon) at ρ=0.030.
 
+**Row-order invariance (where the savings come from).** To separate
+**per-row intrinsic compressibility** from **cross-row ordering gain**,
+the Claim-21 payload was re-packed under three row orderings inside
+each body-Linear (sorted = ascending = default; shuffled = Fisher-Yates
+seed=33; reversed = descending) and re-compressed with zstd-9, lzma-6,
+and brotli-11. Measured on **all six models** at ρ=0.010, aggregate
+shuffled-vs-sorted deltas:
+
+| codec     | fp8        | idx         | scale      |
+|-----------|-----------:|------------:|-----------:|
+| zstd-9    | **−0.002%** | +80.23%    | +0.12%     |
+| lzma-6    | **+0.007%** | +81.22%    | +0.11%     |
+| brotli-11 | **+0.002%** | +39.21%    | −0.19%     |
+
+Reversed-vs-sorted deltas on fp8/scale are < 0.4% on every codec; the
+idx stream's reverse delta is +1.3% to +3.6% (small negative deltas
+with identical |Δ| distribution to small positive deltas). Since fp8
+is ≥99.9% of total compressed bytes, the **aggregate Claim-21 savings
+are order-invariant to < 0.05 pp**. The savings are driven by per-row
+intrinsic byte-distribution structure, NOT by clever row sequencing.
+The idx stream is order-dependent by construction (delta coding), but
+Claim 21 already emits indices in sorted order at zero cost. Artifact:
+`results/claim21_row_order_invariance.txt` (+ 6 JSONs).
+
+**Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams).**
+Every codec was timed on random byte buffers of the exact sweep stream
+sizes, so bytes/s reflect the actual 54 payload-shape matrix. Cohort-
+aggregate (compressed-bytes-weighted):
+
+| codec     | saving  | enc MB/s | dec MB/s |
+|-----------|--------:|---------:|---------:|
+| zstd-3    | 16.61%  |  **4798** |   2410  |
+| zstd-9    | 16.31%  |  **2840** |   2335  |
+| zstd-15   | 16.31%  |    109   |   2320  |
+| zstd-22   | 16.33%  |    5.1   |   2330  |
+| zlib-9    | 16.55%  |    54    |    390  |
+| bz2-9     | 12.42%  |    19.7  |     46  |
+| lzma-6    | 17.08%  |    3.7   |     67  |
+| brotli-11 | **18.08%** | 2.4    |   1210  |
+| lz4-hc    | 0.03%   |    66    |   3780  |
+
+**zstd-3 is 933× faster to encode than zstd-22 and gives up only
+0.28 pp of cohort-mean savings** (16.61% vs the best LZ-family 16.91%,
+or 1.47 pp vs brotli-11's 18.08% max). Decode throughput is
+≥ 1.2 GB/s for every codec worth deploying (zstd, brotli). The
+deployment sweet spot is **zstd-3 for encode-bound workflows**
+(ingestion, cold-storage write) and **brotli-11 for distribution**
+(one-time encode, many-time decode, 1.2 GB/s decode preserved).
+LZ4-HC is included explicitly as a negative control — fast but
+compresses the payload by 0.03%, confirming the payload requires a
+coder with real entropy modeling. Artifact:
+`results/claim21_codec_throughput.{json,txt}`.
+
 **Read-out.** Entropy coding the overlay payload reduces overlay bits
 by 14.5%-17.3% across every (model, rho) pair with zero quality change
 (it is a lossless re-encoding of the same bytes). The savings scale
