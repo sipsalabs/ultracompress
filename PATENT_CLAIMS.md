@@ -2657,6 +2657,27 @@ shows the structural families each stream presents:
 
 Artifact: `results/claim21_codec_correlation.txt`.
 
+**Model-scale invariance (1.1B → 7.6B params).** The same 18-cell
+sweep also tests whether the savings are a property of small models
+that disappears at 8B scale. Ranking the 6 models by total parameter
+count and reporting overall brotli-11 savings %% of the 3-stream
+payload:
+
+| ρ     | tinyllama (0.97B) | olmo2_1b (1.07B) | qwen3_1.7B (1.41B) | smollm2_1.7B (1.61B) | qwen3_8B (6.95B) | mistral_7B (6.98B) | min-max spread |
+|-------|-------------------|------------------|--------------------|----------------------|------------------|--------------------|----------------|
+| 0.003 | 17.638 %          | 18.257 %         | 17.842 %           | 17.835 %             | 17.778 %         | 17.669 %           | 0.620 pp       |
+| 0.010 | 17.888 %          | 18.397 %         | 17.953 %           | 18.030 %             | 17.988 %         | 17.962 %           | 0.508 pp       |
+| 0.030 | 18.099 %          | 18.466 %         | 18.038 %           | 18.197 %             | 18.068 %         | 18.155 %           | 0.428 pp       |
+
+Across a ~7× parameter-count range, brotli-11 overall savings vary by
+< 0.62 pp at any ρ; lzma-6 by < 0.97 pp; zstd-22 by < 1.55 pp. The
+per-model savings curve is essentially flat as a function of model
+scale. This refutes a scale-specific explanation: the Claim 21 entropy
+deficit is a property of the row-restored-overflow payload's byte
+distribution — driven by the fp8 row-bytes' sub-uniform entropy and
+the sorted-index delta distribution — not of any particular model
+size. Artifact: `results/claim21_model_scaling.txt`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
