@@ -3222,6 +3222,43 @@ wins but contribute <3 % of total savings at every practical ρ.
 Artifacts: `results/claim21_rho_scaling.txt` and
 `results/claim21_rho_scaling.json`.
 
+**Per-role fp8 coder adaptivity test.** Wave 28 concluded that any
+further end-to-end savings must come from a stronger `fp8`-specific
+coder. Wave 29 tests one natural candidate: a **role-adaptive coder**
+that runs brotli-11 independently on each of the 7 projection roles
+(q / k / v / o / gate / up / down). Wave 20's per-role JSONs already
+contain per-role brotli-11 sizes for 4 models at ρ = 0.010; each
+per-role brotli call primes its own dictionary, so the comparison is
+role-specialization gain minus 7× priming overhead. Per-role
+fp8 brotli-11 bpB:
+
+| model        | min-role bpB | max-role bpB | spread | weighted mean | aggregate single |
+|--------------|-------------:|-------------:|-------:|--------------:|-----------------:|
+| tinyllama    | 6.5504 (gate)| 6.6423 (k)   | 0.0919 |        6.5725 | 6.5723           |
+| smollm2_1.7b | 6.5442 (up)  | 6.6374 (o)   | 0.0932 |        6.5602 | 6.5606           |
+| olmo2_1b     | 6.3797 (q)   | 6.5818 (o)   | 0.2021 |        6.5298 | 6.5302           |
+| qwen3_1.7b   | 6.5429 (q)   | 6.5951 (k)   | 0.0522 |        6.5667 | 6.5673           |
+| **cohort**   |      —       |      —       |    —   |    **6.5579** | **6.5583**       |
+
+The cohort gain from role-adaptive brotli is **+0.0003 bpB** — three
+parts in ten thousand, statistical noise on this cohort size. The
+within-model per-role bpB spread is non-trivial (0.05–0.20 bpB, with
+`olmo2_1b` showing the largest q-projection outlier at 6.38 bpB), but
+this within-role heterogeneity does not translate into a coder gain
+because brotli's dictionary overhead per role (≈ the 0.0003 bpB
+difference) erases the specialization benefit at the cohort scale.
+This is a second negative result on the fp8 optimization path: the
+dominant stream is not only already context-modelled by the single
+aggregate brotli-11 coder, but also does not benefit from
+role-partitioned re-compression. Combined with wave 23 (brotli-11
+already beats order-0 on fp8 by 0.13 bpB), wave 25 (a universal
+static coder carries <0.04 bpB tax across unrelated models on fp8),
+and wave 28 (higher ρ does not shift the economic balance), the
+shipping v17 payload under brotli-11 is within measurement noise of
+any workload-level improvement extractable without training a new
+context model on fp8. Artifacts: `results/claim21_per_role_coder.txt`
+and `results/claim21_per_role_coder.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

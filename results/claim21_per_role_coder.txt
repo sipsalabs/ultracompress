@@ -1,0 +1,82 @@
+Claim-21 wave 29: per-role fp8 brotli-11 compressibility
+====================================================================================================
+
+Per-role brotli-11 independently primes the dictionary per
+role vs a single-stream brotli on the concatenated fp8. The
+comparison tells us whether distribution-specialization by
+role beats a single coder after accounting for 7x dictionary
+priming overhead.
+
+--- tinyllama  rho=0.010 ---
+  role         n_lin   raw bytes    br bpB   frac of fp8
+  gate_proj       22   2,523,136    6.5504        26.29%
+  up_proj         22   2,523,136    6.5508        26.29%
+  down_proj       22   2,478,080    6.5787        25.82%
+  v_proj          22     135,168    6.6040         1.41%
+  q_proj          22     901,120    6.6152         9.39%
+  o_proj          22     901,120    6.6208         9.39%
+  k_proj          22     135,168    6.6423         1.41%
+  aggregate single-coder brotli-11 fp8 bpB: 6.5723
+  per-role weighted mean bpB:                6.5725
+  spread (max-min) across roles:             0.0919 bpB
+  gain (positive = per-role beats aggregate): -0.0003 bpB
+
+--- smollm2_1.7b  rho=0.010 ---
+  role         n_lin   raw bytes    br bpB   frac of fp8
+  up_proj         24   4,030,464    6.5442        25.31%
+  v_proj          24     983,040    6.5513         6.17%
+  gate_proj       24   4,030,464    6.5515        25.31%
+  down_proj       24   3,932,160    6.5606        24.69%
+  k_proj          24     983,040    6.5615         6.17%
+  q_proj          24     983,040    6.5901         6.17%
+  o_proj          24     983,040    6.6374         6.17%
+  aggregate single-coder brotli-11 fp8 bpB: 6.5606
+  per-role weighted mean bpB:                6.5602
+  spread (max-min) across roles:             0.0932 bpB
+  gain (positive = per-role beats aggregate): +0.0004 bpB
+
+--- olmo2_1b  rho=0.010 ---
+  role         n_lin   raw bytes    br bpB   frac of fp8
+  q_proj          16     655,360    6.3797         6.17%
+  k_proj          16     655,360    6.5233         6.17%
+  gate_proj       16   2,686,976    6.5314        25.31%
+  up_proj         16   2,686,976    6.5336        25.31%
+  v_proj          16     655,360    6.5391         6.17%
+  down_proj       16   2,621,440    6.5481        24.69%
+  o_proj          16     655,360    6.5818         6.17%
+  aggregate single-coder brotli-11 fp8 bpB: 6.5302
+  per-role weighted mean bpB:                6.5298
+  spread (max-min) across roles:             0.2021 bpB
+  gain (positive = per-role beats aggregate): +0.0004 bpB
+
+--- qwen3_1.7b  rho=0.010 ---
+  role         n_lin   raw bytes    br bpB   frac of fp8
+  q_proj          28   1,146,880    6.5429         8.26%
+  up_proj         28   3,497,984    6.5515        25.21%
+  gate_proj       28   3,497,984    6.5596        25.21%
+  down_proj       28   3,440,640    6.5824        24.79%
+  v_proj          28     573,440    6.5850         4.13%
+  o_proj          28   1,146,880    6.5878         8.26%
+  k_proj          28     573,440    6.5951         4.13%
+  aggregate single-coder brotli-11 fp8 bpB: 6.5673
+  per-role weighted mean bpB:                6.5667
+  spread (max-min) across roles:             0.0522 bpB
+  gain (positive = per-role beats aggregate): +0.0006 bpB
+
+====================================================================================================
+COHORT (byte-weighted across 4 models):
+  aggregate single-coder brotli-11 fp8 bpB: 6.5583
+  per-role weighted mean bpB:                6.5579
+  gain (positive = per-role beats aggregate): +0.0003 bpB
+
+INTERPRETATION
+----------------------------------------------------------------------------------------------------
+Gain > 0 => per-role coder beats aggregate even with 7x priming
+  overhead, meaning role-specific fp8 distributions differ enough
+  to more than pay the dictionary-resetup cost.
+Gain ~ 0 => role-adaptive coder is a wash at brotli level.
+Gain < 0 => priming overhead dominates and a single coder wins.
+Spread is the WITHIN-role-class bpB range: a true oracle role-
+  adaptive coder could reach per-role-min on each role (lower
+  bound); the weighted mean reported here uses the shipped brotli.
+

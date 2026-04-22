@@ -1,0 +1,286 @@
+{
+  "claim": 21,
+  "experiment": "per_role_fp8_coder",
+  "models": [
+    "tinyllama",
+    "smollm2_1.7b",
+    "olmo2_1b",
+    "qwen3_1.7b"
+  ],
+  "rho": 0.01,
+  "per_model": [
+    {
+      "model": "tinyllama",
+      "agg_brotli_bpB": 6.572260623399488,
+      "per_role_weighted_mean_bpB": 6.572549049029023,
+      "per_role_min_bpB": 6.550359552556818,
+      "per_role_max_bpB": 6.642282196969697,
+      "spread_bpB": 0.0919226444128789,
+      "gain_vs_aggregate_bpB": -0.00028842562953546036,
+      "roles": [
+        {
+          "role": "gate_proj",
+          "n_linears": 22,
+          "raw": 2523136,
+          "brotli_bytes": 2065931,
+          "bpB": 6.550359552556818,
+          "frac_of_fp8": 0.26291079812206575
+        },
+        {
+          "role": "up_proj",
+          "n_linears": 22,
+          "raw": 2523136,
+          "brotli_bytes": 2066060,
+          "bpB": 6.55076856737013,
+          "frac_of_fp8": 0.26291079812206575
+        },
+        {
+          "role": "down_proj",
+          "n_linears": 22,
+          "raw": 2478080,
+          "brotli_bytes": 2037833,
+          "bpB": 6.578748063016529,
+          "frac_of_fp8": 0.25821596244131456
+        },
+        {
+          "role": "v_proj",
+          "n_linears": 22,
+          "raw": 135168,
+          "brotli_bytes": 111582,
+          "bpB": 6.604048295454546,
+          "frac_of_fp8": 0.014084507042253521
+        },
+        {
+          "role": "q_proj",
+          "n_linears": 22,
+          "raw": 901120,
+          "brotli_bytes": 745131,
+          "bpB": 6.615154474431818,
+          "frac_of_fp8": 0.09389671361502347
+        },
+        {
+          "role": "o_proj",
+          "n_linears": 22,
+          "raw": 901120,
+          "brotli_bytes": 745770,
+          "bpB": 6.6208274147727275,
+          "frac_of_fp8": 0.09389671361502347
+        },
+        {
+          "role": "k_proj",
+          "n_linears": 22,
+          "raw": 135168,
+          "brotli_bytes": 112228,
+          "bpB": 6.642282196969697,
+          "frac_of_fp8": 0.014084507042253521
+        }
+      ]
+    },
+    {
+      "model": "smollm2_1.7b",
+      "agg_brotli_bpB": 6.560589574492027,
+      "per_role_weighted_mean_bpB": 6.560172124164095,
+      "per_role_min_bpB": 6.5441834984756095,
+      "per_role_max_bpB": 6.637353515625,
+      "spread_bpB": 0.0931700171493901,
+      "gain_vs_aggregate_bpB": 0.00041745032793194525,
+      "roles": [
+        {
+          "role": "up_proj",
+          "n_linears": 24,
+          "raw": 4030464,
+          "brotli_bytes": 3297012,
+          "bpB": 6.5441834984756095,
+          "frac_of_fp8": 0.25308641975308643
+        },
+        {
+          "role": "v_proj",
+          "n_linears": 24,
+          "raw": 983040,
+          "brotli_bytes": 805018,
+          "bpB": 6.551253255208334,
+          "frac_of_fp8": 0.06172839506172839
+        },
+        {
+          "role": "gate_proj",
+          "n_linears": 24,
+          "raw": 4030464,
+          "brotli_bytes": 3300693,
+          "bpB": 6.551489853277439,
+          "frac_of_fp8": 0.25308641975308643
+        },
+        {
+          "role": "down_proj",
+          "n_linears": 24,
+          "raw": 3932160,
+          "brotli_bytes": 3224655,
+          "bpB": 6.560577392578125,
+          "frac_of_fp8": 0.24691358024691357
+        },
+        {
+          "role": "k_proj",
+          "n_linears": 24,
+          "raw": 983040,
+          "brotli_bytes": 806277,
+          "bpB": 6.5614990234375,
+          "frac_of_fp8": 0.06172839506172839
+        },
+        {
+          "role": "q_proj",
+          "n_linears": 24,
+          "raw": 983040,
+          "brotli_bytes": 809793,
+          "bpB": 6.5901123046875,
+          "frac_of_fp8": 0.06172839506172839
+        },
+        {
+          "role": "o_proj",
+          "n_linears": 24,
+          "raw": 983040,
+          "brotli_bytes": 815598,
+          "bpB": 6.637353515625,
+          "frac_of_fp8": 0.06172839506172839
+        }
+      ]
+    },
+    {
+      "model": "olmo2_1b",
+      "agg_brotli_bpB": 6.530214662905093,
+      "per_role_weighted_mean_bpB": 6.529786663290895,
+      "per_role_min_bpB": 6.3796630859375,
+      "per_role_max_bpB": 6.5818115234375,
+      "spread_bpB": 0.2021484375,
+      "gain_vs_aggregate_bpB": 0.00042799961419781596,
+      "roles": [
+        {
+          "role": "q_proj",
+          "n_linears": 16,
+          "raw": 655360,
+          "brotli_bytes": 522622,
+          "bpB": 6.3796630859375,
+          "frac_of_fp8": 0.06172839506172839
+        },
+        {
+          "role": "k_proj",
+          "n_linears": 16,
+          "raw": 655360,
+          "brotli_bytes": 534390,
+          "bpB": 6.5233154296875,
+          "frac_of_fp8": 0.06172839506172839
+        },
+        {
+          "role": "gate_proj",
+          "n_linears": 16,
+          "raw": 2686976,
+          "brotli_bytes": 2193708,
+          "bpB": 6.531381002286586,
+          "frac_of_fp8": 0.25308641975308643
+        },
+        {
+          "role": "up_proj",
+          "n_linears": 16,
+          "raw": 2686976,
+          "brotli_bytes": 2194437,
+          "bpB": 6.5335514719893295,
+          "frac_of_fp8": 0.25308641975308643
+        },
+        {
+          "role": "v_proj",
+          "n_linears": 16,
+          "raw": 655360,
+          "brotli_bytes": 535679,
+          "bpB": 6.53905029296875,
+          "frac_of_fp8": 0.06172839506172839
+        },
+        {
+          "role": "down_proj",
+          "n_linears": 16,
+          "raw": 2621440,
+          "brotli_bytes": 2145688,
+          "bpB": 6.5481201171875,
+          "frac_of_fp8": 0.24691358024691357
+        },
+        {
+          "role": "o_proj",
+          "n_linears": 16,
+          "raw": 655360,
+          "brotli_bytes": 539182,
+          "bpB": 6.5818115234375,
+          "frac_of_fp8": 0.06172839506172839
+        }
+      ]
+    },
+    {
+      "model": "qwen3_1.7b",
+      "agg_brotli_bpB": 6.567338999778631,
+      "per_role_weighted_mean_bpB": 6.566698526970189,
+      "per_role_min_bpB": 6.542905970982143,
+      "per_role_max_bpB": 6.5951311383928575,
+      "spread_bpB": 0.05222516741071459,
+      "gain_vs_aggregate_bpB": 0.0006404728084419276,
+      "roles": [
+        {
+          "role": "q_proj",
+          "n_linears": 28,
+          "raw": 1146880,
+          "brotli_bytes": 937991,
+          "bpB": 6.542905970982143,
+          "frac_of_fp8": 0.08264462809917356
+        },
+        {
+          "role": "up_proj",
+          "n_linears": 28,
+          "raw": 3497984,
+          "brotli_bytes": 2864631,
+          "bpB": 6.551501664959017,
+          "frac_of_fp8": 0.25206611570247933
+        },
+        {
+          "role": "gate_proj",
+          "n_linears": 28,
+          "raw": 3497984,
+          "brotli_bytes": 2868191,
+          "bpB": 6.5596434975117095,
+          "frac_of_fp8": 0.25206611570247933
+        },
+        {
+          "role": "down_proj",
+          "n_linears": 28,
+          "raw": 3440640,
+          "brotli_bytes": 2830965,
+          "bpB": 6.582414899553571,
+          "frac_of_fp8": 0.24793388429752067
+        },
+        {
+          "role": "v_proj",
+          "n_linears": 28,
+          "raw": 573440,
+          "brotli_bytes": 472013,
+          "bpB": 6.585002790178572,
+          "frac_of_fp8": 0.04132231404958678
+        },
+        {
+          "role": "o_proj",
+          "n_linears": 28,
+          "raw": 1146880,
+          "brotli_bytes": 944433,
+          "bpB": 6.587841796875,
+          "frac_of_fp8": 0.08264462809917356
+        },
+        {
+          "role": "k_proj",
+          "n_linears": 28,
+          "raw": 573440,
+          "brotli_bytes": 472739,
+          "bpB": 6.5951311383928575,
+          "frac_of_fp8": 0.04132231404958678
+        }
+      ]
+    }
+  ],
+  "cohort": {
+    "agg_bpB": 6.55825402045287,
+    "per_role_weighted_mean_bpB": 6.557907892985832,
+    "gain_bpB": 0.0003461274670382153
+  }
+}
