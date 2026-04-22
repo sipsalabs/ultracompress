@@ -3155,6 +3155,73 @@ artifacts alone (no GPU). Artifacts:
 `results/claim21_end_to_end_synthesis.txt` and
 `results/claim21_end_to_end_synthesis.json`.
 
+**ρ-scaling of stream mixture and per-stream compressibility.** Wave 27
+identified fp8 dominance at ρ = 0.010 as the reason per-stream
+bit-level coders are end-to-end negative, and *predicted* that at
+higher ρ the small streams' relative weight would grow enough to
+flip the sign of this result. Wave 28 tests that prediction by
+aggregating 6 models × 3 ρ ∈ {0.003, 0.010, 0.030} × 9 codecs × 3
+streams of existing `codec_sweep` JSONs (18 model-ρ cells, 570 MB
+cohort payload at ρ = 0.030 alone) and **falsifies the prediction**:
+the small streams' share is independent of ρ, and the bit-level
+bound never crosses brotli-11.
+
+**(a) Stream fraction is ρ-invariant.** Byte-weighted cohort across
+all six models:
+
+| ρ      | n_bytes        | frac_fp8 | frac_idx | frac_scale |
+|--------|---------------:|---------:|---------:|-----------:|
+| 0.003  |  56,473,616 B  | 99.898 % |  0.051 % |   0.051 %  |
+| 0.010  | 189,324,256 B  | 99.899 % |  0.051 % |   0.051 %  |
+| 0.030  | 570,180,088 B  | 99.899 % |  0.051 % |   0.051 %  |
+
+All three streams scale proportionally with kept-row count, so the
+fp8 : idx_delta : scale byte ratio is structural (≈ 1950 : 1 : 1) and
+does not shift with ρ. The per-model spread is tiny: fp8 fraction
+lies in 99.837 – 99.921 % across all 18 cells. Wave 27's speculation
+that the small-stream share grows with ρ is therefore wrong.
+
+**(b) Per-stream compressibility is strongly ρ-dependent.** Cohort
+best-codec bpB vs ρ per stream:
+
+| ρ      | fp8 best | fp8 H  | idx best   | idx H  | scale best | scale H |
+|--------|---------:|-------:|-----------:|-------:|-----------:|--------:|
+| 0.003  | 6.5802   | 6.8217 | 4.9796     | 5.6461 | 4.9024     | 5.4322  |
+| 0.010  | 6.5623   | 6.7326 | 4.2806     | 4.9015 | 4.4782     | 5.3294  |
+| 0.030  | 6.5520   | 6.6619 | **3.2821** | 4.1831 | 4.1725     | 5.1910  |
+
+At ρ = 0.030 the shipping brotli-11 rate on `idx_delta` drops to
+**3.282 bpB** (0.90 bpB below order-0 H), 1.26 bpB tighter than at
+ρ = 0.010. Dense kept-row fractions produce stronger local
+delta-sequence regularities that a dictionary coder exploits; the
+per-byte coder therefore gets better with ρ even though the stream's
+relative weight does not.
+
+**(c) End-to-end bit-level projection vs ρ.** Using the per-ρ cohort
+fp8 order-0 floor plus the wave-24 constant 2.022 bpB Rice rate plus
+the wave-26 constant 4.377 bpB joint-scale rate, weighted by per-ρ
+cohort stream fractions:
+
+| ρ      | brotli-11 total | bitlevel total | bitlvl − brotli | % vs brotli |
+|--------|----------------:|---------------:|----------------:|------------:|
+| 0.003  |  6.5786 bpB     |  6.8180 bpB    |   +0.2394 bpB   |  +3.639 %   |
+| 0.010  |  6.5602 bpB     |  6.7291 bpB    |   +0.1689 bpB   |  +2.574 %   |
+| 0.030  |  6.5494 bpB     |  6.6584 bpB    |   +0.1091 bpB   |  +1.665 %   |
+
+The bit-level synthesis **converges toward but never crosses** the
+brotli-11 cohort rate as ρ grows: the gap narrows (+3.64 % →
++2.57 % → +1.67 %) but remains positive, because fp8's 1950× byte
+weight over the small streams is structural. This rules out the
+hypothesis that the wave-24 / wave-26 per-stream gains become
+economically dominant at any ρ in the practical range. The only
+path to sub-brotli-11 end-to-end rates under this payload structure
+is a stronger coder on the `fp8` stream specifically (context
+modelling, or an ANS / arithmetic coder with a learned fp8 context);
+improvements on `idx_delta` and `scale` are genuine theoretical
+wins but contribute <3 % of total savings at every practical ρ.
+Artifacts: `results/claim21_rho_scaling.txt` and
+`results/claim21_rho_scaling.json`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
