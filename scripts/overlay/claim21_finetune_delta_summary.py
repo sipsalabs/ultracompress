@@ -13,6 +13,8 @@ PAIRS = [
      "results/claim21_finetune_delta_olmo2_1b.json"),
     ("smollm2_1.7b",
      "results/claim21_finetune_delta_smollm2_1.7b.json"),
+    ("qwen3_1.7b",
+     "results/claim21_finetune_delta_qwen3_1.7b.json"),
 ]
 
 
