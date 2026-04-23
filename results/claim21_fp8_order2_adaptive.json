@@ -1,0 +1,45 @@
+{
+  "claim": 21,
+  "wave": 33,
+  "experiment": "fp8_order2_adaptive_summary",
+  "rho": 0.01,
+  "models": [
+    {
+      "model": "olmo2_1b",
+      "n": 10616832,
+      "H2_shannon": 6.34632865605302,
+      "adaptive": 7.04361521528621,
+      "br": 6.530214662905093
+    },
+    {
+      "model": "qwen3_1.7b",
+      "n": 13877248,
+      "H2_shannon": 6.41871980703829,
+      "adaptive": 7.0339014777284365,
+      "br": 6.567338999778631
+    },
+    {
+      "model": "smollm2_1.7b",
+      "n": 15925248,
+      "H2_shannon": 6.4461699830364765,
+      "adaptive": 7.027423464352452,
+      "br": 6.560589574492027
+    },
+    {
+      "model": "tinyllama",
+      "n": 9596928,
+      "H2_shannon": 6.372472556672637,
+      "adaptive": 7.1619880514298915,
+      "br": 6.572260623399488
+    }
+  ],
+  "cohort": {
+    "n_bytes": 50016256,
+    "shannon_H2_bpB": 6.403219939158542,
+    "adaptive_order2_bpB": 7.058477543073326,
+    "brotli11_bpB": 6.55825402045287,
+    "adaptive_minus_brotli_bpB": 0.5002235226204551,
+    "adaptive_minus_shannon_bpB": 0.6552576039147835
+  },
+  "note": "Naive Laplace-1 adaptive order-2 fails to beat brotli-11 by 0.47 bpB; 0.66 bpB learning tax above Shannon floor. Realizing wave-31 theoretical gain requires pre-trained priors (see wave 26) or PPM-style escape."
+}

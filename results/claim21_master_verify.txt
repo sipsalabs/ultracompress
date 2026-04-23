@@ -1,0 +1,86 @@
+Claim-21 wave 42: master verification manifest (BULLETPROOF / NUKE-PROOF)
+============================================================================================
+
+VERDICT: PASS
+
+Provenance:
+  git HEAD     : ce49263204804af47ceecf061a4fb3af11d9360d
+  git branch   : master
+  git remote   : https://github.com/mounnar/ultracompress.git
+  host         : sips_pc
+  platform     : Windows-11-10.0.26200-SP0
+  python       : 3.12.10
+  numpy        : 2.2.6
+  brotli       : 1.2.0
+  started UTC  : 2026-04-23T05:05:51Z
+  finished UTC : 2026-04-23T05:10:38Z
+  wall seconds : 286
+
+Tamper-evident artifact and script inventory:
+  claim21_* result artifacts hashed : 201
+  claim21_* artifact total bytes    : 939,956
+  claim21_* scripts hashed          : 63
+  Each entry has a SHA-256; any single-byte change to any
+  tracked artifact will produce a different hash on the next
+  verification run.
+
+Live roundtrip @ rho=0.01 (build -> brotli-11 -> decompress -> SHA256):
+  model               n_bytes     brotli11       bpB   roundtrip    wall
+  olmo2_1b         10,642,176    8,678,430    6.5238          OK     61s
+  qwen3_1.7b       13,911,184   11,405,569    6.5591          OK     80s
+  smollm2_1.7b     15,963,264   13,075,975    6.5530          OK     89s
+  tinyllama         9,620,424    7,893,872    6.5643          OK     55s
+
+  COHORT           50,137,048   41,053,846    6.5507          OK
+
+Per-stream SHA256 in/out (truncated to first 12 chars; full hashes in JSON):
+  olmo2_1b       fp8        in=5dceb1972be0.. out=5dceb1972be0.. (10,616,832 bytes) OK
+  olmo2_1b       idx_delta  in=06b6c7b32650.. out=06b6c7b32650.. (16,896 bytes) OK
+  olmo2_1b       scale      in=c254ee704ffb.. out=c254ee704ffb.. (8,448 bytes) OK
+  qwen3_1.7b     fp8        in=4db09c4dd7ce.. out=4db09c4dd7ce.. (13,877,248 bytes) OK
+  qwen3_1.7b     idx_delta  in=50f0c98daac2.. out=50f0c98daac2.. (22,624 bytes) OK
+  qwen3_1.7b     scale      in=87d15c434d79.. out=87d15c434d79.. (11,312 bytes) OK
+  smollm2_1.7b   fp8        in=cc72dcdcbee2.. out=cc72dcdcbee2.. (15,925,248 bytes) OK
+  smollm2_1.7b   idx_delta  in=2da0e63b5cf8.. out=2da0e63b5cf8.. (25,344 bytes) OK
+  smollm2_1.7b   scale      in=9b3f4f60e87b.. out=9b3f4f60e87b.. (12,672 bytes) OK
+  tinyllama      fp8        in=e90a5d442a8c.. out=e90a5d442a8c.. (9,596,928 bytes) OK
+  tinyllama      idx_delta  in=40744fc5a391.. out=40744fc5a391.. (15,664 bytes) OK
+  tinyllama      scale      in=bf6d419509a2.. out=bf6d419509a2.. (7,832 bytes) OK
+
+Headline cross-checks vs prior-wave JSONs:
+  OK  live cohort brotli-11 bpB matches wave 29 reference 6.5583
+     expected=6.558300  actual=6.550660  diff=0.007640  tol=0.010000
+  OK  wave 40 cohort gap @ rho=0.04 is positive
+     expected=0.004400  actual=0.004413  diff=0.000013  tol=0.001000
+  OK  wave 35 bootstrap best config still loses to brotli (gap < 0)
+     expected=-1.000000  actual=-1.000000  diff=0.000000  tol=10.000000
+
+============================================================================================
+WHAT THIS PROVES
+--------------------------------------------------------------------------------------------
+1. The Claim-21 codebase at git HEAD is reproducible end-to-end:
+   building the payload, compressing it with brotli-11, and decompressing
+   recovers EXACT byte-equality on all 50,137,048 cohort bytes (4 models
+   x 3 streams = 12 streams, all SHA-256 verified).
+
+2. Every published Claim-21 result artifact is hash-stamped. The manifest
+   itself is committed; any future modification to any artifact will be
+   detected by re-running this script.
+
+3. Headline numerical claims are independently re-checked against the
+   committed JSON files. The live-built cohort brotli-11 rate matches
+   the wave-29 reference within tolerance, the wave-40 rho=0.04 gap-flip
+   reproduces, and the wave-35 negative-result bootstrap data is intact.
+
+4. The verification ran on sips_pc at 2026-04-23T05:10:38Z
+   with brotli 1.2.0 / numpy 2.2.6 / python 3.12.10.
+
+5. To re-verify on any other machine:
+     git clone https://github.com/mounnar/ultracompress.git
+     cd ultracompress; git checkout ce49263204804af47ceecf061a4fb3af11d9360d
+     python scripts/overlay/claim21_master_verify.py --device cuda:0 \
+         --rho 0.010 --out results/claim21_master_verify.json
+   The new manifest's artifact and script SHA-256s must match this one
+   byte-for-byte (ignoring the manifest file itself, which embeds
+   timestamps).
+

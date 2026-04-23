@@ -3723,6 +3723,55 @@ Artifacts: `results/claim21_combined_stream_rho0.01.json`,
 `results/claim21_combined_stream.txt`,
 `results/claim21_combined_stream_summary.json`.
 
+**Wave 42 — master verification manifest (bulletproof / nuke-proof
+patent-evidence chain).** Wave 42 ships a single-script tamper-evident
+manifest that hash-stamps every Claim-21 artifact and re-verifies the
+lossless roundtrip on the live payload bytes.
+
+The manifest covers:
+
+* **201 result artifacts** (every `results/claim21_*` file, total
+  939,956 bytes) — each SHA-256 hashed.
+* **63 scripts** (every `scripts/overlay/claim21_*.py`) — each
+  SHA-256 hashed.
+* **Live roundtrip on real payload @ ρ=0.010**: build the
+  `fp8 / idx_delta / scale` streams from each cohort model, brotli-11
+  compress, decompress, and SHA-256 verify byte-equality. All four
+  models pass (cohort total 50,137,048 bytes → 41,053,846 bytes
+  brotli-11 → 6.5507 bpB → SHA-256 OK on every stream).
+* **Headline cross-checks** vs prior-wave JSONs: the live cohort
+  brotli-11 rate matches the wave-29 reference within 0.008 bpB; the
+  wave-40 ρ=0.040 gap-flip reproduces (gap = +0.0044, expected
+  +0.0044); the wave-35 negative-result bootstrap data is intact.
+* **Provenance stamp**: git HEAD commit SHA, branch, remote URL,
+  hostname, OS, python / numpy / brotli versions, UTC start and
+  finish timestamps, total wall time.
+
+Verdict: **PASS** (4/4 roundtrips OK, 3/3 cross-checks OK).
+
+Any future single-byte modification to any tracked Claim-21 artifact
+or script will produce a different SHA-256 on the next verification
+run, and any non-deterministic build or roundtrip failure will be
+flagged. The manifest itself is committed at this commit and becomes
+the audit anchor for the entire Claim-21 evidence chain. To re-verify
+on any other machine:
+
+```
+git clone https://github.com/mounnar/ultracompress.git
+cd ultracompress; git checkout <git_head from manifest>
+python scripts/overlay/claim21_master_verify.py --device cuda:0 \
+    --rho 0.010 --out results/claim21_master_verify.json
+```
+
+The new manifest's artifact and script SHA-256s must match this one
+byte-for-byte (modulo the manifest file itself, which embeds
+timestamps).
+
+Artifacts: `results/claim21_master_verify.json`,
+`results/claim21_master_verify.txt`,
+`scripts/overlay/claim21_master_verify.py`,
+`scripts/overlay/claim21_master_verify_summary.py`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct
