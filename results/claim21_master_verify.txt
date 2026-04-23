@@ -4,7 +4,7 @@ Claim-21 wave 42: master verification manifest (BULLETPROOF / NUKE-PROOF)
 VERDICT: PASS
 
 Provenance:
-  git HEAD     : ce49263204804af47ceecf061a4fb3af11d9360d
+  git HEAD     : 5050cf67c185220ddbe59a3ef011cb3133c6d815
   git branch   : master
   git remote   : https://github.com/mounnar/ultracompress.git
   host         : sips_pc
@@ -12,24 +12,24 @@ Provenance:
   python       : 3.12.10
   numpy        : 2.2.6
   brotli       : 1.2.0
-  started UTC  : 2026-04-23T05:05:51Z
-  finished UTC : 2026-04-23T05:10:38Z
-  wall seconds : 286
+  started UTC  : 2026-04-23T19:18:11Z
+  finished UTC : 2026-04-23T19:23:25Z
+  wall seconds : 313
 
 Tamper-evident artifact and script inventory:
-  claim21_* result artifacts hashed : 201
-  claim21_* artifact total bytes    : 939,956
-  claim21_* scripts hashed          : 63
+  claim21_* result artifacts hashed : 224
+  claim21_* artifact total bytes    : 1,027,860
+  claim21_* scripts hashed          : 68
   Each entry has a SHA-256; any single-byte change to any
   tracked artifact will produce a different hash on the next
   verification run.
 
 Live roundtrip @ rho=0.01 (build -> brotli-11 -> decompress -> SHA256):
   model               n_bytes     brotli11       bpB   roundtrip    wall
-  olmo2_1b         10,642,176    8,678,430    6.5238          OK     61s
-  qwen3_1.7b       13,911,184   11,405,569    6.5591          OK     80s
-  smollm2_1.7b     15,963,264   13,075,975    6.5530          OK     89s
-  tinyllama         9,620,424    7,893,872    6.5643          OK     55s
+  olmo2_1b         10,642,176    8,678,430    6.5238          OK     66s
+  qwen3_1.7b       13,911,184   11,405,569    6.5591          OK     87s
+  smollm2_1.7b     15,963,264   13,075,975    6.5530          OK     96s
+  tinyllama         9,620,424    7,893,872    6.5643          OK     63s
 
   COHORT           50,137,048   41,053,846    6.5507          OK
 
@@ -72,12 +72,12 @@ WHAT THIS PROVES
    the wave-29 reference within tolerance, the wave-40 rho=0.04 gap-flip
    reproduces, and the wave-35 negative-result bootstrap data is intact.
 
-4. The verification ran on sips_pc at 2026-04-23T05:10:38Z
+4. The verification ran on sips_pc at 2026-04-23T19:23:25Z
    with brotli 1.2.0 / numpy 2.2.6 / python 3.12.10.
 
 5. To re-verify on any other machine:
      git clone https://github.com/mounnar/ultracompress.git
-     cd ultracompress; git checkout ce49263204804af47ceecf061a4fb3af11d9360d
+     cd ultracompress; git checkout 5050cf67c185220ddbe59a3ef011cb3133c6d815
      python scripts/overlay/claim21_master_verify.py --device cuda:0 \
          --rho 0.010 --out results/claim21_master_verify.json
    The new manifest's artifact and script SHA-256s must match this one

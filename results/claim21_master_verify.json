@@ -2,7 +2,7 @@
   "claim": 21,
   "wave": 42,
   "experiment": "master_verification",
-  "git_head": "ce49263204804af47ceecf061a4fb3af11d9360d",
+  "git_head": "5050cf67c185220ddbe59a3ef011cb3133c6d815",
   "git_branch": "master",
   "git_remote": "https://github.com/mounnar/ultracompress.git",
   "host": "sips_pc",
@@ -10,10 +10,10 @@
   "python": "3.12.10",
   "numpy": "2.2.6",
   "brotli": "1.2.0",
-  "started_utc": "2026-04-23T05:05:51Z",
+  "started_utc": "2026-04-23T19:18:11Z",
   "rho": 0.01,
-  "artifact_count": 201,
-  "artifact_total_bytes": 939956,
+  "artifact_count": 224,
+  "artifact_total_bytes": 1027860,
   "artifact_hashes": {
     "claim21_block_shuffle.txt": {
       "sha256": "668208af53756ebfd53729ab08e7347dfcc94b9d8fa37eaedad29e67ec761cc1",
@@ -291,6 +291,30 @@
       "sha256": "c8be2005a47a78a12d2eb0a40828f1fd2d00ca9ba10af6679b3abc87807148a7",
       "bytes": 885
     },
+    "claim21_fp8_decomp_olmo2_1b_rho0.01.json": {
+      "sha256": "78248af212070a15c18517a707e75aef27b82b10659372ab3ca7fc0704f42e65",
+      "bytes": 2727
+    },
+    "claim21_fp8_decomp_qwen3_1.7b_rho0.01.json": {
+      "sha256": "cd540a5d031860c2f3acdd161be5d07857565e04850d18276cbb915990653260",
+      "bytes": 2737
+    },
+    "claim21_fp8_decomp_smollm2_1.7b_rho0.01.json": {
+      "sha256": "7c3290030b358a3beda2a4c14d13cf7142f105ae6387681cad4b6caa1e191237",
+      "bytes": 2737
+    },
+    "claim21_fp8_decomp_summary.json": {
+      "sha256": "fad29f27df8e24840acc6be12ac4f6fe0b360dc98cdaa387f583072e1c1e0be9",
+      "bytes": 1500
+    },
+    "claim21_fp8_decomp_summary.txt": {
+      "sha256": "ab6d077f2fd3b9dd1dbd7c691bea2e71068cc796857e41aeff273de994c8e378",
+      "bytes": 844
+    },
+    "claim21_fp8_decomp_tinyllama_rho0.01.json": {
+      "sha256": "a06a97211527a2ef33d9da7c3e9fa2c2f2ebed59786b71efbad49adc33aeed9c",
+      "bytes": 2720
+    },
     "claim21_fp8_histogram.txt": {
       "sha256": "86fe26d9be6fa6a04faf0d20a6222b7388a33d4bbb70f4d321955ed5ddf3aa8f",
       "bytes": 3368
@@ -479,6 +503,66 @@
       "sha256": "525ea4bb99ca3ba560de368727402446a260c7018a69292eb08d4a49934533be",
       "bytes": 6583
     },
+    "claim21_headline_driver.err": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "claim21_headline_driver.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "claim21_headline_olmo2_1b_rho0.01.err": {
+      "sha256": "5eb30b6d820afef38dc8a4bbe0552c3341aaf5c26ea5710f98efd512fde56e8e",
+      "bytes": 1534
+    },
+    "claim21_headline_olmo2_1b_rho0.01.json": {
+      "sha256": "3b1146250d9a97ced1dc8196926c890dc71e289aa0a4f4d62e18ff5de03e8723",
+      "bytes": 1833
+    },
+    "claim21_headline_olmo2_1b_rho0.01.log": {
+      "sha256": "4427251edadae4f634979d27e2c1af0881648170cb20403eb7e0a80ef726304f",
+      "bytes": 2521
+    },
+    "claim21_headline_qwen3_1.7b_rho0.01.err": {
+      "sha256": "505e9df32b74db9c0e19da112a4b06af73b32e8675dcaa51f1effae0fd84e269",
+      "bytes": 352
+    },
+    "claim21_headline_qwen3_1.7b_rho0.01.json": {
+      "sha256": "954225228ef7b30d78aa08d75ad3fa8c8790f851bc6125dea9b8f43544617dad",
+      "bytes": 1836
+    },
+    "claim21_headline_qwen3_1.7b_rho0.01.log": {
+      "sha256": "c98b7fc51eee36b6ed6ebc401126228b3abe66b819f3a09c34a757ab1903ddab",
+      "bytes": 1206
+    },
+    "claim21_headline_smollm2_1.7b_rho0.01.err": {
+      "sha256": "505e9df32b74db9c0e19da112a4b06af73b32e8675dcaa51f1effae0fd84e269",
+      "bytes": 352
+    },
+    "claim21_headline_smollm2_1.7b_rho0.01.json": {
+      "sha256": "465812cdb1b995a8dff29cabd9cb87676dca5bb57c7f15c066ebad26ae7897cf",
+      "bytes": 1839
+    },
+    "claim21_headline_smollm2_1.7b_rho0.01.log": {
+      "sha256": "fafa33d934b849a86d3d82c3f781bc090d8d3a78e078933746bf46b4eaa666fe",
+      "bytes": 1210
+    },
+    "claim21_headline_summary.json": {
+      "sha256": "872c1fb5525a7c36873a722f863974eb3588b88db61f96cb3f804669cca73f45",
+      "bytes": 3863
+    },
+    "claim21_headline_tinyllama_rho0.01.err": {
+      "sha256": "505e9df32b74db9c0e19da112a4b06af73b32e8675dcaa51f1effae0fd84e269",
+      "bytes": 352
+    },
+    "claim21_headline_tinyllama_rho0.01.json": {
+      "sha256": "55ed4dfa9b5fe65376634178a068d72b233ac3dee9a0556bd0bee6e7d003c376",
+      "bytes": 1831
+    },
+    "claim21_headline_tinyllama_rho0.01.log": {
+      "sha256": "b18191a218ebc58bea7c6f7c5d0ec4dcb502f6459c3f7437e51e6f80ec6a2227",
+      "bytes": 1201
+    },
     "claim21_histogram_correlation.json": {
       "sha256": "7635237c22072fca413e906bf15e0da7f3ee23bb6a9db19e748af0aac3ca519d",
       "bytes": 6990
@@ -486,6 +570,14 @@
     "claim21_histogram_correlation.txt": {
       "sha256": "c756ae671b2707508bb4aaec8e5163864e27dab1499c6e82072e17d5040ab2ee",
       "bytes": 3035
+    },
+    "claim21_master_verify.json": {
+      "sha256": "30bca9b2b69217239c447a04bba0770be230355f6a06066e9d3332bd716aef74",
+      "bytes": 50190
+    },
+    "claim21_master_verify.txt": {
+      "sha256": "4a76be374952fcd24affe004b837d4ac5b937e9ba4ba4269e4cf789bb925d87a",
+      "bytes": 4519
     },
     "claim21_model_scaling.txt": {
       "sha256": "293169b4a58c6456c1017e64b692d74547d4c9bec149eb8e9281402991165ffb",
@@ -820,7 +912,7 @@
       "bytes": 485
     }
   },
-  "script_count": 63,
+  "script_count": 68,
   "script_hashes": {
     "claim21_block_shuffle.py": {
       "sha256": "8844795af6fbabefe7a4695b85aff054956138a5b039f376a435bf83aa2c6572",
@@ -877,6 +969,14 @@
     "claim21_end_to_end_synthesis.py": {
       "sha256": "331da700c1dbb8fda4ebab3174db58f2fb11ffdddc6eb4d617b3b6b32510ab37",
       "bytes": 7613
+    },
+    "claim21_fp8_decomp.py": {
+      "sha256": "efcf7b0bb01cf66cae4836f9cbdd43ad0a36bee7c2eacb6eed7d6ccc391dcc8f",
+      "bytes": 10663
+    },
+    "claim21_fp8_decomp_summary.py": {
+      "sha256": "956f16d33be138ca39fb51b6fad22df8228385d78e374e420c1926886c030f48",
+      "bytes": 3801
     },
     "claim21_fp8_histogram.py": {
       "sha256": "66cc0f94d3ad132a9494bd0c86d107167e9f564621719aedac8eb09d94ced24a",
@@ -966,6 +1066,14 @@
       "sha256": "6d259bc542337392dd0b288e6f9e57990d4eea424f00b3424c9257781423a879",
       "bytes": 5967
     },
+    "claim21_headline.py": {
+      "sha256": "1371d60b1b68945491e044b479168a19e55c4f0496d91c478f466ff5127dde98",
+      "bytes": 7345
+    },
+    "claim21_headline_summary.py": {
+      "sha256": "aac5a18d7aa92b93a3d83ac742735cfd2fba48bab640020bf7594228b4d2341b",
+      "bytes": 3551
+    },
     "claim21_histogram_correlation.py": {
       "sha256": "0826cd7935d9d7f4cefc9e011aefebe3258ad37ecb7a087a06b547a279fa7881",
       "bytes": 7619
@@ -973,6 +1081,10 @@
     "claim21_master_verify.py": {
       "sha256": "1ffff717494189257140711c4fe93e30b6c151f52a2d8b73b8c5720dd453c1cd",
       "bytes": 9108
+    },
+    "claim21_master_verify_summary.py": {
+      "sha256": "7a31712db8ee6082e56b3a645f8ba4d8e4076b13e4d3456af15044d41421df27",
+      "bytes": 5779
     },
     "claim21_model_scaling_summary.py": {
       "sha256": "3731fac53bf097abf51ea264d812ce8c5541d28e20a63c9940894f3bab577999",
@@ -1082,7 +1194,7 @@
       "brotli11_total_bytes": 8678430,
       "brotli11_total_bpB": 6.52380114743451,
       "roundtrip_ok": true,
-      "wall_seconds": 60.66867256164551,
+      "wall_seconds": 66.08948874473572,
       "per_stream": [
         {
           "stream": "fp8",
@@ -1119,7 +1231,7 @@
       "brotli11_total_bytes": 11405569,
       "brotli11_total_bpB": 6.55907879588107,
       "roundtrip_ok": true,
-      "wall_seconds": 80.05687022209167,
+      "wall_seconds": 87.09429574012756,
       "per_stream": [
         {
           "stream": "fp8",
@@ -1156,7 +1268,7 @@
       "brotli11_total_bytes": 13075975,
       "brotli11_total_bpB": 6.553033264375005,
       "roundtrip_ok": true,
-      "wall_seconds": 89.42901802062988,
+      "wall_seconds": 96.45426988601685,
       "per_stream": [
         {
           "stream": "fp8",
@@ -1193,7 +1305,7 @@
       "brotli11_total_bytes": 7893872,
       "brotli11_total_bpB": 6.564261200961621,
       "roundtrip_ok": true,
-      "wall_seconds": 55.28142595291138,
+      "wall_seconds": 62.81781554222107,
       "per_stream": [
         {
           "stream": "fp8",
@@ -1256,7 +1368,7 @@
     }
   ],
   "all_checks_ok": true,
-  "finished_utc": "2026-04-23T05:10:38Z",
-  "wall_seconds_total": 286.4834246635437,
+  "finished_utc": "2026-04-23T19:23:25Z",
+  "wall_seconds_total": 313.401403427124,
   "VERDICT": "PASS"
 }
