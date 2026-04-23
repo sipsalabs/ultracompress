@@ -13,7 +13,8 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(r"C:\Users\scamd\ultracompress")
+# Resolve repo root from this file's location so the daemon is portable.
+ROOT = Path(__file__).resolve().parent.parent.parent
 OLMO = ROOT / "results" / "claim21_finetune_delta_olmo2_1b.json"
 SMOL = ROOT / "results" / "claim21_finetune_delta_smollm2_1.7b.json"
 
@@ -55,14 +56,22 @@ def run(cmd, cwd=ROOT):
         f.write(res.stdout + "\n")
         if res.stderr:
             f.write("[stderr]\n" + res.stderr + "\n")
+        f.write(f"[returncode={res.returncode}]\n")
+    if res.returncode != 0:
+        (ROOT / "wave45_FAILED.flag").write_text(
+            f"cmd={cmd}\nreturncode={res.returncode}\n",
+            encoding="utf-8")
+        sys.exit(res.returncode)
     return res
 
 
 def main():
     (ROOT / "logs").mkdir(exist_ok=True)
-    (ROOT / "logs" / "wave45_finisher.log").write_text(
-        f"=== wave45 finisher started {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n",
-        encoding="utf-8")
+    # Append, don't truncate -- preserve forensic context across restarts.
+    with open(ROOT / "logs" / "wave45_finisher.log", "a",
+              encoding="utf-8") as f:
+        f.write(f"=== wave45 finisher started "
+                f"{time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
     wait_for_both()
 
     with open(ROOT / "logs" / "wave45_finisher.log", "a",

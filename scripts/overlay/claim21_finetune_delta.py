@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import time
 from pathlib import Path
 
@@ -62,16 +63,13 @@ def matching_linear_keys(sd_base: dict, sd_ft: dict) -> list[str]:
             continue
         if v.ndim != 2:
             continue
-        if "layers." not in k and "block" not in k and "h." not in k:
-            # still accept if present in both; just filter non-layer
-            # scalars / embeddings below
-            pass
         if k not in sd_ft:
             continue
         if sd_ft[k].shape != v.shape:
             continue
-        # skip embedding / lm_head by size heuristic only if shared
-        # vocab -- but for delta compression embeddings are totally
+        # Include every shape-matched 2-D weight (layers, embeddings,
+        # lm_head). Embeddings and lm_head do move under instruction
+        # tuning and belong in the delta storyy
         # valid to include. We include everything 2-D that matches.
         keys.append(k)
     return sorted(keys)
@@ -223,7 +221,12 @@ def main():
     for k, v in out["headline_ratios"].items():
         print(f"    {k:<36}  {v:.3f}")
 
-    Path(args.out).write_text(json.dumps(out, indent=2), encoding="utf-8")
+    # Atomic write so any external watcher (e.g. wave45_finisher) never
+    # sees a partial JSON on a stable-size poll.
+    out_path = Path(args.out)
+    tmp_path = out_path.with_suffix(out_path.suffix + ".tmp")
+    tmp_path.write_text(json.dumps(out, indent=2), encoding="utf-8")
+    os.replace(tmp_path, out_path)
     print(f"[wrote] {args.out}")
 
 
