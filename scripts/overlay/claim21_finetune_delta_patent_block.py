@@ -75,7 +75,9 @@ def main() -> None:
     print()
     print(f"- brotli-11(ft) / brotli-11(delta) = "
           f"**{fmt_ratio(c['delta_vs_ft_ratio'])}** "
-          "— fraction of a full fine-tune needed to store just the delta.")
+          "— a delta stores in "
+          f"**{100.0/c['delta_vs_ft_ratio']:.1f}%** of the bytes of "
+          "a full fine-tune under the same coder.")
     print(f"- brotli-11(base) / brotli-11(delta) = "
           f"{fmt_ratio(c['delta_vs_base_ratio'])}.")
     print(f"- raw bf16 / brotli-11(delta) = "
@@ -85,7 +87,7 @@ def main() -> None:
     print("**Per pair.**")
     print()
     print("| pair | base | ft | params | br(base) | br(ft) | br(delta) | "
-          "δ/ft | δ/base | ft bpB | δ bpB |")
+          "ft/δ | base/δ | ft bpB | δ bpB |")
     print("|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|")
     for name, d in per.items():
         print(f"| {name} | {d['base_repo']} | {d['ft_repo']} | "
@@ -103,8 +105,8 @@ def main() -> None:
           "single base, total storage under this scheme is "
           "`brotli11(base) + N * brotli11(delta)` instead of "
           "`N * brotli11(ft)`. The marginal cost of the N-th fine-tune "
-          f"is {fmt_ratio(c['delta_vs_ft_ratio'])} of a standalone ft "
-          "under brotli-11 — and this is purely the lossless-coder "
+          f"is **{100.0/c['delta_vs_ft_ratio']:.1f}%** of a standalone "
+          "ft under brotli-11 — and this is purely the lossless-coder "
           "effect, before any Claim-21 overlay / lossy base storage is "
           "applied. Stacking wave-44's end-to-end scheme on top of this "
           "delta substrate multiplies the savings by N.")
@@ -117,7 +119,8 @@ def main() -> None:
         p = Path(path)
         if p.exists():
             print(f"- [{path}]({path})")
-    print(f"- [{SUMMARY}]({SUMMARY})")
+    summary_path = "results/claim21_finetune_delta_summary.json"
+    print(f"- [{summary_path}]({summary_path})")
     print()
     print("_Full byte-exact reproduction: "
           "`python scripts/overlay/claim21_finetune_delta.py "
