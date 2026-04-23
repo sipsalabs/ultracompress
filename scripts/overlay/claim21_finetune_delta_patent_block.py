@@ -14,6 +14,13 @@ the bf16 cast that the repos already ship with.
 from __future__ import annotations
 
 import json
+import sys
+
+# Force UTF-8 stdout so em-dashes / arrows survive capture on Windows (cp1252).
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 from pathlib import Path
 
 

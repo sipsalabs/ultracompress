@@ -2,7 +2,14 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+# Force UTF-8 stdout so em-dashes / arrows survive capture on Windows (cp1252).
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 
 SUMMARY = Path("results/claim21_wave47_mxfp4_delta_summary.json")
