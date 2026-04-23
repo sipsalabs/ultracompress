@@ -145,10 +145,13 @@ def main():
              .view(torch.int16).numpy().tobytes())
 
         # int8 symmetric
+        # Reported relerr uses fp16 round-tripped scale to match what a real
+        # decoder reading scales8_bytes (fp16) would observe (decoder-faithful).
         q8, s8 = quant_symmetric(D, 8)
         int8_parts.append(pack_int8(q8))
         scales8.append(float(s8))
-        dq8 = dequant(q8, s8)
+        s8_fp16 = float(torch.tensor(float(s8), dtype=torch.float16))
+        dq8 = dequant(q8, s8_fp16)
         relerr8_num += float(((dq8 - D) ** 2).sum())
         relerr8_den += float((D ** 2).sum())
 
@@ -156,7 +159,8 @@ def main():
         q4, s4 = quant_symmetric(D, 4)
         int4_parts.append(pack_int4(q4))
         scales4.append(float(s4))
-        dq4 = dequant(q4, s4)
+        s4_fp16 = float(torch.tensor(float(s4), dtype=torch.float16))
+        dq4 = dequant(q4, s4_fp16)
         relerr4_num += float(((dq4 - D) ** 2).sum())
         relerr4_den += float((D ** 2).sum())
 
