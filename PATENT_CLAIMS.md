@@ -3772,6 +3772,47 @@ Artifacts: `results/claim21_master_verify.json`,
 `scripts/overlay/claim21_master_verify.py`,
 `scripts/overlay/claim21_master_verify_summary.py`.
 
+**Wave 43 — fp8 byte decomposition + brotli-11 sweep (raw wins).**
+The fp8 e4m3 byte stream dominates the payload (~99.9% of total
+bytes). Waves 30-37 closed the entropy-coder side of the design space
+(every adaptive / universal / bootstrap / side-info / amortized order-2
+coder we built lost to brotli-11). Wave 43 closes the *preconditioning*
+side: keep brotli-11 as the backend but apply a cheap, perfectly
+bijective byte-level decomposition before compressing, then sum
+brotli-11 across the sub-streams.
+
+Six decompositions, all roundtrip-verified bit-for-bit:
+
+| decomp | cohort brotli-11 bytes | bpB | Δ vs raw |
+|--------|-----------------------|-----|----------|
+| raw          | 41,002,414 | **6.55825** | 0 (reference) |
+| byte_pair    | 41,036,421 | 6.56369 | +0.00544 |
+| e4m3_split   | 41,288,061 | 6.60394 | +0.04569 |
+| hi_lo_nibble | 42,140,708 | 6.74032 | +0.18207 |
+| bitplane8    | 43,487,192 | 6.95569 | +0.39744 |
+| delta_byte   | 43,726,935 | 6.99404 | +0.43578 |
+
+Cohort N = 50,016,256 fp8 bytes (4 models). All six decompositions
+include explicit forward + inverse functions and were verified to
+reconstruct the original buffer byte-for-byte before measurement.
+
+**The raw byte stream is optimal under brotli-11 across every
+preconditioning we tested.** This is a strong joint-floor result:
+brotli-11 already extracts the byte-level structure that nibble
+splits, bit-plane splits, fp8 logical splits, even/odd interleaving,
+and byte-delta coding would expose. Combined with waves 30-37 (no
+order-≤2 entropy coder beats brotli-11) and wave 38 (no per-stream
+swap beats brotli-11 on idx_delta or scale), the published
+**6.5583 bpB cohort headline is near-optimal under the brotli-class
+universal-coder operating point** — it cannot be lowered by either a
+better entropy coder OR a cheap byte-level reshape, on this payload.
+
+Artifacts: `results/claim21_fp8_decomp_<model>_rho0.01.json` (4
+files), `results/claim21_fp8_decomp_summary.json`,
+`results/claim21_fp8_decomp_summary.txt`,
+`scripts/overlay/claim21_fp8_decomp.py`,
+`scripts/overlay/claim21_fp8_decomp_summary.py`.
+
 ### Measured throughput Pareto (cohort-aggregate, 18 points × 3 streams)
 
 To replace the earlier order-of-magnitude speed claim with a direct

@@ -1,0 +1,15 @@
+Claim 21 wave 43: fp8 byte decomposition + brotli-11 (cohort aggregate)
+============================================================================
+cohort fp8 bytes: 50,016,256
+
+decomp            brotli11 bytes         bpB    delta vs raw   roundtrip
+raw                   41,002,414     6.55825        +0.00000          OK
+hi_lo_nibble          42,140,708     6.74032        +0.18207          OK
+bitplane8             43,487,192     6.95569        +0.39744          OK
+e4m3_split            41,288,061     6.60394        +0.04569          OK
+byte_pair             41,036,421     6.56369        +0.00544          OK
+delta_byte            43,726,935     6.99404        +0.43578          OK
+
+VERDICT: RAW WINS -- no preconditioning beats brotli-11 on raw bytes
+  best decomp: raw  cohort bpB = 6.55825
+  gain vs raw: +0.00000 bpB

@@ -1,0 +1,55 @@
+{
+  "claim": 21,
+  "wave": 43,
+  "experiment": "fp8_decomp_summary",
+  "rho": 0.01,
+  "models": [
+    "olmo2_1b",
+    "qwen3_1.7b",
+    "smollm2_1.7b",
+    "tinyllama"
+  ],
+  "cohort_fp8_bytes": 50016256,
+  "cohort_by_decomp": {
+    "raw": {
+      "total_brotli11_bytes": 41002414,
+      "bpB": 6.55825402045287,
+      "all_roundtrips_ok": true,
+      "delta_vs_raw_bpB": 0.0
+    },
+    "hi_lo_nibble": {
+      "total_brotli11_bytes": 42140708,
+      "bpB": 6.740321866554746,
+      "all_roundtrips_ok": true,
+      "delta_vs_raw_bpB": 0.18206784610187565
+    },
+    "bitplane8": {
+      "total_brotli11_bytes": 43487192,
+      "bpB": 6.955689286299238,
+      "all_roundtrips_ok": true,
+      "delta_vs_raw_bpB": 0.3974352658463678
+    },
+    "e4m3_split": {
+      "total_brotli11_bytes": 41288061,
+      "bpB": 6.603942686153878,
+      "all_roundtrips_ok": true,
+      "delta_vs_raw_bpB": 0.04568866570100738
+    },
+    "byte_pair": {
+      "total_brotli11_bytes": 41036421,
+      "bpB": 6.563693372010892,
+      "all_roundtrips_ok": true,
+      "delta_vs_raw_bpB": 0.005439351558021777
+    },
+    "delta_byte": {
+      "total_brotli11_bytes": 43726935,
+      "bpB": 6.994035699113504,
+      "all_roundtrips_ok": true,
+      "delta_vs_raw_bpB": 0.4357816786606339
+    }
+  },
+  "best_decomp": "raw",
+  "best_cohort_bpB": 6.55825402045287,
+  "best_gain_vs_raw_bpB": 0.0,
+  "verdict": "RAW WINS -- no preconditioning beats brotli-11 on raw bytes"
+}

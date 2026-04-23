@@ -1,0 +1,109 @@
+{
+  "claim": 21,
+  "wave": 43,
+  "experiment": "fp8_decomp",
+  "model": "tinyllama",
+  "rho": 0.01,
+  "fp8_bytes": 9596928,
+  "fp8_sha256": "e90a5d442a8c74276e3b8103665fb7df49b3f771c91ccbf97fe669a61833eefa",
+  "raw_brotli11_bpB": 6.572260623399488,
+  "results": [
+    {
+      "decomp": "raw",
+      "n_input_bytes": 9596928,
+      "n_subparts": 1,
+      "subpart_sizes": [
+        9596928
+      ],
+      "total_brotli11_bytes": 7884189,
+      "bpB": 6.572260623399488,
+      "roundtrip_ok": true,
+      "wall_seconds": 8.612452268600464,
+      "delta_vs_raw_bpB": 0.0
+    },
+    {
+      "decomp": "hi_lo_nibble",
+      "n_input_bytes": 9596928,
+      "n_subparts": 3,
+      "subpart_sizes": [
+        4798464,
+        4798464,
+        8
+      ],
+      "total_brotli11_bytes": 8094946,
+      "bpB": 6.747947676589842,
+      "roundtrip_ok": true,
+      "wall_seconds": 5.833950519561768,
+      "delta_vs_raw_bpB": 0.17568705319035427
+    },
+    {
+      "decomp": "bitplane8",
+      "n_input_bytes": 9596928,
+      "n_subparts": 9,
+      "subpart_sizes": [
+        1199616,
+        1199616,
+        1199616,
+        1199616,
+        1199616,
+        1199616,
+        1199616,
+        1199616,
+        8
+      ],
+      "total_brotli11_bytes": 8396510,
+      "bpB": 6.999331452731541,
+      "roundtrip_ok": true,
+      "wall_seconds": 4.856357574462891,
+      "delta_vs_raw_bpB": 0.4270708293320533
+    },
+    {
+      "decomp": "e4m3_split",
+      "n_input_bytes": 9596928,
+      "n_subparts": 4,
+      "subpart_sizes": [
+        1199616,
+        4798464,
+        3598848,
+        8
+      ],
+      "total_brotli11_bytes": 7940734,
+      "bpB": 6.619396540226206,
+      "roundtrip_ok": true,
+      "wall_seconds": 5.420013189315796,
+      "delta_vs_raw_bpB": 0.04713591682671847
+    },
+    {
+      "decomp": "byte_pair",
+      "n_input_bytes": 9596928,
+      "n_subparts": 3,
+      "subpart_sizes": [
+        4798464,
+        4798464,
+        8
+      ],
+      "total_brotli11_bytes": 7892226,
+      "bpB": 6.578960267285531,
+      "roundtrip_ok": true,
+      "wall_seconds": 8.288745403289795,
+      "delta_vs_raw_bpB": 0.006699643886043383
+    },
+    {
+      "decomp": "delta_byte",
+      "n_input_bytes": 9596928,
+      "n_subparts": 1,
+      "subpart_sizes": [
+        9596928
+      ],
+      "total_brotli11_bytes": 8400233,
+      "bpB": 7.0024349458493385,
+      "roundtrip_ok": true,
+      "wall_seconds": 13.146076679229736,
+      "delta_vs_raw_bpB": 0.4301743224498509
+    }
+  ],
+  "best_decomp": "raw",
+  "best_bpB": 6.572260623399488,
+  "best_gain_vs_raw_bpB": 0.0,
+  "wall_seconds_total": 91.53117060661316
+}
