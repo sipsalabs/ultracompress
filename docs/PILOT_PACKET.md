@@ -1,0 +1,121 @@
+# UltraCompress design-partner pilot
+
+**For**: chip vendors · OEMs · AI inference platforms · edge-cloud operators · robotics + automotive teams
+
+**From**: Sipsa Labs, Inc. (Delaware C-Corp in formation; sipsalabs.com)
+
+**Filed IP**: USPTO 64/049,511 + 64/049,517 (both filed 2026-04-25, patent pending)
+
+---
+
+## The problem you have
+
+Modern transformer language models have outgrown the hardware most of the world actually runs them on:
+
+- **Apple Intelligence** is capped at 3B parameters on iPhone
+- **Snapdragon's** flagship AI silicon caps at sub-7B
+- **Tesla's** in-cabin AI is latency-bound, not capability-bound
+- **Inference platforms** at scale are GPU-memory-bound on margins
+- **Model registries** absorb storage + egress costs that scale with fleet size
+
+The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) hit a wall at 4 bits per weight. Below 4 bpw, every public method falls off a quality cliff.
+
+## What we deliver
+
+### Track A — post-training row-overlay quantization (USPTO 64/049,511) — shipping now
+
+Sub-3-bits-per-weight on a 6-model head-to-head cohort. **30% smaller than bitsandbytes NF4 at equivalent retention.** Zero catastrophic failures across the cohort — the only public method at this compression frontier with that property.
+
+### Track B — Fractal Residual Recursion (USPTO 64/049,517) — v0.2 (Q3 2026)
+
+Architectural compression beyond the published academic frontier. Combined with Track A, the strongest end-to-end ratio we've measured for any frontier-class architecture.
+
+### What ships under a pilot
+
+- Pre-compressed model artifacts on Hugging Face Hub for the architecture families in your stack
+- A reproducibility manifest (SHA-256 of every input + deterministic seed)
+- A reference loader you can drop into your runtime
+- A model card describing the per-task agreement / retention envelope
+- Direct technical support from the founder during the pilot window
+
+## Pilot offers
+
+We run two pilot shapes. Both are designed to convert to a recurring license if the technology lands.
+
+### Tier 1 — Compression Assessment ($5,000 · 2-week turnaround)
+
+For teams who want to validate UltraCompress against their **existing model fleet** before committing to a full deployment pilot.
+
+What you get:
+
+- We run the v0.1 reference compression pipeline on a model + benchmark of your choice
+- Public-method comparison table: UltraCompress vs your current quantization stack
+- Per-task retention curves (T1, T10, T32, T64, T128, T256) on the metrics you care about
+- A 30-minute deep-dive call covering methodology, limits, and the v0.2 roadmap
+- A written assessment report (10-15 pages) you can take to internal stakeholders
+
+What we need from you:
+
+- The model and the benchmark we should run against
+- Two 30-minute calls (kickoff + readout)
+- A signed mutual NDA before kickoff
+
+### Tier 2 — Production Deployment Pilot ($15,000–$25,000 · 60-day pilot window)
+
+For teams ready to put UltraCompress into a development or staging deployment surface and measure the production characteristics.
+
+What you get:
+
+- Three pre-compressed model artifacts tuned to your hardware (architectures of your choice)
+- Integration support for your inference stack (vLLM, TensorRT-LLM, llama.cpp, custom) — within reason
+- Daily Slack / email channel during the 60-day window
+- Per-deployment performance dashboard: latency, memory, retention, customer-facing metrics
+- A pilot readout deck you can use internally to evaluate go-no-go on a recurring license
+- Right of first negotiation on a per-deployment SaaS license at the end of the pilot
+
+What we need from you:
+
+- A scoped deployment surface (one product or one internal use case is plenty)
+- A technical lead on your side for daily cadence
+- A signed mutual NDA before kickoff
+- A signed pilot agreement (we provide a template)
+
+## What's in scope vs out
+
+| In scope (pilot) | Out of scope (separate license required) |
+|---|---|
+| Reference compression on architectures we already support | Compression of your private/proprietary models (that's a commercial license) |
+| Methodology deep-dives under NDA | Per-device royalty / OEM licensing (separate term sheet) |
+| Bug fixes + integration help | Custom new compression methods (separate research engagement) |
+| 60-day production pilot | Permanent production deployment (recurring license required) |
+
+## Patent + commercial licensing path post-pilot
+
+Both pilot tiers convert to one of three commercial license shapes (or you can walk away with the assessment report).
+
+| License shape | Annual fee range | Best fit |
+|---|---|---|
+| **Per-deployment SaaS** | $30K – $80K / year | Single product / single customer |
+| **Multi-deployment SaaS** | $80K – $200K / year | Enterprise with multiple internal use cases |
+| **OEM / per-device royalty** | $0.50 – $5 per device, volume tiers | Chip vendors and device OEMs |
+
+Patent license terms are bundled into the commercial license. Standard MFN clauses, audit rights, and termination-for-convenience apply. We can work through redlines on a 2-3 week cycle.
+
+## Get started
+
+Email **founder@sipsalabs.com** with:
+
+- Which tier (assessment or pilot) is most useful right now
+- The architecture family / specific model you want benchmarked
+- Your timing window
+- Your preferred call structure (1-on-1 founder, technical team, exec sponsor)
+
+We respond same-day during US business hours and target a kickoff call within 5 business days.
+
+---
+
+*UltraCompress v0.1 alpha shipped 2026-04-25. Pre-compressed reference models release throughout April–May 2026. Track B and `uc compress` ship in v0.2 (Q3 2026), gated on patent prosecution timing.*
+
+*The CLI is Apache 2.0. The pre-compressed model artifacts are licensed separately (research-free or commercial-paid). The compression methodology is patent pending.*
+
+*sipsalabs.com · github.com/sipsalabs/ultracompress · huggingface.co/sipsalabs*
