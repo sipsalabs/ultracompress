@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual envs
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+.hypothesis/
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Model downloads (can be huge)
+models/
+eval-results/
+*.safetensors
+*.pt
+*.bin
+
+# Generated demo videos (alpha quality; regenerate locally via render_demo_video.py)
+*.mp4
+*.mov
+*.gif
+
+# Local benchmark output
+bench-results/
+
+# mkdocs build output (regenerate via `mkdocs build`)
+site/

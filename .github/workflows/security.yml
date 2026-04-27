@@ -1,0 +1,45 @@
+name: Security
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 6 * * 1"  # Weekly Monday 6am UTC
+
+jobs:
+  security:
+    name: Security scans
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "."
+          pip install bandit pip-audit safety
+
+      - name: Bandit (static security scan)
+        run: bandit -r src/ -ll
+        continue-on-error: true
+
+      - name: pip-audit (dependency CVEs)
+        run: pip-audit
+        continue-on-error: true
+
+      - name: Safety (dependency CVEs alternative)
+        run: safety check --json
+        continue-on-error: true
+
+      - name: Check for secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

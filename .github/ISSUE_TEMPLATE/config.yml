@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: mailto:security@sipsalabs.com
+    about: For security issues, please email security@sipsalabs.com instead of opening a public issue. See SECURITY.md.
+  - name: Compression-method questions / patent inquiries
+    url: mailto:legal@sipsalabs.com
+    about: Questions about the compression methods, licensing, or patents — please email legal@sipsalabs.com.
+  - name: Design partner / commercial inquiries
+    url: mailto:founder@sipsalabs.com
+    about: Pilots, enterprise contracts, or partnership inquiries — email founder@sipsalabs.com.
+  - name: Documentation
+    url: https://sipsalabs.com
+    about: Project home and product documentation.
