@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Queue runner: run v7 configs on GPU1 sequentially after each completes."""
 import subprocess, sys, os, time
-os.chdir(r'C:\Users\scamd\ultracompress')
+os.chdir(os.environ.get('UC_REPO_ROOT', os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # GPU1 queue
 SWEEPS = [

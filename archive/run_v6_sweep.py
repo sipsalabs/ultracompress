@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Launcher: sweep v6 PQ configs on GPU0 sequentially with best-state tracking."""
 import subprocess, sys, os, time
-os.chdir(r'C:\Users\scamd\ultracompress')
+os.chdir(os.environ.get('UC_REPO_ROOT', os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 SWEEPS = [
