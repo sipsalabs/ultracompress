@@ -2,7 +2,7 @@
 
 # UltraCompress Track B evidence matrix
 
-> **This is the Track B evidence matrix — architectural-compression evidence only.** It is **separate** from the Track A 2.798-bpw v0.1 reference-artifact benchmark in the [README](../../README.md). Do not compare retention numbers across tracks as a single quality curve — Track A is post-training quantization (shipping now); Track B is architectural compression (v0.2, Q3 2026).
+> **This is the Track B evidence matrix — architectural-compression evidence only.** It is **separate** from the Track A 2.798-bpw v0.1 reference-artifact benchmark in the project [README on GitHub](https://github.com/sipsalabs/ultracompress#readme). Do not compare retention numbers across tracks as a single quality curve — Track A is post-training quantization (shipping now); Track B is architectural compression (v0.2, Q3 2026).
 
 **Track:** B — Fractal Residual Recursion (USPTO 64/049,517, patent pending)
 **Availability:** evidence now; product availability v0.2 (Q3 2026)

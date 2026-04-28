@@ -23,7 +23,7 @@ For the actual measured numbers and their cohort scope, see [evidence/matrix.md]
 
 Where Track A compresses *weights*, Track B compresses the *architecture* — restructuring the transformer block to retain expressive capacity at substantially fewer trainable parameters.
 
-Public detail on Track B is intentionally limited until v0.2 ships. Public-safe Track B evidence is at [evidence/matrix.md](../evidence/matrix.md). The Q3 2026 v0.2 release timing is gated on patent prosecution; early-access design partners can engage now via the [pilot program](../../PILOT_PACKET.md).
+Public detail on Track B is intentionally limited until v0.2 ships. Public-safe Track B evidence is at [evidence/matrix.md](../evidence/matrix.md). The Q3 2026 v0.2 release timing is gated on patent prosecution; early-access design partners can engage now via the [pilot program](../PILOT_PACKET.md).
 
 ## What "catastrophic failure" means
 
