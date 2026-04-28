@@ -4,13 +4,13 @@ Thanks for your interest in UltraCompress. This document covers how to contribut
 
 ## Scope of this repository
 
-This repository contains the **UltraCompress CLI** (`uc`, `ultracompress`) — the Apache-2.0-licensed tool for downloading and running pre-compressed language models hosted on the [official Hugging Face Hub collection](https://huggingface.co/sipsalabs).
+This repository contains the **UltraCompress CLI** (`uc`, `ultracompress`) — the Apache-2.0-licensed tool for downloading and running pre-compressed language models distributed through the [official Hugging Face Hub collection](https://huggingface.co/sipsalabs) (rolling release through April–May 2026).
 
 The repository does **not** contain:
 
 - The compression methods themselves (the subject of pending U.S. patent applications 64/049,511 and 64/049,517)
 - Training code, weight overlays, or architectural-compression internals
-- Pre-compressed model weights (those live on the Hugging Face Hub under their own license)
+- Pre-compressed model weights (distributed via the Hugging Face Hub under their own license; rolling release through April–May 2026)
 
 Pull requests touching the public CLI surface, documentation, packaging, CI/CD, and tests are welcome. Pull requests attempting to add or reverse-engineer the compression methods will be closed.
 

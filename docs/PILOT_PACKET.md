@@ -33,7 +33,7 @@ Architectural compression beyond the published academic frontier. Combined with 
 
 ### What ships under a pilot
 
-- Pre-compressed model artifacts on Hugging Face Hub for the architecture families in your stack
+- Pre-compressed model artifacts (rolling release on Hugging Face Hub through April–May 2026 — let's discuss which architecture families fit your stack)
 - A reproducibility manifest (SHA-256 of every input + deterministic seed)
 - A reference loader you can drop into your runtime
 - A model card describing the per-task agreement / retention envelope

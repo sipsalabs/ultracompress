@@ -77,7 +77,7 @@ On a 6-model × 8-method × 500-sample head-to-head benchmark:
 | HQQ 3-bit g64 | 3.500 | 72.46% | 1/6 |
 | HQQ 2-bit g64 | 2.500 | 3.46% | 6/6 |
 
-Top-k retention curves (top-1, top-10, top-32, top-64, top-128, top-256) ship in the per-model card on each artifact's Hugging Face Hub repository. T1 alone is the wrong metric for autocomplete, candidate generation, or RAG re-ranking — most customer use cases care about top-k structure.
+Top-k retention curves (top-1, top-10, top-32, top-64, top-128, top-256) will ship in the per-model card on each artifact's Hugging Face Hub repository as the reference compressed models roll out through April–May 2026. T1 alone is the wrong metric for autocomplete, candidate generation, or RAG re-ranking — most customer use cases care about top-k structure.
 
 ### Track B — Fractal Residual Recursion (USPTO 64/049,517) — v0.2 (Q3 2026)
 

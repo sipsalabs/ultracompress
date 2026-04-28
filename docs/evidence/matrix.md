@@ -44,7 +44,7 @@ Every row is row-level-labeled with experiment family and customer ship status s
 
 The README headline numbers (95.63% median T1 retention, zero catastrophic failures, 30% smaller than NF4) are the **Track A** benchmark at **2.798 bpw**. Track A and Track B are different methods, different operating points, different bpw targets. Customer evaluations should pick a track based on use case:
 
-- **Track A (shipping now)** — drop-in replacement for bitsandbytes / GPTQ / AWQ / HQQ. Pre-compressed artifacts on Hugging Face Hub.
+- **Track A (shipping now)** — drop-in replacement for bitsandbytes / GPTQ / AWQ / HQQ. Pre-compressed reference artifacts roll out on Hugging Face Hub through April–May 2026.
 - **Track B (v0.2)** — architectural compression layered on top of (or in place of) standard quantization. Higher absolute compression, narrower architecture support at v0.2 launch.
 
 ## Field definitions

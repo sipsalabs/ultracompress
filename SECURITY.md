@@ -21,7 +21,7 @@ In scope:
 
 Out of scope:
 
-- Pre-compressed models hosted on Hugging Face Hub (please report to **legal@sipsalabs.com**)
+- Pre-compressed model artifacts distributed via Hugging Face Hub (separate license; please report artifact-specific issues to **legal@sipsalabs.com**)
 - Issues in upstream dependencies (please report to those projects directly; we will track them via Dependabot / pip-audit)
 - Vulnerabilities affecting only end-of-life Python versions (we support 3.10+)
 
@@ -45,6 +45,6 @@ We commit to security patches for the latest minor release line and the immediat
 ## Best practices for users
 
 - Always install from PyPI (`pip install ultracompress`) — never from untrusted forks
-- Verify model artifacts using the SHA-256 manifests we publish on Hugging Face Hub
+- Verify model artifacts using the per-artifact provenance manifest shipped alongside each compressed model on the Hugging Face Hub when artifacts publish
 - Run `pip-audit` periodically against your environment
-- Pin versions in production (`ultracompress==0.1.0`)
+- Pin versions in production (`ultracompress==0.1.2` or later — 0.1.0 is yanked and should not be installed)

@@ -36,7 +36,7 @@ Our headline numbers — `2.798 bpw`, `95.6% retention`, `0/6 catastrophic failu
 The full cohort benchmark requires:
 
 1. Access to the cohort's source models on Hugging Face Hub (these are public)
-2. The pre-compressed UltraCompress artifacts (also public on `huggingface.co/sipsalabs`)
+2. The pre-compressed UltraCompress artifacts (rolling release on `huggingface.co/sipsalabs` through April–May 2026)
 3. `lm-eval-harness` at the specified version
 4. A CUDA GPU (any consumer 4090/5090 or up; H100 for fast iteration)
 5. The SHA-256 manifest (NDA, on request)
