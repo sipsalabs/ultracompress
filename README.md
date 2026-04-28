@@ -43,11 +43,13 @@ uc bench ./models/<model-id> --tasks hellaswag --limit 500
 
 ## What's available today (v0.1 — alpha)
 
-- `uc list` — browse pre-compressed models from our Hugging Face Hub collection.
-- `uc pull <model-id>` — download a pre-compressed model locally.
-- `uc info <path>` — inspect the compression metadata of an artifact.
-- `uc bench <path> --tasks <list>` — run downstream benchmarks via `lm-eval-harness` on the compressed model.
-- `uc demo` — scripted CLI demo for screen recording (no Hub required).
+The CLI itself is shipped on PyPI. The Hugging Face Hub catalog is rolling out through April–May 2026; until the first reference compressed model lands, `uc list` against the live Hub returns "No pre-compressed models published yet."
+
+- `uc demo` — scripted CLI demo for screen recording (works without any Hub artifacts).
+- `uc list` — query the live `sipsalabs` collection on the Hugging Face Hub. Returns the actual current catalog; expect "no models published yet" until the first rolling-release artifact lands.
+- `uc pull <model-id>` — download a pre-compressed model when one is available on the Hub.
+- `uc info <path>` — inspect the compression metadata of an already-downloaded artifact.
+- `uc bench <path> --tasks <list>` — run downstream benchmarks via `lm-eval-harness` on a downloaded artifact.
 
 ## What's coming (v0.2 — Q3 2026)
 
