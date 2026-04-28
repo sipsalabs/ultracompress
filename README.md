@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-**Run frontier-class language models on less hardware than they were supposed to need.**
+**Run language models on less hardware than they were supposed to need.**
 
 UltraCompress publishes pre-compressed reference language models at sub-3 bits per weight — **30% smaller than bitsandbytes NF4** with **zero catastrophic failures** on a 6-model head-to-head cohort. The underlying methods are patent pending; this CLI lets you **download pre-compressed reference models** and run them locally.
 

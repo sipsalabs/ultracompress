@@ -123,8 +123,12 @@ def compute_savings(params_per_model: float, model_count: int,
             "gpu_memory_usd_per_gb_hour": GPU_MEMORY_USD_PER_GB_HOUR,
         },
         "notes": [
-            "Inference-memory savings assume the v0.1 reference loader, which inflates at load time. "
-            "v0.2 quantized-runtime kernels (Q3 2026) may further reduce inference memory.",
+            "v0.1 alpha — storage and egress savings reflect the on-disk artifact size (2.798 bpw vs the baseline). "
+            "Continuous inference-time memory savings are NOT a v0.1 deliverable — the v0.1 reference loader "
+            "inflates compressed weights at load time, so steady-state inference memory matches the inflated form. "
+            "The 'inference_memory_savings_usd_year_per_replica' field below is therefore a v0.2 (Q3 2026) projection, "
+            "gated on the quantized-runtime kernel path shipping with native sub-3-bpw inference. Use it as a v0.2 "
+            "ceiling estimate, not a v0.1 quote.",
             "Storage assumes a single canonical artifact per model. Multi-region replication multiplies savings linearly.",
             "Egress assumes one full redownload per pull event. Differential / patch updates further reduce egress.",
             "Customers with custom storage tiers (Glacier, S3 IA, on-prem) should substitute their own per-GB rate.",
