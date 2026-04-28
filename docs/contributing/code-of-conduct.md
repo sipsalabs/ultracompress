@@ -1,6 +1,6 @@
 # Code of Conduct
 
-This page is the rendered docs-site version of [`CODE_OF_CONDUCT.md`](https://github.com/mounnar/ultracompress/blob/main/CODE_OF_CONDUCT.md) in the repository.
+This page is the rendered docs-site version of [`CODE_OF_CONDUCT.md`](https://github.com/sipsalabs/ultracompress/blob/main/CODE_OF_CONDUCT.md) in the repository.
 
 ## Our pledge
 

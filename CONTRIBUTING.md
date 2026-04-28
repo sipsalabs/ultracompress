@@ -17,7 +17,7 @@ Pull requests touching the public CLI surface, documentation, packaging, CI/CD, 
 ## Development setup
 
 ```bash
-git clone https://github.com/mounnar/ultracompress.git
+git clone https://github.com/sipsalabs/ultracompress.git
 cd ultracompress
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate

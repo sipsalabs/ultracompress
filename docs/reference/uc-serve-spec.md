@@ -179,7 +179,7 @@ Code that today uses the v0.1 reference loader will work in v0.2 unchanged. `uc 
 
 4. **gRPC alternative**: TensorRT-LLM offers gRPC. We'll support HTTP/JSON in v0.2; gRPC if customer demand justifies.
 
-These are open. We'd love customer feedback — file an issue at [github.com/mounnar/ultracompress](https://github.com/mounnar/ultracompress) or email `founder@sipsalabs.com`.
+These are open. We'd love customer feedback — file an issue at [github.com/sipsalabs/ultracompress](https://github.com/sipsalabs/ultracompress) or email `founder@sipsalabs.com`.
 
 ---
 

@@ -55,7 +55,7 @@ Both should complete within a few minutes. Monitor the Actions tab to verify.
 ## Verification after release
 
 - [ ] Visit https://pypi.org/project/ultracompress/ — confirm new version is listed
-- [ ] Visit https://github.com/mounnar/ultracompress/releases — confirm Release page is rendered
+- [ ] Visit https://github.com/sipsalabs/ultracompress/releases — confirm Release page is rendered
 - [ ] Run `pip install --upgrade ultracompress` in a fresh venv; confirm version matches
 - [ ] Run `uc --version` — confirm version matches
 - [ ] Smoke test the published package end-to-end (`uc list`, `uc pull`, `uc info`)

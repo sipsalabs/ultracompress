@@ -81,7 +81,7 @@ That's it — you're up and running.
 - **Use the model in your inference stack** → [Integration guides](../integration/llamacpp.md)
 - **Understand the method** → [Compression methods](../concepts/compression-methods.md)
 - **Plan a commercial deployment** → Email `legal@sipsalabs.com`
-- **Hit a snag?** → [Open an issue](https://github.com/mounnar/ultracompress/issues)
+- **Hit a snag?** → [Open an issue](https://github.com/sipsalabs/ultracompress/issues)
 
 ## Programmatic use
 

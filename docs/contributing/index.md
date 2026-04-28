@@ -1,6 +1,6 @@
 # Contributing to UltraCompress
 
-Thanks for your interest in contributing. This page is the rendered docs-site version of [`CONTRIBUTING.md`](https://github.com/mounnar/ultracompress/blob/main/CONTRIBUTING.md) in the repository.
+Thanks for your interest in contributing. This page is the rendered docs-site version of [`CONTRIBUTING.md`](https://github.com/sipsalabs/ultracompress/blob/main/CONTRIBUTING.md) in the repository.
 
 ## Scope
 
@@ -17,7 +17,7 @@ Pull requests touching the public CLI surface, documentation, packaging, CI/CD, 
 ## Development setup
 
 ```bash
-git clone https://github.com/mounnar/ultracompress.git
+git clone https://github.com/sipsalabs/ultracompress.git
 cd ultracompress
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate

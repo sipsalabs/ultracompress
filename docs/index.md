@@ -4,8 +4,8 @@
 
 [![PyPI](https://img.shields.io/pypi/v/ultracompress.svg)](https://pypi.org/project/ultracompress/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/mounnar/ultracompress/blob/main/LICENSE)
-[![CI](https://github.com/mounnar/ultracompress/actions/workflows/ci.yml/badge.svg)](https://github.com/mounnar/ultracompress/actions)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/sipsalabs/ultracompress/blob/main/LICENSE)
+[![CI](https://github.com/sipsalabs/ultracompress/actions/workflows/ci.yml/badge.svg)](https://github.com/sipsalabs/ultracompress/actions)
 
 UltraCompress shrinks transformer language models below the 4-bits-per-weight floor that has stumped every prior open-source method, with **zero catastrophic failures** on a 6-model head-to-head benchmark.
 
@@ -31,7 +31,7 @@ The compression methods are the subject of pending U.S. patent applications (USP
 === "From source"
 
     ```bash
-    git clone https://github.com/mounnar/ultracompress.git
+    git clone https://github.com/sipsalabs/ultracompress.git
     cd ultracompress
     pip install -e ".[dev]"
     ```
@@ -91,7 +91,7 @@ UltraCompress is in **public alpha** as of v0.1.0 (April 2026). The CLI is stabl
 ## Stay in touch
 
 - **Website**: [sipsalabs.com](https://sipsalabs.com)
-- **GitHub**: [github.com/mounnar/ultracompress](https://github.com/mounnar/ultracompress)
+- **GitHub**: [github.com/sipsalabs/ultracompress](https://github.com/sipsalabs/ultracompress)
 - **Hugging Face**: [huggingface.co/sipsalabs](https://huggingface.co/sipsalabs)
 - **PyPI**: [pypi.org/project/ultracompress](https://pypi.org/project/ultracompress/)
 - **Twitter**: [@sipsalabs](https://x.com/sipsalabs)

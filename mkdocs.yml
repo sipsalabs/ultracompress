@@ -4,8 +4,8 @@ site_description: Extreme compression for large language models. Patent pending 
 site_author: Sipsa Labs, Inc.
 copyright: Copyright &copy; 2026 Sipsa Labs, Inc.
 
-repo_name: mounnar/ultracompress
-repo_url: https://github.com/mounnar/ultracompress
+repo_name: sipsalabs/ultracompress
+repo_url: https://github.com/sipsalabs/ultracompress
 edit_uri: edit/main/docs/
 
 theme:
@@ -45,7 +45,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/mounnar/ultracompress
+      link: https://github.com/sipsalabs/ultracompress
     - icon: fontawesome/brands/x-twitter
       link: https://x.com/sipsalabs
     - icon: fontawesome/brands/linkedin

@@ -1,6 +1,6 @@
 # Security policy
 
-This page is the rendered docs-site version of [`SECURITY.md`](https://github.com/mounnar/ultracompress/blob/main/SECURITY.md) in the repository.
+This page is the rendered docs-site version of [`SECURITY.md`](https://github.com/sipsalabs/ultracompress/blob/main/SECURITY.md) in the repository.
 
 ## Reporting a vulnerability
 
@@ -19,7 +19,7 @@ In scope:
 
 - The published `ultracompress` Python package on PyPI
 - The `uc` / `ultracompress` CLI commands
-- Anything in [the GitHub repository](https://github.com/mounnar/ultracompress) (source, CI workflows, packaging configuration)
+- Anything in [the GitHub repository](https://github.com/sipsalabs/ultracompress) (source, CI workflows, packaging configuration)
 
 Out of scope:
 
@@ -32,7 +32,7 @@ Out of scope:
 We follow **coordinated disclosure**. Once a fix is available we will:
 
 1. Publish a patched release on PyPI
-2. Open a [GitHub Security Advisory](https://github.com/mounnar/ultracompress/security/advisories)
+2. Open a [GitHub Security Advisory](https://github.com/sipsalabs/ultracompress/security/advisories)
 3. Credit reporters who request it
 
 ## Supported versions
@@ -54,5 +54,5 @@ We commit to security patches for the latest minor release line and the immediat
 
 ## See also
 
-- [Vulnerability disclosure process on GitHub](https://github.com/mounnar/ultracompress/security)
+- [Vulnerability disclosure process on GitHub](https://github.com/sipsalabs/ultracompress/security)
 - For trust center, security posture, and compliance information, contact `security@sipsalabs.com`.

@@ -4,7 +4,7 @@ All notable changes to the UltraCompress CLI will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The canonical version of this file lives in the repository at [`CHANGELOG.md`](https://github.com/mounnar/ultracompress/blob/main/CHANGELOG.md).
+The canonical version of this file lives in the repository at [`CHANGELOG.md`](https://github.com/sipsalabs/ultracompress/blob/main/CHANGELOG.md).
 
 ## [Unreleased]
 
@@ -34,5 +34,5 @@ Initial public alpha release. Patent-pending compression methods (USPTO 64/049,5
 - Local inference server (`uc serve`) is on the v0.2 roadmap. Design spec: [`uc serve` spec](reference/uc-serve-spec.md).
 - Pre-compressed model artifacts are licensed separately from the CLI itself. For licensing terms, contact `legal@sipsalabs.com`.
 
-[Unreleased]: https://github.com/mounnar/ultracompress/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/mounnar/ultracompress/releases/tag/v0.1.0
+[Unreleased]: https://github.com/sipsalabs/ultracompress/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.0

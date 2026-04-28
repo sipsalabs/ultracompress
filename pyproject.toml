@@ -51,9 +51,9 @@ ultracompress = "ultracompress_cli.__main__:main"
 
 [project.urls]
 Homepage = "https://sipsalabs.com"
-Documentation = "https://github.com/mounnar/ultracompress#readme"
-Repository = "https://github.com/mounnar/ultracompress"
-Issues = "https://github.com/mounnar/ultracompress/issues"
+Documentation = "https://github.com/sipsalabs/ultracompress#readme"
+Repository = "https://github.com/sipsalabs/ultracompress"
+Issues = "https://github.com/sipsalabs/ultracompress/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ultracompress_cli"]

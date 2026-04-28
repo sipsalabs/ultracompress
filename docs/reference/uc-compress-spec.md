@@ -198,7 +198,7 @@ v0.1 doesn't have `uc compress`. The migration path:
 
 4. **Per-customer compression-method versioning**: should customers be able to pin to a specific method version (e.g., `--method-version 1.2.0`)? Yes; expose via flag.
 
-These are open. Customer feedback welcome — file an issue at [github.com/mounnar/ultracompress](https://github.com/mounnar/ultracompress) or email `founder@sipsalabs.com`.
+These are open. Customer feedback welcome — file an issue at [github.com/sipsalabs/ultracompress](https://github.com/sipsalabs/ultracompress) or email `founder@sipsalabs.com`.
 
 ---
 

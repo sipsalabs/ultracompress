@@ -81,7 +81,7 @@ Top-k retention curves (top-1, top-10, top-32, top-64, top-128, top-256) ship in
 
 ### Track B — Fractal Residual Recursion (USPTO 64/049,517) — v0.2 (Q3 2026)
 
-Architectural compression beyond the published academic frontier. Combined with Track A on the v0.2 stack: end-to-end compression at the highest ratios we've measured for any frontier-class architecture. Gated on patent prosecution timing.
+Architectural compression beyond published academic ratios for transformer language models. Combined with Track A on the v0.2 stack: the strongest end-to-end ratio we've measured for transformer language model architectures in our cohort. Gated on patent prosecution timing.
 
 ## Patent status
 

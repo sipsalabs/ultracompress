@@ -91,4 +91,4 @@ pip uninstall ultracompress
     python -m ultracompress_cli --help
     ```
 
-If none of those resolve it, [open an issue](https://github.com/mounnar/ultracompress/issues/new?template=bug_report.md).
+If none of those resolve it, [open an issue](https://github.com/sipsalabs/ultracompress/issues/new?template=bug_report.md).
