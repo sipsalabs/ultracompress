@@ -10,14 +10,14 @@ from pathlib import Path
 
 import click
 from rich.console import Console
-from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
-from . import __version__, HF_ORG, PORTFOLIO_URL
-from .pull import pull_model
+from . import HF_ORG, PORTFOLIO_URL, __version__
+from .benchmark import run_benchmarks
 from .info import read_artifact_metadata, summarize_artifact
 from .listing import list_published_models
-from .benchmark import run_benchmarks
+from .pull import pull_model
 
 console = Console()
 

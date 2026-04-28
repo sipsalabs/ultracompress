@@ -12,13 +12,9 @@ Usage:
 from __future__ import annotations
 
 import time
-from typing import Iterator
 
 from rich.console import Console
-from rich.live import Live
 from rich.table import Table
-from rich.text import Text
-
 
 SCENES = [
     ("install", 1.0),
