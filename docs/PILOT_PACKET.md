@@ -1,3 +1,5 @@
+<!-- Classification: PUBLIC | Owner: Sipsa Labs | Last Reviewed: 2026-04-27 | External Sharing: allowed -->
+
 # UltraCompress design-partner pilot
 
 **For**: chip vendors · OEMs · AI inference platforms · edge-cloud operators · robotics + automotive teams
@@ -12,23 +14,22 @@
 
 Modern transformer language models have outgrown the hardware most of the world actually runs them on:
 
-- **Apple Intelligence** is capped at 3B parameters on iPhone
-- **Snapdragon's** flagship AI silicon caps at sub-7B
-- **Tesla's** in-cabin AI is latency-bound, not capability-bound
+- **Phone-class and automotive deployments** are memory-constrained, often forcing teams to ship smaller local models than the product would otherwise want
+- **In-vehicle inference** is latency-bound on memory budgets, not capability-bound on the model itself
 - **Inference platforms** at scale are GPU-memory-bound on margins
-- **Model registries** absorb storage + egress costs that scale with fleet size
+- **Model registries** absorb storage + egress costs that scale linearly with fleet size
 
-The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) hit a wall at 4 bits per weight. Below 4 bpw, every public method falls off a quality cliff.
+The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) hit a wall at 4 bits per weight. Below 4 bpw, **in our 6-model benchmark cohort**, every public method falls off a quality cliff.
 
 ## What we deliver
 
 ### Track A — post-training row-overlay quantization (USPTO 64/049,511) — shipping now
 
-Sub-3-bits-per-weight on a 6-model head-to-head cohort. **30% smaller than bitsandbytes NF4 at equivalent retention.** Zero catastrophic failures across the cohort — the only public method at this compression frontier with that property.
+Sub-3-bits-per-weight on a 6-model head-to-head cohort. **30% smaller than bitsandbytes NF4 at equivalent retention.** Zero catastrophic failures across the cohort — the only public method at this compression frontier with that property in the cohort we tested.
 
 ### Track B — Fractal Residual Recursion (USPTO 64/049,517) — v0.2 (Q3 2026)
 
-Architectural compression beyond the published academic frontier. Combined with Track A, the strongest end-to-end ratio we've measured for any frontier-class architecture.
+Architectural compression beyond the published academic frontier. Combined with Track A, the strongest end-to-end ratio we've measured for transformer language models in our cohort. Public-safe Track B evidence at [docs/evidence/matrix.md](evidence/matrix.md).
 
 ### What ships under a pilot
 
@@ -84,22 +85,22 @@ What we need from you:
 
 | In scope (pilot) | Out of scope (separate license required) |
 |---|---|
-| Reference compression on architectures we already support | Compression of your private/proprietary models (that's a commercial license) |
-| Methodology deep-dives under NDA | Per-device royalty / OEM licensing (separate term sheet) |
+| Public / open-weight model assessment + benchmark | Compression of your private/proprietary models (requires NDA + commercial pilot terms) |
+| Methodology deep-dives under NDA | Per-device royalty / OEM licensing structure (separate term sheet, scoped per customer) |
 | Bug fixes + integration help | Custom new compression methods (separate research engagement) |
-| 60-day production pilot | Permanent production deployment (recurring license required) |
+| 60-day production pilot window | Permanent production deployment (recurring license required) |
 
 ## Patent + commercial licensing path post-pilot
 
 Both pilot tiers convert to one of three commercial license shapes (or you can walk away with the assessment report).
 
-| License shape | Annual fee range | Best fit |
+| License shape | Pricing posture | Best fit |
 |---|---|---|
-| **Per-deployment SaaS** | $30K – $80K / year | Single product / single customer |
-| **Multi-deployment SaaS** | $80K – $200K / year | Enterprise with multiple internal use cases |
-| **OEM / per-device royalty** | $0.50 – $5 per device, volume tiers | Chip vendors and device OEMs |
+| **Per-deployment SaaS** | Starts at design-partner-friendly entry pricing; scales with deployment surface | Single product / single customer |
+| **Multi-deployment SaaS** | Tiered annual; structured with the customer based on internal use-case count | Enterprise with multiple internal use cases |
+| **OEM / per-device royalty** | Custom volume-tiered structure (annual license, per-device royalty, or hybrid); includes patent license | Chip vendors and device OEMs |
 
-Patent license terms are bundled into the commercial license. Standard MFN clauses, audit rights, and termination-for-convenience apply. We can work through redlines on a 2-3 week cycle.
+Patent license terms are bundled into the commercial license. Audit rights and standard commercial license terms apply, with redlines worked on a 2-3 week cycle. Specific bands are scoped per customer under NDA.
 
 ## Get started
 

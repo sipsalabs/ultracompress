@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
 """UltraCompress savings calculator.
 
-Estimates storage, bandwidth, and inference-memory savings for a model fleet
-when migrating from FP16 / NF4 / int8 baselines to UltraCompress 2.798-bpw artifacts.
+v0.1 quoteable: storage and egress savings.
+v0.2 planning only: steady-state inference-memory savings (the v0.1 reference
+loader inflates compressed weights at load time, so v0.1 inference memory
+matches the inflated form, not the on-disk form).
+
+Estimates storage, bandwidth, and (v0.2-projected) inference-memory savings for
+a model fleet when migrating from FP16 / NF4 / int8 baselines to UltraCompress
+2.798-bpw Track A reference artifacts.
 
 Usage:
     python savings_calculator.py
     python savings_calculator.py --params 1.7e9 --models 100
     python savings_calculator.py --json
 
-The output is intentionally honest: numbers reflect on-disk artifact size + the
-30%-smaller-than-NF4 ratio at equivalent retention. Inference-memory savings
-match disk savings for v0.1 (the loader inflates at load time).
+For sales conversations: quote the storage + egress columns directly. Treat the
+v0.2 GPU memory ceiling column as a planning estimate, not a v0.1 deliverable.
+The v0.2 native sub-3-bpw kernel path ships in Q3 2026, gated on patent
+prosecution timing.
 
-For internal sales conversations only. Adjust customer-specific cost assumptions
-before quoting; the defaults below are conservative public estimates as of April 2026.
+Adjust customer-specific cost assumptions before quoting; the defaults below
+are conservative public estimates as of April 2026.
 """
 
 from __future__ import annotations
@@ -58,7 +65,7 @@ class FleetSavings:
     fleet_uc_gb: float
     storage_savings_usd_year: float
     egress_savings_usd_per_full_redownload: float
-    inference_memory_savings_usd_year_per_replica: float
+    v02_inference_memory_ceiling_usd_year_per_replica: float
     compression_ratio: float
 
 
@@ -100,7 +107,7 @@ def compute_savings(params_per_model: float, model_count: int,
             fleet_uc_gb=round(fleet_uc_gb, 2),
             storage_savings_usd_year=round(storage_savings_year, 2),
             egress_savings_usd_per_full_redownload=round(egress_savings_per_pull, 2),
-            inference_memory_savings_usd_year_per_replica=round(inference_savings_year, 2),
+            v02_inference_memory_ceiling_usd_year_per_replica=round(inference_savings_year, 2),
             compression_ratio=round(bpp / ULTRACOMPRESS_BPP, 2),
         ))
 
@@ -144,8 +151,8 @@ def render_human_readable(result: dict) -> str:
     lines.append(f"Fleet: {inp['model_count']} models × {inp['params_per_model']:,.0f} params each")
     lines.append(f"Total parameters: {inp['total_params']:,.0f}\n")
     lines.append(f"UltraCompress fleet on disk: {result['ultracompress']['fleet_gb']:.2f} GB\n")
-    lines.append(f"{'Baseline':<28} {'Ratio':>8} {'Fleet GB':>10} {'Storage/yr':>14} {'Egress/pull':>14} {'GPU mem/yr':>14}")
-    lines.append("-" * 92)
+    lines.append(f"{'Baseline':<28} {'Ratio':>8} {'Fleet GB':>10} {'Storage/yr':>14} {'Egress/pull':>14} {'v0.2 GPU ceil/yr':>18}")
+    lines.append("-" * 96)
     for row in result["vs_baselines"]:
         lines.append(
             f"{row['baseline_name']:<28} "
@@ -153,8 +160,9 @@ def render_human_readable(result: dict) -> str:
             f"{row['fleet_baseline_gb']:>10.2f} "
             f"${row['storage_savings_usd_year']:>13,.2f} "
             f"${row['egress_savings_usd_per_full_redownload']:>13,.2f} "
-            f"${row['inference_memory_savings_usd_year_per_replica']:>13,.2f}"
+            f"${row['v02_inference_memory_ceiling_usd_year_per_replica']:>17,.2f}"
         )
+    lines.append("\n  (v0.1 quoteable: Storage/yr and Egress/pull. v0.2 GPU ceiling is a planning estimate only.)")
     lines.append("\nAssumptions:")
     for k, v in result["assumptions"].items():
         lines.append(f"  {k}: ${v}")
