@@ -83,6 +83,8 @@ Top-k retention curves (top-1, top-10, top-32, top-64, top-128, top-256) ship in
 
 Architectural compression beyond published academic ratios for transformer language models. Combined with Track A on the v0.2 stack: the strongest end-to-end ratio we've measured for transformer language model architectures in our cohort. Gated on patent prosecution timing.
 
+Track B evidence is separate from Track A shipping artifacts; see [docs/evidence/matrix.md](docs/evidence/matrix.md) for Track B detail. Do not combine retention numbers across tracks as a single quality curve.
+
 ## Patent status
 
 The UltraCompress compression methods are the subject of pending U.S. patent applications. Pre-compressed models are distributed under a separate licensing arrangement described in [LICENSE](LICENSE). The CLI code in this repository is Apache-2.0.

@@ -45,11 +45,11 @@ We run two pilot shapes. Both are designed to convert to a recurring license if 
 
 ### Tier 1 — Compression Assessment ($5,000 · 2-week turnaround)
 
-For teams who want to validate UltraCompress against their **existing model fleet** before committing to a full deployment pilot.
+For teams who want to validate UltraCompress against a **public/open-weight representative model from your stack** before committing to a full deployment pilot.
 
 What you get:
 
-- We run the v0.1 reference compression pipeline on a model + benchmark of your choice
+- Sipsa runs the internal reference pipeline and delivers the assessment on a model + benchmark of your choice
 - Public-method comparison table: UltraCompress vs your current quantization stack
 - Per-task retention curves (T1, T10, T32, T64, T128, T256) on the metrics you care about
 - A 30-minute deep-dive call covering methodology, limits, and the v0.2 roadmap
@@ -67,7 +67,7 @@ For teams ready to put UltraCompress into a development or staging deployment su
 
 What you get:
 
-- Three pre-compressed model artifacts tuned to your hardware (architectures of your choice)
+- Three pre-compressed model artifacts selected or prepared for your target hardware profile (architectures of your choice)
 - Integration support for your inference stack (vLLM, TensorRT-LLM, llama.cpp, custom) — within reason
 - Daily Slack / email channel during the 60-day window
 - Per-deployment performance dashboard: latency, memory, retention, customer-facing metrics
