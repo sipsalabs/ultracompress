@@ -1,6 +1,7 @@
 """Smoke tests — verify the CLI imports and banner prints."""
 from click.testing import CliRunner
 
+from ultracompress_cli import __version__
 from ultracompress_cli.__main__ import main
 
 
@@ -8,7 +9,7 @@ def test_version() -> None:
     runner = CliRunner()
     result = runner.invoke(main, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.0" in result.output
+    assert __version__ in result.output
 
 
 def test_help() -> None:

@@ -9,6 +9,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Added
 - (placeholder for next release)
 
+## [0.1.2] — 2026-04-27
+
+Foundation pass — fixes a release-pipeline bug, scrubs personal-info leaks
+in the published metadata, and tightens the demo so it cannot be misread
+as showing live data.
+
+### Fixed
+- **Critical**: `pyproject.toml` author and project URL fields were preserving
+  pre-rebrand values when v0.1.0 was packaged, so the published metadata on
+  PyPI was leaking a personal email and the old private GitHub org name.
+  v0.1.2 ships with `Sipsa Labs <founder@sipsalabs.com>` and
+  `github.com/sipsalabs/ultracompress` URLs throughout. Operators with
+  v0.1.0 installed should `pip install --upgrade ultracompress` once
+  v0.1.2 lands.
+- CI workflow `ci.yml` was not firing on tag pushes, so the `publish` job
+  (which has the right tag-prefix guard internally) never ran when v0.1.1
+  was tagged. Added `tags: ["v*.*.*"]` to the `push` trigger so future
+  tag pushes flow through the test gate and into PyPI publishing.
+- `__init__.py` `__version__` was out of sync with `pyproject.toml`
+  (0.1.0 vs 0.1.1). Both now read 0.1.2.
+
+### Changed
+- `uc demo` no longer renders mock download counts that could be misread
+  as real popularity numbers. The demo header explicitly shows
+  "DEMO MODE — illustrative data" and the catalog table includes a
+  caption pointing customers to `uc list` for the live Hub state.
+- `uc demo` install scene shows the correct `0.1.2` version string.
+
+### Notes
+- No CLI runtime changes beyond demo cosmetics.
+- v0.1.0 should be yanked from PyPI by the project owner after v0.1.2
+  publishes successfully — that prevents new installs from receiving
+  the leaky metadata while preserving the version for users who pinned
+  it explicitly.
+
 ## [0.1.1] — 2026-04-27
 
 Customer-facing artifacts and trust signals. No CLI runtime changes.
@@ -47,6 +82,7 @@ Initial public alpha release. Patent-pending compression methods (USPTO 64/049,5
 - Self-compression (`uc compress`) is intentionally not yet shipped — it is gated on the patent-pending compression methods being formally protected.
 - Pre-compressed model artifacts are licensed separately from the CLI itself.
 
-[Unreleased]: https://github.com/sipsalabs/ultracompress/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/sipsalabs/ultracompress/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.2
 [0.1.1]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.1
 [0.1.0]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.0

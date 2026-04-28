@@ -5,6 +5,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from ultracompress_cli import __version__
 from ultracompress_cli.__main__ import main
 
 
@@ -38,4 +39,4 @@ def test_short_version_flag_works() -> None:
     runner = CliRunner()
     result = runner.invoke(main, ["-V"])
     assert result.exit_code == 0
-    assert "0.1.0" in result.output
+    assert __version__ in result.output

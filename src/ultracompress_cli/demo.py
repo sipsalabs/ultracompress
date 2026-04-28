@@ -4,6 +4,12 @@ The `uc demo` command runs the full demo sequence with realistic timing,
 spinner animations, and output. Designed for screen recording (OBS, Loom,
 asciinema) without needing the HF Hub to actually be populated.
 
+IMPORTANT — the demo uses ILLUSTRATIVE values, not live data. The model
+catalog rows, download counts, and benchmark numbers shown by `uc demo`
+are scripted demo data labeled DEMO in the output. They do not reflect
+live HF Hub state or real downloads. Run `uc list` against a real HF Hub
+session for the actual catalog state.
+
 Usage:
     uc demo              # plays the full 60-sec sequence
     uc demo --speed 2    # 2x speed (for testing)
@@ -25,48 +31,46 @@ SCENES = [
 ]
 
 
-MOCK_MODELS = [
+# Illustrative demo rows. These are NOT live HF Hub data and NOT real
+# download counts. The "downloads" field is intentionally rendered as "—"
+# in the demo output so a screencast cannot be misread as showing real
+# popularity numbers. Use `uc list` against the live Hub for actual state.
+DEMO_MODELS = [
     {
         "modelId": "sipsalabs/qwen3-1.7b-uc2p79",
         "base": "Qwen3-1.7B",
         "bpw": 2.798,
         "size": "635 MB",
-        "downloads": 12_847,
     },
     {
         "modelId": "sipsalabs/mistral-7b-uc2p79",
         "base": "Mistral-7B-v0.3",
         "bpw": 2.798,
         "size": "2.7 GB",
-        "downloads": 8_421,
     },
     {
         "modelId": "sipsalabs/qwen3-8b-uc2p79",
         "base": "Qwen3-8B",
         "bpw": 2.798,
         "size": "3.0 GB",
-        "downloads": 5_193,
     },
     {
         "modelId": "sipsalabs/tinyllama-1.1b-uc2p40",
         "base": "TinyLlama-1.1B",
         "bpw": 2.405,
         "size": "412 MB",
-        "downloads": 3_672,
     },
     {
         "modelId": "sipsalabs/olmo2-1b-uc2p79",
         "base": "OLMo-2-1B",
         "bpw": 2.798,
         "size": "452 MB",
-        "downloads": 2_091,
     },
     {
         "modelId": "sipsalabs/smollm2-1.7b-uc2p79",
         "base": "SmolLM2-1.7B",
         "bpw": 2.798,
         "size": "672 MB",
-        "downloads": 1_834,
     },
 ]
 
@@ -92,9 +96,9 @@ def _scene_install(console: Console, speed: float, no_pause: bool) -> None:
         _pause(0.6, speed)
     console.print("[dim]Collecting ultracompress...[/dim]")
     _pause(0.4, speed)
-    console.print("[dim]  Downloading ultracompress-0.1.0-py3-none-any.whl (10 KB)[/dim]")
+    console.print("[dim]  Downloading ultracompress-0.1.2-py3-none-any.whl (10 KB)[/dim]")
     _pause(0.3, speed)
-    console.print("[green]Successfully installed ultracompress-0.1.0[/green]")
+    console.print("[green]Successfully installed ultracompress-0.1.2[/green]")
     if not no_pause:
         _pause(0.5, speed)
 
@@ -107,25 +111,25 @@ def _scene_list(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.5, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.0  ·  sipsalabs.com[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.2  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]")
     console.print("[dim]Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517[/dim]")
     console.print()
     with console.status("[cyan]Querying Hugging Face Hub..."):
         _pause(1.0, speed)
 
-    table = Table(show_header=True, header_style="bold cyan")
+    table = Table(show_header=True, header_style="bold cyan",
+                  caption="[yellow]DEMO[/yellow] illustrative catalog — run `uc list` against the live Hub for real state",
+                  caption_style="dim italic")
     table.add_column("Model ID", style="bright_white")
     table.add_column("Base", style="dim")
     table.add_column("bpw", justify="right", style="cyan")
     table.add_column("Size", justify="right", style="dim")
-    table.add_column("Downloads", justify="right", style="dim")
-    for m in MOCK_MODELS:
+    for m in DEMO_MODELS:
         table.add_row(
             m["modelId"],
             m["base"],
             f"{m['bpw']:.3f}",
             m["size"],
-            f"{m['downloads']:,}",
         )
     console.print(table)
     if not no_pause:
@@ -140,7 +144,7 @@ def _scene_pull(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.4, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.0  ·  sipsalabs.com[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.2  ·  sipsalabs.com  ·  DEMO MODE[/dim]")
     console.print()
     console.print("[cyan]->[/cyan] Pulling [bright_white]sipsalabs/qwen3-1.7b-uc2p79[/bright_white] "
                   "to [dim]./models/sipsalabs_qwen3-1.7b-uc2p79[/dim]")
@@ -172,7 +176,7 @@ def _scene_bench(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.4, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.0[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.2  ·  DEMO MODE[/dim]")
     console.print()
     console.print("[cyan]->[/cyan] Benchmarking on tasks: [cyan]hellaswag[/cyan]  [dim]limit=500  device=cuda:0[/dim]")
     console.print()
