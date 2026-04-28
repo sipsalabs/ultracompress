@@ -8,7 +8,7 @@
 
 **Run language models on less hardware than they were supposed to need.**
 
-UltraCompress publishes pre-compressed reference language models at sub-3 bits per weight — **30% smaller than bitsandbytes NF4** with **zero catastrophic failures** on a 6-model head-to-head cohort. The underlying methods are patent pending; this CLI lets you **download pre-compressed reference models** and run them locally.
+UltraCompress is the patent-pending compression infrastructure for transformer language models. The Track A method targets sub-3 bits per weight — **~30% smaller than bitsandbytes NF4** with **zero catastrophic failures** on a 6-model head-to-head cohort in our internal benchmark. The CLI is shipped on PyPI today; pre-compressed reference models roll out on Hugging Face Hub through April–May 2026.
 
 ### Who this is for
 
@@ -28,16 +28,16 @@ pip install ultracompress
 ## Quickstart
 
 ```bash
-# List pre-compressed models available on the official Hugging Face Hub
+# Today: scripted demo (no Hub artifacts required)
+uc demo
+
+# Today: query the live HF Hub catalog (returns "No pre-compressed models
+# published yet" until the first rolling-release artifact lands)
 uc list
 
-# Download a pre-compressed model
+# Post-artifact example usage (works once an artifact is on the Hub):
 uc pull sipsalabs/<model-id>
-
-# Inspect what's in a compressed artifact
 uc info ./models/<model-id>
-
-# Benchmark the compressed model against the fp16 teacher
 uc bench ./models/<model-id> --tasks hellaswag --limit 500
 ```
 
