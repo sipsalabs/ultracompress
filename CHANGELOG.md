@@ -9,6 +9,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Added
 - (placeholder for next release)
 
+## [0.1.3] — 2026-04-29
+
+OSS compliance hardening pass — adds the artifacts that enterprise
+procurement, EU Cyber Resilience Act 2027, and US EO 14028 customers
+will increasingly require, without changing CLI behavior.
+
+### Added
+- **`THIRD_PARTY_LICENSES.txt`** at the repo root and inside the wheel
+  (`ultracompress_cli/THIRD_PARTY_LICENSES.txt`) listing every runtime
+  dependency (`huggingface_hub`, `safetensors`, `tqdm`, `click`, `rich`,
+  `PyYAML`) with version, license, copyright, source URL, and the full
+  text of each license family used (Apache 2.0, BSD-3-Clause, MIT,
+  MPL-2.0). Aligns with the Sipsa Labs Open Source Software Compliance
+  Policy §5.1.
+- **`SBOM-cyclonedx.json`** — CycloneDX 1.6 Software Bill of Materials
+  shipped at the repo root and inside the wheel
+  (`ultracompress_cli/SBOM-cyclonedx.json`), enumerating the runtime
+  dependency graph with PURLs and distribution URLs. Generated via
+  `cyclonedx-py requirements`. Aligns with the Sipsa Labs OSS Compliance
+  Policy §7 and the EU Cyber Resilience Act / US EO 14028 expectation
+  that software vendors publish SBOMs.
+
+### Changed
+- `pyproject.toml` build configuration: `[tool.hatch.build.targets.wheel.force-include]`
+  now bundles `THIRD_PARTY_LICENSES.txt` and `SBOM-cyclonedx.json` into
+  the published wheel; `[tool.hatch.build.targets.sdist].include` makes
+  the same files plus `CHANGELOG.md`, `CONTRIBUTING.md`,
+  `CODE_OF_CONDUCT.md`, and `SECURITY.md` part of the source
+  distribution.
+
+### Notes
+- No CLI behavior change. `uc list`, `uc pull`, `uc info`, `uc bench`,
+  and `uc demo` are byte-for-byte equivalent to v0.1.2.
+- Customers receiving a v0.1.3 wheel can locate license attribution at
+  `ultracompress_cli/THIRD_PARTY_LICENSES.txt` and SBOM at
+  `ultracompress_cli/SBOM-cyclonedx.json` after `pip install ultracompress`.
+- No new runtime dependencies. No version pin changes for existing
+  dependencies.
+
 ## [0.1.2] — 2026-04-27
 
 Foundation pass — fixes a release-pipeline bug, scrubs personal-info leaks

@@ -96,9 +96,9 @@ def _scene_install(console: Console, speed: float, no_pause: bool) -> None:
         _pause(0.6, speed)
     console.print("[dim]Collecting ultracompress...[/dim]")
     _pause(0.4, speed)
-    console.print("[dim]  Downloading ultracompress-0.1.2-py3-none-any.whl (10 KB)[/dim]")
+    console.print("[dim]  Downloading ultracompress-0.1.3-py3-none-any.whl (10 KB)[/dim]")
     _pause(0.3, speed)
-    console.print("[green]Successfully installed ultracompress-0.1.2[/green]")
+    console.print("[green]Successfully installed ultracompress-0.1.3[/green]")
     if not no_pause:
         _pause(0.5, speed)
 
@@ -111,7 +111,7 @@ def _scene_list(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.5, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.2  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]")
     console.print("[dim]Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517[/dim]")
     console.print()
     with console.status("[cyan]Querying Hugging Face Hub..."):
@@ -144,7 +144,7 @@ def _scene_pull(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.4, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.2  ·  sipsalabs.com  ·  DEMO MODE[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE[/dim]")
     console.print()
     console.print("[cyan]->[/cyan] Pulling [bright_white]sipsalabs/qwen3-1.7b-uc2p79[/bright_white] "
                   "to [dim]./models/sipsalabs_qwen3-1.7b-uc2p79[/dim]")
@@ -176,7 +176,7 @@ def _scene_bench(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.4, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.2  ·  DEMO MODE[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  DEMO MODE[/dim]")
     console.print()
     console.print("[cyan]->[/cyan] Benchmarking on tasks: [cyan]hellaswag[/cyan]  [dim]limit=500  device=cuda:0[/dim]")
     console.print()

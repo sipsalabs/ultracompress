@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ultracompress"
-version = "0.1.2"
+version = "0.1.3"
 description = "Extreme compression for large language models. Download pre-compressed models from Hugging Face Hub; self-compress support coming soon."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -38,6 +38,10 @@ dependencies = [
 torch = [
     "torch>=2.0.0",
 ]
+bench = [
+    "torch>=2.0.0",
+    "lm-eval>=0.4.5",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -60,6 +64,26 @@ packages = ["src/ultracompress_cli"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/ultracompress_cli" = "ultracompress_cli"
+
+[tool.hatch.build.targets.wheel.force-include]
+"THIRD_PARTY_LICENSES.txt" = "ultracompress_cli/THIRD_PARTY_LICENSES.txt"
+"SBOM-cyclonedx.json" = "ultracompress_cli/SBOM-cyclonedx.json"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/ultracompress_cli/**",
+    "tests/**",
+    "docs/**",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_LICENSES.txt",
+    "SBOM-cyclonedx.json",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "pyproject.toml",
+]
 
 [tool.ruff]
 line-length = 100
