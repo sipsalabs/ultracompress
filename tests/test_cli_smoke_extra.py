@@ -1,5 +1,4 @@
 """Extra CLI smoke tests beyond test_smoke.py."""
-
 from __future__ import annotations
 
 from pathlib import Path

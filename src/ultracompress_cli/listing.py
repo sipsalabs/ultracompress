@@ -1,5 +1,4 @@
 """List pre-compressed UltraCompress models on the Hugging Face Hub."""
-
 from __future__ import annotations
 
 from typing import Any
@@ -31,16 +30,14 @@ def list_published_models() -> list[dict[str, Any]]:
 
     for m in raw:
         card = getattr(m, "card_data", None) or {}
-        out.append(
-            {
-                "modelId": m.modelId,
-                "base_model": card.get("base_model", "?"),
-                "bpw": float(card.get("bpw", 0.0)),
-                "size_human": card.get("size_human", "?"),
-                "downloads": int(getattr(m, "downloads", 0) or 0),
-                "likes": int(getattr(m, "likes", 0) or 0),
-            }
-        )
+        out.append({
+            "modelId": m.modelId,
+            "base_model": card.get("base_model", "?"),
+            "bpw": float(card.get("bpw", 0.0)),
+            "size_human": card.get("size_human", "?"),
+            "downloads": int(getattr(m, "downloads", 0) or 0),
+            "likes": int(getattr(m, "likes", 0) or 0),
+        })
     # Sort by bpw ascending, then downloads descending
     out.sort(key=lambda d: (d["bpw"], -d["downloads"]))
     return out

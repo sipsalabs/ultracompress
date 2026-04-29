@@ -15,7 +15,6 @@ Usage:
     uc demo --speed 2    # 2x speed (for testing)
     uc demo --no-pause   # no inter-step pauses (faster runs)
 """
-
 from __future__ import annotations
 
 import time
@@ -112,22 +111,15 @@ def _scene_list(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.5, speed)
     console.print()
-    console.print(
-        "[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]"
-    )
-    console.print(
-        "[dim]Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517[/dim]"
-    )
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]")
+    console.print("[dim]Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517[/dim]")
     console.print()
     with console.status("[cyan]Querying Hugging Face Hub..."):
         _pause(1.0, speed)
 
-    table = Table(
-        show_header=True,
-        header_style="bold cyan",
-        caption="[yellow]DEMO[/yellow] illustrative catalog — run `uc list` against the live Hub for real state",
-        caption_style="dim italic",
-    )
+    table = Table(show_header=True, header_style="bold cyan",
+                  caption="[yellow]DEMO[/yellow] illustrative catalog — run `uc list` against the live Hub for real state",
+                  caption_style="dim italic")
     table.add_column("Model ID", style="bright_white")
     table.add_column("Base", style="dim")
     table.add_column("bpw", justify="right", style="cyan")
@@ -152,14 +144,10 @@ def _scene_pull(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.4, speed)
     console.print()
-    console.print(
-        "[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE[/dim]"
-    )
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE[/dim]")
     console.print()
-    console.print(
-        "[cyan]->[/cyan] Pulling [bright_white]sipsalabs/qwen3-1.7b-uc2p79[/bright_white] "
-        "to [dim]./models/sipsalabs_qwen3-1.7b-uc2p79[/dim]"
-    )
+    console.print("[cyan]->[/cyan] Pulling [bright_white]sipsalabs/qwen3-1.7b-uc2p79[/bright_white] "
+                  "to [dim]./models/sipsalabs_qwen3-1.7b-uc2p79[/dim]")
 
     total_mb = 635
     bar_width = 40
@@ -172,11 +160,10 @@ def _scene_pull(console: Console, speed: float, no_pause: bool) -> None:
         empty = bar_width - filled
         downloaded = int(pct * total_mb)
         bar = "[bold cyan]" + "#" * filled + "[/bold cyan]" + "[dim]" + "-" * empty + "[/dim]"
-        console.print(f"  downloading... [{bar}]  {downloaded} MB / {total_mb} MB", soft_wrap=False)
+        console.print(f"  downloading... [{bar}]  {downloaded} MB / {total_mb} MB",
+                      soft_wrap=False)
         time.sleep(sleep_per_step)
-    console.print(
-        "[green]OK[/green] Saved to [bright_white]./models/sipsalabs_qwen3-1.7b-uc2p79[/bright_white]"
-    )
+    console.print("[green]OK[/green] Saved to [bright_white]./models/sipsalabs_qwen3-1.7b-uc2p79[/bright_white]")
     if not no_pause:
         _pause(1.0, speed)
 
@@ -185,17 +172,13 @@ def _scene_bench(console: Console, speed: float, no_pause: bool) -> None:
     """Show `uc bench` with results."""
     console.print()
     console.print("[bold yellow]$[/bold yellow] ", end="")
-    _slow_print(
-        console, "uc bench ./models/sipsalabs_qwen3-1.7b-uc2p79 --tasks hellaswag --limit 500"
-    )
+    _slow_print(console, "uc bench ./models/sipsalabs_qwen3-1.7b-uc2p79 --tasks hellaswag --limit 500")
     if not no_pause:
         _pause(0.4, speed)
     console.print()
     console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  DEMO MODE[/dim]")
     console.print()
-    console.print(
-        "[cyan]->[/cyan] Benchmarking on tasks: [cyan]hellaswag[/cyan]  [dim]limit=500  device=cuda:0[/dim]"
-    )
+    console.print("[cyan]->[/cyan] Benchmarking on tasks: [cyan]hellaswag[/cyan]  [dim]limit=500  device=cuda:0[/dim]")
     console.print()
 
     with console.status("[cyan]Running lm-eval-harness on hellaswag (500 samples)..."):
@@ -209,9 +192,7 @@ def _scene_bench(console: Console, speed: float, no_pause: bool) -> None:
     table.add_row("hellaswag", "41.60%", "51.80%", "+/-2.20%")
     console.print(table)
     console.print()
-    console.print(
-        "  [dim]Teacher Qwen3-1.7B (fp16):[/dim]   [bright_white]53.40%[/bright_white]  acc_norm"
-    )
+    console.print("  [dim]Teacher Qwen3-1.7B (fp16):[/dim]   [bright_white]53.40%[/bright_white]  acc_norm")
     console.print("  [dim]Retention:[/dim]                  [bold green]97.0%[/bold green]")
     console.print("  [dim]Disk savings vs NF4:[/dim]        [bold green]30%[/bold green]")
     if not no_pause:
@@ -223,9 +204,7 @@ def _scene_close(console: Console, speed: float, no_pause: bool) -> None:
     console.print()
     console.print("[bold cyan]" + "=" * 60 + "[/bold cyan]")
     console.print()
-    console.print(
-        "  [bold cyan]UltraCompress[/bold cyan]  [dim]·[/dim]  Extreme compression for LLMs"
-    )
+    console.print("  [bold cyan]UltraCompress[/bold cyan]  [dim]·[/dim]  Extreme compression for LLMs")
     console.print()
     console.print("  [bold]pip install ultracompress[/bold]")
     console.print()

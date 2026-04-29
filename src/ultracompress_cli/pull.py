@@ -1,5 +1,4 @@
 """Pull a pre-compressed UltraCompress model from the Hugging Face Hub."""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,7 +15,9 @@ def pull_model(model_id: str, output_dir: Path, revision: str | None = None) -> 
     try:
         from huggingface_hub import snapshot_download
     except ImportError as e:
-        raise RuntimeError("huggingface_hub not installed; run `pip install ultracompress`") from e
+        raise RuntimeError(
+            "huggingface_hub not installed; run `pip install ultracompress`"
+        ) from e
 
     output_dir = Path(output_dir).expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
