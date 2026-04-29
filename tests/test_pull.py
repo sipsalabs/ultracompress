@@ -2,6 +2,7 @@
 
 We don't actually hit the HF Hub in tests — the wrapper is patched.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

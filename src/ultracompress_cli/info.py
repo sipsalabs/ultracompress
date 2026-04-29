@@ -1,6 +1,8 @@
 """Inspect a compressed artifact's metadata."""
+
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -10,32 +12,107 @@ from rich.panel import Panel
 from rich.table import Table
 
 
-def read_artifact_metadata(path: Path) -> dict[str, Any] | None:
-    """Look for `ultracompress.json` in an artifact directory (or treat path itself as the manifest)."""
+def find_manifest_path(path: Path) -> Path | None:
+    """Return the best UltraCompress manifest path for a file or artifact directory."""
     if path.is_file() and path.suffix == ".json":
-        try:
-            return json.loads(path.read_text())
-        except Exception:
-            return None
+        return path
 
     candidates = [
         path / "ultracompress.json",
         path / "compression_manifest.json",
         path / "config.json",
     ]
-    for c in candidates:
-        if c.exists():
-            try:
-                data = json.loads(c.read_text())
-                # Only return if this looks like an ultracompress artifact
-                if "ultracompress" in data or "uc_version" in data or "bpw" in data:
-                    return data
-            except Exception:
-                continue
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
     return None
 
 
-def summarize_artifact(meta: dict[str, Any], console: Console) -> None:
+def read_artifact_metadata(path: Path) -> dict[str, Any] | None:
+    """Look for `ultracompress.json` in an artifact directory (or treat path itself as the manifest)."""
+    manifest_path = find_manifest_path(path)
+    if manifest_path is None:
+        return None
+
+    try:
+        data = json.loads(manifest_path.read_text())
+    except Exception:
+        return None
+
+    if path.is_file() and path.suffix == ".json":
+        return data
+
+    # Only return directory-discovered metadata if this looks like an UltraCompress artifact.
+    if "ultracompress" in data or "uc_version" in data or "bpw" in data:
+        return data
+    return None
+
+
+def _format_float(value: Any, precision: int) -> str | None:
+    """Format numeric manifest fields that may arrive as strings."""
+    try:
+        return f"{float(value):.{precision}f}"
+    except (TypeError, ValueError):
+        return None
+
+
+def _artifact_dir(path: Path) -> Path:
+    """Return the artifact directory for either a manifest file or directory path."""
+    return path.parent if path.is_file() else path
+
+
+def _safe_relative_path(raw_path: str) -> Path | None:
+    """Reject absolute paths and parent traversal inside manifest file entries."""
+    relative_path = Path(raw_path)
+    if relative_path.is_absolute() or ".." in relative_path.parts:
+        return None
+    return relative_path
+
+
+def verify_artifact_files(path: Path, meta: dict[str, Any]) -> list[str]:
+    """Validate manifest-declared files and return human-readable issues."""
+    files = meta.get("files")
+    if not isinstance(files, dict):
+        return []
+
+    base_dir = _artifact_dir(path)
+    issues: list[str] = []
+    for raw_name, expected in files.items():
+        if not isinstance(raw_name, str) or not isinstance(expected, dict):
+            issues.append(f"Invalid manifest file entry: {raw_name!r}")
+            continue
+
+        relative_path = _safe_relative_path(raw_name)
+        if relative_path is None:
+            issues.append(f"Unsafe manifest file path: {raw_name}")
+            continue
+
+        file_path = base_dir / relative_path
+        if not file_path.exists():
+            issues.append(f"Missing file: {raw_name}")
+            continue
+        if not file_path.is_file():
+            issues.append(f"Not a file: {raw_name}")
+            continue
+
+        expected_size = expected.get("size_bytes")
+        if expected_size is not None:
+            try:
+                if file_path.stat().st_size != int(expected_size):
+                    issues.append(f"Size mismatch: {raw_name}")
+            except (TypeError, ValueError):
+                issues.append(f"Invalid size for: {raw_name}")
+
+        expected_sha = expected.get("sha256")
+        if expected_sha:
+            actual_sha = hashlib.sha256(file_path.read_bytes()).hexdigest()
+            if actual_sha.lower() != str(expected_sha).lower():
+                issues.append(f"SHA-256 mismatch: {raw_name}")
+
+    return issues
+
+
+def summarize_artifact(meta: dict[str, Any], console: Console, path: Path | None = None) -> None:
     """Pretty-print artifact metadata to the console."""
     title = meta.get("name") or meta.get("model_id") or "UltraCompress artifact"
     content = []
@@ -46,11 +123,13 @@ def summarize_artifact(meta: dict[str, Any], console: Console) -> None:
 
     bpw = meta.get("bpw") or meta.get("bits_per_weight")
     if bpw is not None:
-        content.append(f"[bold]Compression:[/bold] {bpw:.3f} bits per weight")
+        formatted_bpw = _format_float(bpw, 3)
+        content.append(f"[bold]Compression:[/bold] {formatted_bpw or bpw} bits per weight")
 
     ratio = meta.get("compression_ratio") or meta.get("ratio")
     if ratio is not None:
-        content.append(f"[bold]Ratio:[/bold] {ratio:.2f}×")
+        formatted_ratio = _format_float(ratio, 2)
+        content.append(f"[bold]Ratio:[/bold] {formatted_ratio or ratio}×")
 
     method = meta.get("method") or meta.get("track")
     if method:
@@ -60,7 +139,36 @@ def summarize_artifact(meta: dict[str, Any], console: Console) -> None:
     if uc_version:
         content.append(f"[bold]UC version:[/bold] {uc_version}")
 
+    verification_issues = verify_artifact_files(path, meta) if path is not None else []
+    if path is not None and isinstance(meta.get("files"), dict):
+        if verification_issues:
+            content.append("[bold yellow]Manifest verification:[/bold yellow] warnings found")
+        else:
+            content.append("[bold green]Manifest verification:[/bold green] OK")
+
     console.print(Panel("\n".join(content), title=f"[cyan]{title}[/cyan]", border_style="cyan"))
+
+    if verification_issues:
+        console.print("[yellow]Manifest warnings:[/yellow]")
+        for issue in verification_issues:
+            console.print(f"  [yellow]-[/yellow] {issue}")
+
+    files = meta.get("files")
+    if isinstance(files, dict) and files:
+        file_table = Table(title="Manifest files", show_header=True, header_style="bold cyan")
+        file_table.add_column("Path", style="bright_white")
+        file_table.add_column("Size", justify="right", style="dim")
+        file_table.add_column("SHA-256", style="dim")
+        for raw_name, expected in files.items():
+            if not isinstance(expected, dict):
+                continue
+            sha = str(expected.get("sha256", ""))
+            file_table.add_row(
+                str(raw_name),
+                str(expected.get("size_bytes", "?")),
+                f"{sha[:12]}..." if sha else "?",
+            )
+        console.print(file_table)
 
     # Benchmarks (if included in manifest)
     benches = meta.get("benchmarks") or meta.get("evaluations")

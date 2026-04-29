@@ -1,4 +1,5 @@
 """Run downstream lm-eval-harness benchmarks on a compressed artifact."""
+
 from __future__ import annotations
 
 import json
@@ -23,9 +24,7 @@ def run_benchmarks(
     try:
         import lm_eval  # noqa: F401
     except ImportError as e:
-        raise RuntimeError(
-            "lm-eval-harness not installed; run `pip install lm-eval`"
-        ) from e
+        raise RuntimeError("lm-eval-harness not installed; run `pip install lm-eval`") from e
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -33,14 +32,24 @@ def run_benchmarks(
     output_file = output_dir / f"bench_{artifact_path.name}.json"
 
     cmd = [
-        sys.executable, "-u", "-m", "lm_eval",
-        "--model", "hf",
-        "--model_args", f"pretrained={artifact_path},dtype=float16",
-        "--tasks", tasks_csv,
-        "--batch_size", str(batch_size),
-        "--device", device,
-        "--limit", str(limit),
-        "--output_path", str(output_file),
+        sys.executable,
+        "-u",
+        "-m",
+        "lm_eval",
+        "--model",
+        "hf",
+        "--model_args",
+        f"pretrained={artifact_path},dtype=float16",
+        "--tasks",
+        tasks_csv,
+        "--batch_size",
+        str(batch_size),
+        "--device",
+        device,
+        "--limit",
+        str(limit),
+        "--output_path",
+        str(output_file),
     ]
 
     proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -49,7 +58,8 @@ def run_benchmarks(
             f"lm-eval-harness exited with code {proc.returncode}\n{proc.stderr[-2000:]}"
         )
 
-    result_files = list(output_dir.rglob("results_*.json"))
+    result_files = [output_file] if output_file.exists() else []
+    result_files.extend(output_dir.rglob("results_*.json"))
     if not result_files:
         raise RuntimeError(f"No results JSON produced under {output_dir}")
     latest = max(result_files, key=lambda p: p.stat().st_mtime)
