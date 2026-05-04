@@ -1,0 +1,19 @@
+{
+  "model": "qwen3-32b",
+  "hf_id": "Qwen/Qwen3-32B",
+  "n_layers": 64,
+  "n_eval": 50,
+  "seq_len": 128,
+  "seed": 42,
+  "baseline_ppl": 13.766236864648512,
+  "baseline_method": "pre-computed",
+  "compressed_ppl": 14.320035748817258,
+  "ppl_ratio": 1.040228777814429,
+  "peak_vram_eval_gb": 5.021572608,
+  "eval_time_s": 2349.117252588272,
+  "baseline_time_s": 0.0,
+  "compressed_dir": "C:\\Users\\scamd\\ultracompress\\scripts\\overlay\\streaming_compress_output_qwen3-32b",
+  "device": "cuda:1",
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "timestamp": "2026-05-04T06:46:03.987446"
+}
