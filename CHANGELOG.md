@@ -9,6 +9,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Added
 - (placeholder for next release)
 
+## [0.4.0] — 2026-05-04
+
+Streaming compression release — full Qwen scaling curve validated end-to-end with single-GPU peak VRAM bounded regardless of total model depth.
+
+### Added
+- **`scripts/overlay/streaming_compression_runner.py`** — per-layer streaming compression. Loads each transformer decoder layer's fp16 weights via `safetensors` lazy loading, caches teacher hidden output, applies GSQ scalar quantization (5 bpw, B=64), fits V18-C low-rank correction (r=32) via 200-step KL distillation against the cache, saves the compressed layer, frees memory, moves to the next layer. Peak VRAM bounded by ~one layer's parameters regardless of total model depth.
+- **`scripts/overlay/streaming_compression_online_runner.py`** — online-distillation variant that forwards through previously compressed layers to generate realistic input distributions during V18-C fitting.
+- **`scripts/overlay/streaming_compression_hybrid_runner.py`** — hybrid offline + online reconciliation pass on the deepest layers.
+- **`scripts/overlay/eval_compressed_only.py`** — eval-only path for previously-compressed layer checkpoints (sidesteps `device_map="auto"` corner cases under restricted GPU visibility).
+- **`scripts/overlay/quantizers/trellis.py`** — QTIP-style trellis-coded quantizer (L=16 bitshift codebook, 3INST decoder, codebook-std-calibrated input, optional Random Hadamard Transform). Wired into `scaling_curve_runner.py --quantizer trellis`. Smoke beats per-block scalar baseline by 30%+ on synthetic Gaussian at 3 bpw; partial wall-break on Qwen3-1.7B 3 bpw (T1 80.80% vs 74.29% scalar baseline; PPL ratio 1.0516 vs 1.1594).
+- **`scripts/overlay/test_trellis_smoke.py`** — synthetic-Gaussian smoke verifying trellis vs scalar baseline.
+- **`scripts/overlay/artifacts/streaming_compression_*.json`** — full result JSONs for each scaling curve point (8B / 14B / 32B / 72B).
+
+### Production results (offline streaming compression, GSQ 5 bpw + V18-C r=32)
+
+| Model        | Baseline PPL | Compressed PPL | PPL ratio | Peak VRAM |
+|--------------|--------------|----------------|-----------|-----------|
+| Qwen3-8B     |        16.79 |          17.26 |  1.0278×  |   2.26 GB |
+| Qwen3-14B    |        15.44 |          15.61 |  1.0111×  |   3.37 GB |
+| Qwen3-32B    |        13.77 |          14.27 |  1.0367×  |   4.85 GB |
+| Qwen2.5-72B  |         8.92 |           9.07 |  1.0162×  |   8.98 GB |
+
+Qwen2.5-72B compressed to 8.98 GB peak VRAM on a single RTX 5090 — production-grade quality (1.6% PPL drift) on consumer hardware.
+
+### Patent
+
+USPTO 64/049,511 + 64/049,517 supplement covering the streaming-compression mechanism, filed May 2026.
+
 ## [0.1.3] — 2026-04-29
 
 OSS compliance hardening pass — adds the artifacts that enterprise
