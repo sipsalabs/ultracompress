@@ -1,0 +1,53 @@
+{
+  "model": "qwen3-8b",
+  "hf_id": "Qwen/Qwen3-8B",
+  "n_layers": 36,
+  "bpw": 5,
+  "block_size": 64,
+  "rank": 32,
+  "train_steps": 200,
+  "train_lr": 0.001,
+  "train_bs": 8,
+  "n_calib": 100,
+  "n_eval": 50,
+  "seq_len": 128,
+  "seed": 42,
+  "baseline_fp16_ppl": 16.7897,
+  "compressed_ppl": 17.2566,
+  "ppl_ratio": 1.0278,
+  "peak_vram_compress_gb": 2.26,
+  "peak_vram_eval_gb": 3.30,
+  "total_compress_time_s": 533.4,
+  "eval_time_s": 792.2,
+  "hardest_layer_idx": 35,
+  "hardest_layer_loss": 0.312294,
+  "per_layer_train_loss": [
+    0.000122, 0.000073, 0.000100, 0.000213, 0.000411, 0.000692,
+    0.009213, 0.001309, 0.002134, 0.002584, 0.002645, 0.002661,
+    0.002614, 0.002606, 0.002810, 0.002587, 0.024012, 0.002899,
+    0.003401, 0.004651, 0.004875, 0.006588, 0.011259, 0.017074,
+    0.021652, 0.026030, 0.031770, 0.043604, 0.060638, 0.072731,
+    0.104729, 0.126261, 0.160815, 0.216093, 0.286927, 0.312294
+  ],
+  "per_layer_quant_rel_l2": [
+    0.0435, 0.0444, 0.0447, 0.0442, 0.0440, 0.0438,
+    0.0438, 0.0436, 0.0436, 0.0440, 0.0438, 0.0440,
+    0.0440, 0.0440, 0.0439, 0.0440, 0.0439, 0.0440,
+    0.0440, 0.0445, 0.0441, 0.0442, 0.0443, 0.0442,
+    0.0442, 0.0437, 0.0436, 0.0437, 0.0437, 0.0438,
+    0.0439, 0.0438, 0.0440, 0.0439, 0.0440, 0.0437
+  ],
+  "per_layer_compress_time_s": [
+    17.8, 14.4, 14.4, 14.0, 14.5, 15.4,
+    14.2, 14.5, 14.2, 14.5, 14.8, 14.6,
+    14.2, 14.9, 14.7, 14.8, 14.3, 14.1,
+    14.2, 14.7, 14.4, 14.2, 14.1, 14.3,
+    14.9, 14.6, 14.3, 14.4, 14.2, 14.6,
+    14.2, 14.3, 14.1, 14.6, 14.1, 14.1
+  ],
+  "timestamp": "2026-05-04T00:00:00",
+  "device": "cuda:0",
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "status": "PASS",
+  "notes": "PPL_r=1.0278x < 1.05x threshold. Streaming layer-wise compression validated on Qwen3-8B. Peak VRAM 2.26GB during compression, 3.30GB during streaming eval. Total compress time 533s (14.8s/layer avg). Teacher hidden states cached in 61s (NF4 4-bit, 100 prompts x 128 tokens). Ready to scale to 14B/32B/72B."
+}
