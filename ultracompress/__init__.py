@@ -1,22 +1,59 @@
 """
-UltraCompress — Extreme Model Compression via Fractal Residual Recursion
+UltraCompress -- production model compression.
 
-One shared transformer block replaces all layers. 60x smaller, 3x faster.
-Combined with quantization pipeline: 959x end-to-end compression.
+Default `uc.compress(...)` is the v3 stack: scalar symmetric per-row
+quantization + learned low-rank correction, trained via KL distillation.
 
-Key results (Qwen3-0.6B -> 1.7B):
-  - FRR 1.7B: 66% T10 at 48x compression (all-time best)
-  - FRR + Q2 E2E: 53% T10 at 959x compression (proven)
-  - PHM variant: 53% T10 at 239x (4x fewer params)
-  - Inference: 3.1-3.4x faster (L2 cache)
+Empirical baseline (Qwen3-1.7B, rank=32, 1500 steps):
+    T1 = 93.87%, PPL ratio = 1.0018, param overhead = 1.99%.
+
+The v2 (v17 codebook) pipeline is kept under `ultracompress.api_v2` and is
+deprecated -- it had a structural ~75% T1 ceiling and is no longer the default.
 
 Usage:
-  from ultracompress.deploy import load_compressed
-  model = load_compressed("compressed.ucz")
-  print(model("The future of AI is"))
-
-Or compress your own model:
-  python compress_frr.py --model Qwen/Qwen3-0.6B --steps 50000
+  import ultracompress as uc
+  compressed = uc.compress(model, mode='scalar_v18c',
+                           target_bpw=6.0, correction_rank=32,
+                           tokens=calibration_token_ids)
+  uc.save(compressed, 'my_model.uc')
+  reloaded = uc.load('my_model.uc', fresh_skeleton)
 """
+import warnings as _warnings
 
-__version__ = "0.3.0"
+__version__ = "0.5.0"
+
+# v3 is the default
+from ultracompress.api_v3 import (
+    compress,
+    save,
+    load,
+    CompressedModel,
+    CompressionReport,
+    SCHEMA_VERSION,
+)
+
+# Keep v2 importable but emit a deprecation warning when accessed.
+from ultracompress import api_v2 as _api_v2
+from ultracompress import api as _legacy_api  # noqa: F401
+
+
+def _deprecated_v2_compress(*args, **kwargs):
+    _warnings.warn(
+        "ultracompress.api_v2.compress is deprecated; the v17 codebook stack "
+        "had a structural ~75%% T1 ceiling. Use uc.compress (v3, scalar+V18-C) "
+        "instead. v2 will be removed in a future release.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return _api_v2.compress_v2_compat(*args, **kwargs)
+
+
+# Patch a deprecation shim onto the v2 module's compress entry point.
+_api_v2.compress_v2_compat = _api_v2.compress  # preserve original under new name
+_api_v2.compress = _deprecated_v2_compress  # type: ignore[assignment]
+
+__all__ = [
+    "compress", "save", "load",
+    "CompressedModel", "CompressionReport",
+    "SCHEMA_VERSION",
+]

@@ -18,6 +18,24 @@ build/
 *.gguf
 *.bin
 *.ucz
+*.uc
+
+# ----- v3 packed customer artifacts (uploaded to HF, not in git) -----
+_packed_*_v3/
+_packed_*_v2/
+_uc_*/
+
+# ----- Local IDE / operator state (never push) -----
+.serena/
+.cursor/
+.aider*
+.aeon/
+CLAUDE.md
+README.v3.draft.md
+docs/IN_FLIGHT.md
+docs/MORNING_SUMMARY_*.md
+docs/SIP_SEND_CHECKLIST_*.md
+docs/OPERATOR_PLAYBOOK_*.md
 
 # ----- Checkpoints -----
 checkpoints*/
