@@ -1,0 +1,19 @@
+{
+  "model": "smollm2-1.7b",
+  "hf_id": "HuggingFaceTB/SmolLM2-1.7B",
+  "n_layers": 24,
+  "n_eval": 30,
+  "seq_len": 1024,
+  "seed": 42,
+  "baseline_ppl": 9.13891738007299,
+  "baseline_method": "bf16_single_gpu",
+  "compressed_ppl": 9.216815171623157,
+  "ppl_ratio": 1.008523743930547,
+  "peak_vram_eval_gb": 1.061993472,
+  "eval_time_s": 332.4827904701233,
+  "baseline_time_s": 9.244966268539429,
+  "compressed_dir": "scripts\\overlay\\_e2e_smollm2_1_7b",
+  "device": "cuda:1",
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "timestamp": "2026-05-08T15:22:12.674603"
+}

@@ -1,0 +1,275 @@
+{
+  "ts": "2026-05-08 17:15:59",
+  "n_total": 17,
+  "n_pass": 9,
+  "n_fail": 0,
+  "n_skip_no_uc_files_yet": 8,
+  "n_error": 0,
+  "results": [
+    {
+      "repo_id": "SipsaLabs/llama-3.1-70b-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/llama-3.1-8b-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 8.14,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 32 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: d467617cfac82e25...",
+        "    layer_016.uc: eded30e4868e3852...",
+        "    layer_031.uc: 85d8d013f549c0a3...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 2 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/olmo-2-0425-1b-instruct-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 3.4,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 16 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: a315b5f279b72302...",
+        "    layer_008.uc: 3189aa6a893a7885...",
+        "    layer_015.uc: 0762327b531d2be5...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 4 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/olmo-2-0425-1b-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 3.32,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 16 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: 9046b893c7adc878...",
+        "    layer_008.uc: d3e7529ccbcc1043...",
+        "    layer_015.uc: 331bfe0a407c31d7...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 4 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/phi-3.5-moe-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/qwen3-0.6b-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 2.01,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 28 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: 69f0756a3b4be61b...",
+        "    layer_014.uc: dd5f434b9d489b35...",
+        "    layer_027.uc: 7f64d4c77978c57a...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 4 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 3.08,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 28 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: c330ac7035a2d844...",
+        "    layer_014.uc: f33d16de936eefc1...",
+        "    layer_027.uc: 71aedc0f8e61c82d...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 4 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/qwen3-1.7b-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 2.77,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 28 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: f87f2aeb3996ab7d...",
+        "    layer_014.uc: 00226125076ab60f...",
+        "    layer_027.uc: 55f0a8af922fa9b0...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 4 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/qwen3-14b-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/qwen3-235b-a22b-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/qwen3-8b-uc-v3-bpw5",
+      "status": "no_uc_files",
+      "skipped": true
+    },
+    {
+      "repo_id": "SipsaLabs/smollm2-1.7b-instruct-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 3.04,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 24 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: 46b148d548e2f583...",
+        "    layer_012.uc: 73873694f4ac2e43...",
+        "    layer_023.uc: bedbf5337c5bd036...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 2 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/smollm2-1.7b-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 3.81,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 24 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: 0d209ab4b9c2602e...",
+        "    layer_012.uc: 2e8d53a338a86fa3...",
+        "    layer_023.uc: b9dd2756416975de...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 2 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    },
+    {
+      "repo_id": "SipsaLabs/tinyllama-1.1b-chat-v1.0-uc-v3-bpw5",
+      "status": "PASS",
+      "elapsed_s": 2.84,
+      "exit_code": 0,
+      "pass": true,
+      "fail": false,
+      "tail": [
+        "  All 22 layer.uc files present.",
+        "  Spot-checking SHA256 of first/middle/last layer files...",
+        "    layer_000.uc: 8f8f0fadcecd0be4...",
+        "    layer_011.uc: 6f0f61db16d45067...",
+        "    layer_021.uc: 04f917b9cfc6e628...",
+        "",
+        "--- pack format round-trip check ---",
+        "  Loading layer_000.uc via pack_v3...",
+        "  Layer 0: 7 quantized Linears + 2 extras (norms etc.)",
+        "  All 7 Linear reconstructions have correct shapes.",
+        "",
+        "================================================================",
+        "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed.",
+        "C:\\Users\\scamd\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.",
+        "  import pynvml  # type: ignore[import]"
+      ]
+    }
+  ]
+}

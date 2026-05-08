@@ -160,6 +160,24 @@ MODEL_REGISTRY: dict[str, dict[str, Any]] = {
         'dtype': torch.bfloat16,
         'n_layers': 16,
     },
+    'qwen3-1.7b-base': {
+        'hf_id': 'Qwen/Qwen3-1.7B-Base',
+        'params_B': 1.7,
+        'dtype': torch.bfloat16,
+        'n_layers': 28,
+    },
+    'olmo-2-0425-1b-instruct': {
+        'hf_id': 'allenai/OLMo-2-0425-1B-Instruct',
+        'params_B': 1.0,
+        'dtype': torch.bfloat16,
+        'n_layers': 16,
+    },
+    'smollm2-1.7b-instruct': {
+        'hf_id': 'HuggingFaceTB/SmolLM2-1.7B-Instruct',
+        'params_B': 1.7,
+        'dtype': torch.bfloat16,
+        'n_layers': 24,
+    },
 }
 
 TARGET_SUBS = ('q_proj', 'k_proj', 'v_proj', 'o_proj',

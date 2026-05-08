@@ -1,0 +1,19 @@
+{
+  "model": "qwen3-0.6b",
+  "hf_id": "Qwen/Qwen3-0.6B",
+  "n_layers": 28,
+  "n_eval": 30,
+  "seq_len": 1024,
+  "seed": 42,
+  "baseline_ppl": 21.479197838779157,
+  "baseline_method": "bf16_single_gpu",
+  "compressed_ppl": 21.627443960972855,
+  "ppl_ratio": 1.0069018463029402,
+  "peak_vram_eval_gb": 1.904206848,
+  "eval_time_s": 313.02332520484924,
+  "baseline_time_s": 5.872548818588257,
+  "compressed_dir": "scripts\\overlay\\_e2e_qwen3_0_6b",
+  "device": "cuda:1",
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "timestamp": "2026-05-08T15:31:40.941128"
+}

@@ -1,0 +1,19 @@
+{
+  "model": "olmo-2-0425-1b-instruct",
+  "hf_id": "allenai/OLMo-2-0425-1B-Instruct",
+  "n_layers": 16,
+  "n_eval": 30,
+  "seq_len": 1024,
+  "seed": 42,
+  "baseline_ppl": 18.85354327930911,
+  "baseline_method": "bf16_single_gpu",
+  "compressed_ppl": 18.849385081380017,
+  "ppl_ratio": 0.999779447403202,
+  "peak_vram_eval_gb": 1.978431488,
+  "eval_time_s": 233.03262066841125,
+  "baseline_time_s": 6.554421901702881,
+  "compressed_dir": "scripts\\overlay\\_e2e_olmo_2_0425_1b_instruct",
+  "device": "cuda:1",
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "timestamp": "2026-05-08T16:36:20.515156"
+}
