@@ -4,6 +4,20 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.5.1] — 2026-05-08
+
+### Fixed
+- **`uc verify`, `uc pack`, and any `import ultracompress` was failing on a fresh `pip install ultracompress==0.5.0` install** with `ModuleNotFoundError: No module named 'track_a_adaptive'`. The 0.5.0 wheel bundled `ultracompress/api_v2.py`, which top-level-imports an internal research module (`track_a_adaptive`) that is not packaged. Customer-facing CLI commands (pack / load / verify) do not need v2 at all, but the eager import in `ultracompress/__init__.py` made the whole package un-importable when v2's dependencies were missing.
+- 0.5.1 wraps the v2 + legacy-api imports in `try / except` so the customer-facing v3 API + CLI keep working when internal research modules are absent. The deprecation shim is only patched onto v2 if v2 actually loaded. `_API_V2_AVAILABLE` is exposed as a module-level flag so callers can branch on availability.
+
+### Discovery
+- Bug surfaced via the end-to-end customer reproduction test: `pip install --upgrade ultracompress` → `hf download SipsaLabs/qwen3-1.7b-uc-v3-bpw5` → `uc verify` (which `__init__.py` choked at import time before the verifier ran).
+
+### Verified working in 0.5.1
+- `uc verify <packed_dir>` passes on the public `SipsaLabs/qwen3-1.7b-uc-v3-bpw5` artifact: 28 layer.uc files present, sha256 spot-check, layer 0 reconstructs 7 quantized Linears + 4 extras with correct shapes.
+
+---
+
 ## [0.5.0] — 2026-05-08
 
 ### Added

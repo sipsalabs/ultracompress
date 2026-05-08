@@ -20,7 +20,7 @@ Usage:
 """
 import warnings as _warnings
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 # v3 is the default
 from ultracompress.api_v3 import (
@@ -32,12 +32,25 @@ from ultracompress.api_v3 import (
     SCHEMA_VERSION,
 )
 
-# Keep v2 importable but emit a deprecation warning when accessed.
-from ultracompress import api_v2 as _api_v2
-from ultracompress import api as _legacy_api  # noqa: F401
+# v2 / legacy api are optional — they reference internal research modules that
+# are not always present at install time. We import them defensively so the
+# customer-facing `uc` CLI (pack / load / verify) keeps working even when the
+# legacy v2 dependencies are missing.
+try:
+    from ultracompress import api_v2 as _api_v2  # type: ignore[unused-ignore]
+    from ultracompress import api as _legacy_api  # noqa: F401
+    _API_V2_AVAILABLE = True
+except Exception:  # pragma: no cover
+    _api_v2 = None  # type: ignore[assignment]
+    _API_V2_AVAILABLE = False
 
 
 def _deprecated_v2_compress(*args, **kwargs):
+    if _api_v2 is None:
+        raise ImportError(
+            "ultracompress.api_v2 is unavailable in this install (missing "
+            "internal research dependencies). Use uc.compress (v3) instead."
+        )
     _warnings.warn(
         "ultracompress.api_v2.compress is deprecated; the v17 codebook stack "
         "had a structural ~75%% T1 ceiling. Use uc.compress (v3, scalar+V18-C) "
@@ -48,9 +61,11 @@ def _deprecated_v2_compress(*args, **kwargs):
     return _api_v2.compress_v2_compat(*args, **kwargs)
 
 
-# Patch a deprecation shim onto the v2 module's compress entry point.
-_api_v2.compress_v2_compat = _api_v2.compress  # preserve original under new name
-_api_v2.compress = _deprecated_v2_compress  # type: ignore[assignment]
+# Patch a deprecation shim onto the v2 module's compress entry point only when
+# v2 actually loaded.
+if _api_v2 is not None:
+    _api_v2.compress_v2_compat = _api_v2.compress  # preserve original under new name
+    _api_v2.compress = _deprecated_v2_compress  # type: ignore[assignment]
 
 __all__ = [
     "compress", "save", "load",
