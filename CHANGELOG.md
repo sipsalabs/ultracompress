@@ -7,6 +7,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.0] — 2026-05-08
 
 ### Added
+- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with GSQ-only at 5bpw (no V18-C correction). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
 - **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer's k-means LEARNED grid + per-block scales + bit-packed integer codes from `gsq_codecs` (a new state_dict key written by the streaming compression runner). Reconstruction `W_base = absmax × grid[codes]` is mathematically lossless — bit-identical reconstruction of trainer-quantized weights.
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).

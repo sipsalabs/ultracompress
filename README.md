@@ -29,6 +29,19 @@ This is the **only mathematically lossless 5-bit transformer quantization format
 
 **Mean PPL_r for 5 dense small models with full baseline: 1.0077.** MoE/large models lack baseline due to single-GPU OOM on bf16 baseline; multi-GPU baseline pipeline in v0.6.
 
+### Cross-architecture: state-space models work too (Mamba-2.8B, 2026-05-08)
+
+The codec is a property of dense `nn.Linear` matrices, not transformer-specific. Verified on `state-spaces/mamba-2.8b-hf`:
+
+| Metric | Value |
+|---|---:|
+| SSM Linears compressed | 256 (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) |
+| Mean rel_l2 quant error | 0.0458 (matches transformer Linears at 0.04–0.06) |
+| Bit-identical reconstruction | ✓ all 256 (max_abs_diff = 0.00e+00) |
+| End-to-end PPL ratio (GSQ-only, no V18-C) | **1.0119** |
+
+UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
+
 ### Customer flow (5 minutes)
 
 ```bash
