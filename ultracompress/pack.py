@@ -33,6 +33,7 @@ TARGET_SUBS = (
     'q_proj', 'k_proj', 'v_proj', 'o_proj',
     'gate_proj', 'up_proj', 'down_proj',
     'w1', 'w2', 'w3',  # Mixtral / Phi-MoE expert linear naming
+    'in_proj', 'x_proj', 'dt_proj', 'out_proj',  # Mamba / state-space-model SSM Linears
 )
 
 UC_MAGIC = b'UCL\x00'
