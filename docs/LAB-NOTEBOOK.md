@@ -4845,3 +4845,21 @@ V18-C rank-redistribution. Hold total V18-C parameter count constant; lower rank
 - `docs/PPL_EVAL_qwen3-1.7b-base-uniform-n50_2026_05_08.json` — apples-to-apples baseline
 - `docs/PPL_EVAL_qwen3-1.7b-base-adaptive-bpw-v1_2026_05_08.json` — v1
 - HONEST_NEGATIVE_RESULTS doc gets entry #13.
+
+
+## 2026-05-09 01:47 — DISK FULL INCIDENT (resolved)
+
+**What happened:** Hermes-3-405B compression at layer 119 hit disk-full (1 GB free of 7.4 TB). torch.save crashed mid-write of layer 118 with `RuntimeError: [enforce fail at inline_container.cc:672] . unexpected pos 2907448768 vs 2907448660`. Compression process exited.
+
+**Root cause:** Cumulative growth of e2e per-layer files (Hermes 1.7 TB alone, +12-13 GB per layer) plus HF cache for never-used DeepSeek-V3-Base (642 GB) plus already-uploaded Mixtral-8x22B HF cache (262 GB) plus other stale caches.
+
+**Recovery actions:**
+1. Deleted partial `_e2e_hermes_3_405b_v3/layer_118.pt` (2.9 GB partial corrupt)
+2. Deleted DeepSeek-V3-Base HF cache (642 GB) — was never used
+3. Deleted Mixtral-8x22B HF cache (262 GB) — already on HF, can re-download if needed
+4. Disk recovered: 1 GB → 906 GB free
+5. Re-fired Hermes compression from layer 118 (skip-existing logic resumes from 119 → 126)
+
+**ETA after resume:** ~7 layers × 7 min/layer = ~50 min, lands ~02:40 AM. Pack autopipe still armed, will fire when DONE marker hits.
+
+**Disk capacity lesson:** Hermes-405B compression generates ~1.7 TB intermediate. Future runs at this scale need pre-flight disk check + auto-cleanup of confirmed-uploaded archs.
