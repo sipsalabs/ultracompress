@@ -216,7 +216,7 @@ def _load_packed_model(
     `CorrectionMatrixC` modules. Returns (model, tokenizer).
     """
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
     from ultracompress.load_uc import reconstruct_layer_state_dict
 
@@ -238,10 +238,37 @@ def _load_packed_model(
 
     torch_device = torch.device(device)
     tokenizer = AutoTokenizer.from_pretrained(base_hf_id, trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(
-        base_hf_id, torch_dtype=torch.bfloat16, device_map=torch_device,
-        trust_remote_code=True,
-    ).train(False)
+
+    # v3.5 self-contained path: if the pack has aux_weights.uc, build the model
+    # from CONFIG ONLY (no HF safetensors download), then inject aux tensors.
+    # Falls back to the original load-from-HF behaviour for legacy v3.0 packs.
+    aux_path = packed_dir / "aux_weights.uc"
+    manifest_path = packed_dir / "manifest.json"
+    use_aux = aux_path.exists()
+    if use_aux and manifest_path.exists():
+        try:
+            mfst = json.loads(manifest_path.read_text(encoding="utf-8"))
+            use_aux = bool(mfst.get("aux_file")) and aux_path.exists()
+        except json.JSONDecodeError:
+            use_aux = False
+
+    if use_aux:
+        from ultracompress.aux_pack import load_aux_into_model, parse_aux_weights
+
+        config = AutoConfig.from_pretrained(base_hf_id, trust_remote_code=True)
+        # Skeleton-only construction — no weights pulled from HF.
+        model = AutoModelForCausalLM.from_config(
+            config, torch_dtype=torch.bfloat16, trust_remote_code=True
+        ).to(torch_device).train(False)
+        aux_tensors = parse_aux_weights(aux_path)
+        n_aux = load_aux_into_model(model, aux_tensors)
+        print(f"[uc bench] self-contained pack: loaded {n_aux} model-level "
+              f"tensors from {aux_path.name} (no HF download for aux)", flush=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            base_hf_id, torch_dtype=torch.bfloat16, device_map=torch_device,
+            trust_remote_code=True,
+        ).train(False)
 
     layer_files = sorted(packed_dir.glob("layer_*.uc"))
     if not layer_files:

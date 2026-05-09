@@ -4,6 +4,30 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.5.5] — 2026-05-09
+
+### Added
+- **`uc pack v0.2` self-contained pack format** (`pack_format_version: 3.5`). Previously, customers had to download the original bf16 safetensors from HuggingFace to obtain `embed_tokens.weight`, `model.norm.weight`, and `lm_head.weight` for reconstruction — defeating most of the compression benefit on first download. The new format packs these model-level non-Linear tensors into a single `aux_weights.uc` file at the pack root.
+  - `aux_weights.uc` format: `UCAX` magic + version + n_tensors + per-tensor blobs reusing the existing `_serialize_extra` framing (dtype-tagged, native bf16/fp16/fp32 preserved).
+  - Pack overhead: ~1-2% of total pack size on small models (Qwen3-1.7B-Base: aux ~270 MB on a 1.1 GB pack), negligible on larger models.
+  - Cryptographic provenance: the aux file gets its own SHA-256 in `manifest.json` (`aux_sha256`), joining the existing `uc verify` chain.
+  - Weight-tied lm_head detection: when `lm_head.weight` is aliased to `embed_tokens.weight` (Qwen3-1.7B-Base, SmolLM2, Phi-3-Mini, Llama3 small), the loader stores only `embed_tokens` and re-ties at load time — no duplicate bytes on disk.
+- **`uc pack-aux <packed_dir>` CLI** — retrofit any existing v3.0 pack with self-contained aux without re-packing the layer files. Idempotent (deterministic serialization).
+- **`uc pack --include-aux/--no-aux/--base-model HF_ID`** flags on the main pack command. `--include-aux` is now the default.
+- **`uc pack --legacy-v3`** flag to opt back into the original lossy reverse-derived v3 path (kept for back-compat).
+- **`ultracompress.aux_pack`** module — public API: `serialize_aux_weights`, `parse_aux_weights`, `collect_aux_tensors_from_model`, `load_aux_into_model`.
+
+### Changed
+- `uc verify` now validates the aux file SHA-256, parses it, and confirms tensor key set matches the manifest. Output explicitly labels the pack as `SELF-CONTAINED` (v3.5) vs `requires base HF download` (v3.0).
+- `uc bench` automatically detects `aux_weights.uc` and skips the base-safetensors HF download — model is built from `AutoConfig` + per-layer reconstruction + injected aux tensors.
+- `uc pack` now defaults to the lossless v3 path (was previously the lossy v0.2 reverse-derived path); use `--legacy-v3` for the old behavior.
+
+### Backward compatibility
+- Old v3.0 packs (no `aux_file` field in manifest, no `aux_weights.uc` on disk) continue to load via the existing HF-safetensors fallback. No re-pack required.
+- The 22 already-uploaded HF artifacts under `huggingface.co/SipsaLabs/*-uc-v3-bpw5` are NOT re-packed — they remain v3.0. Going forward, new uploads will ship as v3.5.
+
+---
+
 ## [0.5.4] — 2026-05-09
 
 ### Added

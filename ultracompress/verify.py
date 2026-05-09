@@ -59,13 +59,17 @@ def cmd_verify(args) -> int:
 
     # 1. Pack version check
     pack_ver = manifest.get("uc_pack_version", 1)
+    pack_format_ver = manifest.get("pack_format_version", "3.0" if pack_ver >= 3 else "legacy")
     codec_source = manifest.get("codec_source", "unknown")
     n_layers = manifest.get("n_layers", 0)
     bpw = manifest.get("bpw", "?")
-    print(f"  uc_pack_version: {pack_ver}  ({'LOSSLESS' if pack_ver >= 3 else 'LOSSY/LEGACY'})")
-    print(f"  codec_source:    {codec_source}")
-    print(f"  n_layers:        {n_layers}")
-    print(f"  bpw:             {bpw}")
+    has_aux = bool(manifest.get("aux_file"))
+    print(f"  uc_pack_version:      {pack_ver}  ({'LOSSLESS' if pack_ver >= 3 else 'LOSSY/LEGACY'})")
+    print(f"  pack_format_version:  {pack_format_ver}  "
+          f"({'SELF-CONTAINED' if has_aux else 'requires base HF download'})")
+    print(f"  codec_source:         {codec_source}")
+    print(f"  n_layers:             {n_layers}")
+    print(f"  bpw:                  {bpw}")
 
     if pack_ver < 3:
         print()
@@ -128,16 +132,63 @@ def cmd_verify(args) -> int:
     if bad == 0:
         print(f"  All {n_linears} Linear reconstructions have correct shapes.")
 
+    # 4. Aux file integrity (v3.5+ self-contained packs)
+    aux_bad = 0
+    if has_aux:
+        print()
+        print("--- aux_weights.uc integrity (v3.5 self-contained pack) ---")
+        aux_path = packed / manifest["aux_file"]
+        if not aux_path.exists():
+            print(f"  [FAILED] manifest declares aux_file={manifest['aux_file']} but file missing")
+            aux_bad += 1
+        else:
+            actual_sha = _sha256_file(aux_path)
+            expected_sha = manifest.get("aux_sha256")
+            sha_ok = expected_sha and actual_sha == expected_sha
+            print(f"  aux_file:   {aux_path.name}  ({aux_path.stat().st_size/1e6:.2f} MB)")
+            print(f"  sha256:     {actual_sha[:32]}...  ({'OK' if sha_ok else 'MISMATCH'})")
+            if expected_sha and not sha_ok:
+                print(f"             expected: {expected_sha[:32]}...")
+                aux_bad += 1
+            try:
+                from ultracompress.aux_pack import parse_aux_weights
+                aux_tensors = parse_aux_weights(aux_path)
+                # Compare ALL keys (including __sentinels__) since the
+                # manifest records the full key set produced by the packer.
+                # The collect_aux_tensors_from_model emits __tied_lm_head__
+                # as an auditable marker; it MUST round-trip on disk.
+                expected_keys = set(manifest.get("aux_keys", []))
+                actual_keys = set(aux_tensors.keys())
+                missing = expected_keys - actual_keys
+                extra = actual_keys - expected_keys
+                if missing or extra:
+                    print(f"  [FAILED] key drift: missing={sorted(missing)} extra={sorted(extra)}")
+                    aux_bad += 1
+                else:
+                    real_keys = sorted(k for k in actual_keys if not k.startswith("__"))
+                    sentinels = sorted(k for k in actual_keys if k.startswith("__"))
+                    print(f"  tensors:    {len(real_keys)} weights  ({real_keys})")
+                    if sentinels:
+                        print(f"  sentinels:  {sentinels}")
+            except (ValueError, ImportError) as e:
+                print(f"  [FAILED] aux file parse failed: {e}")
+                aux_bad += 1
+
     print()
     print("=" * 64)
-    if pack_ver >= 3 and bad == 0:
-        print("VERIFY: PASS — pack format integrity confirmed; lossless reconstruction guaranteed.")
+    if pack_ver >= 3 and bad == 0 and aux_bad == 0:
+        if has_aux:
+            print("VERIFY: PASS — pack is self-contained (v3.5); "
+                  "lossless reconstruction guaranteed without base-model download.")
+        else:
+            print("VERIFY: PASS — pack format integrity confirmed; "
+                  "lossless reconstruction guaranteed (requires base HF download).")
         return 0
     elif pack_ver < 3:
         print(f"VERIFY: WARN — legacy pack format (v{pack_ver}); not lossless.")
         return 1
     else:
-        print(f"VERIFY: FAIL — {bad} reconstruction errors.")
+        print(f"VERIFY: FAIL — {bad} layer reconstruction errors, {aux_bad} aux errors.")
         return 1
 
 

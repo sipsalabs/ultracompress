@@ -605,6 +605,32 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Bits per weight for GSQ scalar quantization (default 5)")
     pk.add_argument("--block-size", type=int, default=64, dest="block_size",
                     help="GSQ per-block scale block size (default 64)")
+    pk.add_argument("--include-aux", action="store_true", default=True, dest="include_aux",
+                    help="Pack model-level non-Linear weights (embed_tokens, "
+                         "model.norm, lm_head) into a single self-contained "
+                         "aux_weights.uc — pack_format_version=3.5 (default)")
+    pk.add_argument("--no-aux", action="store_false", dest="include_aux",
+                    help="Skip aux_weights.uc and emit a v3.0 pack (smaller, "
+                         "but customer must download base safetensors separately)")
+    pk.add_argument("--base-model", default=None, dest="base_model",
+                    help="HF model id used to source aux weights (e.g. Qwen/Qwen3-1.7B). "
+                         "Defaults to the source dir's manifest.json base_model_hf_id field.")
+    pk.add_argument("--v3", "--legacy-v3", action="store_true", dest="legacy_v3",
+                    help="(legacy) Use the lossy v3 pack_layer path (reverse-derived codec). "
+                         "Only useful when source layer.pt has no gsq_codecs persisted. "
+                         "Default is the lossless v3 path via pack_v3.")
+
+    # uc pack-aux <packed_dir> — retrofit an existing v3 pack with aux_weights.uc
+    pka = sub.add_parser(
+        "pack-aux",
+        help="Retrofit an existing v3 packed dir with self-contained aux_weights.uc "
+             "(no need to re-pack the layer files)",
+    )
+    pka.add_argument("packed_dir", help="Path to an existing v3 packed .uc directory")
+    pka.add_argument("--base-model", default=None, dest="base_model",
+                     help="HF model id used to source aux weights "
+                          "(e.g. Qwen/Qwen3-1.7B). Defaults to manifest.json's "
+                          "base_model_hf_id field if present.")
 
     # uc inspect <uc_dir> — read a packed dir manifest + parse one layer
     insp = sub.add_parser("inspect", help="Inspect a packed .uc directory")
@@ -654,8 +680,31 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "serve":
         return _serve(args)
     if args.command == "pack":
-        from .pack import cmd_pack
-        return cmd_pack(args)
+        from .pack import cmd_pack as cmd_pack_legacy
+        from .pack_v3 import pack_e2e_dir_v3
+        if getattr(args, "legacy_v3", False):
+            return cmd_pack_legacy(args)
+        # Default: lossless v3.x path via pack_v3 with optional aux file.
+        manifest = pack_e2e_dir_v3(
+            e2e_dir=args.src, out_dir=args.dst,
+            bpw=int(args.bpw), block_size=int(args.block_size),
+            include_aux=bool(getattr(args, "include_aux", True)),
+            base_hf_id=getattr(args, "base_model", None),
+        )
+        print(f"\nManifest: {Path(args.dst) / 'manifest.json'}")
+        print(f"Overall shrink ratio: {manifest['overall_shrink_ratio']:.2f}x")
+        return 0
+    if args.command == "pack-aux":
+        from .pack_v3 import add_aux_to_existing_pack
+        try:
+            add_aux_to_existing_pack(
+                packed_dir=args.packed_dir,
+                base_hf_id=getattr(args, "base_model", None),
+            )
+            return 0
+        except (FileNotFoundError, ValueError, RuntimeError) as exc:
+            print(f"[FAILED] {type(exc).__name__}: {exc}")
+            return 2
     if args.command == "inspect":
         from .load_uc import cmd_load
         # cmd_load expects args.packed_dir and args.layer, which we've defined above.

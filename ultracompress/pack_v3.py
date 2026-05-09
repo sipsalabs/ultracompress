@@ -47,8 +47,15 @@ from .pack import (
     _DTYPE_TAGS,
     _TAG_DTYPES,
 )
+from .aux_pack import (
+    DEFAULT_AUX_KEYS,
+    collect_aux_tensors_from_model,
+    write_aux_weights,
+)
 
 UC_VERSION_V3 = 3
+PACK_FORMAT_VERSION_V3 = "3.0"
+PACK_FORMAT_VERSION_V3_5 = "3.5"  # adds self-contained aux_weights.uc
 
 
 def pack_layer_v3(layer_pt_path: Path, out_uc_path: Path, layer_idx: int,
@@ -331,8 +338,29 @@ def reconstruct_layer_state_dict_v3(uc_path: Path) -> dict[str, torch.Tensor]:
 
 
 def pack_e2e_dir_v3(e2e_dir: str | Path, out_dir: str | Path,
-                    bpw: int = 5, block_size: int = 64) -> dict[str, Any]:
-    """Pack an entire `_e2e_*` directory into v3 .uc files (lossless via gsq_codecs)."""
+                    bpw: int = 5, block_size: int = 64,
+                    include_aux: bool = True,
+                    base_hf_id: str | None = None,
+                    aux_keys: tuple[str, ...] | None = None) -> dict[str, Any]:
+    """Pack an entire `_e2e_*` directory into v3 .uc files (lossless via gsq_codecs).
+
+    Args:
+        e2e_dir: Source directory containing layer_*.pt files.
+        out_dir: Output dir for layer_*.uc + manifest.json + (optionally) aux_weights.uc.
+        bpw: Bits per weight for the GSQ codes.
+        block_size: GSQ per-block scale block size.
+        include_aux: If True (default), also emit `aux_weights.uc` containing
+            embed_tokens / model.norm / lm_head from the base HF model. This
+            makes the pack self-contained — customer no longer needs to download
+            the original safetensors from HF to reconstruct the model. If False,
+            the legacy v3.0 layout is produced (smaller pack, but customer must
+            also fetch the base bf16 weights for non-Linear tensors).
+        base_hf_id: HF model id used to source the aux tensors when
+            `include_aux=True`. If None, reads from `e2e_dir / "manifest.json"`
+            via `base_model_hf_id` / `hf_id` keys.
+        aux_keys: Override which model-level keys to pack into aux_weights.uc.
+            Defaults to DEFAULT_AUX_KEYS (embed_tokens / norm / lm_head).
+    """
     e2e_dir = Path(e2e_dir)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -357,9 +385,10 @@ def pack_e2e_dir_v3(e2e_dir: str | Path, out_dir: str | Path,
         total_out += out_size
         print(f"  layer {layer_idx:03d}: {in_size/1e6:.1f}MB -> {out_size/1e6:.1f}MB ({in_size/out_size:.2f}x shrink)", flush=True)
 
-    manifest = {
+    manifest: dict[str, Any] = {
         'format': 'uc-pack-v1',  # legacy field for compat
         'uc_pack_version': UC_VERSION_V3,
+        'pack_format_version': PACK_FORMAT_VERSION_V3,
         'vu_dtype': 'fp32',
         'codec_source': 'trainer-persisted',  # v3 marker — vs v2 'reverse-derived'
         'bpw': bpw,
@@ -370,10 +399,151 @@ def pack_e2e_dir_v3(e2e_dir: str | Path, out_dir: str | Path,
         'overall_shrink_ratio': total_in / max(total_out, 1),
         'layers': layer_meta,
     }
+
+    if include_aux:
+        aux_meta = _emit_aux_for_pack(
+            e2e_dir=e2e_dir,
+            out_dir=out_dir,
+            base_hf_id=base_hf_id,
+            aux_keys=aux_keys or DEFAULT_AUX_KEYS,
+        )
+        if aux_meta is not None:
+            manifest['pack_format_version'] = PACK_FORMAT_VERSION_V3_5
+            manifest['aux_file'] = aux_meta['path']
+            manifest['aux_sha256'] = aux_meta['sha256']
+            manifest['aux_size_bytes'] = aux_meta['size_bytes']
+            manifest['aux_keys'] = aux_meta['keys']
+            manifest['aux_n_tensors'] = aux_meta['n_tensors']
+            manifest['aux_version'] = aux_meta['version']
+            if base_hf_id:
+                manifest['base_model_hf_id'] = base_hf_id
+
     (out_dir / 'manifest.json').write_text(json.dumps(manifest, indent=2))
 
     print(f"\nPACK V3 COMPLETE")
     print(f"  total: {total_in/1e9:.2f} GB -> {total_out/1e9:.2f} GB ({total_in/total_out:.2f}x shrink)")
+    if 'aux_file' in manifest:
+        aux_mb = manifest['aux_size_bytes'] / 1e6
+        print(f"  aux:   {manifest['aux_file']}  {aux_mb:.1f} MB  (sha256 {manifest['aux_sha256'][:16]}...)")
+        print(f"         pack is SELF-CONTAINED — no base-model download needed at inference time")
+    return manifest
+
+
+def _emit_aux_for_pack(
+    *, e2e_dir: Path, out_dir: Path,
+    base_hf_id: str | None, aux_keys: tuple[str, ...],
+) -> dict[str, Any] | None:
+    """Resolve the base HF id, load the model, dump aux weights to out_dir.
+
+    Returns the aux metadata dict, or None if aux generation was skipped
+    (e.g., no base id resolvable). Side effect: writes `out_dir/aux_weights.uc`.
+    """
+    # Resolve base HF id from arg or e2e dir's manifest.
+    if base_hf_id is None:
+        e2e_manifest = e2e_dir / 'manifest.json'
+        if e2e_manifest.exists():
+            try:
+                m = json.loads(e2e_manifest.read_text(encoding='utf-8'))
+                for key in ('base_model_hf_id', 'base_model', 'hf_id'):
+                    val = m.get(key)
+                    if isinstance(val, str) and val.strip():
+                        base_hf_id = val.strip()
+                        break
+            except json.JSONDecodeError:
+                pass
+    if base_hf_id is None:
+        print("  [aux] WARN: no base_hf_id resolvable; skipping aux_weights.uc "
+              "(pass --base-model or set base_model_hf_id in source manifest.json)")
+        return None
+
+    print(f"  [aux] sourcing model-level tensors from {base_hf_id}")
+    try:
+        # Lazy-imported so the pack CLI works without transformers installed for
+        # the legacy `--no-aux` path.
+        from transformers import AutoModelForCausalLM
+        import torch as _torch
+
+        model = AutoModelForCausalLM.from_pretrained(
+            base_hf_id,
+            torch_dtype=_torch.bfloat16,
+            trust_remote_code=True,
+            low_cpu_mem_usage=True,
+        )
+    except Exception as exc:  # pragma: no cover — runtime depends on HF
+        print(f"  [aux] WARN: failed to load {base_hf_id}: {exc}")
+        return None
+
+    aux_tensors = collect_aux_tensors_from_model(model, keys=aux_keys)
+    del model
+    if not aux_tensors:
+        print(f"  [aux] WARN: no aux keys ({aux_keys}) found in {base_hf_id}; skipping")
+        return None
+
+    aux_path = out_dir / 'aux_weights.uc'
+    meta = write_aux_weights(aux_path, aux_tensors)
+    print(f"  [aux] wrote {aux_path.name}  {meta['size_bytes']/1e6:.1f} MB  "
+          f"sha256={meta['sha256'][:16]}...  keys={meta['keys']}")
+    return meta
+
+
+def add_aux_to_existing_pack(
+    packed_dir: str | Path, base_hf_id: str | None = None,
+    aux_keys: tuple[str, ...] | None = None,
+) -> dict[str, Any]:
+    """Retrofit an EXISTING v3 pack with self-contained aux_weights.uc.
+
+    Use case: customer downloads a v3.0 pack from HF (no aux file), runs
+    `uc pack-aux <packed_dir>` once locally with the base HF model id, and
+    converts it to v3.5 self-contained — no need to re-pack the layer files.
+    The original layer_*.uc files are untouched; only `aux_weights.uc` is
+    created and `manifest.json` is updated in place.
+
+    Returns the updated manifest dict. Idempotent: re-running with the same
+    base model produces the same aux file (deterministic serialization).
+    """
+    packed_dir = Path(packed_dir).expanduser().resolve()
+    if not packed_dir.is_dir():
+        raise FileNotFoundError(f"packed_dir does not exist: {packed_dir}")
+    manifest_path = packed_dir / 'manifest.json'
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"no manifest.json in {packed_dir}")
+
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    if base_hf_id is None:
+        for key in ('base_model_hf_id', 'base_model', 'hf_id'):
+            val = manifest.get(key)
+            if isinstance(val, str) and val.strip():
+                base_hf_id = val.strip()
+                break
+    if base_hf_id is None:
+        raise ValueError(
+            "base_hf_id not in manifest.json; pass it explicitly. "
+            "Look it up on the HF model card if unsure."
+        )
+
+    print(f"[pack-aux] retrofitting {packed_dir.name} from {base_hf_id}")
+    aux_meta = _emit_aux_for_pack(
+        e2e_dir=packed_dir,  # not used for resolution since base_hf_id is set
+        out_dir=packed_dir,
+        base_hf_id=base_hf_id,
+        aux_keys=aux_keys or DEFAULT_AUX_KEYS,
+    )
+    if aux_meta is None:
+        raise RuntimeError(
+            f"aux generation failed for {base_hf_id}; check transformers + HF cache"
+        )
+
+    manifest['pack_format_version'] = PACK_FORMAT_VERSION_V3_5
+    manifest['aux_file'] = aux_meta['path']
+    manifest['aux_sha256'] = aux_meta['sha256']
+    manifest['aux_size_bytes'] = aux_meta['size_bytes']
+    manifest['aux_keys'] = aux_meta['keys']
+    manifest['aux_n_tensors'] = aux_meta['n_tensors']
+    manifest['aux_version'] = aux_meta['version']
+    manifest['base_model_hf_id'] = base_hf_id
+    manifest_path.write_text(json.dumps(manifest, indent=2))
+
+    print(f"[pack-aux] manifest.json updated; pack_format_version={manifest['pack_format_version']}")
     return manifest
 
 
