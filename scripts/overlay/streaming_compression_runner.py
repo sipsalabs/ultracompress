@@ -434,6 +434,80 @@ class CorrectionMatrixC(nn.Module):
         return yb + self.alpha.to(xd) * u_out.to(xd)
 
 
+class CorrectionMatrixC_MultiPass(nn.Module):
+    """V4-D Multi-Pass Cascade Correction: y = W_base @ x + sum_k alpha_k * U_k(V_k(input_k))
+
+    Multi-pass cascade: each pass corrects the residual of all previous passes.
+    n_passes=2, rank=16 has same param count as n_passes=1, rank=32 but
+    different inductive bias: sequential refinement where pass k>0 sees the
+    nonlinear residual left by passes 0..k-1.
+
+    Pass 0 input: x (in_dim=hd).
+    Pass k>0 input: previous correction output (out_dim=nr), so V_k is
+    Linear(nr, rank) NOT Linear(hd, rank). This handles Qwen3 GQA where
+    k_proj/v_proj are 2048->1024 (nr != hd).
+
+    Ported from scaling_curve_runner.py:1132-1186 (validated on scaling curve runner).
+    Wire into streaming runner via UC_V4D_MULTIPASS=<n_passes> env flag.
+    """
+    def __init__(self, weight: torch.Tensor, bias: torch.Tensor | None,
+                 rank: int = 32, n_passes: int = 2):
+        super().__init__()
+        self.n_passes = n_passes
+        self.register_buffer('W_base', weight.detach())
+        self.register_buffer('bias_buf', bias.detach() if bias is not None else None)
+        nr, hd = weight.shape
+        device = weight.device
+        self.Vs = nn.ModuleList()
+        self.Us = nn.ModuleList()
+        self.alphas = nn.ParameterList()
+        for k in range(n_passes):
+            # Pass 0: V reads x (hd-dim). Pass k>0: V reads prev correction (nr-dim).
+            v_in_dim = hd if k == 0 else nr
+            V = nn.Linear(v_in_dim, rank, bias=False).to(device)
+            U = nn.Linear(rank, nr, bias=False).to(device)
+            nn.init.normal_(V.weight, std=0.01 * (1.0 + 0.1 * k))
+            nn.init.normal_(U.weight, std=0.01 * (1.0 + 0.1 * k))
+            self.Vs.append(V)
+            self.Us.append(U)
+            self.alphas.append(nn.Parameter(torch.zeros(1, device=device)))
+
+    def init_from_svd(self, original_weight: torch.Tensor) -> None:
+        """SVD warm-start for pass 0 only. Pass k>0 uses random init."""
+        residual = (original_weight - self.W_base).float()
+        try:
+            U_svd, S_svd, Vt_svd = torch.linalg.svd(residual, full_matrices=False)
+            rank = self.Vs[0].weight.shape[0]
+            self.Vs[0].weight.data.copy_(
+                (Vt_svd[:rank] * S_svd[:rank].unsqueeze(1).sqrt()).to(self.Vs[0].weight.dtype)
+            )
+            self.Us[0].weight.data.copy_(
+                (U_svd[:, :rank] * S_svd[:rank].unsqueeze(0).sqrt()).to(self.Us[0].weight.dtype)
+            )
+            self.alphas[0].data.fill_(1.0)
+        except Exception:
+            pass  # Keep random init for all passes
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        xd = x.dtype
+        yb = F.linear(x, self.W_base.to(xd),
+                       self.bias_buf.to(xd) if self.bias_buf is not None else None)
+        # Pass 0: correct from original input x (in_dim=hd)
+        v0 = F.linear(x, self.Vs[0].weight.to(xd))
+        u0 = F.linear(v0.float(), self.Us[0].weight.float())
+        correction_0 = self.alphas[0].to(xd) * u0.to(xd)
+        y = yb + correction_0
+        # Passes 1..n_passes-1: correct from previous correction output (in_dim=nr)
+        prev_correction = correction_0
+        for k in range(1, self.n_passes):
+            vk = F.linear(prev_correction, self.Vs[k].weight.to(xd))
+            uk = F.linear(vk.float(), self.Us[k].weight.float())
+            correction_k = self.alphas[k].to(xd) * uk.to(xd)
+            y = y + correction_k
+            prev_correction = correction_k
+        return y
+
+
 # ---------------------------------------------------------------------------
 # Utility
 # ---------------------------------------------------------------------------
@@ -815,6 +889,17 @@ def compress_single_layer(
                   f'rank {rank} -> {scaled_rank}', flush=True)
             rank = scaled_rank
 
+    # V4-D cure: Multi-Pass Cascade Correction (residual-of-residual).
+    # n_passes=2 at rank//n_passes per pass gives same total param count as single-pass
+    # but different inductive bias: pass 1 corrects structured residual left by pass 0.
+    # Opt in via UC_V4D_MULTIPASS=<n_passes> (e.g. UC_V4D_MULTIPASS=2).
+    v4d_n_passes = int(os.environ.get('UC_V4D_MULTIPASS', '0'))
+    if v4d_n_passes >= 2:
+        v4d_rank_per_pass = max(1, rank // v4d_n_passes)
+        print(f'    [V4D_multipass] layer {layer_idx}/{n_layers}: '
+              f'{v4d_n_passes} passes, rank_per_pass={v4d_rank_per_pass} '
+              f'(total_rank_equiv={v4d_rank_per_pass * v4d_n_passes})', flush=True)
+
     # Load teacher hidden states for this layer (input) and next (target)
     input_hidden = torch.load(
         hidden_cache_dir / f'hidden_layer_{layer_idx:03d}.pt',
@@ -919,16 +1004,27 @@ def compress_single_layer(
     free_memory()
 
     # Wrap each quantized Linear with V18-C correction (SVD warm-start)
-    correction_modules: dict[str, CorrectionMatrixC] = {}
+    # V4-D: use CorrectionMatrixC_MultiPass when UC_V4D_MULTIPASS >= 2
+    use_multipass = v4d_n_passes >= 2
+    correction_modules: dict[str, nn.Module] = {}
 
     def wrap_linears_with_correction(module: nn.Module, prefix: str = '') -> None:
         for name, child in list(module.named_children()):
             full_name = f'{prefix}.{name}' if prefix else name
             if isinstance(child, nn.Linear) and any(s in name for s in TARGET_SUBS):
-                cm = CorrectionMatrixC(
-                    child.weight.data, child.bias.data if child.bias is not None else None,
-                    rank=rank,
-                )
+                if use_multipass:
+                    cm = CorrectionMatrixC_MultiPass(
+                        child.weight.data,
+                        child.bias.data if child.bias is not None else None,
+                        rank=v4d_rank_per_pass,
+                        n_passes=v4d_n_passes,
+                    )
+                else:
+                    cm = CorrectionMatrixC(
+                        child.weight.data,
+                        child.bias.data if child.bias is not None else None,
+                        rank=rank,
+                    )
                 # SVD warm-start from residual
                 if full_name in original_weights:
                     cm.init_from_svd(original_weights[full_name].to(device))
@@ -941,15 +1037,25 @@ def compress_single_layer(
     del original_weights
     free_memory()
 
-    # Freeze base weights, only train V/U/alpha
+    # Freeze base weights, only train V/U/alpha (handles both single-pass and multi-pass)
     for p in layer.parameters():
         p.requires_grad = False
     for cm in correction_modules.values():
-        for p in cm.V.parameters():
-            p.requires_grad = True
-        for p in cm.U.parameters():
-            p.requires_grad = True
-        cm.alpha.requires_grad = True
+        if isinstance(cm, CorrectionMatrixC_MultiPass):
+            for V_mod in cm.Vs:
+                for p in V_mod.parameters():
+                    p.requires_grad = True
+            for U_mod in cm.Us:
+                for p in U_mod.parameters():
+                    p.requires_grad = True
+            for alpha_p in cm.alphas:
+                alpha_p.requires_grad = True
+        else:
+            for p in cm.V.parameters():
+                p.requires_grad = True
+            for p in cm.U.parameters():
+                p.requires_grad = True
+            cm.alpha.requires_grad = True
 
     # Hidden-state distillation: train V/U to minimize MSE between
     # student layer output and teacher's next-layer hidden state
@@ -1050,12 +1156,22 @@ def compress_single_layer(
     save_dict['state_dict'] = {k: v.cpu() for k, v in layer.state_dict().items()}
 
     # Also save correction parameters separately for clarity
+    # V4-D: multi-pass stores lists of V/U/alpha per pass
     for name, cm in correction_modules.items():
-        save_dict['corrections'][name] = {
-            'V_weight': cm.V.weight.data.cpu(),
-            'U_weight': cm.U.weight.data.cpu(),
-            'alpha': cm.alpha.data.cpu().item(),
-        }
+        if isinstance(cm, CorrectionMatrixC_MultiPass):
+            save_dict['corrections'][name] = {
+                'multipass': True,
+                'n_passes': cm.n_passes,
+                'V_weights': [v.weight.data.cpu() for v in cm.Vs],
+                'U_weights': [u.weight.data.cpu() for u in cm.Us],
+                'alphas': [a.data.cpu().item() for a in cm.alphas],
+            }
+        else:
+            save_dict['corrections'][name] = {
+                'V_weight': cm.V.weight.data.cpu(),
+                'U_weight': cm.U.weight.data.cpu(),
+                'alpha': cm.alpha.data.cpu().item(),
+            }
 
     # Persist the GSQ k-means codec (grid + codes + absmax) per quantized Linear.
     # Gives `uc pack` v0.3 the components it needs for lossless reconstruction.
@@ -1200,16 +1316,15 @@ def streaming_eval_ppl(
             with torch.device('meta'):
                 layer = DecoderLayerClass(config, layer_idx=i)
 
-            # Wrap target linears with CorrectionMatrixC BEFORE loading state
+            # Wrap target linears with CorrectionMatrixC (or MultiPass) BEFORE loading state
             for name in corrections_data:
                 cd = corrections_data[name]
-                rank = cd['V_weight'].shape[0]
+                is_multipass = cd.get('multipass', False)
                 parts = name.split('.')
                 parent = layer
                 for p in parts[:-1]:
                     parent = getattr(parent, p)
                 attr = parts[-1]
-                mod = getattr(parent, attr)
                 # Get W_base shape from state_dict
                 w_base_key = f'{name}.W_base'
                 w_base_shape = layer_sd[w_base_key].shape
@@ -1220,7 +1335,15 @@ def streaming_eval_ppl(
                 with torch.device('meta'):
                     dummy_w = torch.empty(w_base_shape, dtype=dtype)
                     dummy_bias = torch.empty(w_base_shape[0], dtype=dtype) if has_bias else None
-                cm = CorrectionMatrixC(dummy_w, dummy_bias, rank=rank)
+                if is_multipass:
+                    n_passes = cd['n_passes']
+                    rank = cd['V_weights'][0].shape[0]
+                    cm = CorrectionMatrixC_MultiPass(
+                        dummy_w, dummy_bias, rank=rank, n_passes=n_passes,
+                    )
+                else:
+                    rank = cd['V_weight'].shape[0]
+                    cm = CorrectionMatrixC(dummy_w, dummy_bias, rank=rank)
                 setattr(parent, attr, cm)
 
             # Load full state_dict (assign=True replaces meta placeholders)
@@ -1559,6 +1682,13 @@ def main() -> None:
         'timestamp': datetime.datetime.now().isoformat(),
         'device': str(DEVICE),
         'cuda_device_name': torch.cuda.get_device_name(DEVICE),
+        'v4d_multipass': int(os.environ.get('UC_V4D_MULTIPASS', '0')),
+        'env_flags': {
+            'UC_ADAPTIVE_TRAIN_STEPS': os.environ.get('UC_ADAPTIVE_TRAIN_STEPS', '0'),
+            'UC_RANK_REDISTRIBUTE': os.environ.get('UC_RANK_REDISTRIBUTE', '0'),
+            'UC_V4D_MULTIPASS': os.environ.get('UC_V4D_MULTIPASS', '0'),
+            'UC_ADAPTIVE_BPW': os.environ.get('UC_ADAPTIVE_BPW', '0'),
+        },
     }
 
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
@@ -1603,7 +1733,12 @@ def main() -> None:
     print(f'  Model:              {args.model} ({hf_id})')
     print(f'  Layers:             {n_layers}')
     print(f'  Quantization:       GSQ {args.bpw}bpw B={args.block_size}')
-    print(f'  Correction:         V18-C r={args.rank}')
+    v4d_flag = int(os.environ.get('UC_V4D_MULTIPASS', '0'))
+    if v4d_flag >= 2:
+        print(f'  Correction:         V18-C V4-D MultiPass n={v4d_flag} '
+              f'r_per_pass={args.rank // v4d_flag}')
+    else:
+        print(f'  Correction:         V18-C r={args.rank}')
     print(f'  Baseline PPL:       {fp16_ppl:.4f}')
     print(f'  Compressed PPL:     {compressed_ppl:.4f}')
     print(f'  PPL Ratio:          {ppl_ratio:.4f}x')
