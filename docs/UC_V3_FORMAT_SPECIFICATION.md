@@ -159,6 +159,20 @@ If `bias_present == 1`, the cursor advances by `1 + out_dim * 2` bytes.
 
 This concludes one per-Linear record. The next record (if any) begins at the new cursor position.
 
+### 5.9 Optional AWQ Scale (V4-A Extension)
+
+When the V4-A AWQ-style channel rescaling patch is active (`UC_AWQ_SCALING=1` at compression time), the per-Linear codec dict in the `.pt` layer artifact contains an additional field `awq_scale` of shape `(in_dim,)` in `fp32`. This field records the per-input-channel activation-aware scale vector `s` used during quantization (arxiv:2306.00978).
+
+**Reconstruction with AWQ scale present:**
+
+```
+W_base[i, c] = grid[ codes[i, c // B, c % B] ] * absmax[i, c // B] / awq_scale[c]
+```
+
+The `awq_scale` field is **optional**: if absent, reconstruction proceeds per the standard formula in S6. If present, the division by `awq_scale` MUST be applied element-wise along the input dimension after the standard `grid * absmax` product.
+
+**Note:** The `awq_scale` field is stored in the per-Linear codec dict of the `.pt` training artifact, not in the binary `.uc` pack file. A future revision of this specification (v4) may promote it to the binary format. For v3, the `.uc` binary layout is unchanged; `awq_scale` travels with the trainer artifact only.
+
 ## 6. Reconstruction Formula (Audit Trail)
 
 Given the parsed fields `(grid, codes, absmax, alpha, V, U, bias?)` for one Linear, the original weight matrix `W ∈ R^(out_dim × in_dim)` and effective forward operator are reconstructed as follows.

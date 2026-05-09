@@ -248,6 +248,44 @@ _NF_LEVELS = {
 }
 
 
+def compute_awq_scales(
+    W: torch.Tensor, X_calib: torch.Tensor, alpha: float = 0.5
+) -> torch.Tensor:
+    """AWQ-style per-input-channel activation-aware rescaling (arxiv:2306.00978).
+
+    Computes per-channel salience from calibration activations and returns a
+    scale vector that, when applied as W' = W * diag(s), reduces quantization
+    residual on salient channels.  After quantization of W', the inverse scale
+    is applied: W_deq = W'_deq / s.  The scale vector is stored in the per-
+    Linear codec dict for lossless reconstruction.
+
+    Args:
+        W: weight tensor, shape (out_dim, in_dim).
+        X_calib: calibration activations, shape (n_samples, in_dim).
+            Obtained from cached teacher hidden states (layer input).
+        alpha: salience exponent.  0 = no rescaling; 1 = full salience scaling.
+            Default 0.5 per AWQ paper recommendation.
+
+    Returns:
+        scale: (in_dim,) fp32 tensor, >=1e-6 clamped.
+
+    Decision criteria (document for lab notebook):
+        PPL_r <= 1.0040  -->  WIN
+        1.0040 < PPL_r <= 1.0048  -->  NEUTRAL (within noise)
+        PPL_r > 1.0048  -->  REFUTED
+    """
+    # Per-input-channel salience: mean |activation| across samples
+    # X_calib may be (n_samples, seq_len, in_dim) or (n_samples, in_dim)
+    salience = X_calib.float().abs().reshape(-1, W.shape[1]).mean(dim=0)
+    # Normalize salience to [0, 1] range for numerical stability
+    salience = salience / salience.max().clamp(min=1e-12)
+    # Scale: s_c = salience_c ^ alpha.  Higher salience -> larger scale -> less
+    # quantization error on that channel (the weight column is stretched before
+    # quantization, giving the grid finer effective resolution).
+    scale = salience.pow(alpha).clamp(min=1e-6).to(W.device)
+    return scale
+
+
 def gsq_quantize_weight(W: torch.Tensor, bpw: int,
                         block: int = 64, gsq_steps: int = 50,
                         return_codec: bool = False):
@@ -817,6 +855,17 @@ def compress_single_layer(
         if isinstance(mod, nn.Linear) and any(s in name for s in TARGET_SUBS):
             original_weights[name] = mod.weight.data.clone()
 
+    # V4-A: AWQ-style per-channel activation-aware rescaling (arxiv:2306.00978).
+    # Gated behind UC_AWQ_SCALING=1.  Computes per-input-channel salience from
+    # teacher hidden states (this layer's input) and pre-scales W before GSQ,
+    # so salient channels get finer effective quantization resolution.
+    # The scale vector is stored in gsq_codecs[name]['awq_scale'] and applied
+    # inversely at reconstruction: W_deq = gsq_deq(W_scaled) / s.
+    use_awq = os.environ.get('UC_AWQ_SCALING') == '1'
+    awq_alpha = float(os.environ.get('UC_AWQ_ALPHA', '0.5'))
+    if use_awq:
+        print(f'    [V4-A AWQ] enabled  alpha={awq_alpha}', flush=True)
+
     # Apply GSQ quantization to each Linear in the layer.
     # Capture (grid, codes, absmax) for v0.3 pack codec persistence.
     n_quantized = 0
@@ -833,21 +882,39 @@ def compress_single_layer(
                 this_bpw = bpw
                 if os.environ.get('UC_ADAPTIVE_BPW') == '1' and 'k_proj' in name:
                     this_bpw = min(bpw + 1, 8)
+
+                # V4-A AWQ pre-scaling: W' = W * diag(s)
+                awq_scale = None
+                if use_awq:
+                    awq_scale = compute_awq_scales(
+                        W, input_hidden.reshape(-1, hidden_dim), alpha=awq_alpha
+                    )
+                    W = W * awq_scale.unsqueeze(0)  # broadcast (out, in) * (1, in)
+
                 Wq, grid, codes, absmax = gsq_quantize_weight(
                     W, this_bpw, block_size, return_codec=True
                 )
-                # Relative L2 error
-                rel_l2 = (W - Wq).norm() / W.norm()
+
+                # V4-A AWQ inverse scaling: W_deq = Wq / diag(s)
+                if awq_scale is not None:
+                    Wq = Wq / awq_scale.unsqueeze(0)
+
+                # Relative L2 error (measured against ORIGINAL unscaled W)
+                W_orig = mod.weight.data.float()
+                rel_l2 = (W_orig - Wq).norm() / W_orig.norm()
                 quant_errors[name] = rel_l2.item()
                 mod.weight.data.copy_(Wq.to(dtype))
                 # Save codec components — these enable lossless v0.3 pack reconstruction.
                 # Storage cost ≈ 1.0% of W bytes (codes) + tiny grid + per-block absmax.
-                gsq_codecs[name] = {
+                codec_entry: dict[str, torch.Tensor] = {
                     'grid': grid,                    # (K,) fp32
                     'codes': codes,                  # (out_dim, n_blocks, block) int16
                     'absmax': absmax.squeeze(-1),    # (out_dim, n_blocks) fp32
                 }
-                del W, Wq, grid, codes, absmax
+                if awq_scale is not None:
+                    codec_entry['awq_scale'] = awq_scale.cpu()  # (in_dim,) fp32
+                gsq_codecs[name] = codec_entry
+                del W, W_orig, Wq, grid, codes, absmax, awq_scale
             n_quantized += 1
     free_memory()
 
