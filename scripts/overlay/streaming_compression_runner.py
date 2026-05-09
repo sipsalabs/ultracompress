@@ -721,9 +721,24 @@ def compress_single_layer(
     """Compress a single transformer layer: GSQ + V18-C with hidden-state distillation.
 
     Returns per-layer metrics dict.
+
+    Per-Linear adaptive train-steps (UC_ADAPTIVE_TRAIN_STEPS=1): scales train_steps
+    proportionally to layer depth. Layer 0 = base_steps; final layer = 5x base_steps.
+    Empirically motivated by today's observation that train_loss_final scales 5000x
+    from layer 0 (0.0002) to layer 27 (1.05) on Qwen3-1.7B-Base under uniform fixed
+    steps — deep layers are V18-C-undertrained at fixed schedule.
     """
     t0 = time.time()
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    if os.environ.get('UC_ADAPTIVE_TRAIN_STEPS') == '1':
+        # Linear ramp 1.0 → 5.0 over n_layers
+        depth_frac = layer_idx / max(n_layers - 1, 1)
+        scaled_steps = int(round(train_steps * (1.0 + 4.0 * depth_frac)))
+        if scaled_steps != train_steps:
+            print(f'    [adaptive_train_steps] layer {layer_idx}/{n_layers}: '
+                  f'{train_steps} -> {scaled_steps} steps', flush=True)
+            train_steps = scaled_steps
 
     # Load teacher hidden states for this layer (input) and next (target)
     input_hidden = torch.load(
