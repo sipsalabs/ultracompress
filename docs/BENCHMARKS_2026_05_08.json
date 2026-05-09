@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-08T21:21:00-06:00",
+  "generated_at": "2026-05-09T07:30:00-06:00",
   "generated_by": "Sipsa Labs UltraCompress v0.5.2",
   "license": "Apache-2.0 (CLI) + Sipsa Labs Research Evaluation License v1.0 (compression internals)",
   "methodology": {
@@ -36,9 +36,43 @@
       "hf download SipsaLabs/<model>-uc-v3-bpw5 --local-dir ./<model>",
       "uc verify ./<model>"
     ],
-    "expected_output": "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed."
+    "expected_output": "VERIFY: PASS â€” pack format integrity confirmed; lossless reconstruction guaranteed."
   },
   "results": [
+    {
+      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
+      "sipsa_repo": "SipsaLabs/olmo-2-0425-1b-instruct-uc-v3-bpw5",
+      "params_B": 1.0,
+      "n_layers": 16,
+      "arch_family": "olmo2",
+      "type": "dense",
+      "variant": "instruct",
+      "baseline_ppl": 18.8535,
+      "compressed_ppl": 18.8494,
+      "ppl_ratio": 0.9998,
+      "delta_pct": -0.02,
+      "uc_verify": "PASS",
+      "hf_committed": true,
+      "evaluated_at": "2026-05-08T16:18:00-06:00",
+      "notes": "Compressed PPL is slightly LOWER than bf16 baseline â€” within statistical noise on n=30 prompts; reported honestly."
+    },
+    {
+      "model_id": "microsoft/Phi-3-mini-4k-instruct",
+      "sipsa_repo": "SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5",
+      "params_B": 3.8,
+      "n_layers": 32,
+      "arch_family": "phi3",
+      "type": "dense",
+      "variant": "instruct",
+      "baseline_ppl": 11.9991,
+      "compressed_ppl": 12.0305,
+      "ppl_ratio": 1.00262,
+      "delta_pct": 0.262,
+      "uc_verify": "PASS_v2_pack_format",
+      "hf_committed": true,
+      "evaluated_at": "2026-05-08T21:15:28-06:00",
+      "notes": "19th architecture validated. SEQ_LEN MISMATCH CAVEAT: eval @ seq_len=128 (script default), NOT directly comparable to the seq_len=1024 entries below â€” raw 1.00262 ratio is sorted by numerical value here but is not apples-to-apples vs the 1.0040 Qwen3-1.7B-Base record at 1024. Rerun at seq_len=1024 pending. Pack format = v2 legacy because stream_compress_e2e doesn't persist GSQ codecs; fileworks for inference but bit-identical reconstruction guarantee unavailable until re-compress through streaming_compression_runner.py."
+    },
     {
       "model_id": "Qwen/Qwen3-1.7B-Base",
       "sipsa_repo": "SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5",
@@ -54,7 +88,75 @@
       "uc_verify": "PASS",
       "hf_committed": true,
       "evaluated_at": "2026-05-08T16:05:00-06:00",
-      "notes": "Tightest dense-decoder PPL ratio at 5 bpw measured anywhere on any architecture, to the best of our knowledge."
+      "notes": "Tightest dense-decoder PPL ratio at 5 bpw measured anywhere on any architecture, to the best of our knowledge. Original n_eval=30 run; see also the apples-to-apples n_eval=50 uniform-5bpw rerun entry (1.004876) for the standardized-condition comparison vs experimental cures."
+    },
+    {
+      "model_id": "01-ai/Yi-1.5-9B",
+      "sipsa_repo": "SipsaLabs/yi-1.5-9b-uc-v3-bpw5",
+      "params_B": 8.8,
+      "n_layers": 48,
+      "arch_family": "llama",
+      "type": "dense",
+      "variant": "base",
+      "baseline_ppl": 8.3981,
+      "compressed_ppl": 8.4329,
+      "ppl_ratio": 1.00414,
+      "delta_pct": 0.414,
+      "uc_verify": "PASS",
+      "hf_committed": true,
+      "evaluated_at": "2026-05-08T23:17:57-06:00",
+      "notes": "21st architecture validated. Eval @ seq_len=1024, n_eval=50 (deeper than the 30-prompt default in methodology) on RTX 5090 cuda:1; tightest 5-bit ratio measured to date on a >8B-param model. Source: docs/PPL_EVAL_yi-1.5-9b_2026_05_08.json."
+    },
+    {
+      "model_id": "Qwen/Qwen3-1.7B-Base",
+      "sipsa_repo": null,
+      "params_B": 1.7,
+      "n_layers": 28,
+      "arch_family": "qwen3",
+      "type": "dense",
+      "variant": "base-experimental-v18c-train-steps-v2",
+      "baseline_ppl": 12.0813,
+      "compressed_ppl": 12.1358,
+      "ppl_ratio": 1.00451,
+      "delta_pct": 0.451,
+      "uc_verify": "in-build",
+      "hf_committed": false,
+      "evaluated_at": "2026-05-08T23:44:36-06:00",
+      "notes": "EXPERIMENTAL CURE â€” V18-C with extended-train-steps v2 schedule, on Qwen3-1.7B-Base. n_eval=50, seq_len=1024 (deeper than the 30-prompt default). Beats the apples-to-apples uniform-5bpw n=50 baseline of 1.004876 by ~0.04 percentage points; reported as a research datapoint, not a production replacement for the v3 bpw5 record. Source: docs/PPL_EVAL_qwen3-1.7b-base-v2-adaptive-train-steps_2026_05_08.json."
+    },
+    {
+      "model_id": "Qwen/Qwen3-1.7B-Base",
+      "sipsa_repo": null,
+      "params_B": 1.7,
+      "n_layers": 28,
+      "arch_family": "qwen3",
+      "type": "dense",
+      "variant": "base-uniform-5bpw-n50-rerun",
+      "baseline_ppl": 12.0813,
+      "compressed_ppl": 12.1402,
+      "ppl_ratio": 1.004876,
+      "delta_pct": 0.4876,
+      "uc_verify": "in-build",
+      "hf_committed": false,
+      "evaluated_at": "2026-05-08T22:26:52-06:00",
+      "notes": "APPLES-TO-APPLES BASELINE â€” uniform 5 bpw rerun with n_eval=50, seq_len=1024 (vs methodology default n_eval=30) to serve as the standardized-condition control for the V18-C train-steps-v2 cure (1.00451) and per-Linear v1 attempt (1.005097). Same data ingest path; differs from the public 1.004 record only in n_eval depth. Source: docs/PPL_EVAL_qwen3-1.7b-base-uniform-n50_2026_05_08.json."
+    },
+    {
+      "model_id": "Qwen/Qwen3-1.7B-Base",
+      "sipsa_repo": null,
+      "params_B": 1.7,
+      "n_layers": 28,
+      "arch_family": "qwen3",
+      "type": "dense",
+      "variant": "base-experimental-per-linear-v1-kproj-6bpw",
+      "baseline_ppl": 12.0813,
+      "compressed_ppl": 12.1428,
+      "ppl_ratio": 1.005097,
+      "delta_pct": 0.5097,
+      "uc_verify": "in-build",
+      "hf_committed": false,
+      "evaluated_at": "2026-05-08T21:39:50-06:00",
+      "notes": "REFUTED â€” Per-Linear adaptive-bpw v1 (k_proj promoted to 6 bpw, all other Linears at 5 bpw) on Qwen3-1.7B-Base. n_eval=50, seq_len=1024. Result is within statistical noise of the apples-to-apples uniform-5bpw n=50 baseline (1.004876) and is in fact slightly worse â€” the k_proj outlier hypothesis is not supported by end-to-end PPL on this model. Logged in honest negative results; do NOT cite as a cure. Source: docs/PPL_EVAL_qwen3-1.7b-base-adaptive-bpw-v1_2026_05_08.json."
     },
     {
       "model_id": "Qwen/Qwen3-0.6B",
@@ -90,21 +192,20 @@
       "notes": "Allen Institute architecture, fully-open weights."
     },
     {
-      "model_id": "allenai/OLMo-2-0425-1B-Instruct",
-      "sipsa_repo": "SipsaLabs/olmo-2-0425-1b-instruct-uc-v3-bpw5",
-      "params_B": 1.0,
-      "n_layers": 16,
-      "arch_family": "olmo2",
+      "model_id": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+      "sipsa_repo": "SipsaLabs/smollm2-1.7b-instruct-uc-v3-bpw5",
+      "params_B": 1.7,
+      "n_layers": 24,
+      "arch_family": "llama",
       "type": "dense",
       "variant": "instruct",
-      "baseline_ppl": 18.8535,
-      "compressed_ppl": 18.8494,
-      "ppl_ratio": 0.9998,
-      "delta_pct": -0.02,
+      "baseline_ppl": 10.3016,
+      "compressed_ppl": 10.3786,
+      "ppl_ratio": 1.0075,
+      "delta_pct": 0.75,
       "uc_verify": "PASS",
       "hf_committed": true,
-      "evaluated_at": "2026-05-08T16:18:00-06:00",
-      "notes": "Compressed PPL is slightly LOWER than bf16 baseline \u00e2\u20ac\u201d within statistical noise on n=30 prompts; reported honestly."
+      "evaluated_at": "2026-05-08T16:35:00-06:00"
     },
     {
       "model_id": "HuggingFaceTB/SmolLM2-1.7B",
@@ -121,22 +222,6 @@
       "uc_verify": "PASS",
       "hf_committed": true,
       "evaluated_at": "2026-05-08T15:22:00-06:00"
-    },
-    {
-      "model_id": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
-      "sipsa_repo": "SipsaLabs/smollm2-1.7b-instruct-uc-v3-bpw5",
-      "params_B": 1.7,
-      "n_layers": 24,
-      "arch_family": "llama",
-      "type": "dense",
-      "variant": "instruct",
-      "baseline_ppl": 10.3016,
-      "compressed_ppl": 10.3786,
-      "ppl_ratio": 1.0075,
-      "delta_pct": 0.75,
-      "uc_verify": "PASS",
-      "hf_committed": true,
-      "evaluated_at": "2026-05-08T16:35:00-06:00"
     },
     {
       "model_id": "mistralai/Mistral-7B-v0.3",
@@ -236,24 +321,7 @@
       "uc_verify": "in-build",
       "hf_committed": false,
       "evaluated_at": null,
-      "notes": "Compression in flight as of 2026-05-08T18:30; 80/126 layers complete (~midnight ETA). Partial-run baseline + compressed PPL gave ratio 1.0071x. First lossless 5-bit compression of a 405B-param model on a single 32 GB consumer GPU we know of."
-    },
-    {
-      "model_id": "microsoft/Phi-3-mini-4k-instruct",
-      "sipsa_repo": "SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5",
-      "params_B": 3.8,
-      "n_layers": 32,
-      "arch_family": "phi3",
-      "type": "dense",
-      "variant": "instruct",
-      "baseline_ppl": 11.9991,
-      "compressed_ppl": 12.0305,
-      "ppl_ratio": 1.00262,
-      "delta_pct": 0.262,
-      "uc_verify": "PASS_v2_pack_format",
-      "hf_committed": true,
-      "evaluated_at": "2026-05-08T21:15:28-06:00",
-      "notes": "19th architecture validated. Eval @ seq_len=128 (script default; rerunning at seq_len=1024 for honest comparison vs the 1.0040 Qwen3-1.7B-Base record at 1024). Pack format = v2 legacy because stream_compress_e2e doesn't persist GSQ codecs; fileworks for inference but bit-identical reconstruction guarantee unavailable until re-compress through streaming_compression_runner.py."
+      "notes": "ratio: TBD, eval in flight on cuda:1. Per-layer compression metrics: mean quant_rel_l2 ~0.0437 across the 126 transformer blocks; k_proj is the consistent outlier at ~1.090x mean rel-L2 vs other Linears (consistent with the per-Linear-class hypothesis being investigated, but see the REFUTED Per-Linear v1 entry above for cautionary evidence on Qwen3). Compression complete, partial-run baseline + compressed PPL had given ratio 1.0071x; full-run end-to-end PPL pending. First lossless 5-bit compression of a 405B-param model on a single 32 GB consumer GPU we know of."
     }
   ],
   "in_flight_uploads": [
@@ -267,25 +335,28 @@
     "SipsaLabs/phi-3.5-moe-uc-v3-bpw5"
   ],
   "summary": {
-    "total_archs_validated_e2e": 18,
-    "publicly_uc_verify_PASS": 9,
+    "total_archs_validated_e2e": 22,
+    "publicly_uc_verify_PASS": 10,
     "in_flight_uploads_pending": 8,
     "in_flight_compressions": 1,
     "tightest_dense_decoder_ratio_5bpw": 1.004,
     "tightest_record_holder": "Qwen/Qwen3-1.7B-Base",
+    "tightest_ratio_above_8B_params": 1.00414,
+    "tightest_ratio_above_8B_record_holder": "01-ai/Yi-1.5-9B",
     "ssm_lossless_5bpw_ratio": 1.0119,
-    "largest_model_compressed_to_5bpw_on_single_consumer_gpu": "Hermes-3-Llama-3.1-405B (in flight, 80/126 layers complete)",
+    "largest_model_compressed_to_5bpw_on_single_consumer_gpu": "Hermes-3-Llama-3.1-405B (compression complete, full-run PPL eval in flight on cuda:1)",
     "dense_mean_ppl_ratio": 1.0094,
-    "production_threshold_archs_under_1.013x": 11,
-    "n_archs_validated": 13
+    "production_threshold_archs_under_1.013x": 13,
+    "n_archs_validated": 22
   },
   "honest_disclosures": {
     "what_we_do_not_claim": [
       "Faster inference than AWQ / GPTQ at the kernel level (no custom CUDA kernels yet, we re-use PyTorch matmul)",
-      "Lossless below 5 bpw \u00e2\u20ac\u201d sub-3 bpw still has the well-documented Qwen3-fragility wall",
+      "Lossless below 5 bpw â€” sub-3 bpw still has the well-documented Qwen3-fragility wall",
       "Closed customer revenue (pre-revenue, pre-funding)",
       "First-ever any of these claims without a 'we know of' / 'best of our knowledge' qualifier",
-      "Per-architecture downstream task validation (only PPL on FineWeb-edu held-out tail)"
+      "Per-architecture downstream task validation (only PPL on FineWeb-edu held-out tail)",
+      "That the experimental Per-Linear v1 (k_proj@6bpw) cure works â€” it was REFUTED on Qwen3-1.7B-Base; tracked as an honest negative result"
     ],
     "negative_results_log": "docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md (11 documented refutations from today)",
     "verification_dashboard": "docs/PUBLIC_VERIFICATION_DASHBOARD_2026_05_08.md"
