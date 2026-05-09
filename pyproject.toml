@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ultracompress"
-version = "0.5.3"
+version = "0.5.4"
 description = "Lossless 5-bit transformer compression — 8 architectures (1.7B–70B, dense + MoE) at sub-1% PPL degradation. Customer-distributable via `uc pack v0.3`."
 readme = "README.md"
 license = {text = "Apache-2.0"}

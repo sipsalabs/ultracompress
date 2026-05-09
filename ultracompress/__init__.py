@@ -20,7 +20,7 @@ Usage:
 """
 import warnings as _warnings
 
-__version__ = "0.5.3"
+__version__ = "0.5.4"
 
 # v3 is the default
 from ultracompress.api_v3 import (
@@ -67,8 +67,20 @@ if _api_v2 is not None:
     _api_v2.compress_v2_compat = _api_v2.compress  # preserve original under new name
     _api_v2.compress = _deprecated_v2_compress  # type: ignore[assignment]
 
+# Public bench API - imported lazily to avoid pulling transformers/torch eagerly
+# when the user only needs `compress` / `save` / `load`.
+def bench_packed(*args, **kwargs):
+    """Inference throughput benchmark on a UC v3 packed model.
+
+    See `ultracompress.bench.bench_packed` for the full signature and docs.
+    """
+    from ultracompress.bench import bench_packed as _impl
+    return _impl(*args, **kwargs)
+
+
 __all__ = [
     "compress", "save", "load",
     "CompressedModel", "CompressionReport",
     "SCHEMA_VERSION",
+    "bench_packed",
 ]

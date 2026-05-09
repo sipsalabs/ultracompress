@@ -4,6 +4,23 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.5.4] — 2026-05-09
+
+### Added
+- **`uc bench <packed_dir>` — sales-grade inference throughput benchmark** (`ultracompress/bench.py`). Customers can now run a one-line throughput benchmark on the v3 packed model we shipped them and produce a JSON report suitable for procurement / acceptance testing.
+  - Measures TTFT (time-to-first-token, mean across `--n-prompts`), TPS overall, TPS decode-only, and peak VRAM.
+  - `--baseline` flag adds an apples-to-apples bf16 comparison run on the same prompts and same device, with `tps_pct_change` / `vram_pct_change` deltas in the JSON.
+  - Resolves the base HF model id automatically from the packed dir's `manifest.json` or `README.md` YAML frontmatter; `--base-model` overrides.
+  - Greedy decoding only (deterministic) so the reported throughput reproduces across runs.
+  - CUDA OOM is caught and surfaced as a `warnings` field in the JSON; partial results still get written.
+  - Public Python API: `from ultracompress import bench_packed; result = bench_packed(packed_dir, ...)` returns a `BenchResult` dataclass.
+- The legacy `uc bench --model <hf_id>` compression-vs-teacher benchmark is preserved as `uc bench-compress`.
+
+### Changed
+- `uc bench` is now a positional-arg command (`uc bench <packed_dir>`) instead of `--model <hf_id>`. The legacy form is available as `uc bench-compress`.
+
+---
+
 ## [0.5.1] — 2026-05-08
 
 ### Fixed

@@ -518,16 +518,42 @@ def _serve(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="uc", description="UltraCompress CLI")
     sub = p.add_subparsers(dest="command", required=True)
-    b = sub.add_parser("bench", help="Benchmark compression on a HF model")
-    b.add_argument("--model", required=True, help="HuggingFace repo id (e.g. Qwen/Qwen3-1.7B)")
-    b.add_argument("--mode", choices=["track_a_full_stack", "track_a_v17_only"],
-                   default="track_a_full_stack")
-    b.add_argument("--target-bpw", type=float, required=True, dest="target_bpw")
-    b.add_argument("--prompts-file", default=None, dest="prompts_file",
-                   help="newline-separated prompt file (default: built-in 8-prompt set)")
-    b.add_argument("--output", default=None, help="JSON output path")
-    b.add_argument("--gpu", type=int, default=0, help="CUDA device index")
-    b.add_argument("--max-new-tokens", type=int, default=64, dest="max_new_tokens")
+
+    # uc bench <packed-dir> - sales-grade inference throughput benchmark
+    b = sub.add_parser(
+        "bench",
+        help="Benchmark inference throughput on a UC v3 packed model",
+    )
+    b.add_argument("packed_dir", help="Path to a UC v3 packed directory (layer_*.uc + manifest.json)")
+    b.add_argument("--n-prompts", type=int, default=50, dest="n_prompts",
+                   help="Number of prompts to evaluate (default 50)")
+    b.add_argument("--seq-len", type=int, default=1024, dest="seq_len",
+                   help="Approximate prompt length in tokens (default 1024)")
+    b.add_argument("--n-new-tokens", type=int, default=256, dest="n_new_tokens",
+                   help="Tokens generated per prompt with greedy decoding (default 256)")
+    b.add_argument("--device", default="cuda:0",
+                   help="Torch device string (default cuda:0)")
+    b.add_argument("--baseline", action="store_true",
+                   help="Also load bf16 baseline model and compute speedup ratios")
+    b.add_argument("--base-model", default=None, dest="base_model",
+                   help="Override base HF model id (default: read from packed dir manifest/README)")
+    b.add_argument("--out-json", default=None, dest="out_json",
+                   help="Output JSON path (default: ./bench_<timestamp>.json)")
+
+    # uc bench-compress - legacy compression-vs-teacher benchmark (kept for back-compat)
+    bc = sub.add_parser(
+        "bench-compress",
+        help="(legacy) Benchmark compression on a HF model vs bf16 teacher",
+    )
+    bc.add_argument("--model", required=True, help="HuggingFace repo id (e.g. Qwen/Qwen3-1.7B)")
+    bc.add_argument("--mode", choices=["track_a_full_stack", "track_a_v17_only"],
+                    default="track_a_full_stack")
+    bc.add_argument("--target-bpw", type=float, required=True, dest="target_bpw")
+    bc.add_argument("--prompts-file", default=None, dest="prompts_file",
+                    help="newline-separated prompt file (default: built-in 8-prompt set)")
+    bc.add_argument("--output", default=None, help="JSON output path")
+    bc.add_argument("--gpu", type=int, default=0, help="CUDA device index")
+    bc.add_argument("--max-new-tokens", type=int, default=64, dest="max_new_tokens")
 
     f = sub.add_parser("fit", help="Fit a .uc artifact from a local HF model directory")
     f.add_argument("--model", required=True, help="Local path to HF model directory (config.json + .safetensors)")
@@ -617,6 +643,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "bench":
+        from .bench import cmd_bench
+        return cmd_bench(args)
+    if args.command == "bench-compress":
         return _bench(args)
     if args.command == "fit":
         return _fit(args)
