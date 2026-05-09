@@ -4718,3 +4718,65 @@ Customer flow now lossless: pack v3 → upload to HF as `SipsaLabs/<model>-uc-v3
 - **Tonight (Claude side, autonomous):** Hermes-405B finishes layer 126 → pack to v3 → fire upload watchdog. Phi-3-mini upload completes (in flight via watchdog at 20:51).
 - **Tomorrow AM (Sip-only side):** post tweet/LinkedIn at 8-9:30 PT, send press release, send 5 cold emails, file 5-provisional patent batch ($325 USPTO), monitor Atlas EIN (day 2 of 1-7 day window — unblocks NASA + AFWERX SBIR submissions).
 
+
+
+## 2026-05-08 LATE PM — Per-Linear adaptive bpw v1 PPL eval HONEST NEGATIVE (mechanism works, V18-C masks it)
+
+**Setup:** Qwen3-1.7B-Base, base bpw=5, k_proj promoted to 6 bpw (UC_ADAPTIVE_BPW=1), V18-C rank=32, train_steps=200, shared teacher cache from the original record run, eval at n_eval=50/seq_len=1024 on cuda:1.
+
+**Result:** PPL ratio = **1.005097** (baseline 12.081 / compressed 12.143).
+
+**Comparison to today's earlier 1.0040x record on the same model:**
+- Record run: n_eval=30, baseline=12.768, compressed=12.820, ratio=1.0040
+- v1 run: n_eval=50, baseline=12.081, compressed=12.143, ratio=1.0051
+
+**Different n_eval → different sample → different baseline. Direct ratio comparison invalid.** Apples-to-apples re-eval autopipe queued (uniform-5bpw e2e dir at n_eval=50, runs after Yi-9B compression finishes on cuda:1).
+
+**The diagnostic finding (independent of the n_eval mismatch):**
+
+`quant_rel_l2` signal at the per-Linear level confirms cure works exactly as proposed:
+
+| Layer | k_proj uniform-5bpw | k_proj v1-adaptive | Reduction |
+|-------|---------------------|---------------------|-----------|
+| 0     | ~0.054              | 0.02432             | -55%      |
+| 14    | ~0.054              | 0.02518             | -53%      |
+| 20    | ~0.054              | 0.02535             | -53%      |
+| 22    | ~0.054              | 0.02477             | -54%      |
+
+Layer-mean quant_rel_l2 dropped 0.0457 → 0.0411 (-10% aggregate).
+
+**But train_loss_final curves are identical between v1 and the original uniform-5bpw run:**
+
+| Layer | v1 train_loss | uniform train_loss |
+|-------|--------------|---------------------|
+| 0     | 0.0002       | 0.0002              |
+| 14    | 0.0058       | 0.0058              |
+| 20    | 0.1716       | 0.1717              |
+| 22    | 0.3112       | 0.3114              |
+| 27    | 1.0491       | 0.9990              |
+
+**Interpretation:** V18-C with rank=32 was already nearly fully covering the uniform-5bpw quantization error. Reducing k_proj's residual error (the v1 cure) doesn't free V18-C capacity to do anything else — the rank-32 correction was already absorbing what it could. **The bottleneck for end-PPL improvement is V18-C correction capacity, not GSQ quantization residual at the k_proj projection.**
+
+This is consistent with today's earlier refutation: rank=64 + train_steps=400 produced ratio 1.0042 vs rank=32+steps=200's 1.0040 (same noise floor). V18-C is the saturation point at this base bpw + this model size.
+
+**Cure direction v2 (now empirically motivated):**
+
+Instead of *promoting* k_proj's bpw, *demote* k_proj's V18-C rank to a smaller value (or 0) since k_proj at 5 bpw is already covered by V18-C to baseline. Redistribute the saved correction parameters to a Linear that *isn't* fully covered (mlp.down_proj has the highest baseline quant error and might benefit from more rank, for example).
+
+Net effect on storage: same total V18-C parameters across the layer, redistributed to where the marginal correction has highest payoff. This is a different mechanism than v1 — it's correction-rank allocation rather than quantization-bpw allocation.
+
+**Patent CIP angle (drafted in `docs/PATENT_CIP_DRAFT_PER_LINEAR_ADAPTIVE_BPW_2026_05_08.md`):**
+
+The CIP draft uses method-form claims (the residual-driven per-projection allocation procedure). v1's PPL result doesn't change the patentability — the mechanism *is* novel and *does* work at the substrate level. Filing strategy unchanged: target Sat/Sun, $65 micro-entity fee. The CIP also lays groundwork for v2 (correction-rank allocation), which is a separate dependent claim.
+
+**v1 status:** RESEARCH DIRECTION CONFIRMED MECHANICALLY, REFUTED ON PPL OUTCOME. Honest negative result entry #12.
+
+**Files:**
+- `docs/PPL_EVAL_qwen3-1.7b-base-adaptive-bpw-v1_2026_05_08.json` — v1 result
+- `docs/PPL_EVAL_qwen3-1_7b-base_2026_05_08.json` — original 1.0040 record run (n_eval=30)
+- `docs/PPL_EVAL_qwen3-1.7b-base-uniform-n50_2026_05_08.json` — apples-to-apples re-eval, autopipe queued
+- `scripts/overlay/_e2e_qwen3_1_7b_base_adaptive/` — v1 compressed layers (28/28)
+- `scripts/overlay/_e2e_qwen3_1_7b_base/` — original uniform-5bpw layers
+- `docs/PATENT_CIP_DRAFT_PER_LINEAR_ADAPTIVE_BPW_2026_05_08.md` — method-form claims, file-ready
+
+**Next-session priority:** v2 — V18-C rank-redistribution policy. Read per-Linear quant_rel_l2 from a calibration pass, allocate higher rank to high-error Linears, lower (or zero) rank to low-error ones, while keeping total V18-C parameter budget unchanged.
