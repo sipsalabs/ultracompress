@@ -4,6 +4,28 @@ Mad-scientist record. Every substantive change: hypothesis → mechanism → exp
 
 ---
 
+## 2026-05-08 19:35 — ➕ Extended-context PPL: Qwen3-Base 1.0071x at seq=2048 (vs 1.0040x at seq=1024)
+
+**Hypothesis:** the 1.0040x PPL record at seq_len=1024 may degrade at longer context length, because more attention pairs = more places for compression noise to accumulate.
+
+**Mechanism:** same compressed pack (Qwen3-1.7B-Base v1, rank=32, train_steps=200), same eval harness, same FineWeb-edu held-out tail prompts, ONLY change is seq_len from 1024 → 2048.
+
+**Measurement:**
+| seq_len | Baseline PPL | Compressed PPL | PPL ratio | Δ% |
+|---|---|---|---|---|
+| 1024 | 12.7683 | 12.8195 | 1.0040x | 0.40% |
+| 2048 | 10.3400 | 10.4132 | **1.0071x** | 0.71% |
+
+**Conclusion:** ratio degrades modestly with context length (+0.31% delta from 2× context). Both still <1.01x, so the lossless claim holds at 2× context. Worth noting publicly that "PPL ratio at seq=N" is the methodologically honest framing — single-number ratios should always cite the eval seq_len.
+
+The baseline PPL DROPS from 12.77 to 10.34 going from seq=1024 to seq=2048 because longer context lets the LM exploit more conditioning information (standard transformer behavior). The COMPRESSED model gets the same benefit, just slightly less of it — which is what "compression noise accumulates over more attention pairs" predicts.
+
+For tomorrow's launch + sipsalabs.com bench tables: cite seq=1024 ratios as headline (matches the rest of the matrix), but include a footnote that the seq=2048 run shows the ratio holds under 2× context.
+
+JSON: `docs/PPL_EVAL_qwen3-1_7b-base_seq2048_2026_05_08.json`.
+
+---
+
 ## 2026-05-08 16:50 — ❌ rank/train_steps push: 1.0040x is the floor (v2 ≈ v1)
 
 **Hypothesis (16:30):** Doubling rank (32 → 64) + doubling train_steps (200 → 400) on Qwen3-1.7B-Base would push the 1.0040x PPL ratio below 1.001x.
