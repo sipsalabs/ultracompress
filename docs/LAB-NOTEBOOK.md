@@ -4780,3 +4780,38 @@ The CIP draft uses method-form claims (the residual-driven per-projection alloca
 - `docs/PATENT_CIP_DRAFT_PER_LINEAR_ADAPTIVE_BPW_2026_05_08.md` — method-form claims, file-ready
 
 **Next-session priority:** v2 — V18-C rank-redistribution policy. Read per-Linear quant_rel_l2 from a calibration pass, allocate higher rank to high-error Linears, lower (or zero) rank to low-error ones, while keeping total V18-C parameter budget unchanged.
+
+
+## 2026-05-08 LATE PM (cont.) — Apples-to-apples result: per-Linear v1 fully refuted on PPL
+
+**Setup change:** re-ran PPL eval on the ORIGINAL uniform-5bpw e2e dir (`_e2e_qwen3_1_7b_base`) at the SAME n_eval=50 / seq_len=1024 / seed=42 as the v1 run. Both runs now share an identical baseline (12.081 PPL).
+
+**Direct comparison (apples-to-apples):**
+
+| Variant | n_eval | baseline PPL | compressed PPL | **PPL ratio** |
+|---|---:|---:|---:|---:|
+| **uniform 5 bpw** | 50 | 12.081 | 12.140 | **1.004876x** |
+| **per-Linear adaptive (v1, k_proj@6bpw)** | 50 | 12.081 | 12.143 | **1.005097x** |
+
+**Δ = +0.000220 — v1 is SLIGHTLY worse than uniform-5bpw. Within noise floor σ≈0.0003 — call it a wash.**
+
+**Mechanism IS real (k_proj quant_rel_l2 -55% on every layer of Qwen3-1.7B-Base AND every sampled layer of Hermes-3-405B). PPL gain at end-to-end is ZERO.** V18-C with rank=32 was already saturating the achievable correction at uniform 5 bpw, so reducing k_proj's residual freed no V18-C capacity for compounding improvements.
+
+**Pipeline confirmed sound:**
+- Apples-to-apples baseline match: confirmed identical
+- train_loss curves: identical between v1 and uniform across all 28 layers
+- per-Linear quant_rel_l2: confirmed per-layer 55% reduction on k_proj
+- end-to-end PPL: no improvement (within noise)
+
+**Patent CIP angle (`docs/PATENT_CIP_DRAFT_PER_LINEAR_ADAPTIVE_BPW_2026_05_08.md`):**
+
+Claim language is method-form, not result-form. The procedure (residual-driven per-projection bpw allocation) IS novel and IS empirically demonstrated. The CIP filing proceeds as planned for Sat/Sun ($65 micro-entity).
+
+**v2 cure direction (still empirically motivated, just from a different angle):**
+
+V18-C rank-redistribution. Hold total V18-C parameter count constant; lower rank on already-saturated Linears (k_proj, since V18-C nearly fully covers it at 5 bpw); higher rank on residual-heavy Linears (mlp.down_proj has the highest baseline quant error). This is a different mechanism than v1 — it's correction-rank allocation not quantization-bpw allocation.
+
+**Files:**
+- `docs/PPL_EVAL_qwen3-1.7b-base-uniform-n50_2026_05_08.json` — apples-to-apples baseline
+- `docs/PPL_EVAL_qwen3-1.7b-base-adaptive-bpw-v1_2026_05_08.json` — v1
+- HONEST_NEGATIVE_RESULTS doc gets entry #13.

@@ -184,6 +184,18 @@ MODEL_REGISTRY: dict[str, dict[str, Any]] = {
         'dtype': torch.bfloat16,
         'n_layers': 32,
     },
+    'yi-1.5-9b': {
+        'hf_id': '01-ai/Yi-1.5-9B',
+        'params_B': 8.8,
+        'dtype': torch.bfloat16,
+        'n_layers': 48,
+    },
+    'phi-2': {
+        'hf_id': 'microsoft/phi-2',
+        'params_B': 2.7,
+        'dtype': torch.bfloat16,
+        'n_layers': 32,
+    },
 }
 
 TARGET_SUBS = ('q_proj', 'k_proj', 'v_proj', 'o_proj',
