@@ -276,7 +276,14 @@ def compute_awq_scales(
     """
     # Per-input-channel salience: mean |activation| across samples
     # X_calib may be (n_samples, seq_len, in_dim) or (n_samples, in_dim)
-    salience = X_calib.float().abs().reshape(-1, W.shape[1]).mean(dim=0)
+    in_dim = W.shape[1]
+    x_in_dim = X_calib.shape[-1]
+    assert x_in_dim == in_dim, (
+        f'compute_awq_scales: X_calib last dim {x_in_dim} != W.shape[1] {in_dim}. '
+        f'Caller must pass activations matching the Linear input dimension. '
+        f'For down_proj/o_proj, pass intermediate/attn-output activations, not layer input.'
+    )
+    salience = X_calib.float().abs().reshape(-1, in_dim).mean(dim=0)
     # Normalize salience to [0, 1] range for numerical stability
     salience = salience / salience.max().clamp(min=1e-12)
     # Scale: s_c = salience_c ^ alpha.  Higher salience -> larger scale -> less
@@ -969,12 +976,18 @@ def compress_single_layer(
                     this_bpw = min(bpw + 1, 8)
 
                 # V4-A AWQ pre-scaling: W' = W * diag(s)
+                # Only apply to Linears whose input dim == hidden_dim (the cached
+                # calibration data).  down_proj and o_proj take intermediate/attn
+                # activations we don't cache, so skip them.
                 awq_scale = None
-                if use_awq:
+                if use_awq and W.shape[1] == hidden_dim:
                     awq_scale = compute_awq_scales(
                         W, input_hidden.reshape(-1, hidden_dim), alpha=awq_alpha
                     )
                     W = W * awq_scale.unsqueeze(0)  # broadcast (out, in) * (1, in)
+                elif use_awq:
+                    print(f'      [V4-A AWQ] skip {name}: in_dim={W.shape[1]} '
+                          f'!= hidden_dim={hidden_dim}', flush=True)
 
                 Wq, grid, codes, absmax = gsq_quantize_weight(
                     W, this_bpw, block_size, return_codec=True
