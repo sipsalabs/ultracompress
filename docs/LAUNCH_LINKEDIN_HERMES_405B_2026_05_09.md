@@ -5,12 +5,12 @@
 **Brand:** Sipsa Labs.
 **Link policy:** one URL — `huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5`. Homepage is secondary; do not include sipsalabs.com in the body.
 **IP discipline:** mechanisms already public in `pack_v3.py` only (k-means GSQ grid + codes + per-block fp32 absmax, V18-C low-rank overlay rank 32). Nothing else.
-**Status:** DRAFT — Sip copy/pastes manually tomorrow morning. Do NOT auto-post.
+**Status:** DRAFT — copy/paste manually on launch morning. Do NOT auto-post.
 **Length:** ~640 words (LinkedIn long-form sweet spot).
 
 ---
 
-## POSTING NOTES FOR SIP — read before pasting
+## POSTING NOTES — read before pasting
 
 **When to post:** Saturday 2026-05-09, 8:30-10:00 AM PT. LinkedIn's weekend engagement on technical posts is actually decent for a 405B/single-GPU story because it's a "stop-scroll" headline; ML engineers will still see it Monday morning thanks to LinkedIn's slow distribution curve. If you'd rather wait for Monday morning peak (7:30-9:00 AM PT), that's also fine — the artifact is on HF either way and the post can wait.
 
@@ -21,7 +21,7 @@
    - `<BASELINE_PPL>` — current draft 4.9103.
    - `<COMPRESSED_PPL>` — current draft 4.9452.
    - `<PPL_RATIO>` — current draft 1.0071×.
-4. Confirm the 18-architecture matrix is current. If not, change "eighteen architectures" to "seventeen architectures plus this one".
+4. Confirm the 20+-architecture matrix is current. If not, change "twenty" to "nineteen plus this one".
 5. Confirm "~16 hours" matches the actual end-to-end wall clock (round to nearest 2 hours).
 6. Confirm GitHub stars number — currently 8. If the multi-arch thread from yesterday picked up additional stars overnight, update it. If still 8, leave at 8.
 
@@ -68,7 +68,7 @@ The v3 pack stores the three things needed for mathematically lossless reconstru
 
 Honest about the cost: end-to-end compression of the 405B took approximately sixteen hours on one RTX 5090, streaming per-layer so the full model never lives in memory at once. That's the price of producing an artifact the customer can verify on their own consumer hardware. Inference, after the pack is built, is the cheap part — and the part that matters for serving cost.
 
-This brings the public SipsaLabs HuggingFace organization to eighteen architectures in our reproducibility matrix — Llama, Mistral, Qwen3, Gemma, Phi, Mamba-2.8B, and now this. Nine of those have publicly run the `uc verify` flow end-to-end with PASS results on third-party hardware. The runner that produced all of them is open on GitHub at github.com/sipsalabs/ultracompress (eight stars and growing — anyone can clone it and run it).
+This brings the public SipsaLabs HuggingFace organization to over twenty architectures in our reproducibility matrix — Llama, Mistral, Qwen3, Gemma, Phi, Yi, Mamba-2.8B (the first public SSM compression artifact at this ratio), and now this. Nine of those have publicly run the `uc verify` flow end-to-end with PASS results on third-party hardware. The runner that produced all of them is open on GitHub at github.com/sipsalabs/ultracompress (eight stars and growing — anyone can clone it and run it).
 
 What we are not claiming:
 
@@ -87,14 +87,14 @@ Reproduce, break, or stress-test the checkpoint:
 
 ---
 
-## Do NOT include — reminder list for Sip
+## Do NOT include — reminder list
 
 - **No algorithm internals beyond what's already in `pack_v3.py`.** k-means GSQ grid + codes + per-block fp32 absmax + rank-32 overlay are public. NOTHING else: no per-Linear bpw allocation strategy, no hessian-aware tricks, no KL distillation specifics, no calibration recipe, no rotation details, no streaming-runner internals beyond "streaming per-layer". The 5-patent batch files tomorrow ($325 USPTO EFS-Web) — keep mechanisms quiet until then.
 - **No comparison-disparagement of competitors.** Do not name-and-shame GPTQ / AWQ / EXL3 / QTIP / bitsandbytes / AutoRound / SqueezeLLM / etc. State our own number; let researchers compare.
 - **No monetary claims.** No "saves $X / month", no "displaces $Y of GPU spend", no per-token cost numbers, no "$Z infrastructure savings", no comparison to H100 cluster cost. We have not run a controlled cost study, and money claims invite bad-faith pushback from the AI-econ LinkedIn crowd that we don't want to spend the weekend fighting.
 - **No "world-class", "revolutionary", "unprecedented", "breakthrough", "first-ever" without qualifier, "industry-leading", "game-changing", "10x", "moat".** All hype words. Cut on sight.
 - **No naked "lossless".** Always pair with "reconstruction of W_base" or "of the dequantized weight matrix". The post does this consistently — keep it that way under any edits.
-- **No personal info.** Per global no-personal-info policy: no real name, no personal Gmail, no city, no resume bullet points, no "I" framing in the post body. Voice is "we" / "Sipsa Labs". The notes outside the post body are for Sip only.
+- **No personal info.** Per global no-personal-info policy: no real name, no personal Gmail, no city, no resume bullet points, no "I" framing in the post body. Voice is "we" / "Sipsa Labs". The notes outside the post body are internal only.
 - **No patent application numbers, no USPTO receipts, no images of provisional cover sheets.** Patent timing is sensitive.
 - **No "next: DeepSeek-V3-671B" or any roadmap promises.** The 405B is the news. Promise nothing further. If asked in comments, respond "we'll have more to say when there's more to verify".
 - **No conflation of Hermes-3 with the official Meta release.** Hermes-3-Llama-3.1-405B is the NousResearch fine-tune of the Llama-3.1-405B base. The post is correct on this. Do NOT edit it to read as if we compressed "Meta's Llama 3.1 405B" — that's a different artifact and the framing matters legally.

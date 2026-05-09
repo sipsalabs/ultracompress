@@ -5,22 +5,22 @@
 **Handle:** @SipsaLabs.
 **Link policy:** one URL — `huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5`.
 **IP discipline:** mechanisms already public in `pack_v3.py` only (k-means GSQ grid + codes + per-block fp32 absmax, V18-C low-rank overlay rank 32). Nothing else.
-**Status:** DRAFT — Sip copy/pastes manually tomorrow morning. Do NOT auto-post.
+**Status:** DRAFT — copy/paste manually on launch morning. Do NOT auto-post.
 
 ---
 
-## POSTING NOTES FOR SIP — read before pasting
+## POSTING NOTES — read before pasting
 
 **When to post:** Saturday 2026-05-09, 8:00-9:30 AM PT (US infra crowd is at the keyboard, before the weekend dropoff). If the run finishes much later, hold to Monday 2026-05-11 morning instead — do NOT post at noon-on-Saturday and watch it die.
 
-**Pre-flight checklist (before you paste):**
+**Pre-flight checklist (before pasting):**
 1. Confirm `uc verify` against the final pack returns clean on the workstation.
 2. Confirm `huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5` resolves and the model card is published.
 3. Plug in the THREE numeric placeholders in Tweet 2 from the final run JSON:
    - `<BASELINE_PPL>` — from `STREAM_COMPRESS_E2E_HERMES_3_405B_BASELINE_PPL.json` `baseline_ppl` field. Current value is **4.9103**. If unchanged, paste 4.9103.
    - `<COMPRESSED_PPL>` — from the final run JSON `compressed_ppl` field. Current draft value is **4.9452**. Paste the actual final number.
    - `<PPL_RATIO>` — `<COMPRESSED_PPL> / <BASELINE_PPL>`, rounded to 4 decimals. Current draft value is **1.0071×**.
-4. Confirm the 18-architecture matrix landing page is updated to include hermes-3-405b. If not, post Tweet 4 with "17+1" instead of "18".
+4. Confirm the 20+-architecture matrix landing page is updated to include hermes-3-405b. If not, post Tweet 4 with "19+1" instead of "20".
 5. Confirm GitHub stars number in Tweet 6. Currently **8**. If it ticked up overnight, update it. If it's still 8, leave as 8 — don't round up.
 
 **What to swap if PPL ratio is materially different:**
@@ -100,7 +100,7 @@ PPL drift is the quantization step, not reload noise.
 ```
 This is the largest model we know of compressed to 5 bits losslessly on a single 32 GB consumer GPU. ~810 GB of fp16 weights → ~253 GB pack → 32 GB resident peak.
 
-It's also entry 18 in our public architecture matrix on HF. Llama / Mistral / Qwen3 / Gemma / Phi / Mamba / now this.
+It joins 20+ architectures in our public matrix on HF. Llama / Mistral / Qwen3 / Gemma / Phi / Mamba / Yi / now this.
 ```
 
 ---
@@ -121,7 +121,7 @@ That's the price you pay to make the artifact reproducible on consumer hardware.
 What stops this from being a screenshot:
 
   9 publicly uc-verify-PASS artifacts on HF
-  18 architectures in the matrix
+  20+ architectures in the matrix (incl. first public SSM at this ratio)
   8 GitHub stars and growing — anyone can clone the runner
   v3 pack format is documented in pack_v3.py
 
@@ -151,7 +151,7 @@ If you reproduce a 405B checkpoint and it fails on your machine, open an issue o
 | 1 |   272 | ✓   | Code block; tight against 280. Don't add anything. |
 | 2 |   271 | ✓   | After placeholder substitution, should land in 268-275 range. Verify before posting. |
 | 3 |   260 | ✓   | |
-| 4 |   276 | ✓   | Tight; if you change "18" to "17+1" subtract 2. |
+| 4 |   ~280 | ✓  | Tight; if you change "20+" to "19+1" subtract 1. |
 | 5 |   261 | ✓   | If you change "~16 hours" to e.g. "~18 hours", same length. |
 | 6 |   264 | ✓   | If GitHub stars number changes from "8" to "10"+ adjust accordingly. |
 | 7 |   244 | ✓   | URL counts as 23 chars regardless. Plenty of headroom. |
@@ -160,7 +160,7 @@ All under the 280-char strict limit. The URL in Tweet 1 (`SipsaLabs/hermes-3-lla
 
 ---
 
-## Do NOT include — reminder list for Sip
+## Do NOT include — reminder list
 
 - **No algorithm internals beyond what's already in `pack_v3.py`.** k-means GSQ grid + codes + per-block fp32 absmax + rank-32 overlay are public. NOTHING else: no per-Linear bpw allocation strategy, no hessian-aware tricks, no KL distillation specifics, no calibration recipe, no rotation details. The 5-patent batch files tomorrow ($325 USPTO EFS-Web) — keep mechanisms quiet until then.
 - **No comparison-disparagement of competitors.** Do not name-and-shame GPTQ / AWQ / EXL3 / QTIP / bitsandbytes / AutoRound / SqueezeLLM / etc. We are stating our own number; let researchers compare.
