@@ -28,9 +28,31 @@
 
 ## FILING #2 — Per-Linear Adaptive BPW Continuation-in-Part ($65)
 
-**This is NEW — drafted today. File as continuation-in-part of parent provisional 64/049,511.**
+**⚠️ DEFER THIS FILING — see warning below.**
 
 **Specification ready at:** `docs/PATENT_CIP_DRAFT_PER_LINEAR_ADAPTIVE_BPW_2026_05_08.md`
+
+### CRITICAL UPDATE 2026-05-09 (pm-agent overnight analysis)
+
+**The CIP draft is anchored to the per-Linear adaptive bpw v1 mechanism (k_proj@6bpw), which was REFUTED on end-PPL apples-to-apples.** Mechanism worked at the substrate level (k_proj quant_rel_l2 -55%) but produced no PPL improvement (1.005097 v1 vs 1.004876 uniform 5bpw, within noise σ≈0.0003).
+
+Filing a method-form CIP claim on a refuted mechanism is technically valid but strategically weak — the dependent claims that would matter (the *quality* improvement) cannot be substantiated with data. Patent attorneys advise against filing claims you cannot back with empirical results.
+
+**Diagnostic from pm-agent overnight (in `docs/RESEARCH_v3_CURE_DIRECTION_2026_05_09.md`):**
+Deep layers (23-27 of Qwen3-1.7B-Base) train_loss_final does NOT converge even with the v2 800-1000 step ramp. Deep layers are RANK-bound, not STEPS-bound. v1 attacked the wrong knob (bpw); v2 attacked the wrong knob less wrongly (training time).
+
+**v3 cure recommendation:** rank-redistribution at constant total V18-C parameter budget. Linear ramp rank from 16 (layer 0) to 48 (layer 27), sum held at 28×32=896. Predicted PPL ratio 1.0030-1.0035 (3σ above noise). ~30 LOC behind `UC_RANK_REDISTRIBUTE=1` flag.
+
+**REVISED RECOMMENDATION:**
+- ✅ FILE: 5-provisional batch ($325) — these are independent of v1/v2/v3
+- ⏸ DEFER: per-Linear adaptive bpw CIP ($65) — re-anchor the spec on v3 (rank-redistribution) once v3 lands and shows the predicted PPL improvement. Filing then = $65 spent on a defensible method-form claim.
+- 📅 NEW CIP filing target: 2-3 weeks out, after v3 confirms (or fails — in which case we save the $65)
+
+If you absolutely want to file something patent-related this weekend, file ONLY the 5-prov batch. The CIP can wait.
+
+---
+
+### Original CIP filing process (KEEP FOR REFERENCE — do NOT execute this weekend)
 
 **Process:**
 

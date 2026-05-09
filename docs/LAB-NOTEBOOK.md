@@ -4,6 +4,36 @@ Mad-scientist record. Every substantive change: hypothesis → mechanism → exp
 
 ---
 
+## 2026-05-09 00:05 — ❌ Per-Linear adaptive bpw v1 REFUTED apples-to-apples (HONEST_NEGATIVE #12 + #13 setup)
+
+**Hypothesis (proposed 2026-05-08 evening, commit ddca8f8):** k_proj is the bottleneck Linear in GQA models — its quant_rel_l2 was -55% (i.e. 1.55× the other-Linear baseline) on every layer at 405B AND 1.7B scale. Promoting k_proj from 5 bpw → 6 bpw while holding all other Linears at 5 bpw should reduce end-PPL ratio below the 1.0040 floor.
+
+**Mechanism:** `streaming_compression_runner.py:802-806` — per-Linear adaptive bpw promotion path inside the GSQ codec. UC_ADAPTIVE_BPW gate flips k_proj alone to 6 bpw. V18-C rank=32 / train_steps=200 unchanged. FineWeb-edu calibration unchanged.
+
+**Experiment (apples-to-apples):** Qwen3-1.7B-Base. SAME baseline window (n=50 prompts, seq_len=1024, seed=42, baseline PPL=12.0813), SAME held-out tail, SAME GSQ codec, ONLY change is adaptive bpw on/off. Both runs compressed via `stream_compress_e2e.py` on cuda:1.
+
+**Measurement:**
+| Run | bpw config | V18-C rank | train_steps | Compressed PPL | PPL ratio | Δ vs uniform |
+|-----|-----------|------------|-------------|----------------|-----------|--------------|
+| Uniform | 5 (all Linears) | 32 | 200 | 12.140157 | **1.004876** | — (ref) |
+| v1 adaptive | 5 (k_proj@6) | 32 | 200 | 12.142830 | 1.005097 | **+0.000220 (slightly worse, within σ≈0.0003)** |
+
+JSONs: `docs/PPL_EVAL_qwen3-1.7b-base-uniform-n50_2026_05_08.json` (ref), `docs/PPL_EVAL_qwen3-1.7b-base-adaptive-bpw-v1_2026_05_08.json` (v1).
+
+**Conclusion:** Hypothesis REFUTED. The k_proj quant_rel_l2 advantage IS real at the per-Linear quantization level (mechanism reproduces), but it does not propagate to end-PPL because V18-C rank=32 was already absorbing the per-Linear residual. Per-Linear quant residual → V18-C correction → identical post-correction layer output. The bottleneck is not the per-Linear quant residual at the input; it's the V18-C correction subspace at the output.
+
+**Diagnostic that explains the null result:** Per-layer `train_loss_final` from the v1 and uniform runs are pairwise identical across all 28 layers (within fp32 noise). v1 doesn't change what V18-C is asked to learn — it only changes the input quant noise distribution, which V18-C absorbs.
+
+**Cure direction (V2 already in flight; V3 designed in `docs/RESEARCH_v3_CURE_DIRECTION_2026_05_09.md`):**
+- V2 (adaptive train_steps via `UC_ADAPTIVE_TRAIN_STEPS=1`, linear ramp 1×→5× by depth) — landed 23:44 with ratio 1.004515, Δ=-0.00037 vs uniform (~1.2σ marginal win). **Variance suspect:** earlier identical-config v18c_adaptive run gave 1.005051, a 0.0005 spread. Need seed sweep before claiming v2 win is real. Tracked as HONEST_NEGATIVE #13 candidate.
+- V3 (RECOMMENDED) — rank-redistribution at constant total budget: linear ramp `rank_layer_i = round(16 + 32 · depth_frac)` over 28 layers. Total budget unchanged at 28×32=896. Expected ratio 1.0030–1.0035. See `docs/RESEARCH_v3_CURE_DIRECTION_2026_05_09.md` §3.
+
+**Patent implication:** CIP draft (commit 2fb18f8, 12 method-form claims, $65 micro-entity) is anchored on this refuted v1 mechanism. **Do NOT file CIP until V3 lands.** Re-anchor on V3 result + the train_loss-by-depth diagnostic before filing.
+
+**Status of v1 in public claims:** WITHDRAWN. Public matrix continues to cite uniform 5bpw + V18-C rank=32 / 200 steps as the production recipe. The 1.0040 record from the original record run (n=30 baseline) stands; the 1.005 numbers from the apples-to-apples set are a different baseline window and cannot be compared to it directly.
+
+---
+
 ## 2026-05-08 19:35 — ➕ Extended-context PPL: Qwen3-Base 1.0071x at seq=2048 (vs 1.0040x at seq=1024)
 
 **Hypothesis:** the 1.0040x PPL record at seq_len=1024 may degrade at longer context length, because more attention pairs = more places for compression noise to accumulate.
