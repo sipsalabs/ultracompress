@@ -752,6 +752,24 @@ def compress_single_layer(
                   f'{train_steps} -> {scaled_steps} steps', flush=True)
             train_steps = scaled_steps
 
+    # V3 cure: rank-redistribution at constant total V18-C parameter budget.
+    # pm-agent finding 2026-05-09: deep layers (23-27 of 28) have train_loss_final
+    # 4000x larger than shallow layers; they're RANK-bound not STEPS-bound.
+    # Linear ramp rank_layer_i = round(16 + 32 * depth_frac) gives:
+    #   layer 0/N    -> rank 16  (saturated; less rank to spare)
+    #   layer N/2    -> rank 32  (default)
+    #   layer N-1/N  -> rank 48  (residual-heavy; more rank to fix)
+    # Total V18-C parameter budget across n_layers held at n_layers * 32. Predicted
+    # PPL ratio 1.0030-1.0035 (3 sigma above noise) per RESEARCH_v3_CURE_DIRECTION.
+    # Opt in via UC_RANK_REDISTRIBUTE=1.
+    if os.environ.get('UC_RANK_REDISTRIBUTE') == '1':
+        depth_frac = layer_idx / max(n_layers - 1, 1)
+        scaled_rank = int(round(rank * 0.5 + rank * depth_frac))  # 0.5x → 1.5x of base
+        if scaled_rank != rank:
+            print(f'    [rank_redistribute] layer {layer_idx}/{n_layers}: '
+                  f'rank {rank} -> {scaled_rank}', flush=True)
+            rank = scaled_rank
+
     # Load teacher hidden states for this layer (input) and next (target)
     input_hidden = torch.load(
         hidden_cache_dir / f'hidden_layer_{layer_idx:03d}.pt',
