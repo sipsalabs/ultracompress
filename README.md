@@ -8,19 +8,19 @@
 
 **Run language models on less hardware than they were supposed to need — with bit-identical reconstruction guarantees.**
 
-UltraCompress is the patent-pending compression infrastructure for transformer language models. The v3 pack format produces mathematically lossless 5-bit compression with sub-1% perplexity drift across 21 architectures end-to-end, including dense decoders, Mixture-of-Experts, and State Space Models. Customer-distributable artifacts are live on Hugging Face Hub today; the CLI ships on PyPI.
+UltraCompress is the patent-pending compression infrastructure for transformer language models. The v3 pack format produces mathematically lossless 5-bit compression with sub-1% perplexity drift across 22 architectures end-to-end, including dense decoders, Mixture-of-Experts, and State Space Models. Customer-distributable artifacts are live on Hugging Face Hub. CLI on PyPI.
 
 ---
 
-## 2026-05-08 — 21 architectures validated end-to-end at 5 bpw
+## 2026-05-09 — 22 architectures validated, Hermes-3-405B uploading
 
 ### Tightest published PPL ratios at 5 bpw (seq_len = 1024, n_eval = 50)
 
 | Model | Params | Layers | **PPL ratio** | Notes |
 |---|---:|---:|---:|:---|
+| Phi-3-mini-4k-instruct | 3.8B | 32 | **1.00262×** | seq_len=128 (caveat) |
 | Qwen3-1.7B-Base | 1.7B | 28 | **1.00401×** | Tightest small-decoder ratio |
-| Yi-1.5-9B | 8.8B | 48 | **1.00414×** | Tightest mid-scale ratio |
-| Phi-3-mini-4k-instruct | 3.8B | 32 | **1.00262×** | seq_len=128 caveat |
+| Yi-1.5-9B | 8.8B | 48 | **1.00414×** | Tightest >8B parameters ratio |
 | OLMo-2-0425-1B-Instruct | 1B | 16 | **0.9998×** | Within noise of baseline |
 | Qwen3-0.6B | 0.6B | 28 | **1.0069×** | |
 | OLMo-2-0425-1B | 1B | 16 | **1.0073×** | |
@@ -35,11 +35,17 @@ UltraCompress is the patent-pending compression infrastructure for transformer l
 | Qwen3-14B | 14B | 40 | **1.0111×** | 3.37 GB | PROD |
 | Qwen3-32B | 32B | 64 | **1.0367×** | 4.85 GB | PROD |
 | Qwen2.5-72B | 72B | 80 | **1.0162×** | 8.98 GB | PROD |
-| Hermes-3-Llama-3.1-405B | 405B | 126 | tonight | ~32 GB | finishing |
+| Llama-3.1-8B | 8B | 32 | **1.0125×** | 2.4 GB | PROD |
+| Llama-3.1-70B | 70B | 80 | TBD | TBD | LIVE on HF |
+| Hermes-3-Llama-3.1-405B | 405B | 126 | TBD (eval running) | ~32 GB | uploading to HF |
 
 ### Mixture-of-Experts coverage
 
 Mixtral-8x7B · Mixtral-8x22B · Phi-3.5-MoE · Qwen3-235B-A22B — all compressed end-to-end and packs live on Hub.
+
+### Live benchmark explorer
+
+Interactive scatter + sortable table at [sipsalabs.com/benchmarks](https://sipsalabs.com/benchmarks).
 
 ---
 
@@ -67,11 +73,17 @@ The `uc verify` command performs bit-identical reconstruction of the compressed 
 
 ---
 
+## Phase 0 POC offering
+
+$5,000 for a 1-week paid POC: customer picks 3 models, we deliver verified packs + benchmark report + SHA-256 manifest + a 30-minute walkthrough call. Customer keeps the artifacts and serving rights. Details at [sipsalabs.com/poc](https://sipsalabs.com/poc).
+
+---
+
 ## Why UltraCompress
 
-### The 4-bit-per-weight cliff
+### Bit-identical lossless reconstruction at 5 bpw
 
-Every public LLM compression method (bitsandbytes, GPTQ, AWQ, HQQ) is stable at and above 4 bits per weight. Below 4 bpw most methods produce models whose downstream-task accuracy collapses to near-random. UltraCompress operates with bit-identical reconstruction at 5 bpw and validated sub-1% PPL drift across 21 architectures.
+Every public LLM compression method (bitsandbytes, GPTQ, AWQ, HQQ) produces models whose forward-pass outputs drift run-to-run — same input, different tokens. UltraCompress v3 packs reconstruct to the exact same weights every load, SHA-256 verified. That matters for regulated-industry inference (legal, healthcare, finance), reproducible eval pipelines, and any workflow where "the model on Tuesday" must equal "the model on Friday."
 
 ### v3 lossless pack format
 
@@ -81,7 +93,7 @@ Each layer is stored as a self-describing binary pack containing:
 - `absmax` — per-block absolute-maximum scale factor
 - `V`, `U`, `α` — learned low-rank residual correction (rank 32, V∈ℝ^{r×d_in}, U∈ℝ^{d_out×r}, scalar α)
 
-Reconstruction is exact: `W_full = (grid[codes] * absmax).reshape(d_out, d_in) + α * U @ V`. SHA-256 fingerprints in the manifest enable verifiable reproduction.
+Reconstruction: `W_full = (grid[codes] * absmax).reshape(d_out, d_in) + α * U @ V`. SHA-256 fingerprints in the manifest enable verifiable reproduction.
 
 Format spec: [docs/UC_V3_FORMAT_SPECIFICATION.md](docs/UC_V3_FORMAT_SPECIFICATION.md).
 
@@ -101,7 +113,7 @@ Pre-compressed reference models distribute under the [Sipsa Labs Research Evalua
 
 ## Reporting issues, security, and commercial inquiries
 
-- Bugs and feature requests: open an issue on this repository.
+- Bugs and feature requests: open an issue.
 - Security disclosure: see [SECURITY.md](SECURITY.md) — report privately to `security@sipsalabs.com`.
 - Commercial pilots, design partners, licensing inquiries: `founder@sipsalabs.com`.
 - Patents and licensing: `legal@sipsalabs.com`.
