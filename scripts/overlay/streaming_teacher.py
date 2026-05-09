@@ -292,10 +292,21 @@ def cache_teacher_hidden_states_streaming(
     weight_map = plan["weight_map"]
 
     log_fn(f"[teacher-hidden] loading scaffold (embed only — norm/lm_head not needed for hidden cache)...")
+    # Same Phi-2 device_map fix as plan_compression: explicit .weight/.bias keys
+    # because HF prefix-match propagation has been observed to fail.
     scaffold_device_map = {
         'model.embed_tokens': str(device),
+        'model.embed_tokens.weight': str(device),
         'model.norm': 'meta',  # not needed; saves a few GB on big models
+        'model.norm.weight': 'meta',
+        'model.final_layernorm': 'meta',  # Phi-2 family
+        'model.final_layernorm.weight': 'meta',
+        'model.final_layernorm.bias': 'meta',
+        'model.embed_dropout': str(device),  # Phi-2 (no params but HF tracks it)
+        'model.rotary_emb': str(device),     # Phi-2 module-level RoPE
         'lm_head': 'meta',
+        'lm_head.weight': 'meta',
+        'lm_head.bias': 'meta',
     }
     for i in range(n_layers):
         scaffold_device_map[f'model.layers.{i}'] = 'meta'

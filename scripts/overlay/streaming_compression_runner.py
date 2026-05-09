@@ -1047,10 +1047,21 @@ def streaming_eval_ppl(
 
     # Load scaffold (embed, norm, lm_head) — these are small, load from HF
     print('  Loading scaffold (embed + norm + lm_head)...')
+    # Phi-2 family compatibility: explicit .weight/.bias keys + embed_dropout +
+    # rotary_emb. HF prefix-match has been observed to fail for some configs.
     scaffold_device_map = {
         'model.embed_tokens': str(device),
+        'model.embed_tokens.weight': str(device),
         'model.norm': str(device),
+        'model.norm.weight': str(device),
+        'model.final_layernorm': str(device),       # Phi-2 family
+        'model.final_layernorm.weight': str(device),
+        'model.final_layernorm.bias': str(device),
+        'model.embed_dropout': str(device),         # Phi-2
+        'model.rotary_emb': str(device),            # Phi-2
         'lm_head': str(device),
+        'lm_head.weight': str(device),
+        'lm_head.bias': str(device),
     }
     for i in range(n_layers):
         scaffold_device_map[f'model.layers.{i}'] = 'meta'
