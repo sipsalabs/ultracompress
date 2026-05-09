@@ -4653,3 +4653,68 @@ Customer flow now lossless: pack v3 → upload to HF as `SipsaLabs/<model>-uc-v3
 
 **Next-session priority:** investigate why new compression runs converge to PPL ~18 vs old ~16 — try `--train-steps 1500` (matches Track A v17), check K-means RNG, possibly need to set `torch.manual_seed` before K-means sub-sampling.
 
+
+
+## 2026-05-08 EVE — 19-arch matrix (Phi-3-mini lands), v0.5.3 + uc verify-org tooling, Hermes-405B at 76%
+
+**What happened today (sustained parallel grind, all-fronts):**
+
+### Compression deliverables
+- **19th architecture compressed** — Phi-3-mini-4k-instruct (microsoft/Phi-3-mini-4k-instruct, 3.8B params, 32 layers, 624 s on cuda:1).
+  - Pack: 15.13 GB → 2.58 GB (5.86x shrink, 5 bpw GSQ + V18-C rank=32).
+  - Manifest: `_packed_phi_3_mini_4k_v3/manifest.json`.
+  - Pack format: v2 (legacy) — `stream_compress_e2e.py` doesn't persist GSQ codecs. Lossless v3 reload requires re-running through `streaming_compression_runner.py` (deferred — pack still works for inference, just no bit-identical reconstruction guarantee).
+- **Hermes-3-Llama-3.1-405B** — at layer 97/126 (77%) at this writing, ETA ~22:30 local. Per-layer mean_quant_rel_l2 stable around 0.043, train_loss_final ~1e-4, peak_vram_gb 28.99. Layer 94 took 680 s (an outlier — caching/IO transient), every other layer ~430 s.
+- **Calibration cache rebuilt** for Phi-3-mini (`fineweb_edu_10M_tokens_phi_3_mini_4k_instruct.pt`) so PPL eval can run on cuda:1 without re-tokenization.
+
+### Tooling shipped (v0.5.3 + ops scripts)
+- **`uc verify-org <hf_org>`** — iterates every `*-uc-v3-bpw5` repo on an HF org, downloads each to a local cache, runs `uc verify --skip-hash`, writes a JSON report. Skips repos still uploading (no `.uc` files yet). Used for nightly external validation that the public artifacts still parse.
+- **`uc status`** — one-line inventory of every `_packed_*_v3` directory in cwd (count of `layer_*.uc` files + total disk size).
+- Both new subcommands wired into `ultracompress/cli.py` and `ultracompress/verify_org.py`. Released as **v0.5.3 on PyPI**.
+- `streaming_compression_runner.MODEL_REGISTRY` extended with `phi-3-mini-4k-instruct` (3.8B, 32 layers) so `eval_compressed_only.py` can score it.
+- **HF upload watchdog (`scripts/overlay/_hf_upload_watchdog.sh`)** — wraps `_hf_upload_simple.py` in an 8-retry loop with 30 s backoff, separate per-attempt log, single watchdog summary log. Cures residential-bandwidth SSL EOF / multipart-S3 transients without spamming HF failure emails per chunk-retry. Also disables HF Xet (`HF_HUB_DISABLE_XET=1`) which was a consistent failure source on this network.
+
+### Stuck-upload triage (root-cause + fix)
+- Sip flagged "I keep getting failure emails for current runs."
+- Process audit: 5 morning HF upload processes (started 09:11 AM via raw `_hf_upload_simple.py`, no watchdog) had log files 200-268 MB and were still actively writing.
+- `grep -aciE "SSLE|EOF|HfHub|RetryError|503"` per log: only `_hf_upload_simple_llama_3_1_70b.log` had >10 error/warn lines. It had **17,280** matches, with the same line `layer_000.uc: 83% / 503MB` repeated **6,982 times** — `huggingface_hub` was retrying the same chunk, generating an HF email per upstream 5xx.
+- **Fix:** killed PID 42088, re-launched `llama-3.1-70b` upload via `_hf_upload_watchdog.sh`. The other 4 morning uploads (phi-3.5-moe, qwen3-14b, qwen3-8b, mixtral-8x7b, llama-3.1-8b) confirmed making real progress (different layer indices, no stuck-chunk loops) — left running.
+
+### Public-surface refresh (today)
+- ~20 docs landed (full list in `docs/SHIPPED_TODAY_2026_05_08.md`):
+  - `BENCHMARKS_2026_05_08.json` (programmatic, machine-readable) — 18 archs prior, 19 after phi-3-mini lands.
+  - `UC_V3_FORMAT_SPECIFICATION.md` — RFC-style audit document for regulated buyers.
+  - `SHA256_MANIFEST_2026_05_08.json` — 153 layer files audited.
+  - `PUBLIC_VERIFICATION_DASHBOARD_2026_05_08.md`, `HONEST_NEGATIVE_RESULTS_2026_05_08.md` (11 refutations).
+  - `SERIES_A_PITCH_DECK_2026_05_08.md` (14 slides), `BILLION_DOLLAR_PATH_2026_05_08.md` (6-page strategic synthesis).
+  - `NASA_SBIR_PHASE1_PROPOSAL_DRAFT_2026_05_08.md` (304 lines, ENABLE.2.S26B), `YC_INTERVIEW_PREP_2026_05_08.md`.
+  - `CUSTOMER_PHASE_0_POC_CONTRACT_TEMPLATE.md` (legal-grade, 12 sections), `CUSTOMER_ONBOARDING_v0.5.3.md` (10 sections, 30-min path), `YOUTUBE_DEMO_v0.5.3_SCRIPT.md` (4:15 runtime).
+  - `PRESS_RELEASE_HERMES_405B_2026_05_09.md` (BusinessWire format, embargoed 09:00 PT) + 12-reporter distribution list.
+  - `LAUNCH_THREAD_HERMES_405B_2026_05_09.md` (7 tweets), `LAUNCH_LINKEDIN_HERMES_405B_2026_05_09.md` (~640 words).
+  - `INVESTOR_UPDATE_TEMPLATE_2026_05_08.md`, `MORNING_CHECKLIST_2026_05_09.md` (270 lines, Sip's tomorrow playbook).
+  - `OUTREACH_2026_05_08/` — 5 cold emails (Tri Dao, Albert Gu, Yi Tay, Lambda, NASA HPSC).
+
+### PPL records (today's evals at seq_len=1024, n_eval=30 unless noted)
+- **Qwen3-1.7B-Base: 1.0040x** — new all-time record for tightest dense-decoder ratio at 5 bpw.
+- Qwen3-0.6B: 1.0069x  /  OLMo-2-0425-1B: 1.0073x  /  OLMo-2-Instruct: 0.9998x (compressed slightly *better* than baseline at this seq_len, within noise).
+- SmolLM2-1.7B: 1.0085x  /  SmolLM2-Instruct: 1.0075x.
+- Qwen3-1.7B-Base v2 (rank=64, train_steps=400): 1.0042x — knob saturated, no headroom from rank/step push at this size.
+- Qwen3-1.7B-Base @ seq_len=2048: 1.0071x (vs 1.0040 at seq=1024) — modest long-context drift, expected.
+- Phi-3-mini eval running on cuda:1 at this writing (baseline PPL 11.9991 confirmed; compressed eval streaming).
+
+### Hypothesis refutations (HONEST_NEGATIVE_RESULTS doc)
+- Predicted "instruct-tuning makes compression harder." **REFUTED 2/3:**
+  - Qwen3 supported (base 1.0040 vs instruct 1.020).
+  - OLMo-2 refuted (base 1.0073 vs instruct 0.9998).
+  - SmolLM2 refuted (base 1.0085 vs instruct 1.0075).
+  - Withdrew the planned blog post claim. Logged as honest negative.
+- Predicted "rank=64 + 400 steps should beat rank=32 + 200 steps." **REFUTED:** v2 = 1.0042x ≈ v1 1.0040x. The PPL knob is saturated at this scale; gains require different mechanism (per-Linear-class adaptive bpw is the next direction).
+
+### Disk state (97% full, 264 GB free)
+- HF cache 2.8 TB total. Hermes-405B alone = 756 GB cache + 1.4 TB e2e dir.
+- Cleanup audit performed — 11 e2e dirs (~250 GB combined) eligible for delete after their packs confirmed uploaded. Conservative deletion (only scratch dirs, ~3.6 GB) executed tonight; the rest deferred until upload-success confirmation tomorrow.
+
+### What still has to land tonight or tomorrow morning
+- **Tonight (Claude side, autonomous):** Hermes-405B finishes layer 126 → pack to v3 → fire upload watchdog. Phi-3-mini upload completes (in flight via watchdog at 20:51).
+- **Tomorrow AM (Sip-only side):** post tweet/LinkedIn at 8-9:30 PT, send press release, send 5 cold emails, file 5-provisional patent batch ($325 USPTO), monitor Atlas EIN (day 2 of 1-7 day window — unblocks NASA + AFWERX SBIR submissions).
+

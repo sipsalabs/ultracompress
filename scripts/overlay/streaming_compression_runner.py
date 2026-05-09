@@ -178,6 +178,12 @@ MODEL_REGISTRY: dict[str, dict[str, Any]] = {
         'dtype': torch.bfloat16,
         'n_layers': 24,
     },
+    'phi-3-mini-4k-instruct': {
+        'hf_id': 'microsoft/Phi-3-mini-4k-instruct',
+        'params_B': 3.8,
+        'dtype': torch.bfloat16,
+        'n_layers': 32,
+    },
 }
 
 TARGET_SUBS = ('q_proj', 'k_proj', 'v_proj', 'o_proj',
