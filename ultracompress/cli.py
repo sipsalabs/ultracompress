@@ -593,6 +593,24 @@ def build_parser() -> argparse.ArgumentParser:
                      help="Compute SHA256 of every layer file (slow, ground-truth)")
     ver.add_argument("--skip-hash", action="store_true",
                      help="Skip SHA256 integrity check entirely (fast)")
+
+    # uc verify-org <hf_org> — auto-iterate every -uc-v3-bpw5 repo on an HF org
+    # and run uc verify on each. Produces a JSON report.
+    vorg = sub.add_parser(
+        "verify-org",
+        help="Iterate an HF org and verify every -uc-v3-bpw5 repo end-to-end",
+    )
+    vorg.add_argument("org", help="HuggingFace org name (e.g. SipsaLabs)")
+    vorg.add_argument("--out", default="VERIFY_ALL_REPORT.json",
+                      help="Output JSON report path (default: ./VERIFY_ALL_REPORT.json)")
+    vorg.add_argument("--local-base", default=None,
+                      help="Local cache dir for downloads (default: tempdir)")
+    vorg.add_argument("--repo-suffix", default="-uc-v3-bpw5",
+                      help="Only check repos ending with this suffix (default: -uc-v3-bpw5)")
+
+    # uc status — print a one-line summary of the local pack inventory
+    sub.add_parser("status", help="Print local pack inventory summary (count + total size)")
+
     return p
 
 
@@ -616,6 +634,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "verify":
         from .verify import cmd_verify
         return cmd_verify(args)
+    if args.command == "verify-org":
+        from .verify_org import cmd_verify_org
+        return cmd_verify_org(args)
+    if args.command == "status":
+        from .verify_org import cmd_status
+        return cmd_status(args)
     print(f"unknown command: {args.command}")
     return 2
 

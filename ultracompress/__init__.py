@@ -20,7 +20,7 @@ Usage:
 """
 import warnings as _warnings
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 # v3 is the default
 from ultracompress.api_v3 import (
