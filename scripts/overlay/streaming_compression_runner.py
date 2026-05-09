@@ -469,12 +469,19 @@ def get_model_classes(hf_id: str):
             PhimoeRotaryEmbedding,
         )
         return PhimoeDecoderLayer, PhimoeRotaryEmbedding
-    elif model_type in ('phi3', 'phi'):
+    elif model_type == 'phi3':
         from transformers.models.phi3.modeling_phi3 import (
             Phi3DecoderLayer,
             Phi3RotaryEmbedding,
         )
         return Phi3DecoderLayer, Phi3RotaryEmbedding
+    elif model_type == 'phi':
+        # Phi-1 / Phi-2 — different module than phi3
+        from transformers.models.phi.modeling_phi import (
+            PhiDecoderLayer,
+            PhiRotaryEmbedding,
+        )
+        return PhiDecoderLayer, PhiRotaryEmbedding
     elif model_type == 'olmo2':
         from transformers.models.olmo2.modeling_olmo2 import (
             Olmo2DecoderLayer,

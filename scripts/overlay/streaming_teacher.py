@@ -66,9 +66,13 @@ def _get_model_classes(hf_id: str):
     elif mt == 'mixtral':
         from transformers.models.mixtral.modeling_mixtral import MixtralDecoderLayer, MixtralRotaryEmbedding
         return MixtralDecoderLayer, MixtralRotaryEmbedding
-    elif mt in ('phi3', 'phi'):
+    elif mt == 'phi3':
         from transformers.models.phi3.modeling_phi3 import Phi3DecoderLayer, Phi3RotaryEmbedding
         return Phi3DecoderLayer, Phi3RotaryEmbedding
+    elif mt == 'phi':
+        # Phi-1 / Phi-2 — different module than phi3
+        from transformers.models.phi.modeling_phi import PhiDecoderLayer, PhiRotaryEmbedding
+        return PhiDecoderLayer, PhiRotaryEmbedding
     elif mt == 'phimoe':
         from transformers.models.phimoe.modeling_phimoe import PhimoeDecoderLayer, PhimoeRotaryEmbedding
         return PhimoeDecoderLayer, PhimoeRotaryEmbedding
@@ -127,12 +131,15 @@ def cache_teacher_logits_streaming(
     weight_map = plan["weight_map"]
 
     log_fn(f"[teacher] loading scaffold (embed + norm + lm_head)...")
-    # Phi-2 uses model.final_layernorm instead of model.norm. Include both
-    # in device_map; the unused one is ignored by HF.
+    # Phi-2 (model_type='phi') needs additional device_map entries beyond the
+    # llama default: model.embed_dropout, model.rotary_emb, model.final_layernorm.
+    # Llama family ignores unused entries.
     scaffold_device_map = {
         'model.embed_tokens': str(device),
         'model.norm': str(device),
         'model.final_layernorm': str(device),  # Phi-2 / phi-1 family
+        'model.embed_dropout': str(device),    # Phi-2 dropout module (no params but HF tracks it)
+        'model.rotary_emb': str(device),       # Phi-2 module-level RoPE (vs llama per-layer)
         'lm_head': str(device),
     }
     for i in range(n_layers):
