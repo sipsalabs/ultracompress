@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-08T18:30:00-06:00",
+  "generated_at": "2026-05-08T21:21:00-06:00",
   "generated_by": "Sipsa Labs UltraCompress v0.5.2",
   "license": "Apache-2.0 (CLI) + Sipsa Labs Research Evaluation License v1.0 (compression internals)",
   "methodology": {
@@ -22,7 +22,12 @@
     },
     "verify": {
       "command": "uc verify <packed_dir>",
-      "checks": ["pack_format_integrity", "sha256_layer_files", "all_layers_present", "linear_reconstruction_shapes"]
+      "checks": [
+        "pack_format_integrity",
+        "sha256_layer_files",
+        "all_layers_present",
+        "linear_reconstruction_shapes"
+      ]
     }
   },
   "customer_reproduction": {
@@ -31,7 +36,7 @@
       "hf download SipsaLabs/<model>-uc-v3-bpw5 --local-dir ./<model>",
       "uc verify ./<model>"
     ],
-    "expected_output": "VERIFY: PASS — pack format integrity confirmed; lossless reconstruction guaranteed."
+    "expected_output": "VERIFY: PASS \u00e2\u20ac\u201d pack format integrity confirmed; lossless reconstruction guaranteed."
   },
   "results": [
     {
@@ -44,8 +49,8 @@
       "variant": "base",
       "baseline_ppl": 12.7683,
       "compressed_ppl": 12.8195,
-      "ppl_ratio": 1.0040,
-      "delta_pct": 0.40,
+      "ppl_ratio": 1.004,
+      "delta_pct": 0.4,
       "uc_verify": "PASS",
       "hf_committed": true,
       "evaluated_at": "2026-05-08T16:05:00-06:00",
@@ -99,7 +104,7 @@
       "uc_verify": "PASS",
       "hf_committed": true,
       "evaluated_at": "2026-05-08T16:18:00-06:00",
-      "notes": "Compressed PPL is slightly LOWER than bf16 baseline — within statistical noise on n=30 prompts; reported honestly."
+      "notes": "Compressed PPL is slightly LOWER than bf16 baseline \u00e2\u20ac\u201d within statistical noise on n=30 prompts; reported honestly."
     },
     {
       "model_id": "HuggingFaceTB/SmolLM2-1.7B",
@@ -143,8 +148,8 @@
       "variant": "base",
       "baseline_ppl": 6.9719,
       "compressed_ppl": 7.0419,
-      "ppl_ratio": 1.0100,
-      "delta_pct": 1.00,
+      "ppl_ratio": 1.01,
+      "delta_pct": 1.0,
       "uc_verify": "PASS",
       "hf_committed": true,
       "evaluated_at": "2026-05-07T16:22:00-06:00"
@@ -175,7 +180,7 @@
       "type": "dense",
       "variant": "base",
       "baseline_ppl": 8.4916,
-      "compressed_ppl": 8.5980,
+      "compressed_ppl": 8.598,
       "ppl_ratio": 1.0125,
       "delta_pct": 1.25,
       "uc_verify": "local-PASS",
@@ -193,8 +198,8 @@
       "variant": "instruct",
       "baseline_ppl": 18.0145,
       "compressed_ppl": 18.3748,
-      "ppl_ratio": 1.0200,
-      "delta_pct": 2.00,
+      "ppl_ratio": 1.02,
+      "delta_pct": 2.0,
       "uc_verify": "PASS",
       "hf_committed": true,
       "evaluated_at": "2026-05-07T15:30:00-06:00"
@@ -232,6 +237,23 @@
       "hf_committed": false,
       "evaluated_at": null,
       "notes": "Compression in flight as of 2026-05-08T18:30; 80/126 layers complete (~midnight ETA). Partial-run baseline + compressed PPL gave ratio 1.0071x. First lossless 5-bit compression of a 405B-param model on a single 32 GB consumer GPU we know of."
+    },
+    {
+      "model_id": "microsoft/Phi-3-mini-4k-instruct",
+      "sipsa_repo": "SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5",
+      "params_B": 3.8,
+      "n_layers": 32,
+      "arch_family": "phi3",
+      "type": "dense",
+      "variant": "instruct",
+      "baseline_ppl": 11.9991,
+      "compressed_ppl": 12.0305,
+      "ppl_ratio": 1.00262,
+      "delta_pct": 0.262,
+      "uc_verify": "PASS_v2_pack_format",
+      "hf_committed": true,
+      "evaluated_at": "2026-05-08T21:15:28-06:00",
+      "notes": "19th architecture validated. Eval @ seq_len=128 (script default; rerunning at seq_len=1024 for honest comparison vs the 1.0040 Qwen3-1.7B-Base record at 1024). Pack format = v2 legacy because stream_compress_e2e doesn't persist GSQ codecs; fileworks for inference but bit-identical reconstruction guarantee unavailable until re-compress through streaming_compression_runner.py."
     }
   ],
   "in_flight_uploads": [
@@ -249,17 +271,18 @@
     "publicly_uc_verify_PASS": 9,
     "in_flight_uploads_pending": 8,
     "in_flight_compressions": 1,
-    "tightest_dense_decoder_ratio_5bpw": 1.0040,
+    "tightest_dense_decoder_ratio_5bpw": 1.004,
     "tightest_record_holder": "Qwen/Qwen3-1.7B-Base",
     "ssm_lossless_5bpw_ratio": 1.0119,
     "largest_model_compressed_to_5bpw_on_single_consumer_gpu": "Hermes-3-Llama-3.1-405B (in flight, 80/126 layers complete)",
     "dense_mean_ppl_ratio": 1.0094,
-    "production_threshold_archs_under_1.013x": 11
+    "production_threshold_archs_under_1.013x": 11,
+    "n_archs_validated": 13
   },
   "honest_disclosures": {
     "what_we_do_not_claim": [
       "Faster inference than AWQ / GPTQ at the kernel level (no custom CUDA kernels yet, we re-use PyTorch matmul)",
-      "Lossless below 5 bpw — sub-3 bpw still has the well-documented Qwen3-fragility wall",
+      "Lossless below 5 bpw \u00e2\u20ac\u201d sub-3 bpw still has the well-documented Qwen3-fragility wall",
       "Closed customer revenue (pre-revenue, pre-funding)",
       "First-ever any of these claims without a 'we know of' / 'best of our knowledge' qualifier",
       "Per-architecture downstream task validation (only PPL on FineWeb-edu held-out tail)"
@@ -273,6 +296,9 @@
     "huggingface_org": "https://huggingface.co/SipsaLabs",
     "homepage": "https://sipsalabs.com",
     "blog_post_today": "https://sipsalabs.com/blog/2026-05-08-eighteen-architectures/",
-    "patents": ["USPTO 64/049,511", "USPTO 64/049,517"]
+    "patents": [
+      "USPTO 64/049,511",
+      "USPTO 64/049,517"
+    ]
   }
 }

@@ -774,8 +774,15 @@ def compress_single_layer(
         if isinstance(mod, nn.Linear) and any(s in name for s in TARGET_SUBS):
             with torch.no_grad():
                 W = mod.weight.data.float()
+                # Per-Linear adaptive bpw: bottleneck Linears (k_proj in GQA models)
+                # carry +9.9% quant error vs other-Linear baseline at uniform bpw.
+                # Promote them to bpw+1 — see docs/RESEARCH_PROPOSAL_PER_LINEAR_ADAPTIVE_BPW.
+                # Storage cost ~+0.16% on a 1.7B model. Opt in via UC_ADAPTIVE_BPW=1 env var.
+                this_bpw = bpw
+                if os.environ.get('UC_ADAPTIVE_BPW') == '1' and 'k_proj' in name:
+                    this_bpw = min(bpw + 1, 8)
                 Wq, grid, codes, absmax = gsq_quantize_weight(
-                    W, bpw, block_size, return_codec=True
+                    W, this_bpw, block_size, return_codec=True
                 )
                 # Relative L2 error
                 rel_l2 = (W - Wq).norm() / W.norm()

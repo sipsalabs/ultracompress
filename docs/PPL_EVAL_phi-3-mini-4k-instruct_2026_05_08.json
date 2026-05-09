@@ -1,0 +1,19 @@
+{
+  "model": "phi-3-mini-4k-instruct",
+  "hf_id": "microsoft/Phi-3-mini-4k-instruct",
+  "n_layers": 32,
+  "n_eval": 50,
+  "seq_len": 128,
+  "seed": 42,
+  "baseline_ppl": 11.9990659242866,
+  "baseline_method": "bf16_single_gpu",
+  "compressed_ppl": 12.030498612709886,
+  "ppl_ratio": 1.0026195946102492,
+  "peak_vram_eval_gb": 1.054815744,
+  "eval_time_s": 957.4678056240082,
+  "baseline_time_s": 13.576208353042603,
+  "compressed_dir": "scripts\\overlay\\_e2e_phi_3_mini_4k_instruct",
+  "device": "cuda:1",
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "timestamp": "2026-05-08T21:15:28.049584"
+}
