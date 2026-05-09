@@ -132,15 +132,25 @@ def cache_teacher_logits_streaming(
 
     log_fn(f"[teacher] loading scaffold (embed + norm + lm_head)...")
     # Phi-2 (model_type='phi') needs additional device_map entries beyond the
-    # llama default: model.embed_dropout, model.rotary_emb, model.final_layernorm.
-    # Llama family ignores unused entries.
+    # llama default. We list both the module name AND the explicit .weight/.bias
+    # keys because HF's prefix-match propagation has been observed to fail for
+    # some sub-module configurations (verified empirically on Phi-2).
     scaffold_device_map = {
         'model.embed_tokens': str(device),
+        'model.embed_tokens.weight': str(device),
         'model.norm': str(device),
-        'model.final_layernorm': str(device),  # Phi-2 / phi-1 family
-        'model.embed_dropout': str(device),    # Phi-2 dropout module (no params but HF tracks it)
-        'model.rotary_emb': str(device),       # Phi-2 module-level RoPE (vs llama per-layer)
+        'model.norm.weight': str(device),
+        # Phi-2 / phi-1 family — has both weight + bias on final layernorm
+        'model.final_layernorm': str(device),
+        'model.final_layernorm.weight': str(device),
+        'model.final_layernorm.bias': str(device),
+        # Phi-2 dropout module (no params but HF tracks it)
+        'model.embed_dropout': str(device),
+        # Phi-2 module-level RoPE (vs llama per-layer)
+        'model.rotary_emb': str(device),
         'lm_head': str(device),
+        'lm_head.weight': str(device),
+        'lm_head.bias': str(device),
     }
     for i in range(n_layers):
         scaffold_device_map[f'model.layers.{i}'] = 'meta'
