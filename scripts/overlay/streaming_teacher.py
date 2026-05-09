@@ -127,9 +127,12 @@ def cache_teacher_logits_streaming(
     weight_map = plan["weight_map"]
 
     log_fn(f"[teacher] loading scaffold (embed + norm + lm_head)...")
+    # Phi-2 uses model.final_layernorm instead of model.norm. Include both
+    # in device_map; the unused one is ignored by HF.
     scaffold_device_map = {
         'model.embed_tokens': str(device),
         'model.norm': str(device),
+        'model.final_layernorm': str(device),  # Phi-2 / phi-1 family
         'lm_head': str(device),
     }
     for i in range(n_layers):
@@ -146,7 +149,10 @@ def cache_teacher_logits_streaming(
     log_fn(f"[teacher] scaffold loaded in {time.time() - t0:.1f}s")
 
     embed_tokens = scaffold.model.embed_tokens
-    final_norm = scaffold.model.norm
+    # Phi-2 family uses final_layernorm; everyone else uses norm. Try both.
+    final_norm = getattr(scaffold.model, 'norm', None) or getattr(scaffold.model, 'final_layernorm', None)
+    if final_norm is None:
+        raise RuntimeError(f"Could not find final norm layer (model.norm or model.final_layernorm) for {hf_id}")
     lm_head = scaffold.lm_head
     try:
         rotary_emb = RotaryEmbClass(config=config, device=device)
