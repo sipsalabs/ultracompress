@@ -220,9 +220,10 @@ ultracompress/
 
 ## License
 
-- **Apache-2.0** for the CLI, verifier, and customer-facing v3 pack format — see [LICENSE](LICENSE).
-- **Sipsa Labs Research Evaluation License v1.0** for the compression internals (k-means trainer, V18-C overlay fit, FRR distillation pipeline) — see [LICENSE_RESEARCH_EVAL.md](LICENSE_RESEARCH_EVAL.md).
-- Patent posture: [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). USPTO provisionals `64/049,511` + `64/049,517` filed April 2026; supplement this week.
+- **v0.6+** ships under the [Business Source License 1.1](./LICENSE) with an Additional Use Grant for research, individuals, and companies under $1M ARR. Auto-converts to Apache 2.0 four years after each release. See [NOTICE.md](./NOTICE.md) for the full why.
+- **v0.5.x** stays under [Apache License 2.0](./LICENSE.apache) on the `legacy/0.5.x` branch — perpetual, never changing, freely usable. That commitment cannot be revoked.
+- Above $1M ARR running v0.6+ in commercial production? `founder@sipsalabs.com`.
+- Patent posture: [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). USPTO provisionals `64/049,511` + `64/049,517` filed April 2026.
 
 ## Citation
 
