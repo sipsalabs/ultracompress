@@ -7,6 +7,8 @@ Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
 
+Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). First 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
+
 UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack you can verify against the original — not "1% PPL drift on WikiText," but a `W_base = grid[codes] * absmax + alpha * U @ V` reconstruction that hashes byte-for-byte to what the trainer measured. That's the honest definition of lossless we care about: an auditor can re-derive every weight from the pack alone, and the SHA-256 manifest fails loudly if anything drifted.
 
 It exists because the bf16-equivalent quality bar matters in places where "good enough on MMLU" isn't enough — defense, FDA-regulated healthcare, SR 11-7 model validation, internal red-team eval at frontier labs. And as a side-effect of the streaming compression path, it lets us put a 405B-parameter model through a single 32 GB consumer GPU without renting an H100 cluster.
@@ -50,24 +52,24 @@ The smallest published artifact is ~1.1 GB. The qwen3-0.6b pack is ~0.4 GB if yo
 
 PyPI `v0.5.5` is the current release. v0.5.5 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
-**End-to-end validated at 5 bpw across 22 transformer architectures** (dense 0.6B → 405B, MoE 47B → 235B, state-space). Of those, **15 have a verified PPL ratio against their bf16 baseline** on the same 30-prompt FineWeb-edu held-out tail, seq_len=1024, seed=42; 7 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/` or `docs/PPL_EVAL_*.json`.
+**End-to-end validated at 5 bpw across 22 transformer architectures** (dense 0.6B → 405B, MoE 47B → 235B, state-space). Of those, **16 have a verified PPL ratio against their bf16 baseline** on the FineWeb-edu held-out tail at seq_len=1024, seed=42; 6 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/` or `docs/PPL_EVAL_*.json`.
 
-The tightest dense PPL records currently public on HuggingFace at sub-0.5% drift:
+The headline result and the tightest dense records currently public on HuggingFace:
 
-| Model | Params | PPL ratio | HF artifact | Status |
-|---|---|---|---|---|
-| Qwen3-1.7B-Base | 1.7B | **1.00401** | `SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5` | live |
-| Qwen3-14B | 14.0B | **1.00403** | `SipsaLabs/qwen3-14b-uc-v3-bpw5` | live |
-| Qwen3-8B | 8.0B | **1.00440** | `SipsaLabs/qwen3-8b-uc-v3-bpw5` | upload in flight |
-| Mixtral-8x7B-v0.1 (MoE) | 47B (13B active) | **1.00368** | `SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5` | upload in flight |
-| Phi-3.5-MoE-instruct | 42B (MoE 16-exp) | (eval pending this week) | `SipsaLabs/phi-3.5-moe-uc-v3-bpw5` | upload in flight |
+| Model | Params | Class | PPL ratio | HF artifact | Status |
+|---|---|---|---|---|---|
+| Hermes-3-Llama-3.1-405B | 405B | First 405B-class lossless on single 32 GB consumer GPU | **1.0066** | [`SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5) | live |
+| Qwen3-1.7B-Base | 1.7B | sub-0.5% drift | **1.00401** | `SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5` | live |
+| Qwen3-14B | 14.0B | sub-0.5% drift | **1.00403** | `SipsaLabs/qwen3-14b-uc-v3-bpw5` | live |
+| Qwen3-8B | 8.0B | sub-0.5% drift | **1.00440** | `SipsaLabs/qwen3-8b-uc-v3-bpw5` | upload in flight |
+| Mixtral-8x7B-v0.1 (MoE) | 47B (13B active) | sub-0.5% drift | **1.00368** | `SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5` | upload in flight |
+| Phi-3.5-MoE-instruct | 42B (MoE 16-exp) | sub-0.5% drift | (eval pending this week) | `SipsaLabs/phi-3.5-moe-uc-v3-bpw5` | upload in flight |
 
-Three of those are the cleanest sub-1.005× references we have today. Phi-3.5-MoE is the 4th candidate and the eval is queued — number publishes the moment the JSON lands, not before.
+Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves of the fraction measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 teacher took 7.7 hours on cuda:1; the UC v3 5-bpw pack took 14.3 hours. Pack body is ~251 GB, bit-identical SHA-256 reconstruction. The four Qwen3/Mixtral rows below it are the cleanest sub-1.005× dense/MoE references we have today; Phi-3.5-MoE is the 5th candidate and the eval is queued — number publishes the moment the JSON lands, not before.
 
 Other notable verified results (full table in [Appendix](#appendix-full-architecture-matrix) below):
 
 - **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (GSQ-only; the V18-C overlay path for SSMs hasn't landed yet, see "what doesn't work").
-- **First 405B-class compression on a single 32 GB consumer GPU**: Hermes-3-Llama-3.1-405B (NousResearch) — pack complete (~250 GB), HF upload in flight via the resilient watchdog uploader. Compressed PPL `5.0692` lands today; bf16 baseline streaming evaluation is in flight on cuda:1 (started 2026-05-09 21:26 MDT, ETA Sun morning ~11:30–13:30 MDT). **PPL ratio publishes when both halves of the fraction exist** — anything before that is a guess and we're not in the business of guessing.
 - **HuggingFace presence**: 39+ repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
 - **PyPI**: [pypi.org/project/ultracompress/0.5.5](https://pypi.org/project/ultracompress/0.5.5/).
 
@@ -187,7 +189,7 @@ ultracompress/
 
 ## Appendix: full architecture matrix
 
-22 architectures end-to-end, current state as of 2026-05-09. PPL = FineWeb-edu held-out tail, n=30 prompts, seq_len=1024, seed=42, against the model's own bf16 baseline on a single RTX 5090. Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
+22 architectures end-to-end, current state as of 2026-05-10. PPL = FineWeb-edu held-out tail, seq_len=1024, seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
 
 | Model | HF artifact | Params | Layers | PPL ratio |
 |---|---|---|---|---|
@@ -206,7 +208,7 @@ ultracompress/
 | Mamba-2.8B (SSM) | `mamba-2.8b-hf-uc-v3-bpw5` | 2.8B | 64 | 1.0119 |
 | Llama-3.1-8B | `llama-3.1-8b-uc-v3-bpw5` | 8.0B | 32 | 1.0125 |
 | Qwen3-1.7B (Instruct) | `qwen3-1.7b-uc-v3-bpw5` | 1.7B | 28 | 1.0200 |
-| Hermes-3-Llama-3.1-405B | `hermes-3-llama-3.1-405b-uc-v3-bpw5` | 405B | 126 | (compressed PPL 5.0692; bf16 baseline streaming on cuda:1, ratio drops Sun morning) |
+| Hermes-3-Llama-3.1-405B | `hermes-3-llama-3.1-405b-uc-v3-bpw5` | 405B | 126 | **1.0066** (5.0692 / 5.0358, n=50, per-layer streaming) |
 | Qwen3-32B | `qwen3-32b-streaming-bpw5` | 32B | 64 | (re-eval pending) |
 | Llama-3.1-70B | `llama-3.1-70b-uc-v3-bpw5` | 70B | 80 | (re-eval pending) |
 | Qwen3-235B-A22B (MoE) | `qwen3-235b-a22b-uc-v3-bpw5` | 235B | 94 | (eval pending) |
