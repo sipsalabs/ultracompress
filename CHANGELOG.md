@@ -4,6 +4,51 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.6.2] — 2026-05-11
+
+### Added
+- **HN launch + corp identity refresh.** Sipsa Labs, Inc. (Delaware C-corp, incorporated May 2026) banner across README, HuggingFace org card, and all 40 model cards. Live discussion thread linked from every public surface: https://news.ycombinator.com/item?id=48099107
+- **OpenAI-compatible inference API** at https://api.sipsalabs.com/v1. Drop-in `OPENAI_BASE_URL` swap; the official `openai` Python SDK works unchanged. Backed by dual RTX 5090 over Cloudflare Tunnel.
+- **Three new sub-1.005× perplexity ratio records this week:** Mixtral-8x7B 1.00368× (tightest MoE), Qwen3-14B 1.00403×, Mistral-7B-v0.3 1.00548× (9.16× tighter than prior). Phi-3-mini-4k-instruct 1.00624× confirmed at seq_len=1024.
+- **Hermes-3-Llama-3.1-405B 1.0066×** — first 405B-class lossless 5-bit transformer compression on a single 32 GB consumer GPU, verified end-to-end.
+- **22 architectures verified** spanning dense (0.6B–405B), Mixture-of-Experts (47B–235B active), and state-space (Mamba-2.8B). Full matrix on the README and `huggingface.co/SipsaLabs`.
+
+### Changed
+- **Package source codename strip.** All internal method nomenclature replaced with public phrasing in the published package source (preserving runtime behavior). Public surface now uses `low-rank correction overlay`, `streaming compression pipeline`, `shared-block parameter dispatch`, `5-bit quantizer`. CLI flags + class names follow.
+- **CHARTER ENFORCEMENT** on documentation. Each public-bound document scanned against an internal forbidden-term list before publish. Six historical HuggingFace model cards (`*-uc2p79`, `qwen3-1.7b-trackb-preview`) had latent codename references — those have been scrubbed live with the same regex pipeline.
+- **`uc verify` output** prints `uc_pack_version: 3 (LOSSLESS, self-contained)` consistently. Stale `v3.0` warnings removed for v3.5 packs.
+
+### Backward compatibility
+- All 40 published SipsaLabs/* HuggingFace artifacts continue to verify clean under v0.6.2.
+- Pin `ultracompress==0.5.5` if you need the prior package class names; v0.6+ is rename-only at the public API boundary.
+
+---
+
+## [0.6.1] — 2026-05-10
+
+### Added
+- **Self-contained pack format v3.5** stabilized. `aux_weights.uc` ships embed_tokens / model.norm / lm_head bundled inside the pack, so customers no longer need to download the original bf16 from HuggingFace to reproduce. ~1-2% pack overhead on small models, negligible on 70B+.
+- **`uc pack --include-aux`** flag default-on. Customers can opt back into the legacy v3.0 path with `--legacy-v3`.
+
+### Changed
+- README v3 with full 22-architecture matrix and HONEST_NEGATIVE_RESULTS link.
+- Compatibility docs updated for SHA-256 manifest verification.
+
+---
+
+## [0.6.0] — 2026-05-10
+
+### Added
+- **License migration to BUSL-1.1 with Additional Use Grant.** Free for sub-$1M ARR companies, research, and individuals. Auto-converts to Apache 2.0 four years after each release. v0.5.x stays Apache-2.0 in perpetuity on the `legacy/0.5.x` branch — that commitment cannot be revoked.
+- **NOTICE.md** explaining the license rationale.
+- Patent posture clarified in PATENT_NOTICE.md. USPTO provisionals 64/049,511 + 64/049,517 (filed 2026-04-25) listed by number. Supplement filing landed 2026-05-09.
+
+### Changed
+- All public package class names refreshed for clarity (no behavior changes). See README for migration notes.
+- HF model cards refreshed across the org with v3.5 self-contained format guidance.
+
+---
+
 ## [0.5.5] — 2026-05-09
 
 ### Added
