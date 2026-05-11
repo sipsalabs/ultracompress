@@ -2,7 +2,7 @@
 
 Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed by a SHA-256 manifest.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.6.0-blue.svg)](https://pypi.org/project/ultracompress/0.6.0/)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.1-blue.svg)](https://pypi.org/project/ultracompress/0.6.1/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
@@ -20,12 +20,12 @@ We're a small company (Sipsa Labs, Inc.) shipping this in public while the paten
 ## Try it (3 commands)
 
 ```bash
-pip install ultracompress==0.6.0 huggingface_hub[cli]
+pip install ultracompress==0.6.1 huggingface_hub[cli]
 hf download SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5 --local-dir ./pack
 uc verify ./pack
 ```
 
-Expected output (real, not aspirational — this is what the v0.6.0 verifier prints on a clean pull of the 1.7B-Base artifact):
+Expected output (real, not aspirational — this is what the v0.6.1 verifier prints on a clean pull of the 1.7B-Base artifact):
 
 ```
 uc_pack_version: 3  (LOSSLESS, self-contained)
@@ -50,7 +50,7 @@ The smallest published artifact is ~1.1 GB. The qwen3-0.6b pack is ~0.4 GB if yo
 
 ## What works today (verified, with JSON receipts)
 
-PyPI `v0.6.0` is the current release. v0.6.0 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
+PyPI `v0.6.1` is the current release. v0.6.1 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
 **End-to-end validated at 5 bpw across 22 transformer architectures** (dense 0.6B → 405B, MoE 47B → 235B, state-space). Of those, **16 have a verified PPL ratio against their bf16 baseline** on the FineWeb-edu held-out tail at seq_len=1024, seed=42; 6 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/` or `docs/PPL_EVAL_*.json`.
 
@@ -71,7 +71,7 @@ Other notable verified results (full table in [Appendix](#appendix-full-architec
 
 - **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (scalar-only; the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 39+ repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
-- **PyPI**: [pypi.org/project/ultracompress/0.6.0](https://pypi.org/project/ultracompress/0.6.0/).
+- **PyPI**: [pypi.org/project/ultracompress/0.6.1](https://pypi.org/project/ultracompress/0.6.1/).
 
 The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo there has files committed, `uc verify` will pass on it after `hf download`.
 
@@ -82,7 +82,7 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.6.
-- **`uc compress` as a one-shot CLI.** v0.6.0 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
+- **`uc compress` as a one-shot CLI.** v0.6.1 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
 - **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two paths to add correction overlay on top (SVD warm-start; per-Linear KL trained on Gaussian inputs) — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
@@ -170,7 +170,7 @@ The PPL evaluator + verifier ship public in this package; the production trainer
 
 ```
 ultracompress/
-├── ultracompress/                Core library (pack v3, V18CCorrectedLinear, CLI, __main__)
+├── ultracompress/                Core library (pack v3, correction-overlay module, CLI, __main__)
 ├── scaling/                      Cross-model teacher loaders (Qwen3 / Llama / Mistral / Mamba / OLMo)
 ├── scripts/overlay/              Streaming compression runner + evaluators + JSON artifacts
 ├── scripts/frr/                  Track B (FRR architectural compression — research)
