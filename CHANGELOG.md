@@ -137,7 +137,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ### Documentation
 - Internal research log (hypothesis-mechanism-experiment-measurement-conclusion entries, including negative results) is maintained for the team; selected charter-clean negative-result summaries are surfaced via blog posts and release notes.
 - FNO Darcy non-transformer transfer demo at `scripts/demo/fno_compression_demo.py` (CPU-only, 33 sec end-to-end).
-- Cross-architecture results documented at `docs/non_transformer_v18c_results.json` (FNO, U-Net, PINN — including the PINN negative result).
+- Cross-architecture results documented at internal cross-architecture validation set (FNO, U-Net, PINN — including the PINN negative result; details NDA-gated).
 
 ### Patent
 - USPTO 64/049,511 (correction overlay) — filed 2026-04-25.
