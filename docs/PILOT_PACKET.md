@@ -23,13 +23,13 @@ The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) hit a wall at 4 bits per w
 
 ## What we deliver
 
-### Track A — post-training row-overlay quantization (USPTO 64/049,511) — shipping now
+### Row-Overlay Quantization (USPTO 64/049,511) — shipping now
 
 Sub-3-bits-per-weight on a 6-model head-to-head cohort. **30% smaller than bitsandbytes NF4 at equivalent retention.** Zero catastrophic failures across the cohort — the only public method at this compression frontier with that property in the cohort we tested.
 
-### Track B — Fractal Residual Recursion (USPTO 64/049,517) — v0.2 (Q3 2026)
+### Fractal Residual Recursion (USPTO 64/049,517) — v0.2 (Q3 2026)
 
-Architectural compression beyond the published academic frontier. Combined with Track A, the strongest end-to-end ratio we've measured for transformer language models in our cohort. Public-safe Track B evidence at [docs/evidence/matrix.md](evidence/matrix.md).
+Architectural compression beyond the published academic frontier. Combined with the Row-Overlay Quantization stack, the strongest end-to-end ratio we've measured for transformer language models in our cohort. Public-safe Fractal Residual Recursion evidence at [docs/evidence/matrix.md](evidence/matrix.md).
 
 ### What ships under a pilot
 
@@ -115,7 +115,7 @@ We respond same-day during US business hours and target a kickoff call within 5 
 
 ---
 
-*UltraCompress v0.1 alpha shipped 2026-04-25. Pre-compressed reference models release throughout April–May 2026. Track B and `uc compress` ship in v0.2 (Q3 2026), gated on patent prosecution timing.*
+*UltraCompress v0.1 alpha shipped 2026-04-25. Pre-compressed reference models release throughout April–May 2026. Fractal Residual Recursion support and `uc compress` ship in v0.2 (Q3 2026), gated on patent prosecution timing.*
 
 *The CLI is Apache 2.0. The pre-compressed model artifacts are licensed separately (research-free or commercial-paid). The compression methodology is patent pending.*
 

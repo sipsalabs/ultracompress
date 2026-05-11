@@ -49,7 +49,7 @@ You'll see the provenance manifest:
 UltraCompress artifact: sipsalabs/<model-id>
 ─────────────────────────────────────────────────
 Base model:   Qwen/Qwen3-1.7B
-Method:       row-overlay-quantization (Track A) v1
+Method:       row-overlay-quantization (RoQ) v1
 Bits/weight:  2.798
 Size:         1.04 GB
 SHA-256:      a3f5c8...   (verified ✓)
