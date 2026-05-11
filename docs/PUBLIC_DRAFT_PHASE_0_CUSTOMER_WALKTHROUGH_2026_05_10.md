@@ -96,7 +96,7 @@ Subject: Sipsa Day 2 — {MODEL} compression done, eval AM
 
 Hi {NAME},
 
-{MODEL} compression finished EOD. Per-layer FRR profile in Slack as JSON.
+{MODEL} compression finished EOD. Per-layer low-rank refinement profile in Slack as JSON.
 
 PPL eval starts tomorrow AM. First ratio + SHA-256 manifest by EOD Wednesday. No action your side.
 

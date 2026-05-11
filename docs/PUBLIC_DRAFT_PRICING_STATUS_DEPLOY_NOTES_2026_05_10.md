@@ -173,7 +173,7 @@ Phase 2 once weekly volume justifies it.
 
 Both HTML files were audited against the charter constraint set:
 
-- ☑ Zero recipe values exposed (no rank, lr, train_steps, seed, K=64, correction overlay, scalar quantization, CHBR, T1, calibration set, batch size).
+- ☑ Zero recipe values exposed (no rank, lr, train_steps, seed, K=64, correction overlay, scalar quantization, k-cluster recovery, T1, calibration set, batch size).
 - ☑ Zero internal Track A-G nomenclature on the public surface.
 - ☑ Zero personal info (no `micipsa.ounner@gmail.com`, no `Missipssa Ounnar`, no street address, no DOB, no phone). Only `@sipsalabs.com` aliases.
 - ☑ Every cited PPL number traces to `BENCHMARKS_2026_05_10.json`:
