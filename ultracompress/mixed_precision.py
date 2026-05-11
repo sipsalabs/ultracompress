@@ -448,7 +448,7 @@ def mixed_precision_compress(
     Args:
         tensors: iterator of (name, weight) pairs
         global_target_bpw: target overall bits per weight
-        n_iter: k-means iterations for PQ
+        n_iter: vector quantization iterations for PQ
         verbose: print per-tensor results
 
     Returns:

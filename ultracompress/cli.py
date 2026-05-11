@@ -561,18 +561,17 @@ def build_parser() -> argparse.ArgumentParser:
     f.add_argument("--bpw", type=float, default=6.0, help="Scalar quantization bits per weight (default 6.0)")
     f.add_argument("--rank", type=int, default=32, help="Correction layer rank (default 32)")
     f.add_argument("--block-size", type=int, default=0, dest="block_size",
-                   help="Per-block scalar quant group size (Cure A4). "
-                        "0 = per-row absmax (legacy). 64 or 128 unlocks the "
-                        "5.125-5.25 eff-bpw production tier (matches/beats 6-bit gold). "
-                        "Adds 16/block_size bpw overhead.")
+                   help="Per-block scalar quant group size. "
+                        "0 = per-row absmax (legacy). Non-zero unlocks the "
+                        "production tier. Adds 16/block_size bpw overhead.")
     f.add_argument("--n-chunks", type=int, default=1, dest="n_chunks",
-                   help="V18-C memory-aware: split U matmul into N chunks along "
-                        "output rows. 1 = legacy (parent class). 4-8 unlocks 14B+ "
-                        "training without OOM. Bit-exact with parent.")
+                   help="Memory-aware mode: split correction matmul into N chunks "
+                        "along output rows. 1 = legacy (parent class). 4-8 unlocks "
+                        "14B+ training without OOM. Bit-exact with parent.")
     f.add_argument("--u-weight-dtype", type=str, default="fp32",
                    choices=["fp32", "bf16", "fp16"], dest="u_weight_dtype",
-                   help="V18-C U-projection weight dtype. fp32 (default) matches "
-                        "production. bf16/fp16 = Option-B halves U.weight + skips "
+                   help="Correction-overlay U-projection weight dtype. fp32 (default) "
+                        "matches production. bf16/fp16 = halve U.weight + skip the "
                         "fp32 inner cast. Use with --n-chunks for max memory savings.")
     f.add_argument("--steps", type=int, default=1500, help="KL distillation steps (default 1500)")
     f.add_argument("--calibration-data", default=None, dest="calibration_data",
@@ -602,9 +601,9 @@ def build_parser() -> argparse.ArgumentParser:
     pk.add_argument("src", help="Source _e2e_* directory containing layer_*.pt files")
     pk.add_argument("dst", help="Output .uc directory")
     pk.add_argument("--bpw", type=int, default=5,
-                    help="Bits per weight for GSQ scalar quantization (default 5)")
+                    help="Bits per weight for scalar quantization (default 5)")
     pk.add_argument("--block-size", type=int, default=64, dest="block_size",
-                    help="GSQ per-block scale block size (default 64)")
+                    help="Per-block scale block size (default 64)")
     pk.add_argument("--include-aux", action="store_true", default=True, dest="include_aux",
                     help="Pack model-level non-Linear weights (embed_tokens, "
                          "model.norm, lm_head) into a single self-contained "
@@ -617,7 +616,7 @@ def build_parser() -> argparse.ArgumentParser:
                          "Defaults to the source dir's manifest.json base_model_hf_id field.")
     pk.add_argument("--v3", "--legacy-v3", action="store_true", dest="legacy_v3",
                     help="(legacy) Use the lossy v3 pack_layer path (reverse-derived codec). "
-                         "Only useful when source layer.pt has no gsq_codecs persisted. "
+                         "Only useful when source layer.pt has no persisted codec state. "
                          "Default is the lossless v3 path via pack_v3.")
 
     # uc pack-aux <packed_dir> — retrofit an existing v3 pack with aux_weights.uc

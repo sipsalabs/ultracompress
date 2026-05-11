@@ -6,7 +6,7 @@ This is the 10-dimensional compression engine. It stacks:
 1. Residual PQ: Multiple PQ passes, each compressing the error of the last.
    Like video I-frames + P-frames but for weights.
 
-2. Learned Codebook Refinement: After k-means, refine codebooks via gradient
+2. Learned Codebook Refinement: After vector quantization, refine codebooks via gradient
    descent to minimize reconstruction error globally.
 
 3. Entropy-Aware Index Encoding: PQ indices aren't uniform — some codebook
@@ -83,7 +83,7 @@ def residual_product_quantize(
         weight: Input tensor
         n_levels: Number of residual levels
         level_configs: List of (M, K, G) per level. If None, uses adaptive defaults.
-        n_iter: k-means iterations per level
+        n_iter: vector quantization iterations per level
     """
     original_shape = tuple(weight.shape)
     n_elements = weight.numel()
@@ -138,12 +138,12 @@ def refine_codebooks_gradient(
     or falls back to weight error (||W - W'||²) without activations.
 
     Output-aware optimization breaks the gradient cancellation that makes
-    weight-error refinement equivalent to k-means. The activation matrix X
+    weight-error refinement equivalent to vector quantization. The activation matrix X
     weights each group's gradient by how much that group's error affects
     the actual output — making the optimization dramatically more effective.
 
     Args:
-        pq: Initial PQ from k-means
+        pq: Initial PQ from vector quantization
         original_weight: Original weight matrix (out_dim, in_dim)
         n_steps: Gradient descent steps
         lr: Learning rate
@@ -325,7 +325,7 @@ def ultra_compress_weight(
         max_bpw: Maximum allowed bits per weight
         n_residual_levels: Max residual PQ levels
         refine_steps: Gradient refinement steps per codebook
-        n_iter: k-means iterations
+        n_iter: vector quantization iterations
     """
     from .metrics import compute_quality
 
@@ -422,7 +422,7 @@ class GlobalCodebookManager:
     def train(self, weight_samples: List[torch.Tensor], max_samples: int = 500000):
         """Train global codebooks from a sample of weight tensors.
 
-        Collects sub-vectors from all tensors, then runs k-means on the
+        Collects sub-vectors from all tensors, then runs vector quantization on the
         combined dataset to find universal patterns.
         """
         device = weight_samples[0].device
@@ -458,7 +458,7 @@ class GlobalCodebookManager:
                 perm = torch.randperm(data.shape[0], device=device)[:max_samples]
                 data = data[perm]
 
-            # Run k-means
+            # Run vector quantization
             actual_k = min(K, data.shape[0])
             perm = torch.randperm(data.shape[0], device=device)[:actual_k]
             codebook = data[perm].clone()

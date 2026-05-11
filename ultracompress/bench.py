@@ -213,14 +213,14 @@ def _load_packed_model(
 
     Approach: load fresh HF skeleton in bf16, then for each `layer_NNN.uc`,
     reconstruct the per-layer state dict and replace target Linears with
-    `CorrectionMatrixC` modules. Returns (model, tokenizer).
+    `CorrectionMatrix` modules. Returns (model, tokenizer).
     """
     import torch
     from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
     from ultracompress.load_uc import reconstruct_layer_state_dict
 
-    # CorrectionMatrixC lives in the streaming runner (research overlay). We
+    # CorrectionMatrix lives in the streaming runner (research overlay). We
     # import lazily so the package stays importable without it.
     try:
         import sys as _sys
@@ -228,11 +228,11 @@ def _load_packed_model(
         overlay_dir = Path(__file__).resolve().parents[1] / "scripts" / "overlay"
         if overlay_dir.exists() and str(overlay_dir) not in _sys.path:
             _sys.path.insert(0, str(overlay_dir))
-        from streaming_compression_runner import CorrectionMatrixC  # type: ignore
+        from production_compression_runner import CorrectionMatrix  # type: ignore
     except ImportError as exc:
         raise ImportError(
-            "uc bench requires CorrectionMatrixC from "
-            "scripts/overlay/streaming_compression_runner.py. "
+            "uc bench requires CorrectionMatrix from "
+            "scripts/overlay/production_compression_runner.py. "
             f"Original import error: {exc}"
         ) from exc
 
@@ -309,7 +309,7 @@ def _load_packed_model(
                 parent = getattr(parent, p)
             attr = attrs[-1]
             existing = getattr(parent, attr)
-            cm = CorrectionMatrixC(
+            cm = CorrectionMatrix(
                 parts["W_base"].to(device=torch_device, dtype=torch.bfloat16),
                 parts.get("bias", existing.bias.data if existing.bias is not None else None),
                 rank=rank,

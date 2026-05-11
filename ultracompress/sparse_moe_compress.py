@@ -2,7 +2,7 @@
 Sparse MoE Weight Compression — Post-training dense-to-MoE conversion.
 
 Instead of compressing values, restructure the weight matrix itself.
-Cluster weight rows by similarity (k-means), each cluster becomes a
+Cluster weight rows by similarity (vector quantization), each cluster becomes a
 tiny expert. A learned router selects top-K experts per input token.
 Inactive experts cost zero compute — massive savings at inference.
 """
@@ -39,7 +39,7 @@ class DenseToMoE:
                 top_k: int = 2, n_iter: int = 20) -> MoECompressed:
         W = dense_weight.float()
         rows, cols = W.shape
-        # K-means clustering on rows
+        # vector quantization clustering on rows
         perm = torch.randperm(rows)[:n_experts]
         centroids = W[perm].clone()
         for _ in range(n_iter):

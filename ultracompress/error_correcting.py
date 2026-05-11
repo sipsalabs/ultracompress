@@ -14,7 +14,7 @@ class LatticeQuantizer:
         self.codebook = torch.round(self.codebook * 2) / 2  # snap to half-integers
 
     def fit(self, weights: torch.Tensor, iters=20):
-        """K-means refinement on weight data to learn E8-adapted codebook."""
+        """vector quantization refinement on weight data to learn E8-adapted codebook."""
         groups = weights.reshape(-1, self.dim)
         for _ in range(iters):
             indices = self.quantize(groups)

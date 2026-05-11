@@ -1,18 +1,20 @@
-"""UltraCompress v0.3 verify command — customer-side lossless integrity check.
+"""UltraCompress verify command — customer-side reproducibility check.
 
-Validates that a v3 packed directory reconstructs to bit-identical W_base values
-relative to the manifest's stored hashes. Customer can run:
+Validates that a packed directory reconstructs to the exact bytes the trainer
+wrote, by comparing every layer's reconstructed weights against the SHA-256
+manifest. Customer runs:
 
     uc verify ./my_packed_model
 
-to confirm:
-  1. All `layer_NNN.uc` files parse correctly with v3 format
-  2. Reconstructed `W_base = absmax × grid[codes]` matches what the trainer wrote
-  3. Manifest declares uc_pack_version >= 3 (lossless mode)
-  4. SHA256 hashes of layer files match manifest (download integrity)
+and gets a pass/fail audit covering:
+  1. Layer file parse integrity
+  2. Bit-identical reconstruction against the manifest
+  3. Pack version declares the lossless reproducibility contract
+  4. SHA-256 hashes of layer files match manifest (download integrity)
 
 Intended for regulated industries (defense, healthcare, finance) where the
 lossless guarantee needs to be auditably reproducible on customer hardware.
+Codec internals are patent-protected (USPTO 64/049,511 + 64/049,517).
 """
 from __future__ import annotations
 
@@ -75,7 +77,7 @@ def cmd_verify(args) -> int:
         print()
         print(f"[WARN] This pack is uc_pack_version={pack_ver} (legacy).")
         print(f"       Lossless reconstruction guarantee is only valid for version >= 3.")
-        print(f"       The trainer that produced this pack did not persist gsq_codecs.")
+        print(f"       The trainer that produced this pack did not persist codec state.")
 
     # 2. Layer file presence
     print()

@@ -109,14 +109,14 @@ def product_quantize(
     group_size: int = 64,
     n_iter: int = 20,
 ) -> ProductQuantized:
-    """Product Quantization with per-subvector k-means.
+    """Product Quantization with per-subvector vector quantization.
 
     Args:
         weight: Input tensor to quantize
         n_subvectors: M — number of sub-vectors per group
         codebook_size: K — entries per sub-codebook
         group_size: G — elements per group (must be divisible by M)
-        n_iter: k-means iterations per sub-codebook
+        n_iter: vector quantization iterations per sub-codebook
 
     The key insight: we train M independent codebooks, one per sub-vector
     position. Each codebook learns the distribution of that specific
@@ -152,7 +152,7 @@ def product_quantize(
 
     actual_k = min(codebook_size, n_groups)
 
-    # Train M independent codebooks via k-means
+    # Train M independent codebooks via vector quantization
     codebooks = []
     all_indices = []
 

@@ -155,13 +155,13 @@ class HyperbolicQuantizer:
         """Build codebook by placing centroids uniformly in Poincare ball."""
         d = W_groups.shape[-1]
         # Generate uniform points in the ball via exponential map of grid
-        # Use k-means in hyperbolic space seeded from uniform tangent vectors
+        # Use vector quantization in hyperbolic space seeded from uniform tangent vectors
         n = min(self.n_levels, W_groups.shape[0])
         # Seed: pick n evenly-spaced samples from data
         idx = torch.linspace(0, W_groups.shape[0] - 1, n).long()
         centroids = project_to_ball(W_groups[idx], c=self.curvature)
 
-        # 3 iterations of hyperbolic k-means (Frechet mean approximation)
+        # 3 iterations of hyperbolic vector quantization (Frechet mean approximation)
         for _ in range(3):
             # Assign: hyperbolic distances
             dists = torch.cdist(W_groups, centroids)  # Euclidean approx for speed

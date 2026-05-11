@@ -2,14 +2,14 @@
 
 Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed by a SHA-256 manifest.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.5.5-blue.svg)](https://pypi.org/project/ultracompress/0.5.5/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.0-blue.svg)](https://pypi.org/project/ultracompress/0.6.0/)
+[![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). First 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
-UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack you can verify against the original — not "1% PPL drift on WikiText," but a `W_base = grid[codes] * absmax + alpha * U @ V` reconstruction that hashes byte-for-byte to what the trainer measured. That's the honest definition of lossless we care about: an auditor can re-derive every weight from the pack alone, and the SHA-256 manifest fails loudly if anything drifted.
+UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack you can verify against the original — not "1% PPL drift on WikiText," but a deterministic reconstruction that hashes byte-for-byte to what the trainer measured. That's the honest definition of lossless we care about: an auditor can re-derive every weight from the pack alone, and the SHA-256 manifest fails loudly if anything drifted. Codec internals are patent-protected (USPTO 64/049,511 + 64/049,517).
 
 It exists because the bf16-equivalent quality bar matters in places where "good enough on MMLU" isn't enough — defense, FDA-regulated healthcare, SR 11-7 model validation, internal red-team eval at frontier labs. And as a side-effect of the streaming compression path, it lets us put a 405B-parameter model through a single 32 GB consumer GPU without renting an H100 cluster.
 
@@ -20,12 +20,12 @@ We're a small company (Sipsa Labs, Inc.) shipping this in public while the paten
 ## Try it (3 commands)
 
 ```bash
-pip install ultracompress==0.5.5 huggingface_hub[cli]
+pip install ultracompress==0.6.0 huggingface_hub[cli]
 hf download SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5 --local-dir ./pack
 uc verify ./pack
 ```
 
-Expected output (real, not aspirational — this is what the v0.5.5 verifier prints on a clean pull of the 1.7B-Base artifact):
+Expected output (real, not aspirational — this is what the v0.6.0 verifier prints on a clean pull of the 1.7B-Base artifact):
 
 ```
 uc_pack_version: 3  (LOSSLESS, self-contained)
@@ -50,7 +50,7 @@ The smallest published artifact is ~1.1 GB. The qwen3-0.6b pack is ~0.4 GB if yo
 
 ## What works today (verified, with JSON receipts)
 
-PyPI `v0.5.5` is the current release. v0.5.5 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
+PyPI `v0.6.0` is the current release. v0.6.0 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
 **End-to-end validated at 5 bpw across 22 transformer architectures** (dense 0.6B → 405B, MoE 47B → 235B, state-space). Of those, **16 have a verified PPL ratio against their bf16 baseline** on the FineWeb-edu held-out tail at seq_len=1024, seed=42; 6 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/` or `docs/PPL_EVAL_*.json`.
 
@@ -69,9 +69,9 @@ Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both h
 
 Other notable verified results (full table in [Appendix](#appendix-full-architecture-matrix) below):
 
-- **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (GSQ-only; the V18-C overlay path for SSMs hasn't landed yet, see "what doesn't work").
+- **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (scalar-only; the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 39+ repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
-- **PyPI**: [pypi.org/project/ultracompress/0.5.5](https://pypi.org/project/ultracompress/0.5.5/).
+- **PyPI**: [pypi.org/project/ultracompress/0.6.0](https://pypi.org/project/ultracompress/0.6.0/).
 
 The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo there has files committed, `uc verify` will pass on it after `hf download`.
 
@@ -82,18 +82,18 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.6.
-- **`uc compress` as a one-shot CLI.** v0.5.5 still requires the manual two-step (`scripts/overlay/stream_compress_e2e.py` then `pack_v3.pack_e2e_dir_v3`). One-shot `uc compress` ships in v0.6.
-- **State-space models past GSQ-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two paths to add V18-C correction on top (SVD warm-start; per-Linear KL trained on Gaussian inputs) — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
+- **`uc compress` as a one-shot CLI.** v0.6.0 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
+- **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two paths to add correction overlay on top (SVD warm-start; per-Linear KL trained on Gaussian inputs) — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
-- **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week (rank+steps push, per-Linear adaptive bpw, V18-C depth-adaptive train_steps, multi-pass cascade correction, AWQ-style channel pre-scaling). Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration. Cure direction (V3 rank-redistribution) is identified but not yet validated.
+- **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week (rank+steps push, per-Linear adaptive bpw, depth-adaptive variant, multi-pass cascade correction, AWQ-style channel pre-scaling). Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration. Cure direction (V3 rank-redistribution) is identified but not yet validated.
 - **HF uploads on residential bandwidth.** Several large-pack uploads (Mixtral-8x22B at 100GB, SmolLM2, Qwen3-0.6B) hit SSL EOF mid-stream. Our 8-attempt watchdog wrapper catches it but multi-hour residential uploads remain brittle. If a `SipsaLabs/...` HF repo shows in-flight in the matrix below, that's why.
 
 ---
 
 ## Why this isn't AWQ / GPTQ / EXL3
 
-Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains the trainer's persisted k-means grid + per-block scales + bit-packed integer codes + a rank-32 V18-C correction trained per-layer against teacher activations, and `W_base = grid[codes] * absmax + alpha * U @ V` reproduces — bit-identically — the dequantized weight the trainer used during distillation. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith.
+Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains the trainer's persisted codec state plus a low-rank correction overlay trained per-layer against teacher activations, and the deterministic reconstruction reproduces — bit-identically — the dequantized weight the trainer used during distillation. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith. Codec internals are patent-protected (USPTO 64/049,511 + 64/049,517).
 
 This matters when "the model picks a slightly-wrong variable name" is a regulatory finding rather than a cosmetic complaint. Defense / aerospace deploy-bit-exactness is a compliance requirement. FDA-regulated healthcare AI requires model equivalence between dev and deploy. SR 11-7 (Federal Reserve model validation) requires reproducible audit recovery. A frontier lab's red-team eval is only valid against the same inference path the team will actually deploy.
 
@@ -109,10 +109,10 @@ Most projects hide their failures. We catalogue them at the same level of detail
 
 A taste of what's in there:
 
-- **V18-C SVD warm-start on Mamba** — made PPL 0.07 pp WORSE than GSQ-only. Truncated rank-32 SVD on a high-rank residual injects noise the activation distribution doesn't want. Documented; the V18-C value comes from the 200-step KL distillation, not from the SVD initialization.
-- **V4-D Multi-Pass Cascade Correction** — hypothesis: two rank-16 corrections in series capture more than one rank-32 correction at constant param budget. Result: catastrophic 1.0682× (13.7× worse than uniform single-pass). Pass-1 cannot recover information that pass-0 already discarded. CLOSED — do not re-run.
-- **V4-A AWQ-Style Channel Pre-Scaling on GSQ + V18-C** — 1.1306× catastrophic regression (+13%, 26× worse than uniform). AWQ is designed for uniform-grid quantization where pre-scaling protects salient channels from rounding noise; GSQ already adapts a learned non-uniform grid, so the round-trip just injects bias the V18-C overlay then wastes its capacity correcting. CLOSED.
-- **rank=64 + train_steps=400 push on the Qwen3-1.7B-Base record** — predicted: tighter than 1.0040×. Actual: 1.0042×, within statistical noise. Rank-and-steps knob is saturated at this configuration. The 1.0040× v1 number stands as the empirical floor; cure is not at the codec, it's at V18-C subspace allocation by depth.
+- **SVD warm-start on Mamba** — made PPL 0.07 pp WORSE than scalar-only. Truncated low-rank SVD on a high-rank residual injects noise the activation distribution doesn't want. Documented; the correction overlay value comes from the KL distillation pass, not from the SVD initialization.
+- **V4-D Multi-Pass Cascade Correction** — hypothesis: two rank-16 corrections in series capture more than one low-rank correction at constant param budget. Result: catastrophic 1.0682× (13.7× worse than uniform single-pass). Pass-1 cannot recover information that pass-0 already discarded. CLOSED — do not re-run.
+- **V4-A AWQ-Style Channel Pre-Scaling on scalar + correction overlay** — 1.1306× catastrophic regression (+13%, 26× worse than uniform). AWQ is designed for uniform-grid quantization where pre-scaling protects salient channels from rounding noise; scalar quantization already adapts a learned non-uniform grid, so the round-trip just injects bias the correction overlay then wastes its capacity correcting. CLOSED.
+- **rank/training schedule push on the Qwen3-1.7B-Base record** — predicted: tighter than 1.0040×. Actual: 1.0042×, within statistical noise. Rank-and-steps knob is saturated at this configuration. The 1.0040× v1 number stands as the empirical floor; cure is not at the codec, it's at subspace allocation by depth.
 - **"Base models compress tighter than instruct" hypothesis** — refuted 2/3 of architectures. Instruct-fine-tuning effects on quantization-friendliness are architecture-dependent, not universal. Hypothesis dropped, table published with the data alongside without a hypothesis attached.
 
 Researchers comparing 5-bit codecs should treat that file as the audit trail. It will save you from re-running experiments we already ran, and the LAB-NOTEBOOK entries it cites are the version of record.
@@ -154,15 +154,15 @@ If you're tracking the project: the lab notebook at [`docs/LAB-NOTEBOOK.md`](doc
 - The trainer's k-means **learned grid** (per-Linear, K=32 levels at 5 bpw)
 - Per-block (B=64) absmax scales
 - Bit-packed integer codes
-- The rank-32 V18-C correction matrices (`U_factor`, `V_factor`, `alpha` per Linear), trained per-layer for 200 KL-distillation steps against the bf16 teacher's hidden states
-- (v0.5.5) `embed_tokens`, `model.norm`, and `lm_head` bundled inline so the pack is a self-contained model
+- A low-rank correction overlay per Linear, trained per-layer against the bf16 teacher's hidden states
+- `embed_tokens`, `model.norm`, and `lm_head` bundled inline so the pack is a self-contained model
 - A SHA-256 manifest covering every layer file
 
-Reconstruction at inference time is `W_full = grid[codes] * absmax + alpha * U @ V`. The grid + scales + codes give you `W_base` bit-identically; the V18-C overlay is an additive correction trained against real activations. Because the codec, scales, and overlay all live in the pack, the inference math is byte-equivalent to what the trainer measured during distillation — not "close in PPL," but the same numerical result up to fp16 reduction order on the matmul itself.
+Reconstruction at inference time is deterministic from the persisted codec state plus the per-layer correction overlay (formula is patent-protected). Because the codec, scales, and overlay all live in the pack, the inference math is byte-equivalent to what the trainer measured during distillation — not "close in PPL," but the same numerical result up to fp16 reduction order on the matmul itself.
 
-The streaming compression path that makes this scale to 405B on one GPU works by lazy-loading each transformer layer's bf16 weights from the safetensors index, caching the teacher's hidden output for that layer, quantizing, fitting V18-C against the cache, saving the layer to disk, and freeing the layer before pulling the next one. Peak VRAM is bounded by ~one transformer layer (8.98 GB for Qwen2.5-72B; same shape for 405B). Compression time is roughly 1 minute per layer.
+The streaming compression path that makes this scale to 405B on one GPU works by lazy-loading each transformer layer's bf16 weights from the safetensors index, caching the teacher's hidden output for that layer, quantizing, fitting the correction overlay against the cache, saving the layer to disk, and freeing the layer before pulling the next one. Peak VRAM is bounded by ~one transformer layer (8.98 GB for Qwen2.5-72B; same shape for 405B). Compression time is roughly 1 minute per layer.
 
-`scripts/overlay/streaming_compression_runner.py` is the runner. `scripts/overlay/eval_compressed_only.py` is the evaluator that produces the PPL JSONs in `scripts/overlay/artifacts/`. Both are in this repo, both are reproducible.
+The PPL evaluator + verifier ship public in this package; the production trainer is patent-protected. Released artifacts include the SHA-256 manifest needed to reproduce every published number via `uc verify`.
 
 ---
 

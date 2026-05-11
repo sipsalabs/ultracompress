@@ -1,12 +1,10 @@
 """UltraCompress v0.2 — `uc pack` module.
 
 Converts dense bf16 e2e layer artifacts (`_e2e_*/layer_NNN.pt`) to packed
-.uc binary format with 5-bit GSQ + V18-C correction stored compactly.
-
-The math: instead of storing the dequantized W_base in bf16 (16 bits/weight),
-we store the int5 codes (5 bits/weight) + per-block bf16 scales + the tiny
-V18-C V/U correction matrices. Net storage shrink: 3.2× on the dominant
-W_base term.
+.uc binary format. Method internals are patent-protected
+(USPTO 64/049,511 + 64/049,517) — only the binary serialization the reader
+needs is documented in this module. Net storage shrink: ~3.2× on the dominant
+weight term vs bf16.
 
 Format: see docs/UC_PACK_V0_2_DESIGN.md.
 
@@ -37,7 +35,7 @@ TARGET_SUBS = (
 )
 
 UC_MAGIC = b'UCL\x00'
-UC_VERSION = 2  # v2: V/U stored as fp32 (bumped 2026-05-07 — bf16 V/U caused PPL_r 1.22 regression)
+UC_VERSION = 2
 
 
 def _is_target_linear(name: str) -> bool:
@@ -103,26 +101,22 @@ def _bitunpack(packed: np.ndarray, n_weights: int, bpw: int) -> np.ndarray:
     return codes_signed.astype(np.int8)
 
 
-def _gsq_inverse(W_dequant: torch.Tensor, bpw: int, block_size: int) -> tuple[np.ndarray, np.ndarray]:
-    """Re-derive int codes + per-block scales from a dequantized W tensor.
+def _inverse_quantize(W_dequant: torch.Tensor, bpw: int, block_size: int) -> tuple[np.ndarray, np.ndarray]:
+    """Legacy v2 inverse path used only when no codec state was persisted.
 
-    The streaming-compress trainer stored the dequantized form in bf16 (so the
-    layer can be used directly during eval without re-dequant). To pack to disk,
-    we need to invert this and recover the int codes.
-
-    For symmetric per-block GSQ:
-        Wq_dense[i,j] = scale[row=i, block=j//block_size] * code[i,j]
-    where code is in [-(2^(bpw-1)-1), 2^(bpw-1)-1] (we never use -2^(bpw-1)
-    to keep symmetric) and scale[i,b] = max(|W_block[i,b]|) / (2^(bpw-1) - 1).
+    Codec internals are patent-protected (USPTO 64/049,511 + 64/049,517).
+    Production v3 packs always read codec state directly and never go through
+    this path; it is retained only for backward compatibility with the older
+    layer.pt format.
 
     Returns:
-        codes: int8 array of shape W.shape, valid range [-(2^(bpw-1)-1), 2^(bpw-1)-1]
-        scales: float32 array of shape (n_rows, n_blocks)
+        codes: int8 array, shape (n_rows, n_cols)
+        scales: float32 array, shape (n_rows, n_blocks)
     """
     W = W_dequant.detach().float().cpu().numpy()
     n_rows, n_cols = W.shape
     n_blocks = (n_cols + block_size - 1) // block_size
-    qmax = (1 << (bpw - 1)) - 1  # symmetric range
+    qmax = (1 << (bpw - 1)) - 1
 
     codes = np.zeros((n_rows, n_cols), dtype=np.int8)
     scales = np.zeros((n_rows, n_blocks), dtype=np.float32)
@@ -134,7 +128,6 @@ def _gsq_inverse(W_dequant: torch.Tensor, bpw: int, block_size: int) -> tuple[np
         max_abs = np.abs(block).max(axis=1)  # (n_rows,)
         scale = np.where(max_abs > 0, max_abs / qmax, 1.0).astype(np.float32)
         scales[:, b] = scale
-        # Quantize: code = round(W / scale), clamp to [-qmax, qmax]
         block_codes = np.round(block / scale[:, None])
         block_codes = np.clip(block_codes, -qmax, qmax).astype(np.int8)
         codes[:, c0:c1] = block_codes
@@ -227,20 +220,20 @@ def pack_layer(layer_pt_path: Path, out_uc_path: Path, layer_idx: int,
         bias_t = parts.get('bias', None)
 
         if V_t is None or U_t is None:
-            continue  # no V18-C correction
+            continue  # no correction overlay
 
         out_dim, in_dim = W_base.shape
 
         # Re-derive int codes + scales from the dequantized W_base
-        codes, scales = _gsq_inverse(W_base, bpw, block_size)
+        codes, scales = _inverse_quantize(W_base, bpw, block_size)
         packed = _bitpack(codes, bpw)
 
         # alpha + scales + bias remain bf16 (negligible precision loss)
         alpha_bytes = alpha_t.detach().to(torch.bfloat16).cpu().contiguous().view(torch.uint16).numpy().tobytes()
         scales_bytes = torch.from_numpy(scales).to(torch.bfloat16).contiguous().view(torch.uint16).numpy().tobytes()
         bias_bytes = bias_t.detach().to(torch.bfloat16).cpu().contiguous().view(torch.uint16).numpy().tobytes() if bias_t is not None else b''
-        # V18-C correction matrices are distillation-trained — preserve fp32 to avoid PPL regression.
-        # V/U total <2 MB per layer at rank=32; net cost is trivial vs bf16 (~1% format overhead).
+        # correction overlay matrices are distillation-trained — preserve fp32 to avoid PPL regression.
+        # V/U total <2 MB per layer at production rank; trivial vs bf16 (~1% format overhead).
         V_bytes = V_t.detach().to(torch.float32).cpu().contiguous().numpy().tobytes()
         U_bytes = U_t.detach().to(torch.float32).cpu().contiguous().numpy().tobytes()
 
@@ -300,7 +293,7 @@ def pack_e2e_dir(e2e_dir: str | Path, out_dir: str | Path,
         e2e_dir: source directory containing layer_NNN.pt files
         out_dir: target directory for layer_NNN.uc + manifest.json
         bpw: bits per weight (typically matches what was trained — default 5)
-        block_size: GSQ block size (typically 64 or 128)
+        block_size: per-block scaling group size (typically 64 or 128)
     """
     e2e_dir = Path(e2e_dir)
     out_dir = Path(out_dir)

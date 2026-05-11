@@ -5,7 +5,7 @@ Loads a packed `.uc` directory back into a working transformers model.
 Pipeline:
   packed/layer_NNN.uc  ──► UCLayerLoader.load_layer_state_dict ──► state_dict ──► HF model
 
-The packed format stores only the quantized Linears + V18-C corrections. The
+The packed format stores only the quantized Linears + correction overlays. The
 non-target tensors (norms, gates, biases of non-target Linears) come from the
 ORIGINAL HF model that the user provides.
 

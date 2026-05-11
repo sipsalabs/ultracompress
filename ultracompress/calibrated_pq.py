@@ -116,17 +116,17 @@ def calibrated_product_quantize(
     n_iter: int = 20,
     importance_power: float = 0.5,
 ) -> CalibratedPQ:
-    """Product Quantization with importance-weighted k-means.
+    """Product Quantization with importance-weighted vector quantization.
 
     Correct approach (GPTQ/AWQ-style):
       1. Group and normalize the ORIGINAL weight (identical to standard PQ)
       2. Compute per-element importance weights for each sub-vector
-      3. Scale sub-vectors by sqrt(importance) ONLY for k-means distance
+      3. Scale sub-vectors by sqrt(importance) ONLY for vector quantization distance
       4. Compute centroids from UNSCALED data using importance-aware assignments
 
     This ensures:
       - Scales and group structure are identical to standard PQ (correct decompression)
-      - k-means allocates codebook precision to important dimensions
+      - vector quantization allocates codebook precision to important dimensions
       - Codebook entries are valid centroids of original data
 
     Args:
@@ -135,7 +135,7 @@ def calibrated_product_quantize(
         n_subvectors: M
         codebook_size: K
         group_size: G
-        n_iter: k-means iterations
+        n_iter: vector quantization iterations
         importance_power: How aggressively to weight (0=uniform, 1=full, 0.5=sqrt)
     """
     original_shape = tuple(weight.shape)
@@ -183,7 +183,7 @@ def calibrated_product_quantize(
 
     actual_k = min(codebook_size, n_groups)
 
-    # === Step 3: Importance-weighted k-means ===
+    # === Step 3: Importance-weighted vector quantization ===
     # Assignment uses weighted distance: d(x,c) = sum(imp * (x-c)^2)
     # Centroids are computed from UNWEIGHTED data
     codebooks = []

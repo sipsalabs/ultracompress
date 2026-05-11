@@ -11,7 +11,7 @@ This lets the compressor "cheat" — it can introduce large weight errors
 in directions that don't affect the output. Weights that multiply near-zero
 activations can be compressed aggressively without quality loss.
 
-For VQ, this means: instead of k-means on raw weight vectors, do k-means
+For VQ, this means: instead of vector quantization on raw weight vectors, do vector quantization
 weighted by activation magnitudes. Codebook entries that affect high-activation
 regions get optimized more carefully.
 """
@@ -167,15 +167,15 @@ def calibration_aware_vq(
     n_iter: int = 15,
     n_residual_levels: int = 1,
 ) -> 'VectorQuantized':
-    """Vector quantization with Hessian-weighted k-means.
+    """Vector quantization with Hessian-weighted vector quantization.
 
-    Instead of standard k-means (minimize Euclidean distance),
+    Instead of standard vector quantization (minimize Euclidean distance),
     we weight each dimension by its Hessian value. This makes the
     codebook optimize harder for dimensions that affect output more.
 
     min sum_i ||sqrt(H) * (x_i - c_{a_i})||^2
 
-    This is equivalent to doing k-means in the "Hessian-warped" space.
+    This is equivalent to doing vector quantization in the "Hessian-warped" space.
     """
     from .quantize import VectorQuantized
 

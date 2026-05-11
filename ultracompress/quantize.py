@@ -257,7 +257,7 @@ def quantize_vector_codebook(
 
         chunk_size = min(n_groups, 50000)  # Process in chunks for memory
 
-        # k-means with fast L2 via dot product trick:
+        # vector quantization with fast L2 via dot product trick:
         # ||a - b||^2 = ||a||^2 + ||b||^2 - 2*a·b
         for _ in range(n_iter):
             cb_sq = (codebook ** 2).sum(dim=1)  # (K,)

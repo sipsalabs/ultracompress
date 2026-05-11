@@ -1,31 +1,17 @@
-"""UltraCompress v0.3 pack format — LOSSLESS round-trip via trainer-persisted codec.
+"""UltraCompress v3 pack format — lossless deserialization of trainer-persisted codec.
 
-Key difference from v0.2:
-  - v0.2: reverse-derives (scale, code) from bf16 W_base assuming uniform symmetric
-    grid {-15..15}/15. Lossy because trainer used k-means LEARNED grid.
-  - v0.3: reads (grid, codes, absmax) directly from `state['gsq_codecs']` (added
-    by `streaming_compression_runner.py:compress_single_layer` 2026-05-07 PM).
+Reads the codec produced by the production trainer and rebuilds tensors that
+match the trainer's writes bit-for-bit (verifiable via the SHA-256 manifest).
+Codec internals, training procedure, and hyperparameters are patent-protected
+(USPTO 64/049,511 + 64/049,517).
 
-Format (per-Linear blob, version 3):
-  name_len(u16) + name(utf-8) +
-  out_dim(u32) + in_dim(u32) +
-  block_size(u16) + bpw(u8) + rank(u8) + grid_K(u16) +     # 12 bytes after dims
-  alpha(bf16, 2 bytes) +
-  grid(fp32, K * 4 bytes) +                                  # K = 32 for 5bpw
-  absmax(fp32, out_dim * n_blocks * 4 bytes) +
-  packed_codes(ceil(n_weights * bpw / 8) bytes) +
-  V(fp32, rank * in_dim * 4 bytes) +
-  U(fp32, out_dim * rank * 4 bytes) +
-  bias_present(u8) + bias(bf16, 2 * out_dim if present)
-
-File header (16 bytes total, same as v2):
-  MAGIC(4 bytes "UCL\\0") + version(u16, =3) + layer_idx(u16) +
+File header (16 bytes total):
+  MAGIC(4 bytes "UCL\\0") + version(u16) + layer_idx(u16) +
   n_linears(u16) + n_extras(u16) + reserved(4 bytes)
 
-Then n_linears blobs followed by n_extras (norms etc, same as v2 extras).
-
-Reconstruction: W_base = (absmax × grid[codes]).reshape(out_dim, in_dim)
-                  → bit-identical to source W_base (fp32 ops; cast to bf16 at end if needed).
+Per-Linear payload is a fixed-layout binary blob; field semantics are intentionally
+not documented here. See the verifier (`uc verify`) for the public reproducibility
+contract.
 """
 from __future__ import annotations
 
@@ -60,16 +46,16 @@ PACK_FORMAT_VERSION_V3_5 = "3.5"  # adds self-contained aux_weights.uc
 
 def pack_layer_v3(layer_pt_path: Path, out_uc_path: Path, layer_idx: int,
                   bpw: int = 5, block_size: int = 64) -> dict[str, Any]:
-    """Pack a layer.pt that has trainer-persisted `gsq_codecs` into a v3 .uc file.
+    """Pack a layer.pt that has trainer-persisted codec state into a v3 .uc file.
 
-    Returns metadata about what was packed. Raises ValueError if state lacks `gsq_codecs`.
+    Returns metadata about what was packed. Raises ValueError if state lacks codec state.
     """
     state = torch.load(str(layer_pt_path), weights_only=False, map_location='cpu')
     sd = state['state_dict']
     rank = state.get('rank', 32)
-    codecs = state.get('gsq_codecs', {})
+    codecs = state.get('codec_state', {})
     if not codecs:
-        raise ValueError(f"layer.pt at {layer_pt_path} has no gsq_codecs — re-compress with v0.3 trainer")
+        raise ValueError(f"layer.pt at {layer_pt_path} has no persisted codec state — re-compress with v0.3 trainer")
 
     # Group state_dict tensors by base Linear name (same as v2)
     KNOWN_SUFFIXES = ('.alpha', '.W_base', '.V.weight', '.U.weight', '.bias')
@@ -99,7 +85,7 @@ def pack_layer_v3(layer_pt_path: Path, out_uc_path: Path, layer_idx: int,
             continue
         if base_name not in codecs:
             # Trainer didn't persist codec for this Linear — fail loud rather than silently lossy
-            raise ValueError(f"linear {base_name} has W_base but no gsq_codec entry")
+            raise ValueError(f"linear {base_name} has weights but no codec entry")
         codec = codecs[base_name]
         grid = codec['grid']        # (K,) fp32
         codes = codec['codes']      # (out_dim, n_blocks, block) int16
@@ -144,7 +130,7 @@ def pack_layer_v3(layer_pt_path: Path, out_uc_path: Path, layer_idx: int,
         bias_bytes = bias_t.detach().to(torch.bfloat16).cpu().contiguous().view(torch.uint16).numpy().tobytes() if bias_t is not None else b''
 
         name_b = base_name.encode('utf-8')
-        # Per-Linear header (note: includes grid_K vs v2)
+        # Per-Linear header
         hdr = (
             struct.pack('<H', len(name_b)) + name_b +
             struct.pack('<II', out_dim, in_dim) +
@@ -191,12 +177,19 @@ def pack_layer_v3(layer_pt_path: Path, out_uc_path: Path, layer_idx: int,
     }
 
 
+def _dequantize(g: torch.Tensor, c: torch.Tensor, s: torch.Tensor,
+                out_dim: int, in_dim: int) -> torch.Tensor:
+    """Internal deserialization helper. Codec internals are patent-protected
+    (USPTO 64/049,511 + 64/049,517)."""
+    return (g[c.long()] * s.unsqueeze(-1)).reshape(out_dim, in_dim).to(torch.bfloat16)
+
+
 def parse_uc_layer_v3(uc_path: Path) -> dict[str, Any]:
     """Parse a v3 .uc layer file.
 
-    Returns:
-      {linear_name: {grid, codes, absmax, V, U, alpha, bias?, out_dim, in_dim, ...}}
-      with special key '__extras__' for non-quantized tensors and '__version__' = 3
+    Returns a dict keyed by linear_name with the rehydrated state needed to
+    reconstruct the layer.  Special key '__extras__' holds non-quantized tensors
+    and '__version__' is the parsed file version.
     """
     buf = uc_path.read_bytes()
     offset = 0
@@ -262,10 +255,7 @@ def parse_uc_layer_v3(uc_path: Path) -> dict[str, Any]:
             bias_t = torch.from_numpy(bias_arr).view(torch.bfloat16)
             offset += out_dim * 2
 
-        # Reconstruct W_base = (absmax × grid[codes]).reshape(out_dim, in_dim)
-        # codes shape: (out_dim, n_blocks, block); grid[codes] same shape
-        # absmax shape: (out_dim, n_blocks) → broadcast on last dim with [:,:,None]
-        W_base = (grid[codes.long()] * absmax.unsqueeze(-1)).reshape(out_dim, in_dim).to(torch.bfloat16)
+        W_base = _dequantize(grid, codes, absmax, out_dim, in_dim)
 
         out[name] = {
             'alpha': alpha,
@@ -342,13 +332,13 @@ def pack_e2e_dir_v3(e2e_dir: str | Path, out_dir: str | Path,
                     include_aux: bool = True,
                     base_hf_id: str | None = None,
                     aux_keys: tuple[str, ...] | None = None) -> dict[str, Any]:
-    """Pack an entire `_e2e_*` directory into v3 .uc files (lossless via gsq_codecs).
+    """Pack an entire `_e2e_*` directory into v3 .uc files (lossless via codec state).
 
     Args:
         e2e_dir: Source directory containing layer_*.pt files.
         out_dir: Output dir for layer_*.uc + manifest.json + (optionally) aux_weights.uc.
-        bpw: Bits per weight for the GSQ codes.
-        block_size: GSQ per-block scale block size.
+        bpw: Bits per weight for the scalar quantization codes.
+        block_size: scalar quantization per-block scale block size.
         include_aux: If True (default), also emit `aux_weights.uc` containing
             embed_tokens / model.norm / lm_head from the base HF model. This
             makes the pack self-contained — customer no longer needs to download
@@ -550,7 +540,7 @@ def add_aux_to_existing_pack(
 if __name__ == '__main__':
     import argparse
     ap = argparse.ArgumentParser(description="Pack e2e layer artifacts to v3 .uc binaries (lossless)")
-    ap.add_argument('src', help='Source _e2e_* directory (must have gsq_codecs)')
+    ap.add_argument('src', help='Source _e2e_* directory (must have persisted codec state)')
     ap.add_argument('dst', help='Output .uc directory')
     ap.add_argument('--bpw', type=int, default=5)
     ap.add_argument('--block-size', type=int, default=64)

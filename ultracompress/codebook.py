@@ -1,12 +1,12 @@
 """
 Stage 4: Codebook Compression (v2 — Residual Vector Quantization)
 
-v1 used flat k-means with 256 entries.
+v1 used flat vector quantization with 256 entries.
 
 v2 upgrades:
   - Larger codebooks (4096+) for better pattern coverage
-  - Batch k-means for speed on large tensors
-  - Better initialization (k-means++ style)
+  - Batch vector quantization for speed on large tensors
+  - Better initialization (centroid initialization style)
 
 For a codebook of size K with group_size G:
   Effective BPW = log2(K) / G
@@ -65,7 +65,7 @@ def build_codebook(
     n_iter: int = 15,
     original_shape: tuple = None,
 ) -> CodebookCompressed:
-    """Build a codebook from binary sign patterns using k-means++."""
+    """Build a codebook from binary sign patterns using centroid initialization."""
     device = signs.device
     flat = signs.reshape(-1).float()
     n_elements = flat.numel()
@@ -105,7 +105,7 @@ def build_codebook(
     # Fast random initialization
     codebook = fast_init(groups, actual_k)
 
-    # Fast k-means: chunked assignment + scatter-based update (no per-cluster loop)
+    # Fast vector quantization: chunked assignment + scatter-based update (no per-cluster loop)
     chunk_size = min(n_groups, 50000)
     indices = torch.zeros(n_groups, device=device, dtype=torch.int64)
 

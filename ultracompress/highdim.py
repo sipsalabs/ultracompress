@@ -12,7 +12,7 @@ K=4 per axis = 4^10 = 1,048,576 distinct representable patterns from just
 
 Three compressors:
   1. WeightSpace10D        — Autoencoder: weights -> 10D coordinate -> reconstruction
-  2. HierarchicalQuantizer — K-means in 10D (exponential codebook power)
+  2. HierarchicalQuantizer — vector quantization in 10D (exponential codebook power)
   3. MultiScaleProjection  — Progressive 4D -> 7D -> 10D refinement
 """
 
@@ -137,7 +137,7 @@ class WeightSpace10D:
 
 
 # ================================================================
-# 2. HierarchicalQuantizer — K-means in 10D space
+# 2. HierarchicalQuantizer — vector quantization in 10D space
 # ================================================================
 
 @dataclass
@@ -171,9 +171,9 @@ class HierarchicalQuantized:
 class HierarchicalQuantizer:
     """Quantize weight vectors in 10D space instead of flat space.
 
-    Project vectors to 10D via random projection, then run k-means in 10D.
+    Project vectors to 10D via random projection, then run vector quantization in 10D.
     A codebook of K entries in 10D can capture exponentially richer structure
-    than K entries in 1D, because 10D k-means partitions a 10D Voronoi
+    than K entries in 1D, because 10D vector quantization partitions a 10D Voronoi
     tessellation — each cell is a 10D polytope, not a 1D interval.
     """
 
@@ -200,7 +200,7 @@ class HierarchicalQuantizer:
         proj = torch.randn(vector_size, self.dim) / np.sqrt(self.dim)
         embedded = normed @ proj  # (n, 10)
 
-        # k-means in 10D
+        # vector quantization in 10D
         perm = torch.randperm(n)[:self.K]
         centroids = embedded[perm].clone()
         for _ in range(self.iters):
