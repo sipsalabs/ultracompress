@@ -109,3 +109,5 @@ We report the standard error alongside every benchmark number. Customers reprodu
 - [Catastrophic failures](catastrophic-failures.md)
 - [Manifest schema](../reference/manifest-schema.md)
 - [`uc bench`](../commands/bench.md)
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

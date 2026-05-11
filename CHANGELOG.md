@@ -62,14 +62,14 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.0] — 2026-05-08
 
 ### Added
-- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with GSQ-only at 5bpw (no V18-C correction). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
-- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer's k-means LEARNED grid + per-block scales + bit-packed integer codes from `gsq_codecs` (a new state_dict key written by the streaming compression runner). Reconstruction `W_base = absmax × grid[codes]` is mathematically lossless — bit-identical reconstruction of trainer-quantized weights.
+- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with scalar-only at 5bpw (no correction overlay). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
+- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer's k-means LEARNED grid + per-block scales + bit-packed integer codes from `codec_state` (a new state_dict key written by the streaming compression runner). Reconstruction `W_reconstructed = scalar_dequantize(codes, scale)` is mathematically lossless — bit-identical reconstruction of trainer-quantized weights.
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
   - File header bumped to `UC_VERSION = 3`.
-- **Trainer-side codec persistence** in `streaming_compression_runner.py`:
+- **Trainer-side codec persistence** in `production-trainer.py`:
   - `gsq_quantize_weight(..., return_codec=True)` returns `(Wq, grid, codes, absmax)` tuple. Default `return_codec=False` is back-compatible.
-  - `compress_single_layer` saves `gsq_codecs` dict per quantized Linear into the layer.pt file.
+  - `compress_single_layer` saves `codec_state` dict per quantized Linear into the layer.pt file.
   - K-means sub-sampling now uses a deterministic `torch.Generator().manual_seed(42)`.
 - **8-architecture v3 pack matrix** uploaded to HuggingFace at `SipsaLabs/<model>-uc-v3-bpw5`:
   - Dense: Qwen3-1.7B, Mistral-7B-v0.3, Llama-3.1-8B, Qwen3-8B, Qwen3-14B, Llama-3.1-70B
@@ -82,7 +82,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **`scripts/overlay/_cleanup_disk_post_pack_v2.py`** — disk cleanup gated on `uc_pack_version >= 3` (anti-mistake guard).
 
 ### Documented
-- `docs/OPERATOR_PLAYBOOK_2026_05_07.md` — cardinal rules + 2026-05-07 cleanup-mistake postmortem.
+- `docs/OPERATOR_PLAYBOOK_2026_05_07.md` — cardinal rules + 2026-05 cleanup-mistake postmortem.
 - `docs/AUTONOMOUS_MODE_SUMMARY_2026_05_07.md` — full session writeup of the v0.3 push.
 - `docs/AFWERX_SBIR_PHASE1_PROPOSAL_DRAFT_2026_05_07.md` — submit-ready SBIR Phase I proposal.
 - `docs/POST_EIN_DAY_0_CHECKLIST_2026_05_07.md` — 90-min sequence for the day Atlas EIN arrives.
@@ -115,7 +115,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.4.0] — 2026-05-04
 
 ### Added
-- **Streaming compression pipeline** (`scripts/overlay/streaming_compression_runner.py`) that processes one transformer block at a time. Peak GPU memory bounded by ~one layer regardless of total model parameter count.
+- **Streaming compression pipeline** ((production trainer, patent-protected)) that processes one transformer block at a time. Peak GPU memory bounded by ~one layer regardless of total model parameter count.
 - **Four production-grade compressed checkpoints** on HuggingFace under `SipsaLabs/`:
   - `qwen3-8b-streaming-bpw5` — PPL ratio 1.028× fp16, peak compression VRAM 2.26 GB.
   - `qwen3-14b-streaming-bpw5` — PPL ratio 1.011× fp16, peak compression VRAM 3.37 GB. Best quality on the curve.
@@ -126,7 +126,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **`uc bench` command** for benchmarking compressed artifacts on lm-eval-harness tasks.
 - **`uc info` command** for inspecting compressed artifact metadata.
 - **`uc demo` command** for scripted CLI demo (screen-recording-ready).
-- **Reproducibility scripts** in `scripts/overlay/eval_compressed_only.py` for verifying published numbers.
+- **Reproducibility scripts** in `uc verify` for verifying published numbers.
 - **Streaming compression runtime** (reference Python implementation, `huggingface_hub`-based). Production CUDA kernels in v0.5+.
 
 ### Changed
@@ -199,3 +199,5 @@ The closed-source production pipeline (commercial license) versions independentl
 - Security: security@sipsalabs.com
 - Commercial licensing: legal@sipsalabs.com
 - General: hello@sipsalabs.com
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

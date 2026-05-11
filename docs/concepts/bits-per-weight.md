@@ -85,3 +85,5 @@ Some artifacts include the tokenizer and config in addition to the weights. The 
 - [Compression methods](compression-methods.md)
 - [Catastrophic failures](catastrophic-failures.md)
 - [Reproducibility](reproducibility.md)
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

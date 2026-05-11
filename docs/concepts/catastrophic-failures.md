@@ -85,3 +85,5 @@ To reproduce: see [Reproducibility](reproducibility.md).
 - [Compression methods](compression-methods.md) — what we do at a high level
 - [Bits per weight](bits-per-weight.md) — what the bpw number actually means
 - [Reproducibility](reproducibility.md) — how to verify our numbers locally
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

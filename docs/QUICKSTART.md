@@ -48,7 +48,7 @@ cd ultracompress
 Run the compressed-model evaluator:
 
 ```bash
-python scripts/overlay/eval_compressed_only.py \
+python `uc verify` \
     --model SipsaLabs/qwen3-8b-streaming-bpw5 \
     --n_eval 50 \
     --seq_len 128
@@ -64,7 +64,7 @@ Peak VRAM: ~2.26 GB
 For the full streaming compression pipeline (compress from scratch):
 
 ```bash
-python scripts/overlay/streaming_compression_runner.py \
+python (production trainer, patent-protected) \
     --model qwen3-8b --bpw 5 --block_size 64 --rank 32 \
     --train_steps 200 --n_calib 100 --n_eval 50
 ```
@@ -81,7 +81,7 @@ Each checkpoint is a directory with:
 - **`manifest.json`** -- metadata listing the base model, bits-per-weight, block size, correction rank, and the eval metrics at compression time.
 - **Scaffold weights are NOT included.** At inference time, the base model's embedding layer, final layer norm, and language model head are loaded from the original Hugging Face model (e.g., `Qwen/Qwen3-8B`). The compressed checkpoint replaces only the transformer body. This keeps download sizes small and avoids redistributing unmodified weights.
 
-The streaming compression recipe: GSQ scalar 5 bpw + per-block (B=64) absmax normalization + V18-C rank-32 low-rank correction overlay + 200-step KL distillation per layer. Each layer is compressed independently, which is why peak VRAM stays bounded by roughly one transformer layer regardless of total model depth.
+The streaming compression recipe: scalar quantization scalar 5 bpw + per-block (B=64) absmax normalization + correction overlay low-rank low-rank correction overlay + KL distillation pass per layer. Each layer is compressed independently, which is why peak VRAM stays bounded by roughly one transformer layer regardless of total model depth.
 
 ---
 
@@ -115,3 +115,5 @@ For pilot/commercial inquiries: founder@sipsalabs.com
 ---
 
 *The 32B and 72B checkpoints are significantly larger downloads. If you're on a metered connection, start with the 8B checkpoint.*
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

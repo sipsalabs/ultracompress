@@ -70,8 +70,10 @@ The README headline numbers (95.63% median T1 retention, zero catastrophic failu
 - All numeric values are direct field copies from the source archive; no hand-entered values.
 - Models without `ppl_fp16` / `ppl_compressed` ran the agreement/retention pipeline but not the perplexity pipeline.
 - Cohort medians and envelope are computed by this extractor; readers can recompute from the per-model rows.
-- This is the Track B *evidence matrix* — architectural-compression evidence. Track A v0.1 reference-artifact benchmarks are in the README. **Do not combine.**
+- This is the Track B *evidence matrix* — architectural-compression evidence. (internal experiment).1 reference-artifact benchmarks are in the README. **Do not combine.**
 
 ---
 
 *Both `matrix.md` (this file) and `matrix.json` are direct field copies from the source-of-truth file in the internal Sipsa Labs benchmark archive. Method-internal fields (operating-point parameters, codebook sizes, calibration constants) are deliberately excluded; the patent specifications cover those.*
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

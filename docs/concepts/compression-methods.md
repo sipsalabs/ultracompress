@@ -57,5 +57,7 @@ This is increasingly a procurement gate for enterprise customers. See [reproduci
 ## What's next
 
 - The Track A supplement extends Track A claim scope; details available under NDA
-- Track B v0.2 ships in Q3 2026, gated on patent prosecution timing
+- (internal experiment).2 ships in Q3 2026, gated on patent prosecution timing
 - Future research is under active patent strategy; out of scope for public discussion
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
