@@ -10,7 +10,7 @@ Storage format (`.uc` artifact via `uc.save()`):
         'state_dict': <flat HF state dict including correction submodules>,
         'metadata':  {
             'schema_version': 3,
-            'mode': 'scalar_v3',
+            'mode': 'scalar',
             'report': <CompressionReport.to_dict()>,
             'target_bpw': int, 'correction_rank': int,
         }
@@ -75,11 +75,11 @@ def scalar_quantize_weight(W: torch.Tensor, bpw: int,
                            block_size: int = 0) -> torch.Tensor:
     """Symmetric scalar quantization. Returns a dequantized fp32 tensor.
 
-    block_size=0 (default): per-row absmax (legacy production behavior).
-    block_size>0: per-block absmax (per-block scaling mode, 2026-05-02). One fp16 scale per
+    block_size=0 (default): per-row absmax (legacy production default).
+    block_size>0: per-block absmax (per-block scaling mode, 2026-05). One fp16 scale per
         (row, block_of_in_dim) — adds 16/block_size bpw overhead, lets
         every column-group claim its own dynamic range. Empirically lifts
-        T1 by ~5pp at 5 bpw on Qwen3-8B (per docs/LAB-NOTEBOOK.md).
+        T1 by ~5pp at 5 bpw on Qwen3-8B.
     """
     n_levels = 2 ** bpw
     half = n_levels // 2
@@ -98,7 +98,7 @@ def scalar_quantize_weight(W: torch.Tensor, bpw: int,
 # ---------------------------------------------------------------------------
 # Correction overlay module
 # ---------------------------------------------------------------------------
-class CorrectionLinearV18C(nn.Module):
+class CorrectionLinear(nn.Module):
     """Low-rank learned correction applied after scalar quantization."""
 
     def __init__(self, weight: torch.Tensor, bias: torch.Tensor | None,
@@ -159,9 +159,9 @@ def _apply_scalar_quant_inplace(model: nn.Module, bpw: int,
     return n
 
 
-def _wrap_with_v18c(model: nn.Module, rank: int,
+def _wrap_with_correction(model: nn.Module, rank: int,
                     targets: Iterable[str]) -> int:
-    """Replace each target nn.Linear with CorrectionLinearV18C(weight, bias, rank).
+    """Replace each target nn.Linear with CorrectionLinear(weight, bias, rank).
     The replacement is constructed on the same device + dtype as the parent
     Linear so that dispatched (multi-GPU) models keep their per-shard placement.
     Returns count replaced."""
@@ -173,7 +173,7 @@ def _wrap_with_v18c(model: nn.Module, rank: int,
             if _is_target_linear(child_name, child, targets):
                 w = child.weight.data
                 b = child.bias.data if child.bias is not None else None
-                new_mod = CorrectionLinearV18C(w, b, rank=rank)
+                new_mod = CorrectionLinear(w, b, rank=rank)
                 # Co-locate correction params with the parent Linear's device.
                 # Buffers (W_base, bias) are already on the right device (we
                 # passed the original tensors); the V/U Linears + alpha must
@@ -186,7 +186,7 @@ def _wrap_with_v18c(model: nn.Module, rank: int,
                 # (the old fp16 NaN divergence was an fp16-specific 5-bit
                 # exponent issue, not a half-precision issue). Halves correction
                 # param memory. Forward already casts V.weight to xd inline and
-                # does U inner matmul in fp32 (see CorrectionLinearV18C.forward),
+                # does U inner matmul in fp32 (see CorrectionLinear.forward),
                 # so precision is preserved where it matters. Matches the
                 # validated reference in scaling_curve_runner.py CorrectionMatrixC
                 # which trains with bf16 host models and fp32-default V/U that
@@ -206,7 +206,7 @@ def _freeze_base_unfreeze_corrections(model: nn.Module) -> None:
     for p in model.parameters():
         p.requires_grad = False
     for m in model.modules():
-        if isinstance(m, CorrectionLinearV18C):
+        if isinstance(m, CorrectionLinear):
             for p in m.V.parameters():
                 p.requires_grad = True
             for p in m.U.parameters():
@@ -220,7 +220,7 @@ def _count_correction_params(model: nn.Module) -> tuple[int, int, int]:
     quant = 0
     n_lin = 0
     for m in model.modules():
-        if isinstance(m, CorrectionLinearV18C):
+        if isinstance(m, CorrectionLinear):
             corr += m.V.weight.numel() + m.U.weight.numel() + m.alpha.numel()
             quant += m.W_base.numel()
             n_lin += 1
@@ -426,15 +426,15 @@ def compress(
     # inner matmul along output rows to avoid OOM at 14B+ class)
     use_memory_aware = (n_chunks > 1) or (u_weight_dtype != "fp32")
     if use_memory_aware:
-        from .api_v3_memory_aware import wrap_with_v18c_memory_aware
+        from .api_v3_memory_aware import wrap_with_correction_memory_aware
         log.info(f"[uc] step 2/3: correction-memory-aware rank={correction_rank} "
                  f"n_chunks={n_chunks} u_dtype={u_weight_dtype}")
-        n_wrap = wrap_with_v18c_memory_aware(
+        n_wrap = wrap_with_correction_memory_aware(
             student, correction_rank, targets,
             n_chunks=n_chunks, u_weight_dtype=u_weight_dtype)
     else:
         log.info(f"[uc] step 2/3: correction rank={correction_rank} wrap")
-        n_wrap = _wrap_with_v18c(student, correction_rank, targets)
+        n_wrap = _wrap_with_correction(student, correction_rank, targets)
     # Under dual dispatch, modules already live on their assigned shards;
     # a global .to(device) would break that placement.
     if not dual:
@@ -562,7 +562,7 @@ def load(
     rank = int(metadata["correction_rank"])
     device = device or ("cuda:0" if torch.cuda.is_available() else "cpu")
     student = base_model.to(device)
-    _wrap_with_v18c(student, rank, targets)
+    _wrap_with_correction(student, rank, targets)
     student.to(device)
     student.load_state_dict(sd, strict=False)
     student.train(False)
@@ -575,6 +575,6 @@ def load(
 __all__ = [
     "compress", "save", "load",
     "CompressedModel", "CompressionReport",
-    "CorrectionLinearV18C", "scalar_quantize_weight",
+    "CorrectionLinear", "scalar_quantize_weight",
     "SCHEMA_VERSION",
 ]

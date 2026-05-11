@@ -86,10 +86,8 @@ class LayerCorrection(nn.Module):
     and B is (rank, hidden). This captures the layer-specific behavior
     that the shared core can't represent.
 
-    At rank=0: pure FRR (no correction, ~67% T10)
-    At rank=16: small correction (~80%+ T10 expected)
-    At rank=64: large correction (~90%+ T10 expected)
-    At full rank: mathematically lossless (100% T10)
+    Recovery improves with more rank; codec defaults are patent-protected
+    (USPTO 64/049,511 + 64/049,517).
     """
     def __init__(self, hidden_dim, rank=16):
         super().__init__()

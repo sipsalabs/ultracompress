@@ -13,8 +13,8 @@ zero-precision-loss path matched to production.
 
 Usage (drop-in replacement via api_v3 surgery pattern):
 
-    from ultracompress.api_v3_memory_aware import CorrectionLinearV18CMemoryAware
-    new_mod = CorrectionLinearV18CMemoryAware(
+    from ultracompress.api_v3_memory_aware import CorrectionLinearMemoryAware
+    new_mod = CorrectionLinearMemoryAware(
         weight=child.weight.data,
         bias=child.bias.data if child.bias is not None else None,
         rank=correction_rank,  # tuned per arch; see model card for value
@@ -33,7 +33,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ultracompress.api_v3 import CorrectionLinearV18C
+from ultracompress.api_v3 import CorrectionLinear
 
 log = logging.getLogger("uc.api_v3_memory_aware")
 if not log.handlers:
@@ -53,13 +53,13 @@ def _resolve_u_weight_dtype(name: _UWeightDtype) -> torch.dtype:
     raise ValueError(f"u_weight_dtype must be 'fp32'|'bf16'|'fp16', got {name!r}")
 
 
-class CorrectionLinearV18CMemoryAware(CorrectionLinearV18C):
-    """Memory-aware drop-in for `CorrectionLinearV18C`.
+class CorrectionLinearMemoryAware(CorrectionLinear):
+    """Memory-aware drop-in for `CorrectionLinear`.
 
     Public API:
       - Same constructor signature as the parent, plus `n_chunks` and
         `u_weight_dtype`.
-      - Subclass of `CorrectionLinearV18C`, so existing `_wrap_with_v18c`,
+      - Subclass of `CorrectionLinear`, so existing `_wrap_with_correction`,
         `_count_correction_params`, and `_freeze_base_unfreeze_corrections`
         hooks in api_v3.py continue to recognize it (isinstance check).
 
@@ -165,7 +165,7 @@ def _is_target_linear(name: str, module: nn.Module, targets: Iterable[str]) -> b
     return isinstance(module, nn.Linear) and any(t in name for t in targets)
 
 
-def wrap_with_v18c_memory_aware(
+def wrap_with_correction_memory_aware(
     model: nn.Module,
     rank: int,
     targets: Iterable[str],
@@ -173,9 +173,9 @@ def wrap_with_v18c_memory_aware(
     n_chunks: int = 4,
     u_weight_dtype: _UWeightDtype = "fp32",
 ) -> int:
-    """Replace each target nn.Linear with CorrectionLinearV18CMemoryAware.
+    """Replace each target nn.Linear with CorrectionLinearMemoryAware.
 
-    Mirrors api_v3._wrap_with_v18c but constructs the memory-aware variant. The
+    Mirrors api_v3._wrap_with_correction but constructs the memory-aware variant. The
     replacement is co-located on the parent Linear's device + dtype, so this
     is safe for accelerate-dispatched (multi-GPU) models. Returns count
     replaced.
@@ -188,7 +188,7 @@ def wrap_with_v18c_memory_aware(
             if _is_target_linear(child_name, child, targets):
                 w = child.weight.data
                 b = child.bias.data if child.bias is not None else None
-                new_mod = CorrectionLinearV18CMemoryAware(
+                new_mod = CorrectionLinearMemoryAware(
                     weight=w,
                     bias=b,
                     rank=rank,
@@ -217,6 +217,6 @@ def wrap_with_v18c_memory_aware(
 
 
 __all__ = [
-    "CorrectionLinearV18CMemoryAware",
-    "wrap_with_v18c_memory_aware",
+    "CorrectionLinearMemoryAware",
+    "wrap_with_correction_memory_aware",
 ]
