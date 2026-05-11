@@ -3,8 +3,8 @@
   "framework": "ultracompress",
   "version": "2026-05-10.3",
   "pack_format": "uc-pack-v3",
-  "method": "GSQ K=32 + V18-C low-rank correction (rank=32) + per-block(64) absmax",
-  "reconstruction": "W_full = grid[codes] * absmax + alpha * U @ V (bit-identical, SHA-256 verified)",
+  "method": "scalar quantization K=32 + correction overlay low-rank correction (production-tuned rank) + per-block(64) absmax",
+  "reconstruction": "W_full = scalar_dequantize(codes) * absmax + alpha * U @ V (bit-identical, SHA-256 verified)",
   "eval_methodology": {
     "n_prompts": 30,
     "seq_len": 1024,
@@ -225,7 +225,7 @@
       "provenance_status": "NO_SOURCE_JSON_ON_DISK",
       "search_summary": "no PPL_EVAL_mamba* / STREAM_COMPRESS_E2E_MAMBA* / streaming_*_mamba*.json located in docs/ or scripts/overlay/artifacts/ as of 2026-05-10. Only BENCHMARKS_2026_05_08.json carries the rounded numbers; underlying eval JSON appears to have not been archived. Existing on-disk Mamba assets are exploratory _test_mamba_*.py / _test_mamba_*.log scripts and a tokenized calibration set (fineweb_edu_10M_tokens_mamba_2_8b_hf.pt) \u2014 no PPL ratio output JSON.",
       "sip_decision_required": "RE_RUN_EVAL_TO_PRODUCE_SOURCE_JSON (preferred \u2014 artifact = first public SSM lossless 5-bit compression and worth defending) OR DEMOTE_FROM_VERIFIED_RECORDS_PERMANENTLY (acceptable if Mamba is no longer publicly cited)",
-      "remediation_command_template": "python scripts/overlay/streaming_compression_runner.py --model state-spaces/mamba-2.8b-hf --bpw 5 --rank 32 --n-eval 30 --seq-len 1024 --seed 42 --output docs/PPL_EVAL_mamba-2.8b-hf_<date>.json"
+      "remediation_command_template": "python scripts/overlay/production-trainer.py --model state-spaces/mamba-2.8b-hf --bpw 5 --rank 32 --n-eval 30 --seq-len 1024 --seed 42 --output docs/PPL_EVAL_mamba-2.8b-hf_<date>.json"
     },
     {
       "model": "Qwen3-1.7B (instruct)",
@@ -244,7 +244,7 @@
       ],
       "search_summary": "no on-disk JSON with baseline_ppl=18.0145 was located. The closest-matching apples-to-apples eval (NEW_FULL n_eval=30 seq_len=1024) computes 1.0078, not the canonical 1.02. The 1.02 number originated from BENCHMARKS_2026_05_08.json with a different baseline (18.0145) whose source eval was not archived to docs/.",
       "sip_decision_required": "RE_RUN_EVAL_TO_RECONCILE (run NEW_FULL eval and either confirm 1.0078 \u2014 which would beat the published 1.02 and is friendlier to UC \u2014 or pin down what produced 18.0145) OR PROMOTE_NEW_FULL_RESULT_AND_UPDATE_PPL_RATIO_TO_1.0078 (use the actual on-disk source and update the canonical number; this would also propagate to HF model card and any public surfaces citing 1.02)",
-      "remediation_command_template": "python scripts/overlay/streaming_compression_runner.py --model Qwen/Qwen3-1.7B --bpw 5 --rank 32 --n-eval 30 --seq-len 1024 --seed 42 --output docs/PPL_EVAL_qwen3-1.7b-instruct_<date>.json"
+      "remediation_command_template": "python scripts/overlay/production-trainer.py --model Qwen/Qwen3-1.7B --bpw 5 --rank 32 --n-eval 30 --seq-len 1024 --seed 42 --output docs/PPL_EVAL_qwen3-1.7b-instruct_<date>.json"
     }
   ],
   "pending_eval": [
@@ -292,9 +292,9 @@
       "V4-D Multi-Pass Cascade Correction REFUTED (PPL 1.0682x; pass-1 cannot recover info pass-0 discarded)",
       "V3 rank-redistribute REFUTED (PPL 1.0702x; shallow-rank starvation cascades errors through network)",
       "Per-Linear adaptive bpw v1 REFUTED apples-to-apples (1.005097 vs uniform 1.004876)",
-      "V18-C train_steps depth-adaptive v2 within noise (1.00451 vs 1.00488)",
-      "rank/train_steps push: 1.0040x is the empirical floor for V18-C on Qwen3-1.7B-Base",
-      "V18-C SVD warm-start NEGATIVE (worse than random init)",
+      "correction overlay train_steps depth-adaptive v2 within noise (1.00451 vs 1.00488)",
+      "rank/train_steps push: 1.0040x is the empirical floor for correction overlay on Qwen3-1.7B-Base",
+      "correction overlay SVD warm-start NEGATIVE (worse than random init)",
       "Base/instruct PPL hypothesis REFUTED 2/3 of archs",
       "Mistral-7B-v0.3 streaming logit-KL v7 (depth-banded steps 200/300/400/600 \u00d7 r48): 1.0820\u00d7 \u2014 REFUTED. Adaptive train_steps WORSE than uniform v6b (1.0502\u00d7). Early-layer step cuts corrupted prefix cache for downstream.",
       "Mistral-7B-v0.3 streaming logit-KL v8 (300 steps \u00d7 depth-banded rank 32/48/64/80): 1.0896\u00d7 \u2014 REFUTED. Worst yet. Depth-banding hypothesis class is wrong for streaming logit-KL on Mistral."
