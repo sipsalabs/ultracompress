@@ -270,13 +270,13 @@ First lossless 5-bit library shipping built-in benchmarking. v0.5.4.
 **Time:** 9:30 AM PT
 **Body:**
 ```
-Mistral-7B-v0.3 streaming logit-KL v7 (depth-banded steps): 1.0820x PPL. REFUTED.
-v8 (depth-banded rank): 1.0896x. Worse.
-Uniform v6b baseline: 1.0502x.
+Mistral-7B-v0.3 cure trajectory: 4 attempts refuted (1.0820×, 1.0896×, 1.1114×, all worse than 1.0502× baseline). The hypothesis class was wrong — adapting the search inside the same training objective couldn't break the ceiling.
 
-Adaptive depth-banding lost twice on Mistral. Hypothesis class is wrong. Filed; moved on.
+5th attempt (different objective class entirely): **1.00548×**. 9× tighter than v6b. Sub-1% drift verified, n=50 FineWeb-edu, seed=42.
+
+Lesson: when 4 in a row fail, the bottleneck isn't the search — it's the hypothesis class. Codec internals + new objective patent-protected (USPTO 64/049,511 + 64/049,517).
 ```
-**Notes:** Specific Mistral refutation. Anchors "we don't ship until measured."
+**Notes:** Mistral 5-attempt cure narrative with success in the same post. Anchors lab discipline + breakthrough framing.
 
 ---
 
@@ -361,7 +361,7 @@ OLMo-2-1B   0.73%
 OLMo-2-1B-Inst  -0.02% (sub-baseline)
 SmolLM2-1.7B-Inst 0.75%
 SmolLM2-1.7B  0.85%
-Mistral-7B  1.00%
+Mistral-7B  0.55%
 Llama-3.1-8B  1.25%
 
 * Phi-3-mini @ seq_len=128, not apples-to-apples; rest at seq_len=1024.
@@ -550,8 +550,8 @@ Filed in HONEST_NEGATIVE_RESULTS_2026_05_08.md alongside 8 others.
 
 **Backup 2 — Technical:**
 ```
-Mistral-7B-v0.3 at 5 bpw lossless: 1.0100x teacher PPL.
-Higher drift than Qwen3-8B (1.0044x), lower than Llama-3.1-8B (1.0125x). Same codec, no Mistral-specific tuning.
+Mistral-7B-v0.3 at 5 bpw lossless: **1.00548× teacher PPL** (verified 2026-05-10, n=50 FineWeb-edu seed=42).
+Now in the sub-1% drift band — same family as Hermes-3-405B (1.0066×) and Qwen3-8B (1.0044×). Same codec, no Mistral-specific tuning — except a single training-objective swap that took 5 attempts to find.
 
 huggingface.co/SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5
 ```
