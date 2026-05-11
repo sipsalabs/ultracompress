@@ -115,7 +115,7 @@ A taste of what's in there:
 - **rank/training schedule push on the Qwen3-1.7B-Base record** — predicted: tighter than 1.0040×. Actual: 1.0042×, within statistical noise. Rank-and-steps knob is saturated at this configuration. The 1.0040× v1 number stands as the empirical floor; cure is not at the codec, it's at subspace allocation by depth.
 - **"Base models compress tighter than instruct" hypothesis** — refuted 2/3 of architectures. Instruct-fine-tuning effects on quantization-friendliness are architecture-dependent, not universal. Hypothesis dropped, table published with the data alongside without a hypothesis attached.
 
-Researchers comparing 5-bit codecs should treat that file as the audit trail. It will save you from re-running experiments we already ran, and the LAB-NOTEBOOK entries it cites are the version of record.
+Researchers comparing 5-bit codecs should treat that file as the audit trail. It will save you from re-running experiments we already ran, and the internal research log entries it cites are the version of record.
 
 ---
 
@@ -143,22 +143,13 @@ We're cash-constrained pre-funding. Spending discipline is real: only hard expen
 - **Press / commentary** — `press@sipsalabs.com`. Most useful framing is "first 5-bit lossless library on the public HF Hub" and "first 405B compression on a single 32 GB consumer GPU" — both verifiable via the artifacts above.
 - **Twitter** — `@SipsaLabs`. New account; if you found this repo first that's because we ship faster than we tweet.
 
-If you're tracking the project: the lab notebook at [`docs/LAB-NOTEBOOK.md`](docs/LAB-NOTEBOOK.md) is updated daily and is the canonical "what shipped today" document.
+If you're tracking the project: release notes in `CHANGELOG.md` and the `/blog` posts on sipsalabs.com are the canonical "what shipped" surfaces.
 
 ---
 
 ## How v3 lossless actually works
 
-`uc pack v3` persists, in the customer artifact:
-
-- The trainer's k-means **learned grid** (per-Linear, K=32 levels at 5 bpw)
-- Per-block (B=64) absmax scales
-- Bit-packed integer codes
-- A low-rank correction overlay per Linear, trained per-layer against the bf16 teacher's hidden states
-- `embed_tokens`, `model.norm`, and `lm_head` bundled inline so the pack is a self-contained model
-- A SHA-256 manifest covering every layer file
-
-Reconstruction at inference time is deterministic from the persisted codec state plus the per-layer correction overlay (formula is patent-protected). Because the codec, scales, and overlay all live in the pack, the inference math is byte-equivalent to what the trainer measured during distillation — not "close in PPL," but the same numerical result up to fp16 reduction order on the matmul itself.
+The pack persists trainer-side codec state alongside the quantized weights so customer-side reconstruction is a deterministic function of bytes-on-disk that runs the same arithmetic the trainer ran. Bit-identity is verified by SHA-256 manifest at customer load. Internal codec specifics are NDA-gated — contact founder@sipsalabs.com for technical due diligence.
 
 The streaming compression path that makes this scale to 405B on one GPU works by lazy-loading each transformer layer's bf16 weights from the safetensors index, caching the teacher's hidden output for that layer, quantizing, fitting the correction overlay against the cache, saving the layer to disk, and freeing the layer before pulling the next one. Peak VRAM is bounded by ~one transformer layer (8.98 GB for Qwen2.5-72B; same shape for 405B). Compression time is roughly 1 minute per layer.
 
@@ -173,15 +164,14 @@ ultracompress/
 ├── ultracompress/                Core library (pack v3, correction-overlay module, CLI, __main__)
 ├── scaling/                      Cross-model teacher loaders (Qwen3 / Llama / Mistral / Mamba / OLMo)
 ├── scripts/overlay/              Streaming compression runner + evaluators + JSON artifacts
-├── scripts/frr/                  Track B (low-rank refinement architectural compression — research)
+├── scripts/frr/                  Fractal Residual Recursion (architectural compression — research)
 ├── tests/                        Regression tests
 ├── docs/
 │   ├── HONEST_NEGATIVE_RESULTS_2026_05_08.md      ← the audit trail
 │   ├── BENCHMARKS_2026_05_09.json                 ← machine-readable verified records
 │   ├── CUSTOMER_ONBOARDING_v0.5.5_2026_05_09.md   ← Phase 0 POC walkthrough
 │   ├── PUBLIC_VERIFICATION_DASHBOARD_2026_05_08.md
-│   ├── COMPETITIVE_LANDSCAPE_v3_LOSSLESS_2026_05_08.md
-│   └── LAB-NOTEBOOK.md                             ← daily research log
+│   └── COMPETITIVE_LANDSCAPE_v3_LOSSLESS_2026_05_08.md
 └── PATENT_NOTICE.md
 ```
 

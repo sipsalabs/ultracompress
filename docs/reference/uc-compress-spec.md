@@ -15,7 +15,7 @@ This feature is planned for v0.2 (Q3 2026). To register interest, email `founder
 1. **One-command compression** of any HF Hub or local-disk transformer model
 2. **Reproducibility** — every output artifact ships with a complete provenance manifest
 3. **Sensible defaults** — `uc compress <model>` Just Works for typical models without per-model tuning
-4. **Pluggable compression methods** — both Track A and Track B accessible via flags
+4. **Pluggable compression methods** — both Row-Overlay Quantization (RoQ) and Fractal Residual Recursion (FRR) accessible via flags
 5. **Resumable** — long-running compression jobs can resume after interruption
 
 ## Synopsis (planned)
@@ -64,7 +64,7 @@ uc compress <source-model> [--bpw FLOAT] [--method STR] [--track STR]
 ## Example
 
 ```bash
-# Default settings — compress Qwen3-1.7B to 2.798 bpw via Track A
+# Default settings — compress Qwen3-1.7B to 2.798 bpw via Row-Overlay Quantization (RoQ)
 uc compress Qwen/Qwen3-1.7B
 
 # Output:
@@ -76,7 +76,7 @@ uc compress Qwen/Qwen3-1.7B
 #   └── LICENSE                     (Sipsa Labs Research and Evaluation License)
 ```
 
-## Track B (architectural compression)
+## Fractal Residual Recursion (FRR) (architectural compression)
 
 Architectural compression is the most aggressive variant; it produces a model with substantially fewer trainable parameters but requires a calibration pass on representative training data.
 
@@ -87,13 +87,13 @@ uc compress Qwen/Qwen3-1.7B --track b --output-dir ./models/qwen3-frr311x \
 
 The calibration data is a JSONL file with prompt/response pairs representative of the customer's deployment workload. The compression service uses this to validate that the architectural-compression preserves quality on the customer's distribution.
 
-## Combined Track A + Track B
+## Combined Row-Overlay Quantization (RoQ) + Fractal Residual Recursion (FRR)
 
 ```bash
 uc compress Qwen/Qwen3-1.7B --track a+b --output-dir ./models/qwen3-uc-combo
 ```
 
-Stacks Track B's architectural compression with Track A's quantization. ~26.7× end-to-end with 68% top-10 retention (cohort median).
+Stacks Fractal Residual Recursion (FRR)'s architectural compression with Row-Overlay Quantization (RoQ)'s quantization. ~26.7× end-to-end with 68% top-10 retention (cohort median).
 
 ## Why a remote service vs. local
 
@@ -120,14 +120,14 @@ Every compression run is deterministic given the same seed + same source model. 
 - Source model SHA-256
 - Compression method version
 - Seed
-- Calibration data SHA-256 (for Track B + combined)
+- Calibration data SHA-256 (for Fractal Residual Recursion (FRR) + combined)
 - Compute environment fingerprint
 
 A second `uc compress` run with the same inputs and same seed produces a byte-identical output (within GPU-arithmetic non-determinism bounds; we publish the bound).
 
 ## Resumability
 
-For long-running compression jobs (Track B at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
+For long-running compression jobs (Fractal Residual Recursion (FRR) at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
 
 ```bash
 # Submit the job
@@ -178,9 +178,9 @@ v0.1 doesn't have `uc compress`. The migration path:
 
 | Feature | Target |
 |---|---|
-| Basic `uc compress` with Track A | v0.2 (Q3 2026) |
-| Track B support (architectural compression) | v0.2 |
-| Combined Track A + Track B | v0.2 |
+| Basic `uc compress` with Row-Overlay Quantization (RoQ) | v0.2 (Q3 2026) |
+| Fractal Residual Recursion (FRR) support (architectural compression) | v0.2 |
+| Combined Row-Overlay Quantization (RoQ) + Fractal Residual Recursion (FRR) | v0.2 |
 | Resumable jobs | v0.2.1 |
 | Custom calibration cohorts (enterprise tier) | v0.3 |
 | Encoder-only model support (T5, BERT) | v0.3 |

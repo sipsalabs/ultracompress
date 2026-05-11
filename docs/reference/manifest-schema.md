@@ -49,7 +49,7 @@ The compression method applied. Currently one of:
 |---|---|
 | `track-a-row-overlay` | Post-training row-overlay quantization (USPTO 64/049,511) |
 | `track-b-frr` | Fractal Residual Recursion (USPTO 64/049,517) |
-| `track-a+b` | Combined Track A + Track B stack |
+| `track-a+b` | Combined Row-Overlay Quantization + Fractal Residual Recursion stack |
 
 Future methods will be added as new strings; readers should accept unknown values gracefully.
 

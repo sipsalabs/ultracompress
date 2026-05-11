@@ -63,14 +63,14 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Added
 - **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with scalar-only at 5bpw (no correction overlay). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
-- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer's k-means LEARNED grid + per-block scales + bit-packed integer codes from `codec_state` (a new state_dict key written by the streaming compression runner). Reconstruction `W_reconstructed = scalar_dequantize(codes, scale)` is mathematically lossless — bit-identical reconstruction of trainer-quantized weights.
+- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer-persisted codec state (per-Linear scalar-quantization codebook, per-block scales, and bit-packed integer codes) from a new `codec_state` state_dict key written by the streaming compression runner. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of trainer-quantized weights. Internal codec specifics are NDA-gated.
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
   - File header bumped to `UC_VERSION = 3`.
 - **Trainer-side codec persistence** in `production-trainer.py`:
-  - `gsq_quantize_weight(..., return_codec=True)` returns `(Wq, grid, codes, absmax)` tuple. Default `return_codec=False` is back-compatible.
+  - Trainer can now persist the per-Linear codec state alongside the quantized weights, enabling bit-identical customer-side reconstruction. Internal API signature gated under NDA — see SECURITY.md.
   - `compress_single_layer` saves `codec_state` dict per quantized Linear into the layer.pt file.
-  - K-means sub-sampling now uses a deterministic `torch.Generator().manual_seed(42)`.
+  - Codebook fitting sub-sampling now uses a deterministic `torch.Generator().manual_seed(42)`.
 - **8-architecture v3 pack matrix** uploaded to HuggingFace at `SipsaLabs/<model>-uc-v3-bpw5`:
   - Dense: Qwen3-1.7B, Mistral-7B-v0.3, Llama-3.1-8B, Qwen3-8B, Qwen3-14B, Llama-3.1-70B
   - MoE: Mixtral-8x7B-v0.1, Phi-3.5-MoE-instruct
@@ -88,7 +88,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - `docs/POST_EIN_DAY_0_CHECKLIST_2026_05_07.md` — 90-min sequence for the day Atlas EIN arrives.
 
 ### Fixed
-- `uc pack` v0.2 was lossy (~22% PPL regression) because it reverse-derived k-means codes from dequantized weights assuming a uniform symmetric grid `{-15..15}/15`. The trainer's actual grid is k-means LEARNED — different. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
+- `uc pack` v0.2 was lossy (~22% PPL regression) because it attempted to reverse-derive the codebook from dequantized weights under an incorrect assumption about its structure. The trainer's actual codebook differs from that assumption. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
 - HF upload wrapper had `subprocess.run(capture_output=True)` which deadlocked the `hf` CLI's progress display. Removed `capture_output` so stdout/stderr inherit from caller — uploads stream live and complete reliably.
 
 ### Compatibility
@@ -131,19 +131,18 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Changed
 - **Production bit-rate target raised from 4 to 5 BPW** for the streaming compression tier. The 5 BPW point is the sweet spot for PPL drift across 8B-72B; 4 BPW is the "CONSERVATIVE" tier (T1 90% but PPL_r 1.014×).
-- **Default per-block size for scalar quantization is 64** (was 128 in earlier internal versions).
-- **Default correction overlay rank is 32** (was 16 in earlier internal versions).
+- **Default scalar-quantization block size and low-rank correction adapter rank tightened over earlier internal versions; exact values are NDA-gated.**
 - **Default distillation steps per layer is 200** (was 1500 in earlier internal versions). Documented saturation effect: 500+ steps regresses end-to-end PPL.
 
 ### Documentation
-- Open-source LAB-NOTEBOOK at `docs/LAB-NOTEBOOK.md` documenting hypothesis-mechanism-experiment-measurement-conclusion entries from the research cycle. Includes negative results.
+- Internal research log (hypothesis-mechanism-experiment-measurement-conclusion entries, including negative results) is maintained for the team; selected charter-clean negative-result summaries are surfaced via blog posts and release notes.
 - FNO Darcy non-transformer transfer demo at `scripts/demo/fno_compression_demo.py` (CPU-only, 33 sec end-to-end).
 - Cross-architecture results documented at `docs/non_transformer_v18c_results.json` (FNO, U-Net, PINN — including the PINN negative result).
 
 ### Patent
 - USPTO 64/049,511 (correction overlay) — filed 2026-04-25.
 - USPTO 64/049,517 (shared-block parameter dispatch) — filed 2026-04-25.
-- Track A supplement filing scheduled for 2026-05-09 ($65 micro-entity fee).
+- Supplementary USPTO provisional filing scheduled for May 2026 ($65 micro-entity fee).
 
 ### Known issues (fixed in 0.4.1)
 - See `[0.4.1]` above for the three bugs patched immediately after the v0.4.0 release.

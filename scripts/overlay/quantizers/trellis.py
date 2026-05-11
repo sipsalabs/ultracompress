@@ -5,8 +5,8 @@ and exposes a `trellis_quantize_weight(W, bpw, ...)` function that returns a den
 fp32 reconstruction in the *original* basis (random Hadamard transform applied
 internally to flatten the weight distribution, then exactly inverted before return).
 
-Returning Wq in the original basis is critical: the V18-C low-rank correction
-overlay in `v18c_correction.py` learns to absorb (W - Wq) and assumes both are in
+Returning Wq in the original basis is critical: the low-rank correction adapter
+overlay in `correction_adapter.py` learns to absorb (W - Wq) and assumes both are in
 the same basis. The trellis quantizer is therefore a drop-in replacement for any
 other `*_quantize_weight` function in `scaling_curve_runner.py`.
 
@@ -290,8 +290,8 @@ def trellis_quantize_weight(
         Number of *output rows* processed per Viterbi batch. Limits peak memory
         for the DP table (`O(2^L * batch * in_features / V)` int32). Lower values
         trade speed for memory; 64 fits comfortably in a few GB at L=16.
-    block_size : int, default 64
-        GSQ-style per-block absmax scaling (applied post-RHT). If > 0 the
+    block_size : int, default <NDA>
+        Per-block absmax scaling (applied post-RHT). If > 0 the
         rotated weight is split into chunks of `block_size` columns; each
         chunk is normalized to [-1, 1] by its absmax BEFORE the Viterbi pass
         and rescaled afterwards. Set to 0 to recover vanilla QTIP (per-row
@@ -347,7 +347,7 @@ def trellis_quantize_weight(
         W_work = W.to(torch.float32).contiguous()
         sign_in = None
 
-    # ----- Step 2: per-block absmax scaling on the ROTATED W (GSQ-style)
+    # ----- Step 2: per-block absmax scaling on the ROTATED W (scalar-quant style)
     # Operating post-RHT means all block absmaxes are similar (RHT
     # Gaussianized the signal), so the per-block normalization is uniform
     # across blocks and the trellis sees a clean [-1, 1] input.

@@ -61,15 +61,7 @@ PPL ratio: ~1.028x
 Peak VRAM: ~2.26 GB
 ```
 
-For the full streaming compression pipeline (compress from scratch):
-
-```bash
-python (production trainer, patent-protected) \
-    --model qwen3-8b --bpw 5 --block_size 64 --rank 32 \
-    --train_steps 200 --n_calib 100 --n_eval 50
-```
-
-This takes about 9 minutes on an RTX 5090. It will produce a result JSON under `scripts/overlay/artifacts/`.
+The full streaming compression pipeline (training a fresh pack from scratch) ships in the production trainer, which is NDA-gated. Customer-side `uc verify` and `uc bench` are the public CLI surface; for trainer access, contact founder@sipsalabs.com.
 
 ---
 
@@ -81,7 +73,7 @@ Each checkpoint is a directory with:
 - **`manifest.json`** -- metadata listing the base model, bits-per-weight, block size, correction rank, and the eval metrics at compression time.
 - **Scaffold weights are NOT included.** At inference time, the base model's embedding layer, final layer norm, and language model head are loaded from the original Hugging Face model (e.g., `Qwen/Qwen3-8B`). The compressed checkpoint replaces only the transformer body. This keeps download sizes small and avoids redistributing unmodified weights.
 
-The streaming compression recipe: scalar quantization scalar 5 bpw + per-block (B=64) absmax normalization + correction overlay low-rank low-rank correction overlay + KL distillation pass per layer. Each layer is compressed independently, which is why peak VRAM stays bounded by roughly one transformer layer regardless of total model depth.
+The streaming compression pipeline compresses each transformer layer independently in a single GPU residency window, which is why peak VRAM stays bounded by roughly one transformer layer regardless of total model depth. Internal codec specifics are NDA-gated.
 
 ---
 

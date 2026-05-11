@@ -77,7 +77,7 @@ If your numbers differ from ours by more than the standard error reported in our
 | **Per-task numbers** (HellaSwag, ARC, MMLU, etc.) | Confidence the cohort generalizes | ✅ Public |
 | **Per-sample logs** (the actual model outputs at each prompt) | Audit-grade verification of any specific sample | NDA |
 | **224-file SHA-256 input manifest** | Provenance of every byte that fed the benchmark | NDA |
-| **The compression method mechanism** | How Track A breaks the 4-bit cliff | NDA / Trade secret |
+| **The compression method mechanism** | How Row-Overlay Quantization breaks the 4-bit cliff | NDA / Trade secret |
 
 We're transparent about which tier of reproducibility lives at which gate. Levels 1-3 are public. Levels 4-5 are NDA. Level 6 is trade-secret + filed-patent.
 
