@@ -81,7 +81,7 @@ uc compress Qwen/Qwen3-1.7B
 Architectural compression is the most aggressive variant; it produces a model with substantially fewer trainable parameters but requires a calibration pass on representative training data.
 
 ```bash
-uc compress Qwen/Qwen3-1.7B --track b --output-dir ./models/qwen3-frr311x \
+uc compress Qwen/Qwen3-1.7B --method frr --output-dir ./models/qwen3-frr311x \
     --calibration-data ./calibration.jsonl
 ```
 
@@ -90,7 +90,7 @@ The calibration data is a JSONL file with prompt/response pairs representative o
 ## Combined Row-Overlay Quantization (RoQ) + Fractal Residual Recursion (FRR)
 
 ```bash
-uc compress Qwen/Qwen3-1.7B --track a+b --output-dir ./models/qwen3-uc-combo
+uc compress Qwen/Qwen3-1.7B --method roq+frr --output-dir ./models/qwen3-uc-combo
 ```
 
 Stacks Fractal Residual Recursion (FRR)'s architectural compression with Row-Overlay Quantization (RoQ)'s quantization. ~26.7× end-to-end with 68% top-10 retention (cohort median).
@@ -131,11 +131,11 @@ For long-running compression jobs (Fractal Residual Recursion (FRR) at 70B+ para
 
 ```bash
 # Submit the job
-uc compress Qwen/Qwen3-32B --track b --bpw 2.5 --output-dir ./models/qwen3-32b-frr-2p5
+uc compress Qwen/Qwen3-32B --method frr --bpw 2.5 --output-dir ./models/qwen3-32b-frr-2p5
 
 # Job interrupted (say, network drop)
 # Resume with the same command:
-uc compress Qwen/Qwen3-32B --track b --bpw 2.5 --output-dir ./models/qwen3-32b-frr-2p5
+uc compress Qwen/Qwen3-32B --method frr --bpw 2.5 --output-dir ./models/qwen3-32b-frr-2p5
 # CLI detects the partial state in the output dir, resumes from the last checkpoint
 ```
 
