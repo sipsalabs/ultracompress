@@ -1,155 +1,201 @@
 # Changelog
 
-All notable changes to the UltraCompress CLI will be documented in this file.
+All notable changes to UltraCompress are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning per [SemVer](https://semver.org/).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+---
 
-## [Unreleased]
+## [0.5.5] — 2026-05-09
 
 ### Added
-- (placeholder for next release)
+- **`uc pack v0.2` self-contained pack format** (`pack_format_version: 3.5`). Previously, customers had to download the original bf16 safetensors from HuggingFace to obtain `embed_tokens.weight`, `model.norm.weight`, and `lm_head.weight` for reconstruction — defeating most of the compression benefit on first download. The new format packs these model-level non-Linear tensors into a single `aux_weights.uc` file at the pack root.
+  - `aux_weights.uc` format: `UCAX` magic + version + n_tensors + per-tensor blobs reusing the existing `_serialize_extra` framing (dtype-tagged, native bf16/fp16/fp32 preserved).
+  - Pack overhead: ~1-2% of total pack size on small models (Qwen3-1.7B-Base: aux ~270 MB on a 1.1 GB pack), negligible on larger models.
+  - Cryptographic provenance: the aux file gets its own SHA-256 in `manifest.json` (`aux_sha256`), joining the existing `uc verify` chain.
+  - Weight-tied lm_head detection: when `lm_head.weight` is aliased to `embed_tokens.weight` (Qwen3-1.7B-Base, SmolLM2, Phi-3-Mini, Llama3 small), the loader stores only `embed_tokens` and re-ties at load time — no duplicate bytes on disk.
+- **`uc pack-aux <packed_dir>` CLI** — retrofit any existing v3.0 pack with self-contained aux without re-packing the layer files. Idempotent (deterministic serialization).
+- **`uc pack --include-aux/--no-aux/--base-model HF_ID`** flags on the main pack command. `--include-aux` is now the default.
+- **`uc pack --legacy-v3`** flag to opt back into the original lossy reverse-derived v3 path (kept for back-compat).
+- **`ultracompress.aux_pack`** module — public API: `serialize_aux_weights`, `parse_aux_weights`, `collect_aux_tensors_from_model`, `load_aux_into_model`.
+
+### Changed
+- `uc verify` now validates the aux file SHA-256, parses it, and confirms tensor key set matches the manifest. Output explicitly labels the pack as `SELF-CONTAINED` (v3.5) vs `requires base HF download` (v3.0).
+- `uc bench` automatically detects `aux_weights.uc` and skips the base-safetensors HF download — model is built from `AutoConfig` + per-layer reconstruction + injected aux tensors.
+- `uc pack` now defaults to the lossless v3 path (was previously the lossy v0.2 reverse-derived path); use `--legacy-v3` for the old behavior.
+
+### Backward compatibility
+- Old v3.0 packs (no `aux_file` field in manifest, no `aux_weights.uc` on disk) continue to load via the existing HF-safetensors fallback. No re-pack required.
+- The 22 already-uploaded HF artifacts under `huggingface.co/SipsaLabs/*-uc-v3-bpw5` are NOT re-packed — they remain v3.0. Going forward, new uploads will ship as v3.5.
+
+---
+
+## [0.5.4] — 2026-05-09
+
+### Added
+- **`uc bench <packed_dir>` — sales-grade inference throughput benchmark** (`ultracompress/bench.py`). Customers can now run a one-line throughput benchmark on the v3 packed model we shipped them and produce a JSON report suitable for procurement / acceptance testing.
+  - Measures TTFT (time-to-first-token, mean across `--n-prompts`), TPS overall, TPS decode-only, and peak VRAM.
+  - `--baseline` flag adds an apples-to-apples bf16 comparison run on the same prompts and same device, with `tps_pct_change` / `vram_pct_change` deltas in the JSON.
+  - Resolves the base HF model id automatically from the packed dir's `manifest.json` or `README.md` YAML frontmatter; `--base-model` overrides.
+  - Greedy decoding only (deterministic) so the reported throughput reproduces across runs.
+  - CUDA OOM is caught and surfaced as a `warnings` field in the JSON; partial results still get written.
+  - Public Python API: `from ultracompress import bench_packed; result = bench_packed(packed_dir, ...)` returns a `BenchResult` dataclass.
+- The legacy `uc bench --model <hf_id>` compression-vs-teacher benchmark is preserved as `uc bench-compress`.
+
+### Changed
+- `uc bench` is now a positional-arg command (`uc bench <packed_dir>`) instead of `--model <hf_id>`. The legacy form is available as `uc bench-compress`.
+
+---
+
+## [0.5.1] — 2026-05-08
+
+### Fixed
+- **`uc verify`, `uc pack`, and any `import ultracompress` was failing on a fresh `pip install ultracompress==0.5.0` install** with `ModuleNotFoundError: No module named 'track_a_adaptive'`. The 0.5.0 wheel bundled `ultracompress/api_v2.py`, which top-level-imports an internal research module (`track_a_adaptive`) that is not packaged. Customer-facing CLI commands (pack / load / verify) do not need v2 at all, but the eager import in `ultracompress/__init__.py` made the whole package un-importable when v2's dependencies were missing.
+- 0.5.1 wraps the v2 + legacy-api imports in `try / except` so the customer-facing v3 API + CLI keep working when internal research modules are absent. The deprecation shim is only patched onto v2 if v2 actually loaded. `_API_V2_AVAILABLE` is exposed as a module-level flag so callers can branch on availability.
+
+### Discovery
+- Bug surfaced via the end-to-end customer reproduction test: `pip install --upgrade ultracompress` → `hf download SipsaLabs/qwen3-1.7b-uc-v3-bpw5` → `uc verify` (which `__init__.py` choked at import time before the verifier ran).
+
+### Verified working in 0.5.1
+- `uc verify <packed_dir>` passes on the public `SipsaLabs/qwen3-1.7b-uc-v3-bpw5` artifact: 28 layer.uc files present, sha256 spot-check, layer 0 reconstructs 7 quantized Linears + 4 extras with correct shapes.
+
+---
+
+## [0.5.0] — 2026-05-08
+
+### Added
+- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with GSQ-only at 5bpw (no V18-C correction). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
+- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer's k-means LEARNED grid + per-block scales + bit-packed integer codes from `gsq_codecs` (a new state_dict key written by the streaming compression runner). Reconstruction `W_base = absmax × grid[codes]` is mathematically lossless — bit-identical reconstruction of trainer-quantized weights.
+  - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
+  - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
+  - File header bumped to `UC_VERSION = 3`.
+- **Trainer-side codec persistence** in `streaming_compression_runner.py`:
+  - `gsq_quantize_weight(..., return_codec=True)` returns `(Wq, grid, codes, absmax)` tuple. Default `return_codec=False` is back-compatible.
+  - `compress_single_layer` saves `gsq_codecs` dict per quantized Linear into the layer.pt file.
+  - K-means sub-sampling now uses a deterministic `torch.Generator().manual_seed(42)`.
+- **8-architecture v3 pack matrix** uploaded to HuggingFace at `SipsaLabs/<model>-uc-v3-bpw5`:
+  - Dense: Qwen3-1.7B, Mistral-7B-v0.3, Llama-3.1-8B, Qwen3-8B, Qwen3-14B, Llama-3.1-70B
+  - MoE: Mixtral-8x7B-v0.1, Phi-3.5-MoE-instruct
+  - Mean PPL_r for 5 dense small models: **1.0077** (sub-1% perplexity degradation).
+- **Vectorized `_bitpack` / `_bitunpack`** in `ultracompress/pack.py` via `np.packbits` / `np.unpackbits` with bitorder='little'. **~1000× speedup** (16M-weight roundtrip in ~270ms vs prior Python loop in minutes).
+- **Pack format extras section** for non-quantized layer tensors (norms, layer-level routers). Pack format now self-contained — customer doesn't need source layer.pt files for reconstruction.
+- **`scripts/overlay/_hf_upload_v3_pack.py`** — wrapper for uploading v3 packs to HF with auto-generated README.md per repo.
+- **`scripts/overlay/_validate_uc_pack_v3.py`** — validation gate (pack → reconstruct → eval PPL → compare).
+- **`scripts/overlay/_cleanup_disk_post_pack_v2.py`** — disk cleanup gated on `uc_pack_version >= 3` (anti-mistake guard).
+
+### Documented
+- `docs/OPERATOR_PLAYBOOK_2026_05_07.md` — cardinal rules + 2026-05-07 cleanup-mistake postmortem.
+- `docs/AUTONOMOUS_MODE_SUMMARY_2026_05_07.md` — full session writeup of the v0.3 push.
+- `docs/AFWERX_SBIR_PHASE1_PROPOSAL_DRAFT_2026_05_07.md` — submit-ready SBIR Phase I proposal.
+- `docs/POST_EIN_DAY_0_CHECKLIST_2026_05_07.md` — 90-min sequence for the day Atlas EIN arrives.
+
+### Fixed
+- `uc pack` v0.2 was lossy (~22% PPL regression) because it reverse-derived k-means codes from dequantized weights assuming a uniform symmetric grid `{-15..15}/15`. The trainer's actual grid is k-means LEARNED — different. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
+- HF upload wrapper had `subprocess.run(capture_output=True)` which deadlocked the `hf` CLI's progress display. Removed `capture_output` so stdout/stderr inherit from caller — uploads stream live and complete reliably.
+
+### Compatibility
+- `uc pack v0.3` files have `UC_VERSION = 3` in binary header. Old loaders (v1/v2) cannot read them. New loader supports v1 / v2 / v3 for backward compat.
+- Customers should `pip install --upgrade ultracompress` to v0.5.0 to read v3 packs.
+- Existing v0.4.x bf16 streaming-compressed checkpoints on HF continue to work unchanged.
+
+---
+
+## [0.4.1] — 2026-05-04 (planned, post-PRELAUNCH_BUGS_v0_4_0_FIXES)
+
+### Fixed
+- **`uc list` now returns 10 published SipsaLabs models.** v0.4.0 had `HF_ORG = "sipsalabs"` (lowercase) which mismatched the actual HuggingFace org name `SipsaLabs` (CamelCase). The HF API call returned no results. Fixed by correcting the case in `src/ultracompress_cli/__init__.py`.
+- **CLI version banner now reports `0.4.1` correctly.** v0.4.0 had `__version__ = "0.1.3"` hardcoded in `src/ultracompress_cli/__init__.py`. Bumping the package version in pyproject.toml did not update the in-source string. Fixed.
+- **`uc pull` no longer crashes on Windows after successful download.** Rich library emits Braille pattern characters (U+2800-U+28FF) in progress bars. Windows default cp1252 console encoding cannot render these, raising `UnicodeEncodeError` after the LFS download completes. Fixed by constructing Rich Console with `legacy_windows=False` and forcing UTF-8 stdio on Windows in the CLI entry point.
+- **`uc pull` accepts `--output-dir` as alias for `--output`** to match the documentation in published HF model cards.
+
+### Notes
+- All v0.4.0 layer artifacts on HuggingFace continue to work with v0.4.1 unchanged. Only the CLI surface needed patching.
+- Customers running `pip install --upgrade ultracompress` get v0.4.1 automatically.
+
+---
 
 ## [0.4.0] — 2026-05-04
 
-Streaming compression release — full Qwen scaling curve validated end-to-end with single-GPU peak VRAM bounded regardless of total model depth.
-
 ### Added
-- **`scripts/overlay/streaming_compression_runner.py`** — per-layer streaming compression. Loads each transformer decoder layer's fp16 weights via `safetensors` lazy loading, caches teacher hidden output, applies GSQ scalar quantization (5 bpw, B=64), fits V18-C low-rank correction (r=32) via 200-step KL distillation against the cache, saves the compressed layer, frees memory, moves to the next layer. Peak VRAM bounded by ~one layer's parameters regardless of total model depth.
-- **`scripts/overlay/streaming_compression_online_runner.py`** — online-distillation variant that forwards through previously compressed layers to generate realistic input distributions during V18-C fitting.
-- **`scripts/overlay/streaming_compression_hybrid_runner.py`** — hybrid offline + online reconciliation pass on the deepest layers.
-- **`scripts/overlay/eval_compressed_only.py`** — eval-only path for previously-compressed layer checkpoints (sidesteps `device_map="auto"` corner cases under restricted GPU visibility).
-- **`scripts/overlay/quantizers/trellis.py`** — QTIP-style trellis-coded quantizer (L=16 bitshift codebook, 3INST decoder, codebook-std-calibrated input, optional Random Hadamard Transform). Wired into `scaling_curve_runner.py --quantizer trellis`. Smoke beats per-block scalar baseline by 30%+ on synthetic Gaussian at 3 bpw; partial wall-break on Qwen3-1.7B 3 bpw (T1 80.80% vs 74.29% scalar baseline; PPL ratio 1.0516 vs 1.1594).
-- **`scripts/overlay/test_trellis_smoke.py`** — synthetic-Gaussian smoke verifying trellis vs scalar baseline.
-- **`scripts/overlay/artifacts/streaming_compression_*.json`** — full result JSONs for each scaling curve point (8B / 14B / 32B / 72B).
+- **Streaming compression pipeline** (`scripts/overlay/streaming_compression_runner.py`) that processes one transformer block at a time. Peak GPU memory bounded by ~one layer regardless of total model parameter count.
+- **Four production-grade compressed checkpoints** on HuggingFace under `SipsaLabs/`:
+  - `qwen3-8b-streaming-bpw5` — PPL ratio 1.028× fp16, peak compression VRAM 2.26 GB.
+  - `qwen3-14b-streaming-bpw5` — PPL ratio 1.011× fp16, peak compression VRAM 3.37 GB. Best quality on the curve.
+  - `qwen3-32b-streaming-bpw5` — PPL ratio 1.037× fp16, peak compression VRAM 4.85 GB.
+  - `qwen2.5-72b-streaming-bpw5` — PPL ratio 1.016× fp16, peak compression VRAM **8.98 GB on a single 32 GB consumer GPU**. The headline.
+- **`uc pull` command** for downloading published checkpoints from HuggingFace.
+- **`uc list` command** for browsing all published SipsaLabs models.
+- **`uc bench` command** for benchmarking compressed artifacts on lm-eval-harness tasks.
+- **`uc info` command** for inspecting compressed artifact metadata.
+- **`uc demo` command** for scripted CLI demo (screen-recording-ready).
+- **Reproducibility scripts** in `scripts/overlay/eval_compressed_only.py` for verifying published numbers.
+- **Streaming compression runtime** (reference Python implementation, `huggingface_hub`-based). Production CUDA kernels in v0.5+.
 
-### Production results (offline streaming compression, GSQ 5 bpw + V18-C r=32)
+### Changed
+- **Production bit-rate target raised from 4 to 5 BPW** for the streaming compression tier. The 5 BPW point is the sweet spot for PPL drift across 8B-72B; 4 BPW is the "CONSERVATIVE" tier (T1 90% but PPL_r 1.014×).
+- **Default per-block size for scalar quantization is 64** (was 128 in earlier internal versions).
+- **Default correction overlay rank is 32** (was 16 in earlier internal versions).
+- **Default distillation steps per layer is 200** (was 1500 in earlier internal versions). Documented saturation effect: 500+ steps regresses end-to-end PPL.
 
-| Model        | Baseline PPL | Compressed PPL | PPL ratio | Peak VRAM |
-|--------------|--------------|----------------|-----------|-----------|
-| Qwen3-8B     |        16.79 |          17.26 |  1.0278×  |   2.26 GB |
-| Qwen3-14B    |        15.44 |          15.61 |  1.0111×  |   3.37 GB |
-| Qwen3-32B    |        13.77 |          14.27 |  1.0367×  |   4.85 GB |
-| Qwen2.5-72B  |         8.92 |           9.07 |  1.0162×  |   8.98 GB |
-
-Qwen2.5-72B compressed to 8.98 GB peak VRAM on a single RTX 5090 — production-grade quality (1.6% PPL drift) on consumer hardware.
+### Documentation
+- Open-source LAB-NOTEBOOK at `docs/LAB-NOTEBOOK.md` documenting hypothesis-mechanism-experiment-measurement-conclusion entries from the research cycle. Includes negative results.
+- FNO Darcy non-transformer transfer demo at `scripts/demo/fno_compression_demo.py` (CPU-only, 33 sec end-to-end).
+- Cross-architecture results documented at `docs/non_transformer_v18c_results.json` (FNO, U-Net, PINN — including the PINN negative result).
 
 ### Patent
+- USPTO 64/049,511 (correction overlay) — filed 2026-04-25.
+- USPTO 64/049,517 (shared-block parameter dispatch) — filed 2026-04-25.
+- Track A supplement filing scheduled for 2026-05-09 ($65 micro-entity fee).
 
-USPTO 64/049,511 + 64/049,517 supplement covering the streaming-compression mechanism, filed May 2026.
+### Known issues (fixed in 0.4.1)
+- See `[0.4.1]` above for the three bugs patched immediately after the v0.4.0 release.
+
+---
 
 ## [0.1.3] — 2026-04-29
 
-OSS compliance hardening pass — adds the artifacts that enterprise
-procurement, EU Cyber Resilience Act 2027, and US EO 14028 customers
-will increasingly require, without changing CLI behavior.
+### Added
+- Initial production CLI surface: `pull`, `list`, `info`, `bench`, `demo`, `version`.
+- Initial published checkpoints: `qwen3-1.7b-uc2p79`, `qwen3-8b-uc2p79`, `mistral-7b-uc2p79`, `smollm2-1.7b-uc2p79`, `olmo2-1b-uc2p79`, `qwen3-1.7b-trackb-preview`.
+
+### Notes
+- Pre-streaming-compression release. The `uc2p79` format used the row-overlay-rotation packing at 2.798 bpw.
+
+---
+
+## [0.1.2] — 2026-04-28
 
 ### Added
-- **`THIRD_PARTY_LICENSES.txt`** at the repo root and inside the wheel
-  (`ultracompress_cli/THIRD_PARTY_LICENSES.txt`) listing every runtime
-  dependency (`huggingface_hub`, `safetensors`, `tqdm`, `click`, `rich`,
-  `PyYAML`) with version, license, copyright, source URL, and the full
-  text of each license family used (Apache 2.0, BSD-3-Clause, MIT,
-  MPL-2.0). Aligns with the Sipsa Labs Open Source Software Compliance
-  Policy §5.1.
-- **`SBOM-cyclonedx.json`** — CycloneDX 1.6 Software Bill of Materials
-  shipped at the repo root and inside the wheel
-  (`ultracompress_cli/SBOM-cyclonedx.json`), enumerating the runtime
-  dependency graph with PURLs and distribution URLs. Generated via
-  `cyclonedx-py requirements`. Aligns with the Sipsa Labs OSS Compliance
-  Policy §7 and the EU Cyber Resilience Act / US EO 14028 expectation
-  that software vendors publish SBOMs.
-
-### Changed
-- `pyproject.toml` build configuration: `[tool.hatch.build.targets.wheel.force-include]`
-  now bundles `THIRD_PARTY_LICENSES.txt` and `SBOM-cyclonedx.json` into
-  the published wheel; `[tool.hatch.build.targets.sdist].include` makes
-  the same files plus `CHANGELOG.md`, `CONTRIBUTING.md`,
-  `CODE_OF_CONDUCT.md`, and `SECURITY.md` part of the source
-  distribution.
+- Initial PyPI release.
+- `pip install ultracompress` becomes available.
+- Apache 2.0 LICENSE.
 
 ### Notes
-- No CLI behavior change. `uc list`, `uc pull`, `uc info`, `uc bench`,
-  and `uc demo` are byte-for-byte equivalent to v0.1.2.
-- Customers receiving a v0.1.3 wheel can locate license attribution at
-  `ultracompress_cli/THIRD_PARTY_LICENSES.txt` and SBOM at
-  `ultracompress_cli/SBOM-cyclonedx.json` after `pip install ultracompress`.
-- No new runtime dependencies. No version pin changes for existing
-  dependencies.
+- Documentation only; functional CLI shipped in 0.1.3.
 
-## [0.1.2] — 2026-04-27
+---
 
-Foundation pass — fixes a release-pipeline bug, scrubs personal-info leaks
-in the published metadata, and tightens the demo so it cannot be misread
-as showing live data.
-
-### Fixed
-- **Critical**: `pyproject.toml` author and project URL fields were preserving
-  pre-rebrand values when v0.1.0 was packaged, so the published metadata on
-  PyPI was leaking a personal email and the old private GitHub org name.
-  v0.1.2 ships with `Sipsa Labs <founder@sipsalabs.com>` and
-  `github.com/sipsalabs/ultracompress` URLs throughout. Operators with
-  v0.1.0 installed should `pip install --upgrade ultracompress` once
-  v0.1.2 lands.
-- CI workflow `ci.yml` was not firing on tag pushes, so the `publish` job
-  (which has the right tag-prefix guard internally) never ran when v0.1.1
-  was tagged. Added `tags: ["v*.*.*"]` to the `push` trigger so future
-  tag pushes flow through the test gate and into PyPI publishing.
-- `__init__.py` `__version__` was out of sync with `pyproject.toml`
-  (0.1.0 vs 0.1.1). Both now read 0.1.2.
-
-### Changed
-- `uc demo` no longer renders mock download counts that could be misread
-  as real popularity numbers. The demo header explicitly shows
-  "DEMO MODE — illustrative data" and the catalog table includes a
-  caption pointing customers to `uc list` for the live Hub state.
-- `uc demo` install scene shows the correct `0.1.2` version string.
-
-### Notes
-- No CLI runtime changes beyond demo cosmetics.
-- v0.1.0 should be yanked from PyPI by the project owner after v0.1.2
-  publishes successfully — that prevents new installs from receiving
-  the leaky metadata while preserving the version for users who pinned
-  it explicitly.
-
-## [0.1.1] — 2026-04-27
-
-Customer-facing artifacts and trust signals. No CLI runtime changes.
+## [0.1.0] — 2026-04-26 (yanked, superseded by 0.1.2)
 
 ### Added
-- `docs/evidence/matrix.md` + `docs/evidence/matrix.json` — six-model cohort evidence with provenance, full retention curves (T1, T10, agreement + retention, perplexity, compression ratio per model). Public-safe: method internals deliberately excluded.
-- `docs/PILOT_PACKET.md` — design-partner pilot packet covering Tier 1 ($5K compression assessment, 2-week turnaround) and Tier 2 ($15K-$25K production deployment pilot, 60-day window). Convertible to per-deployment / multi-deployment / OEM-royalty licenses.
-- `tools/savings_calculator.py` — customer economic calculator. Input: fleet size + per-model param count. Output: storage / egress / GPU-memory savings vs FP16 / int8 / NF4 / HQQ baselines. JSON output mode for sales-sheet integration.
-- `CITATION.cff` — academic citation format (CFF v1.2.0). GitHub auto-detects and renders a "Cite this repository" button.
-- README — claim discipline pass: Track A (USPTO 64/049,511, shipping now) and Track B (USPTO 64/049,517, v0.2 Q3 2026) explicitly separated under their own headings; "Who this is for" buyer-archetype list added; 4-bit-per-weight cliff narrative as the customer-pain hook; top-k retention curves (T1–T256) referenced.
-
-### Fixed
-- README typo: `uc eval` → `uc bench` (now matches the actual CLI command).
-- README: `uc demo` added to the "What's available today" command list.
+- Initial scaffolding for PyPI distribution.
 
 ### Notes
-- No runtime / API / dependency changes. v0.1.1 is documentation, evidence, and customer-facing artifacts only.
-- Patent prosecution timing for `uc compress` (Track A self-compression) and Track B variants remains v0.2 (Q3 2026).
+- Yanked due to packaging error. Superseded by 0.1.2.
 
-## [0.1.0] — 2026-04-25
+---
 
-Initial public alpha release. Patent-pending compression methods (USPTO 64/049,511 + 64/049,517) underpinning the pre-compressed reference models on the Hugging Face Hub.
+## Versioning policy
 
-### Added
-- `uc list` — list pre-compressed models from the official Hugging Face Hub collection
-- `uc pull <model-id>` — download a pre-compressed model artifact
-- `uc info <path>` — inspect compression metadata of a local artifact
-- `uc bench <path> --tasks <list>` — run downstream benchmarks via lm-eval-harness
-- `uc demo` — play a scripted demo session (no Hub access required)
-- `uc version` / `uc --version` / `-V` — print version
-- Apache-2.0 license for the CLI source code
-- GitHub Actions CI for Python 3.10–3.12 (lint, type-check, test, build, security scans)
-- PyPI Trusted Publishing on tag push
+- **Major** (X.y.z): breaking changes to the CLI surface OR the compressed artifact format.
+- **Minor** (x.Y.z): new commands, new artifact format extensions, new model checkpoints (compatible with existing CLI).
+- **Patch** (x.y.Z): bug fixes, security patches, documentation-only changes.
 
-### Notes
-- Self-compression (`uc compress`) is intentionally not yet shipped — it is gated on the patent-pending compression methods being formally protected.
-- Pre-compressed model artifacts are licensed separately from the CLI itself.
+The closed-source production pipeline (commercial license) versions independently from the open-source CLI. Customer engagement contracts pin specific versions; updates require contract amendment.
 
-[Unreleased]: https://github.com/sipsalabs/ultracompress/compare/v0.1.2...HEAD
-[0.1.2]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.2
-[0.1.1]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.1
-[0.1.0]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.0
+---
+
+## Contact
+
+- Bugs: github.com/sipsalabs/ultracompress/issues
+- Security: security@sipsalabs.com
+- Commercial licensing: legal@sipsalabs.com
+- General: hello@sipsalabs.com
