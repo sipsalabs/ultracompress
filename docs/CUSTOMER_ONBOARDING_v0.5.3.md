@@ -13,8 +13,8 @@ Sipsa Labs, Inc. — `founder@sipsalabs.com` — `https://github.com/sipsalabs/u
 
 UltraCompress is a **5-bit lossless compression format** for transformer language models.
 
-- **5 bpw scalar quantization** (k-means GSQ codebook, per-block fp32 absmax scales, block size 64) of every Linear layer's `W_base`.
-- **Rank-32 V18-C correction overlay** distilled per-layer to recover the residual the quantizer drops.
+- **5 bpw scalar quantization** (k-means scalar quantization codebook, per-block fp32 absmax scales, block size 64) of every Linear layer's `W_base`.
+- **Rank-32 correction overlay overlay** distilled per-layer to recover the residual the quantizer drops.
 - **Mathematically lossless reconstruction** of `W_base` from the stored `(grid, codes, absmax)` tuple — bit-equal round-trip on layer 0 of every supported architecture.
 - **Customer-reproducible end-to-end** with three commands:
   ```bash
@@ -23,7 +23,7 @@ UltraCompress is a **5-bit lossless compression format** for transformer languag
   uc verify ./<model>
   ```
 - **18 transformer architectures validated** end-to-end on the same single 32 GB consumer GPU pipeline:
-  Qwen3 (0.6B / 1.7B / 1.7B-Base / 8B / 14B / 235B-A22B-MoE), Llama-3.1 (8B / 70B), Hermes-3-Llama-3.1-405B (in-flight, 80/126 layers), Mistral-7B-v0.3, Mixtral (8x7B / 8x22B), Phi-3.5-MoE, OLMo-2-0425-1B (base + instruct), SmolLM2-1.7B (base + instruct), TinyLlama-1.1B-Chat, and Mamba-2.8B (state-space, GSQ-only — V18-C SSM trainer ships in v0.6.0).
+  Qwen3 (0.6B / 1.7B / 1.7B-Base / 8B / 14B / 235B-A22B-MoE), Llama-3.1 (8B / 70B), Hermes-3-Llama-3.1-405B (in-flight, 80/126 layers), Mistral-7B-v0.3, Mixtral (8x7B / 8x22B), Phi-3.5-MoE, OLMo-2-0425-1B (base + instruct), SmolLM2-1.7B (base + instruct), TinyLlama-1.1B-Chat, and Mamba-2.8B (state-space, scalar-only — correction overlay SSM trainer ships in v0.6.0).
 - **9 artifacts publicly `uc verify`-PASS** on HuggingFace (`SipsaLabs/<model>-uc-v3-bpw5`), 8 more in flight as of 2026-05-08.
 
 What this is **not**: faster inference than AWQ/GPTQ at the kernel level (we re-use PyTorch matmul, no custom CUDA kernels yet); not lossless below 5 bpw; not a replacement for downstream task evaluation (we only report PPL on FineWeb-edu held-out tail).
@@ -130,7 +130,7 @@ python scripts/overlay/stream_compress_e2e.py \
 Notes:
 - `--shard-dir` is the directory containing the `model-*.safetensors` shards (typically inside your HF cache snapshot dir).
 - `--bpw 5 --rank 32` is the production default; use `--bpw 6 --rank 32` if you want zero-degradation headroom; lower bpw is research-grade only (see "what to expect" below).
-- `--train-steps 200` is the V18-C distillation budget per layer. 200 is the production setting; 50 works for smoke tests; ≥300 helps on architectures with hard late layers (Mistral).
+- `--train-steps 200` is the correction overlay distillation budget per layer. 200 is the production setting; 50 works for smoke tests; ≥300 helps on architectures with hard late layers (Mistral).
 - Output: `_e2e_my-model/layer_NNN.pt` files (one per transformer block) plus a small `manifest.json`.
 
 **Step 2 — pack to v3 `.uc` (lossless binary format, ~1 min)**
@@ -164,7 +164,7 @@ For 405B-class on a 32 GB GPU + 1 TB SSD, use the cross-shard streaming planner 
 Use the `eval_compressed_only.py` driver in `scripts/overlay/`:
 
 ```bash
-python scripts/overlay/eval_compressed_only.py \
+python `uc verify` \
     --model qwen3-8b \
     --compressed_dir _packed_my-model_v3 \
     --device cuda:0 \
@@ -185,7 +185,7 @@ Outputs JSON with:
 
 The script auto-runs the bf16 baseline forward (or skips it via `--baseline_ppl <value>` if you've already cached it).
 
-**`--model` requires a registry entry.** As of v0.5.3 the registry covers 19 entries: Qwen3 (0.6B / 1.7B / 1.7B-Base / 8B / 14B / 32B / 235B-A22B), Qwen2.5-72B, Mistral-7B-v0.3, NousResearch Llama-3.1 (8B / 70B), Hermes-3-Llama-3.1-405B, Mixtral (8x7B / 8x22B), Phi-3.5-MoE, SmolLM2-1.7B (base + instruct), TinyLlama-1.1B-Chat, OLMo-2-0425-1B (base + instruct). If your architecture isn't on that list, open a GitHub issue with the HF model id and `n_layers` — we'll add it (it's a 5-line PR to `MODEL_REGISTRY` in `scripts/overlay/streaming_compression_runner.py`).
+**`--model` requires a registry entry.** As of v0.5.3 the registry covers 19 entries: Qwen3 (0.6B / 1.7B / 1.7B-Base / 8B / 14B / 32B / 235B-A22B), Qwen2.5-72B, Mistral-7B-v0.3, NousResearch Llama-3.1 (8B / 70B), Hermes-3-Llama-3.1-405B, Mixtral (8x7B / 8x22B), Phi-3.5-MoE, SmolLM2-1.7B (base + instruct), TinyLlama-1.1B-Chat, OLMo-2-0425-1B (base + instruct). If your architecture isn't on that list, open a GitHub issue with the HF model id and `n_layers` — we'll add it (it's a 5-line PR to `MODEL_REGISTRY` in (production trainer, patent-protected)).
 
 **Reference baseline:** any of the 9 publicly `uc verify`-PASS artifacts shows the ratio you should expect for that arch family — see the matrix in Appendix A.
 
@@ -212,7 +212,7 @@ tok = AutoTokenizer.from_pretrained(base_id)
 
 for layer_uc in sorted(packed.glob("layer_*.uc")):
     parsed = parse_uc_layer_v3(layer_uc)        # returns dict of W_base + V + U + alpha per Linear
-    # patch parsed['<linear_name>']['W_base'] + alpha * U @ V into the matching nn.Linear
+    # patch parsed['<linear_name>']['W_base'] + alpha * low_rank(U, V) into the matching nn.Linear
     # (canonical helper coming in v0.6.0; see ultracompress/load_uc.py for the v0.5.3 reference impl)
 ```
 
@@ -238,7 +238,7 @@ These are measured numbers from the published matrix (see Appendix A), not estim
 | Medium dense (7-14B) | Mistral-7B-v0.3, Qwen3-8B | **~1.010-1.013** |
 | Large dense (70-405B) | Llama-3.1-70B, Hermes-3-405B | **~1.007-1.013** (Hermes-3-405B partial: 1.0071) |
 | MoE (Mixtral, Phi-MoE, Qwen3-235B) | Mixtral-8x7B | **~1.012-1.013** |
-| State-space (Mamba) | mamba-2.8b-hf | **1.0119** (GSQ-only; V18-C SSM trainer in v0.6.0) |
+| State-space (Mamba) | mamba-2.8b-hf | **1.0119** (scalar-only; correction overlay SSM trainer in v0.6.0) |
 
 **Key data points:**
 - Tightest dense ratio measured anywhere on any architecture (to our knowledge): **Qwen3-1.7B-Base at 1.0040**.
@@ -258,7 +258,7 @@ These are measured numbers from the published matrix (see Appendix A), not estim
 | `Single-file safetensors` error during pack | Single-shard models (TinyLlama, SmolLM2) hit the multi-shard assumption | Upgrade to v0.5.2+ (added single-file fallback) |
 | HF upload aborts with `SSL EOF` mid-shard | Residential bandwidth / HF infra flake | Use the watchdog wrapper at `scripts/overlay/_hf_upload_watchdog.sh` (8-attempt auto-retry with 30s backoff) |
 | `uc verify` fails on a freshly-packed dir | Almost always a v0.4.x pack format leak | Re-pack with `pack_e2e_dir_v3` (v3 only); `uc verify` refuses v0.2 lossy packs by design |
-| `CUDA OOM` during compression on 14B+ | V18-C U matmul too large | Re-run with `--n-chunks 4` (or 8 for 32B+); bit-exact with chunks=1 |
+| `CUDA OOM` during compression on 14B+ | correction overlay U matmul too large | Re-run with `--n-chunks 4` (or 8 for 32B+); bit-exact with chunks=1 |
 | `torch.AcceleratorError` mid-PPL-eval (TinyLlama) | Known reproducer issue | Set `CUDA_LAUNCH_BLOCKING=1` and re-run; the pack itself is structurally PASS |
 | `uc serve` errors on multi-file packed dir | `--model-path` expects single-file `.uc/.ucz` in v0.5.3 | Programmatic load (section 6A) for multi-file dirs; full multi-file `serve` ships v0.6.0 |
 
@@ -321,7 +321,7 @@ Sourced from `docs/BENCHMARKS_2026_05_08.json`. PPL = FineWeb-edu held-out tail,
 - Publicly `uc verify` PASS today: **9**
 - HF uploads in flight: 8
 - Tightest dense decoder PPL ratio at 5 bpw: **1.0040** on Qwen3-1.7B-Base (best we know of, on any arch)
-- First lossless 5-bit SSM compression we know of: Mamba-2.8B at 1.0119 (GSQ-only)
+- First lossless 5-bit SSM compression we know of: Mamba-2.8B at 1.0119 (scalar-only)
 - Largest model compressed to 5 bpw on a single 32 GB consumer GPU: Hermes-3-Llama-3.1-405B (in flight, 80/126 layers)
 
 For the live, machine-readable matrix run `uc verify-org SipsaLabs --out VERIFY_ALL_REPORT.json` — it'll re-fetch every public pack, run `uc verify` against it, and write the current PASS/FAIL state to JSON.
@@ -329,3 +329,5 @@ For the live, machine-readable matrix run `uc verify-org SipsaLabs --out VERIFY_
 ---
 
 *End of guide. Last updated 2026-05-08 against v0.5.3.*
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

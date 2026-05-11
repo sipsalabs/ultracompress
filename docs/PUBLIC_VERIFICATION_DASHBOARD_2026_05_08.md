@@ -32,7 +32,7 @@ A reported PPL ratio is from a full FineWeb-edu evaluation (30 prompts, seq_len=
 | Mixtral-8x7B-v0.1 (MoE) | [`mixtral-8x7b-v0.1-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5) | 47 B (13 B active) | 32 | 5 | (pending commit) | 1.012 | 🟡 uploading (96%) |
 | Mixtral-8x22B-v0.1 (MoE) | [`mixtral-8x22b-v0.1-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5) | 141 B (39 B active) | 56 | 5 | (pending commit) | 1.013 | 🟡 uploading (re-fired 12:35) |
 | Phi-3.5-MoE (MoE) | [`phi-3.5-moe-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/phi-3.5-moe-uc-v3-bpw5) | 41.9 B (6.6 B active) | 32 | 5 | (pending commit) | 1.013 | 🟡 uploading (97%) |
-| Mamba-2.8B-hf (state-space) | (TBD) | 2.8 B | 64 | 5 | (pack in build) | **1.0119** (GSQ-only) | ⏳ pack pending |
+| Mamba-2.8B-hf (state-space) | (TBD) | 2.8 B | 64 | 5 | (pack in build) | **1.0119** (scalar-only) | ⏳ pack pending |
 
 **Overall verified status:** 2 / 11 artifacts have passed full customer-flow `uc verify` end-to-end on the public HF artifact. **All 10 local pre-commit packs (the source of truth for the in-flight uploads) ALSO PASS `uc verify`** — see "Pre-commit local verification" below. The 12th artifact (Hermes-3-405B) is mid-compression at layer 46/126 (37% complete), ETA tonight.
 
@@ -133,11 +133,11 @@ If `uc verify` returns FAIL on either of the above, please open an issue at <htt
 
 Three things distinguish a genuinely lossless pack from "almost-lossless" claims that are common in 2025 compression papers:
 
-1. **The codec state is part of the artifact.** The k-means grid (32 fp32 cluster centers per Linear), the 5-bit per-element codes, the per-block fp32 absmax scales, and the rank-32 V/U overlay are all stored on disk in the `.uc` binary header. Reconstruction at inference time is deterministic and bit-exact for `W_base = grid[codes] · absmax`.
+1. **The codec state is part of the artifact.** The k-means grid (32 fp32 cluster centers per Linear), the 5-bit per-element codes, the per-block fp32 absmax scales, and the low-rank V/U overlay are all stored on disk in the `.uc` binary header. Reconstruction at inference time is deterministic and bit-exact for `W_base = scalar_dequantize(codes) · absmax`.
 
 2. **The reconstruction is structural, not statistical.** `uc verify` doesn't run any neural-network forward pass; it parses the binary, reconstructs every quantized Linear's `W_base + α·UV` matrix, and checks shape + finite-ness. A statistical-only validation could mask real bugs (e.g. a flipped sign on the alpha would still give finite outputs but wreck PPL); the structural check rules these out by construction.
 
-3. **The PPL ratio is verified on a held-out tail of FineWeb-edu**, not the calibration set. The runner splits 50 M tokens into a calibration head (used for V18-C training) and a held-out tail (used for the PPL number). Over-fitting the codec to the calibration set would not give a 1.01x ratio on the held-out tail.
+3. **The PPL ratio is verified on a held-out tail of FineWeb-edu**, not the calibration set. The runner splits 50 M tokens into a calibration head (used for correction overlay training) and a held-out tail (used for the PPL number). Over-fitting the codec to the calibration set would not give a 1.01x ratio on the held-out tail.
 
 ---
 
@@ -152,3 +152,5 @@ Three things distinguish a genuinely lossless pack from "almost-lossless" claims
 ---
 
 _This dashboard is regenerated on each substantive change to the public artifact set. The version under git is the canonical record._
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
