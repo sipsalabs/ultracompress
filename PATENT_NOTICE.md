@@ -1,9 +1,9 @@
 # Patent Notice
 
 The compression methods implemented in this repository — including but not limited to:
-- Group Symmetric Quantization (GSQ) with per-row scalar quantization at 5 bits per weight
-- V18-C low-rank correction trained via KL divergence distillation
-- The bit-identical reconstruction contract `W = grid[codes] * absmax + alpha * U @ V`
+- Per-row scalar quantization at 5 bits per weight with a learned per-Linear codebook
+- A low-rank residual correction adapter trained via KL divergence distillation against a teacher
+- The bit-identical reconstruction contract from persisted codec state plus the correction adapter
 - The streaming per-layer compression pipeline that bounds peak VRAM to a single transformer layer
 
 — are covered under United States Patent and Trademark Office provisional applications **64/049,511** and **64/049,517** (filed April 2026), with additional continuations and supplements pending.

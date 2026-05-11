@@ -55,6 +55,18 @@ DEFAULT_TARGETS: tuple[str, ...] = (
 _DUAL_MAX_MEMORY = {0: "28GiB", 1: "28GiB", "cpu": "80GiB"}
 
 
+def _default_correction_rank() -> int:
+    """Conservative auto-default for the correction adapter rank.
+
+    The production tuning table (per-architecture, per-bpw) lives in the
+    patent-protected trainer; this returns a generic placeholder used only
+    when the caller passes ``correction_rank<=0`` and no ``UC_CORRECTION_RANK``
+    environment override is set. Production callers should always set an
+    explicit value through ``compress()`` or the environment variable.
+    """
+    return 16
+
+
 def _is_dual(device: str | None) -> bool:
     return isinstance(device, str) and device.lower() == "dual"
 
@@ -370,14 +382,18 @@ def compress(
         device: 'cuda:0', 'cuda:1', 'cpu', or None (auto).
         targets: substring patterns identifying which Linears to compress.
     """
-    # Accept both the public name ('scalar') and the legacy internal name
-    # ('scalar_v18c') so existing pinned callers keep working.
-    if mode not in ("scalar", "scalar_v18c"):
+    # Accept the public mode name plus a small set of historical aliases so
+    # callers pinned to earlier internal names keep working.
+    if mode not in ("scalar", "scalar_correction", "scalar_v18c"):
         raise NotImplementedError(f"mode={mode!r} not supported")
-    # Auto-resolve correction_rank=0 to a conservative default; the production
+    # Auto-resolve correction_rank<=0 to a conservative default; the production
     # tuning table (per-arch, per-bpw) lives in the patent-protected trainer.
+    # The default is overridable via UC_CORRECTION_RANK so operators can
+    # experiment without touching package internals.
     if correction_rank <= 0:
-        correction_rank = 32
+        import os as _os
+        _env = _os.environ.get("UC_CORRECTION_RANK", "").strip()
+        correction_rank = int(_env) if _env.isdigit() and int(_env) > 0 else _default_correction_rank()
     # train_steps is computed from calibration_tokens further below if 0.
     if not (1 <= int(target_bpw) <= 8):
         raise ValueError(f"target_bpw must be 1..8, got {target_bpw}")

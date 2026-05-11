@@ -146,7 +146,7 @@ def _bench(args: argparse.Namespace) -> int:
         eff_bpw = float(report.get("effective_bpw", args.target_bpw))
     except (ImportError, AttributeError) as e:
         print(f"  (note: public API unavailable [{e.__class__.__name__}]; "
-              f"using Track A v17 packed weights directly)")
+              f"falling back to legacy packed weights directly)")
         student, comp_size, eff_bpw = _fallback_student(args, device, dtype)
 
     s_ids, s_lat = _generate(student, tokenizer, prompts, device, args.max_new_tokens)
@@ -196,7 +196,7 @@ def _bench(args: argparse.Namespace) -> int:
 
 
 def _fallback_student(args: argparse.Namespace, device: str, dtype: Any) -> tuple[Any, int, float]:
-    """Load Track A v17 packed weights directly when public API is not yet wired."""
+    """Load legacy packed weights directly when the public API is not yet wired."""
     import torch
     from transformers import AutoConfig, AutoModelForCausalLM
 
@@ -365,7 +365,7 @@ def _fit(args: argparse.Namespace) -> int:
 
     t0 = time.time()
     compressed = uc.compress(
-        model, mode="scalar_v18c", target_bpw=float(args.bpw),
+        model, mode="scalar_correction", target_bpw=float(args.bpw),
         correction_rank=int(args.rank), train_steps=steps,
         block_size=block_size,
         n_chunks=int(getattr(args, "n_chunks", 1) or 1),
@@ -502,6 +502,15 @@ def _serve(args: argparse.Namespace) -> int:
         import uvicorn
     except ImportError:
         print("[FAILED] uvicorn not installed; pip install uvicorn fastapi prometheus_client")
+        return 2
+
+    try:
+        import importlib
+        importlib.import_module("ultracompress.server.main")
+    except ImportError:
+        print("[FAILED] uc serve requires the optional server module which is not "
+              "included in this distribution. Contact founder@sipsalabs.com for "
+              "the production serving package.")
         return 2
 
     print(f"uc serve: model={model_path}  bind={args.host}:{args.port}")
