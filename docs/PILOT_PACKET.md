@@ -120,3 +120,5 @@ We respond same-day during US business hours and target a kickoff call within 5 
 *The CLI is Apache 2.0. The pre-compressed model artifacts are licensed separately (research-free or commercial-paid). The compression methodology is patent pending.*
 
 *sipsalabs.com · github.com/sipsalabs/ultracompress · huggingface.co/sipsalabs*
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

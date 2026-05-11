@@ -134,7 +134,7 @@ If your workload is "MMLU has to stay above X" and you're not pushing the model 
 
 ## We're a small company looking for design partners
 
-Sipsa Labs, Inc. is a small (currently solo-founder) shop. We filed two USPTO provisional patents in April 2026 (`64/049,511` + `64/049,517`) covering the row-overlay quantization, FRR architectural compression, the streaming compression mechanism, and the v3 lossless pack format; a supplement filing lands this week. The patent details are in [`PATENT_NOTICE.md`](./PATENT_NOTICE.md) — short version: Apache 2.0 grants you full use of the published source for any purpose including running it commercially on your own infrastructure, and we'd like a conversation if you're building a derivative product whose core value depends on the underlying invention. Email `founder@sipsalabs.com`.
+Sipsa Labs, Inc. is a small (currently solo-founder) shop. We filed two USPTO provisional patents in April 2026 (`64/049,511` + `64/049,517`) covering the row-overlay quantization, low-rank refinement architectural compression, the streaming compression mechanism, and the v3 lossless pack format; a supplement filing lands this week. The patent details are in [`PATENT_NOTICE.md`](./PATENT_NOTICE.md) — short version: Apache 2.0 grants you full use of the published source for any purpose including running it commercially on your own infrastructure, and we'd like a conversation if you're building a derivative product whose core value depends on the underlying invention. Email `founder@sipsalabs.com`.
 
 We're cash-constrained pre-funding. Spending discipline is real: only hard expense booked through end of June is the USPTO conversion fee. That means honest engagement keeps this shipping faster than anything else can:
 
@@ -173,7 +173,7 @@ ultracompress/
 ├── ultracompress/                Core library (pack v3, correction-overlay module, CLI, __main__)
 ├── scaling/                      Cross-model teacher loaders (Qwen3 / Llama / Mistral / Mamba / OLMo)
 ├── scripts/overlay/              Streaming compression runner + evaluators + JSON artifacts
-├── scripts/frr/                  Track B (FRR architectural compression — research)
+├── scripts/frr/                  Track B (low-rank refinement architectural compression — research)
 ├── tests/                        Regression tests
 ├── docs/
 │   ├── HONEST_NEGATIVE_RESULTS_2026_05_08.md      ← the audit trail
