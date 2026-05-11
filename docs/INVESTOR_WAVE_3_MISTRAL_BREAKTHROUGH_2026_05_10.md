@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-10 (drafted same evening as the v10 result landed)
 **Status:** INTERNAL. Sip greenlights every send before it fires. NO autonomous sends from this doc.
-**Charter:** results-only public framing. No recipe internals. No codenames (no V18-C / GSQ / gsq_codecs / grid[codes] / W_base / train_steps). Subject lines <60 chars. Bodies <120 words.
+**Charter:** results-only public framing. No recipe internals. No codenames (no correction overlay / scalar quantization / codec_state / scalar_dequantize(codes) / W_base / train_steps). Subject lines <60 chars. Bodies <120 words.
 
 ---
 
@@ -308,7 +308,7 @@ After each send, append the same row to `docs/PUBLIC_ACTIONS_LOG_2026_05.md` wit
 
 - [x] No recipe values (no "hidden-MSE LOCAL", no objective-class name, no per-layer training schedule)
 - [x] No internal Track A/B/C/D nomenclature anywhere in any draft body
-- [x] No codenames (no V18-C, no GSQ, no gsq_codecs, no grid[codes], no W_base, no train_steps=1500)
+- [x] No codenames (no correction overlay, no scalar quantization, no codec_state, no scalar_dequantize(codes), no W_base, no production training schedule)
 - [x] All claims map to public artifacts (`huggingface.co/SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5`, `pip install ultracompress`, `github.com/sipsalabs/ultracompress`, `sipsalabs.com/inference`, USPTO docket numbers)
 - [x] All subject lines <60 chars (verified per row)
 - [x] All bodies <120 words (verified per variant)
