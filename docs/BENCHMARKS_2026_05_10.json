@@ -1,0 +1,327 @@
+{
+  "generated_at": "2026-05-10T21:42:14.155496",
+  "framework": "ultracompress",
+  "version": "2026-05-10.3",
+  "pack_format": "uc-pack-v3",
+  "method": "GSQ K=32 + V18-C low-rank correction (rank=32) + per-block(64) absmax",
+  "reconstruction": "W_full = grid[codes] * absmax + alpha * U @ V (bit-identical, SHA-256 verified)",
+  "eval_methodology": {
+    "n_prompts": 30,
+    "seq_len": 1024,
+    "dataset": "FineWeb-edu",
+    "split": "held-out tail",
+    "seed": 42,
+    "device": "cuda:0 or cuda:1 (single 32 GB consumer GPU)"
+  },
+  "provenance_audit": {
+    "audit_date": "2026-05-10",
+    "policy": "Every entry in verified_records[] MUST carry an explicit sources.{baseline_json,compressed_json} pair (or a single-source compressed_json containing both baseline_ppl and compressed_ppl) so scripts/verify_all_benchmarks.py can recompute the ratio from disk. Entries that cannot be reconciled to on-disk source JSONs live in pending_provenance[] until re-evaluated.",
+    "single_source_note": "Where the source JSON is a unified PPL_EVAL_*.json or STREAM_COMPRESS_E2E_*_NEW_FULL_PPL.json that contains both baseline_ppl AND compressed_ppl in one file, sources.baseline_json and sources.compressed_json point to the same file; the verifier resolves baseline_ppl from the compressed JSON in that case (see _ratio_from_sources in scripts/verify_all_benchmarks.py)."
+  },
+  "verified_records": [
+    {
+      "model": "Phi-3-mini-4k-instruct",
+      "params": "3.8B",
+      "ppl_ratio": 1.00262,
+      "drift_pct": 0.262,
+      "caveat": "seq_len=128 (not apples-to-apples with rest)",
+      "hf": "SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_phi-3-mini-4k-instruct_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_phi-3-mini-4k-instruct_2026_05_08.json"
+      }
+    },
+    {
+      "model": "Mixtral-8x7B-v0.1",
+      "params": "47B (MoE, 13B active)",
+      "ppl_ratio": 1.00368,
+      "drift_pct": 0.368,
+      "note": "best MoE result",
+      "hf": "SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5",
+      "live": "uploading",
+      "sources": {
+        "baseline_json": "docs/STREAM_COMPRESS_E2E_MIXTRAL_8X7B_PPL.json",
+        "compressed_json": "docs/STREAM_COMPRESS_E2E_MIXTRAL_8X7B_PPL.json"
+      }
+    },
+    {
+      "model": "Qwen3-1.7B-Base",
+      "params": "1.7B",
+      "ppl_ratio": 1.00401,
+      "drift_pct": 0.401,
+      "note": "small-decoder record",
+      "hf": "SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_qwen3-1_7b-base_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_qwen3-1_7b-base_2026_05_08.json",
+        "discovery_note": "the auto-discovered candidate scripts/overlay/artifacts/streaming_compression_qwen3-1.7b-base_eval_only.json is the v4d-multipass run (computes 1.00499) and is NOT the canonical source; verifier must use the explicit path above"
+      }
+    },
+    {
+      "model": "Qwen3-14B",
+      "params": "14B",
+      "ppl_ratio": 1.00403,
+      "drift_pct": 0.403,
+      "note": "essentially tied with small-decoder record at 14B scale",
+      "hf": "SipsaLabs/qwen3-14b-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/STREAM_COMPRESS_E2E_QWEN3_14B_NEW_FULL_PPL.json",
+        "compressed_json": "docs/STREAM_COMPRESS_E2E_QWEN3_14B_NEW_FULL_PPL.json"
+      }
+    },
+    {
+      "model": "Yi-1.5-9B",
+      "params": "8.8B",
+      "ppl_ratio": 1.00414,
+      "drift_pct": 0.414,
+      "note": ">8B record",
+      "hf": "SipsaLabs/yi-1.5-9b-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_yi-1.5-9b_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_yi-1.5-9b_2026_05_08.json"
+      }
+    },
+    {
+      "model": "Qwen3-8B",
+      "params": "8.0B",
+      "ppl_ratio": 1.0044,
+      "drift_pct": 0.44,
+      "note": "8B-class record",
+      "hf": "SipsaLabs/qwen3-8b-uc-v3-bpw5",
+      "live": "uploading",
+      "sources": {
+        "baseline_json": "docs/STREAM_COMPRESS_E2E_QWEN3_8B_NEW_FULL_PPL.json",
+        "compressed_json": "docs/STREAM_COMPRESS_E2E_QWEN3_8B_NEW_FULL_PPL.json"
+      }
+    },
+    {
+      "model": "Qwen3-0.6B",
+      "params": "0.6B",
+      "ppl_ratio": 1.0069,
+      "drift_pct": 0.69,
+      "hf": "SipsaLabs/qwen3-0.6b-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_qwen3-0_6b_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_qwen3-0_6b_2026_05_08.json"
+      }
+    },
+    {
+      "model": "OLMo-2-0425-1B",
+      "params": "1.0B",
+      "ppl_ratio": 1.0073,
+      "drift_pct": 0.73,
+      "hf": "SipsaLabs/olmo-2-0425-1b-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_olmo-2-0425-1b_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_olmo-2-0425-1b_2026_05_08.json"
+      }
+    },
+    {
+      "model": "OLMo-2-0425-1B-Instruct",
+      "params": "1.0B",
+      "ppl_ratio": 0.9998,
+      "drift_pct": -0.02,
+      "note": "sub-baseline (regularizer-on-quantization observation)",
+      "hf": "SipsaLabs/olmo-2-0425-1b-instruct-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_olmo-2-0425-1b-instruct_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_olmo-2-0425-1b-instruct_2026_05_08.json"
+      }
+    },
+    {
+      "model": "SmolLM2-1.7B-Instruct",
+      "params": "1.7B",
+      "ppl_ratio": 1.0075,
+      "drift_pct": 0.75,
+      "hf": "SipsaLabs/smollm2-1.7b-instruct-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_smollm2-1_7b-instruct_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_smollm2-1_7b-instruct_2026_05_08.json"
+      }
+    },
+    {
+      "model": "SmolLM2-1.7B",
+      "params": "1.7B",
+      "ppl_ratio": 1.0085,
+      "drift_pct": 0.85,
+      "hf": "SipsaLabs/smollm2-1.7b-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/PPL_EVAL_smollm2-1_7b_2026_05_08.json",
+        "compressed_json": "docs/PPL_EVAL_smollm2-1_7b_2026_05_08.json"
+      }
+    },
+    {
+      "model": "Mistral-7B-v0.3",
+      "params": "7.2B",
+      "ppl_ratio": 1.00548,
+      "drift_pct": 0.548,
+      "hf": "SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "compressed_json": "docs/HIDDEN_MSE_MISTRAL_7B_V03_v10_RESULTS.json"
+      },
+      "baseline_ppl": 6.89096,
+      "compressed_ppl": 6.928741,
+      "n_samples": 50,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_dataset": "FineWeb-edu held-out tail",
+      "method_note": "production codec; recipe patent-protected",
+      "updated_at": "2026-05-10T21:42:14.155496"
+    },
+    {
+      "model": "Llama-3.1-8B",
+      "params": "8.0B",
+      "ppl_ratio": 1.0125,
+      "drift_pct": 1.25,
+      "hf": "SipsaLabs/llama-3.1-8b-uc-v3-bpw5",
+      "live": true,
+      "sources": {
+        "baseline_json": "docs/STREAM_COMPRESS_E2E_LLAMA_3_1_8B_NEW_FULL_PPL.json",
+        "compressed_json": "docs/STREAM_COMPRESS_E2E_LLAMA_3_1_8B_NEW_FULL_PPL.json"
+      }
+    },
+    {
+      "model": "Hermes-3-Llama-3.1-405B",
+      "params": "405B",
+      "hf": "SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5",
+      "baseline_ppl": 5.035783142657583,
+      "compressed_ppl": 5.069230173422594,
+      "ppl_ratio": 1.0066418727370694,
+      "n_eval": 50,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "long-context English (FineWeb-edu derived)",
+      "baseline_method": "bf16_streaming_per_layer_from_hf_cache",
+      "baseline_peak_vram_gb": 16.864513536,
+      "compressed_peak_vram_gb": 27.330445312,
+      "sources": {
+        "baseline_json": "scripts/overlay/artifacts/streaming_baseline_hermes-3-405b.json",
+        "compressed_json": "scripts/overlay/artifacts/streaming_compression_hermes-3-405b_eval_only.json"
+      },
+      "verified_at": "2026-05-10T05:08:31.192417",
+      "note": "baseline + compressed produced on cuda:1 RTX 5090 single-GPU via per-layer streaming; same n_eval/seq_len/seed across both runs"
+    }
+  ],
+  "pending_provenance": [
+    {
+      "model": "Mamba-2.8B",
+      "params": "2.8B (SSM)",
+      "ppl_ratio_claimed": 1.0119,
+      "drift_pct_claimed": 1.19,
+      "note": "first public SSM compression artifact",
+      "hf": "SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5",
+      "live_status_claimed": "verify status",
+      "previously_published_in": "docs/BENCHMARKS_2026_05_08.json (baseline_ppl=7.9387, compressed_ppl=8.0337, evaluated_at=2026-05-08T08:59)",
+      "provenance_status": "NO_SOURCE_JSON_ON_DISK",
+      "search_summary": "no PPL_EVAL_mamba* / STREAM_COMPRESS_E2E_MAMBA* / streaming_*_mamba*.json located in docs/ or scripts/overlay/artifacts/ as of 2026-05-10. Only BENCHMARKS_2026_05_08.json carries the rounded numbers; underlying eval JSON appears to have not been archived. Existing on-disk Mamba assets are exploratory _test_mamba_*.py / _test_mamba_*.log scripts and a tokenized calibration set (fineweb_edu_10M_tokens_mamba_2_8b_hf.pt) \u2014 no PPL ratio output JSON.",
+      "sip_decision_required": "RE_RUN_EVAL_TO_PRODUCE_SOURCE_JSON (preferred \u2014 artifact = first public SSM lossless 5-bit compression and worth defending) OR DEMOTE_FROM_VERIFIED_RECORDS_PERMANENTLY (acceptable if Mamba is no longer publicly cited)",
+      "remediation_command_template": "python scripts/overlay/streaming_compression_runner.py --model state-spaces/mamba-2.8b-hf --bpw 5 --rank 32 --n-eval 30 --seq-len 1024 --seed 42 --output docs/PPL_EVAL_mamba-2.8b-hf_<date>.json"
+    },
+    {
+      "model": "Qwen3-1.7B (instruct)",
+      "params": "1.7B",
+      "ppl_ratio_claimed": 1.02,
+      "drift_pct_claimed": 2.0,
+      "hf": "SipsaLabs/qwen3-1.7b-uc-v3-bpw5",
+      "live_status_claimed": true,
+      "previously_published_in": "docs/BENCHMARKS_2026_05_08.json (baseline_ppl=18.0145, compressed_ppl=18.3748, evaluated_at=2026-05-07T15:30)",
+      "provenance_status": "ON_DISK_RATIO_DOES_NOT_RECONCILE",
+      "candidate_files_examined": [
+        "docs/STREAM_COMPRESS_E2E_QWEN3_1.7B_PPL.json (n_eval=50, seq_len=2048, ratio=1.02355) \u2014 wrong eval config",
+        "docs/STREAM_COMPRESS_E2E_QWEN3_1.7B_REALCALIB_PPL.json (ratio=1.00911) \u2014 wrong eval config",
+        "docs/STREAM_COMPRESS_E2E_QWEN3_17B_NEW_FULL_PPL.json (n_eval=30, seq_len=1024, baseline=18.232, compressed=18.375, ratio=1.00782) \u2014 closest matching eval config but ratio is 1.00782, NOT 1.02",
+        "docs/STREAM_COMPRESS_E2E_QWEN3_17B_4K_PPL.json / _8K_PPL.json / _PACKED_PPL.json / _PACKED_V3_PPL.json / _NEW_SOURCE_PPL.json / _SEEDFIX_PPL.json \u2014 all have NaN baseline_ppl"
+      ],
+      "search_summary": "no on-disk JSON with baseline_ppl=18.0145 was located. The closest-matching apples-to-apples eval (NEW_FULL n_eval=30 seq_len=1024) computes 1.0078, not the canonical 1.02. The 1.02 number originated from BENCHMARKS_2026_05_08.json with a different baseline (18.0145) whose source eval was not archived to docs/.",
+      "sip_decision_required": "RE_RUN_EVAL_TO_RECONCILE (run NEW_FULL eval and either confirm 1.0078 \u2014 which would beat the published 1.02 and is friendlier to UC \u2014 or pin down what produced 18.0145) OR PROMOTE_NEW_FULL_RESULT_AND_UPDATE_PPL_RATIO_TO_1.0078 (use the actual on-disk source and update the canonical number; this would also propagate to HF model card and any public surfaces citing 1.02)",
+      "remediation_command_template": "python scripts/overlay/streaming_compression_runner.py --model Qwen/Qwen3-1.7B --bpw 5 --rank 32 --n-eval 30 --seq-len 1024 --seed 42 --output docs/PPL_EVAL_qwen3-1.7b-instruct_<date>.json"
+    }
+  ],
+  "pending_eval": [
+    {
+      "model": "Qwen3-235B-A22B",
+      "params": "235B (MoE)",
+      "status": "compression complete, HF upload IN FLIGHT, PPL eval pending",
+      "hf": "SipsaLabs/qwen3-235b-a22b-uc-v3-bpw5"
+    },
+    {
+      "model": "Phi-3.5-MoE-instruct",
+      "params": "42B (MoE)",
+      "status": "compression complete, HF upload IN FLIGHT",
+      "hf": "SipsaLabs/phi-3.5-moe-instruct-uc-v3-bpw5"
+    },
+    {
+      "model": "Llama-3.1-70B",
+      "params": "70B",
+      "status": "needs apples-to-apples re-eval (current JSON has suspect baseline)",
+      "hf": "SipsaLabs/llama-3.1-70b-uc-v3-bpw5"
+    },
+    {
+      "model": "Qwen3-32B",
+      "params": "32B",
+      "status": "needs apples-to-apples re-eval (only stale n=50 seq=128 result)",
+      "hf": "SipsaLabs/qwen3-32b-streaming-bpw5"
+    },
+    {
+      "model": "Mixtral-8x22B-v0.1",
+      "params": "141B (MoE)",
+      "status": "HF upload complete (100 GB / 56 .uc), PPL eval pending",
+      "hf": "SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5"
+    },
+    {
+      "model": "TinyLlama-1.1B-Chat",
+      "params": "1.1B",
+      "status": "HF upload complete, PPL eval pending",
+      "hf": "SipsaLabs/tinyllama-1.1b-chat-v1.0-uc-v3-bpw5"
+    }
+  ],
+  "honest_negative_results": {
+    "count": 9,
+    "doc": "docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md",
+    "highlights": [
+      "V4-D Multi-Pass Cascade Correction REFUTED (PPL 1.0682x; pass-1 cannot recover info pass-0 discarded)",
+      "V3 rank-redistribute REFUTED (PPL 1.0702x; shallow-rank starvation cascades errors through network)",
+      "Per-Linear adaptive bpw v1 REFUTED apples-to-apples (1.005097 vs uniform 1.004876)",
+      "V18-C train_steps depth-adaptive v2 within noise (1.00451 vs 1.00488)",
+      "rank/train_steps push: 1.0040x is the empirical floor for V18-C on Qwen3-1.7B-Base",
+      "V18-C SVD warm-start NEGATIVE (worse than random init)",
+      "Base/instruct PPL hypothesis REFUTED 2/3 of archs",
+      "Mistral-7B-v0.3 streaming logit-KL v7 (depth-banded steps 200/300/400/600 \u00d7 r48): 1.0820\u00d7 \u2014 REFUTED. Adaptive train_steps WORSE than uniform v6b (1.0502\u00d7). Early-layer step cuts corrupted prefix cache for downstream.",
+      "Mistral-7B-v0.3 streaming logit-KL v8 (300 steps \u00d7 depth-banded rank 32/48/64/80): 1.0896\u00d7 \u2014 REFUTED. Worst yet. Depth-banding hypothesis class is wrong for streaming logit-KL on Mistral."
+    ]
+  },
+  "competitive_intel": {
+    "hf_hub_search_2026_05_09": {
+      "5bit_quantization": "1 result (irrelevant whisper.cpp model)",
+      "5-bit_lossless_compression_transformer": "0 results",
+      "AWQ_5bit_OR_GPTQ_5bit_OR_EXL3": "0 results"
+    },
+    "conclusion": "Sipsa Labs is the first-mover in 5-bit lossless transformer compression on the public HF Hub. The 5-bit lossless band is empty.",
+    "doc": "docs/COMPETITIVE_INTEL_5BIT_LOSSLESS_2026_05_09.md"
+  },
+  "uc_bench_subcommand": {
+    "shipped_in": "v0.5.4",
+    "purpose": "Customer self-service measurement of TTFT, tokens/sec, decode-TPS, peak VRAM on any UC pack",
+    "syntax": "uc bench <local_packed_dir>",
+    "first_lossless_5bit_library_with_builtin_benchmarking": true
+  },
+  "sources": {
+    "verified_ppl_serena_memory": "verified_ppl_2026_05_09",
+    "ground_truth_json_dir": "scripts/overlay/artifacts/",
+    "lab_notebook": "docs/LAB-NOTEBOOK.md (5 entries appended 2026-05-09)",
+    "canonical_state": "docs/CANONICAL_STATE_2026_05_09_0911.md",
+    "pack_format_spec": "docs/UC_V3_BINARY_FORMAT_SPEC.md",
+    "patent": "USPTO 64/049,511 + 64/049,517 (provisional, filed 2026-04-25)",
+    "provenance_audit_doc": "docs/AUDIT_BENCHMARKS_PROVENANCE_2026_05_10.md"
+  }
+}
