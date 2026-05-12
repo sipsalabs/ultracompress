@@ -1,0 +1,35 @@
+name: charter-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  charter-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan repository for internal codename leaks
+        run: |
+          set -e
+          # Internal codenames that must NEVER appear in the public storefront
+          PATTERN='(GSQ|V18-C|Track[[:space:]]+[A-G]|FRR|CHBR|hidden_mse|Fractal[[:space:]]*Residual)'
+          
+          # Skip binary files, .git, common ignore paths
+          MATCHES=$(grep -RInE "$PATTERN"             --exclude-dir=.git             --exclude-dir=.github/workflows             --exclude-dir=node_modules             --exclude-dir=__pycache__             --exclude-dir=.pytest_cache             --exclude='*.lock'             --binary-files=without-match             . || true)
+          
+          if [ -n "$MATCHES" ]; then
+            echo "============================================================="
+            echo "CHARTER VIOLATION: internal codename(s) found in public repo"
+            echo "============================================================="
+            echo "$MATCHES"
+            echo ""
+            echo "These terms are forbidden on the public storefront branch."
+            echo "Scrub them locally before re-pushing, or rebase the offending"
+            echo "commit off the branch."
+            exit 1
+          fi
+          
+          echo "Charter check PASSED. No internal codenames found."
