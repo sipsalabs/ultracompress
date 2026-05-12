@@ -2,13 +2,13 @@
 
 Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed by a SHA-256 manifest.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.6.5-blue.svg)](https://pypi.org/project/ultracompress/0.6.5/)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.2-blue.svg)](https://pypi.org/project/ultracompress/0.6.2/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
 [![Hacker News](https://img.shields.io/badge/Hacker%20News-Live%20discussion-orange.svg)](https://news.ycombinator.com/item?id=48099107)
 
-> **Live on Hacker News today (2026-05-11):** [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107). OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is in **private beta** — drop-in replacement for `OPENAI_BASE_URL` once provisioned. Email founder@sipsalabs.com for early access (24-hour turnaround). The `pip install ultracompress` substrate is fully production today (no API key required for self-host). v0.6.5 strips internal codenames from package source; same lossless contract, same SHA-256 verifier.
+> **Live on Hacker News today (2026-05-11):** [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107). OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is in **private beta** — drop-in replacement for `OPENAI_BASE_URL` once provisioned. Email founder@sipsalabs.com for early access (24-hour turnaround). The `pip install ultracompress` substrate is fully production today (no API key required for self-host). v0.6.2 strips internal codenames from package source; same lossless contract, same SHA-256 verifier.
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). First 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
@@ -23,12 +23,12 @@ We're a small company (Sipsa Labs, Inc. — Delaware C-corp, incorporated May 20
 ## Try it (3 commands)
 
 ```bash
-pip install ultracompress==0.6.5 huggingface_hub[cli]
+pip install ultracompress==0.6.2 huggingface_hub[cli]
 hf download SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5 --local-dir ./pack
 uc verify ./pack
 ```
 
-Expected output (real, not aspirational — this is what the v0.6.5 verifier prints on a clean pull of the 1.7B-Base artifact):
+Expected output (real, not aspirational — this is what the v0.6.2 verifier prints on a clean pull of the 1.7B-Base artifact):
 
 ```
 uc_pack_version: 3  (LOSSLESS, self-contained)
@@ -62,7 +62,7 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 ## What works today (verified, with JSON receipts)
 
-PyPI `v0.6.5` is the current release. v0.6.5 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
+PyPI `v0.6.2` is the current release. v0.6.2 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
 **End-to-end validated at 5 bpw across 22 transformer architectures** (dense 0.6B → 405B, MoE 47B → 235B, state-space). Of those, **16 have a verified PPL ratio against their bf16 baseline** on the FineWeb-edu held-out tail at seq_len=1024, seed=42; 6 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/` or `docs/PPL_EVAL_*.json`.
 
@@ -85,7 +85,7 @@ Other notable verified results (full table in [Appendix](#appendix-full-architec
 
 - **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (scalar-only; the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 40 repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
-- **PyPI**: [pypi.org/project/ultracompress/0.6.5](https://pypi.org/project/ultracompress/0.6.5/).
+- **PyPI**: [pypi.org/project/ultracompress/0.6.2](https://pypi.org/project/ultracompress/0.6.2/).
 - **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) (private beta, email founder@sipsalabs.com for access).
 
 The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo there has files committed, `uc verify` will pass on it after `hf download`.
@@ -97,12 +97,12 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
-- **`uc compress` as a one-shot CLI.** v0.6.5 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
-- **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two paths to add correction overlay on top (SVD warm-start; per-Linear KL trained on Gaussian inputs) — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
+- **`uc compress` as a one-shot CLI.** v0.6.2 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
+- **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two correction-overlay paths on top — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
-- **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week (rank+steps push, per-Linear adaptive bpw, depth-adaptive variant, multi-pass cascade correction, AWQ-style channel pre-scaling). Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration.
-- **Per-layer hidden-state distillation generalization.** It tightens Mistral-7B and Phi-3-mini meaningfully (Mistral 1.0502× → 1.00548×, a 9.16× tightening) but is a wash on Llama-3.1-8B (1.0125× → 1.0130×) and Qwen3-0.6B (1.0069× → 1.0076×). The objective is per-architecture, not universal. Public numbers reflect what generalized.
+- **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week. Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration.
+- **Cross-architecture generalization of corrective methods.** Methods that meaningfully tighten Mistral-7B and Phi-3-mini are a wash on Llama-3.1-8B and Qwen3-0.6B at our current configuration. Generalization is per-architecture, not universal — published numbers reflect what generalized.
 - **HF uploads on residential bandwidth.** Several large-pack uploads (Mixtral-8x22B at 100GB, SmolLM2, Qwen3-0.6B) hit SSL EOF mid-stream. Our 8-attempt watchdog wrapper catches it but multi-hour residential uploads remain brittle.
 
 ---
@@ -130,7 +130,7 @@ A taste of what's in there:
 - **AWQ-Style Channel Pre-Scaling on scalar + correction overlay** — 1.1306× catastrophic regression (+13%, 26× worse than uniform). AWQ is designed for uniform-grid quantization where pre-scaling protects salient channels from rounding noise; scalar quantization already adapts a learned non-uniform grid, so the round-trip just injects bias the correction overlay then wastes its capacity correcting. CLOSED.
 - **rank/training schedule push on the Qwen3-1.7B-Base record** — predicted: tighter than 1.0040×. Actual: 1.0042×, within statistical noise. Knob saturated at this configuration. The 1.0040× number stands as the empirical floor.
 - **"Base models compress tighter than instruct" hypothesis** — refuted 2/3 of architectures. Instruct-fine-tuning effects on quantization-friendliness are architecture-dependent, not universal. Hypothesis dropped.
-- **Per-layer hidden-state distillation as a universal cure** — works on Mistral and Phi-3, wash on Llama-3.1-8B and Qwen3-0.6B. Per-architecture, not universal. Documented this week.
+- **A universal cure for the dense PPL floor** — methods that tighten Mistral and Phi-3 are a wash on Llama-3.1-8B and Qwen3-0.6B at our current configuration. Per-architecture, not universal. Documented this week.
 
 Researchers comparing 5-bit codecs should treat that file as the audit trail. It will save you from re-running experiments we already ran, and the internal research log entries it cites are the version of record.
 
@@ -249,7 +249,7 @@ ultracompress/
 - Security: `security@sipsalabs.com`
 - Press: `press@sipsalabs.com`
 - HuggingFace: [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs)
-- PyPI: [`pypi.org/project/ultracompress`](https://pypi.org/project/ultracompress/0.6.5/)
+- PyPI: [`pypi.org/project/ultracompress`](https://pypi.org/project/ultracompress/0.6.2/)
 - API: [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1)
 - Hacker News (live discussion): [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107)
 - Sponsors: [`github.com/sponsors/sipsalabs`](https://github.com/sponsors/sipsalabs)
