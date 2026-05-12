@@ -4,6 +4,19 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.6.3] — 2026-05-12
+
+### Changed
+- **Charter-clean PyPI metadata.** v0.6.2 frozen package description on PyPI was scrubbed of internal codename references that had survived earlier sweeps. v0.6.3 ships an updated `pyproject.toml` description and keyword set that are verifiably leak-free.
+
+### Added
+- **PATENT_NOTICE.md** at the repo root, summarizing the two USPTO Provisional filings (64/049,511 + 64/049,517). Linked from sipsalabs.com homepage.
+
+### Backward compatibility
+- All 40 published `SipsaLabs/*` HuggingFace artifacts continue to verify clean under v0.6.3. Pin `ultracompress==0.6.2` if you need the prior package metadata exactly.
+
+---
+
 ## [0.6.2] — 2026-05-11
 
 ### Added
