@@ -3,7 +3,7 @@
 UltraCompress combines two complementary patent-pending methods:
 
 - **Row-Overlay Quantization (RoQ)** — post-training row-overlay quantization (USPTO 64/049,511) — shipping in v0.1
-- **Fractal Residual Recursion (FRR)** — architectural compression (USPTO 64/049,517) — v0.2 (Q3 2026)
+- **shared-block parameter dispatch (shared-block)** — architectural compression (USPTO 64/049,517) — v0.2 (Q3 2026)
 
 This page is a high-level conceptual overview. For implementation specifics, contact `legal@sipsalabs.com` for an NDA-gated technical deep dive.
 
@@ -19,11 +19,11 @@ RoQ is a novel post-training weight representation. In our 6-model benchmark coh
 
 For the actual measured numbers and their cohort scope, see [evidence/matrix.md](../evidence/matrix.md).
 
-## Fractal Residual Recursion — architectural compression (v0.2, Q3 2026)
+## shared-block parameter dispatch — architectural compression (v0.2, Q3 2026)
 
-Where RoQ compresses *weights*, FRR compresses the *architecture* — restructuring the transformer block to retain expressive capacity at substantially fewer trainable parameters.
+Where RoQ compresses *weights*, shared-block compresses the *architecture* — restructuring the transformer block to retain expressive capacity at substantially fewer trainable parameters.
 
-Public detail on FRR is intentionally limited until v0.2 ships. Public-safe FRR evidence is at [evidence/matrix.md](../evidence/matrix.md). The Q3 2026 v0.2 release timing is gated on patent prosecution; early-access design partners can engage now via the [pilot program](../PILOT_PACKET.md).
+Public detail on shared-block is intentionally limited until v0.2 ships. Public-safe shared-block evidence is at [evidence/matrix.md](../evidence/matrix.md). The Q3 2026 v0.2 release timing is gated on patent prosecution; early-access design partners can engage now via the [pilot program](../PILOT_PACKET.md).
 
 ## What "catastrophic failure" means
 
@@ -38,7 +38,7 @@ We use a published `T_cat` threshold: any cohort member whose perplexity ratio e
 | Per-model retention envelope | ✅ (model cards) | ✅ (full breakdown) |
 | Reproducibility manifest (SHA-256 file index) | reference only | full manifest |
 | RoQ operating-point parameters and codebook structure | — | ✅ |
-| FRR mechanism and architectural specification | — | ✅ |
+| shared-block mechanism and architectural specification | — | ✅ |
 | Patent specifications (filed April 2026) | — | ✅ when public record |
 
 If you need NDA access to the technical deep dive, email `legal@sipsalabs.com`.
