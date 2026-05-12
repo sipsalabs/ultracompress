@@ -9,7 +9,7 @@ Every UltraCompress artifact ships with a JSON manifest at `<artifact>/ultracomp
   "schema_version": "1.0",
   "model_id": "string (HF Hub repo id)",
   "base_model": "string (HF Hub repo id of the FP16 source)",
-  "method": "string (track-a-row-overlay | track-b-frr | track-a+b)",
+  "method": "string (track-a-row-overlay | track-b-shared-block | track-a+b)",
   "method_version": "string (semver)",
   "bpw": "number (effective bits per weight, includes any overhead)",
   "size_bytes": "integer (total artifact size on disk)",
@@ -48,7 +48,7 @@ The compression method applied. Currently one of:
 | Value | Description |
 |---|---|
 | `track-a-row-overlay` | Post-training row-overlay quantization (USPTO 64/049,511) |
-| `track-b-frr` | shared-block parameter dispatch (USPTO 64/049,517) |
+| `track-b-shared-block` | shared-block parameter dispatch (USPTO 64/049,517) |
 | `track-a+b` | Combined Row-Overlay Quantization + shared-block parameter dispatch stack |
 
 Future methods will be added as new strings; readers should accept unknown values gracefully.
