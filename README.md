@@ -164,7 +164,6 @@ ultracompress/
 ├── ultracompress/                Core library (pack v3, correction-overlay module, CLI, __main__)
 ├── scaling/                      Cross-model teacher loaders (Qwen3 / Llama / Mistral / Mamba / OLMo)
 ├── scripts/overlay/              Streaming compression runner + evaluators + JSON artifacts
-├── scripts/frr/                  Fractal Residual Recursion (architectural compression — research)
 ├── tests/                        Regression tests
 ├── docs/
 │   ├── HONEST_NEGATIVE_RESULTS_2026_05_08.md      ← the audit trail
