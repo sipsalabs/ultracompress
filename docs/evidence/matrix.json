@@ -3,16 +3,16 @@
   "_owner": "Sipsa Labs",
   "_last_reviewed": "2026-04-27",
   "_external_sharing": "allowed",
-  "label": "UltraCompress Track B architectural-compression public evidence matrix",
+  "label": "UltraCompress the shared-block experimental substrate architectural-compression public evidence matrix",
   "track": "B",
-  "experiment_family": "architectural compression (Fractal Residual Recursion)",
+  "experiment_family": "architectural compression (shared-block parameter dispatch)",
   "availability": "v0.2 (Q3 2026) \u2014 evidence now, customer-shippable artifacts in v0.2",
   "patent_status": "USPTO 64/049,517 filed 2026-04-25. Patent pending.",
-  "important_disclaimer": "This matrix is Track B only. README headline numbers (95.63% T1 retention at 2.798 bpw, zero catastrophic failures, 30% smaller than NF4) are Track A \u2014 a separate experiment, separate operating point, separate availability. Do not combine retention numbers across tracks as a single quality curve.",
+  "important_disclaimer": "This matrix is the shared-block experimental substrate only. README headline numbers (95.63% T1 retention at 2.798 bpw, zero catastrophic failures, 30% smaller than NF4) are the production substrate \u2014 a separate experiment, separate operating point, separate availability. Do not combine retention numbers across tracks as a single quality curve.",
   "models": [
     {
       "track": "B",
-      "experiment_family": "architectural compression (Fractal Residual Recursion)",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "TinyLlama-1.1B",
@@ -33,7 +33,7 @@
     },
     {
       "track": "B",
-      "experiment_family": "architectural compression (Fractal Residual Recursion)",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "OLMo-2-1B",
@@ -54,7 +54,7 @@
     },
     {
       "track": "B",
-      "experiment_family": "architectural compression (Fractal Residual Recursion)",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "SmolLM2-1.7B",
@@ -75,7 +75,7 @@
     },
     {
       "track": "B",
-      "experiment_family": "architectural compression (Fractal Residual Recursion)",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Qwen3-1.7B",
@@ -96,7 +96,7 @@
     },
     {
       "track": "B",
-      "experiment_family": "architectural compression (Fractal Residual Recursion)",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Mistral-7B-v0.3",
@@ -117,7 +117,7 @@
     },
     {
       "track": "B",
-      "experiment_family": "architectural compression (Fractal Residual Recursion)",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Qwen3-8B",
