@@ -1,4 +1,6 @@
-# Security Policy
+# Security policy
+
+This page is the rendered docs-site version of [`SECURITY.md`](https://github.com/sipsalabs/ultracompress/blob/main/SECURITY.md) in the repository.
 
 ## Reporting a vulnerability
 
@@ -17,11 +19,11 @@ In scope:
 
 - The published `ultracompress` Python package on PyPI
 - The `uc` / `ultracompress` CLI commands
-- Anything in this repository (source, CI workflows, packaging configuration)
+- Anything in [the GitHub repository](https://github.com/sipsalabs/ultracompress) (source, CI workflows, packaging configuration)
 
 Out of scope:
 
-- Pre-compressed model artifacts distributed via Hugging Face Hub (separate license; please report artifact-specific issues to **legal@sipsalabs.com**)
+- Pre-compressed models hosted on Hugging Face Hub (please report to **legal@sipsalabs.com**)
 - Issues in upstream dependencies (please report to those projects directly; we will track them via Dependabot / pip-audit)
 - Vulnerabilities affecting only end-of-life Python versions (we support 3.10+)
 
@@ -30,7 +32,7 @@ Out of scope:
 We follow **coordinated disclosure**. Once a fix is available we will:
 
 1. Publish a patched release on PyPI
-2. Open a GitHub Security Advisory
+2. Open a [GitHub Security Advisory](https://github.com/sipsalabs/ultracompress/security/advisories)
 3. Credit reporters who request it
 
 ## Supported versions
@@ -45,6 +47,12 @@ We commit to security patches for the latest minor release line and the immediat
 ## Best practices for users
 
 - Always install from PyPI (`pip install ultracompress`) — never from untrusted forks
-- Verify model artifacts using the per-artifact provenance manifest shipped alongside each compressed model on the Hugging Face Hub when artifacts publish
+- Verify model artifacts using the SHA-256 manifests we publish on Hugging Face Hub
 - Run `pip-audit` periodically against your environment
-- Pin versions in production (`ultracompress==0.1.2` or later — 0.1.0 is yanked and should not be installed)
+- Pin versions in production (`ultracompress==0.1.0`)
+- Subscribe to GitHub Security Advisory notifications for the repo
+
+## See also
+
+- [Vulnerability disclosure process on GitHub](https://github.com/sipsalabs/ultracompress/security)
+- For trust center, security posture, and compliance information, contact `security@sipsalabs.com`.

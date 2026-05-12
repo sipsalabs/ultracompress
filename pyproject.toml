@@ -1,45 +1,94 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "ultracompress"
-version = "0.6.3"
-description = "Lossless 5-bit transformer compression — 22 architectures (1.7B-405B, dense + MoE + SSM) at sub-1.010x PPL ratio. v0.6+ under BSL-1.1 (free for sub-$1M ARR + research); v0.5.x stays Apache 2.0 on legacy/0.5.x branch."
+version = "0.4.0"
+description = "Extreme compression for large language models. Download pre-compressed models from Hugging Face Hub; self-compress support coming soon."
 readme = "README.md"
-license = {text = "BUSL-1.1"}
 requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
 authors = [
-    {name = "Sipsa Labs, Inc.", email = "founder@sipsalabs.com"},
+    { name = "Sipsa Labs", email = "founder@sipsalabs.com" }
 ]
-keywords = ["model-compression", "llm", "transformer", "quantization", "distillation", "inference"]
+keywords = ["llm", "compression", "quantization", "transformer", "inference", "edge-ai"]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: Other/Proprietary License",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "torch>=2.0",
-    "numpy>=1.24",
-    "transformers>=4.40",
+    "huggingface_hub>=0.24.0",
+    "safetensors>=0.4.0",
+    "tqdm>=4.66.0",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
-eval = ["lm-eval>=0.4", "datasets>=2.0", "scikit-learn>=1.3"]
-serve = ["fastapi>=0.100", "uvicorn>=0.20"]
-all = ["lm-eval>=0.4", "datasets>=2.0", "scikit-learn>=1.3", "fastapi>=0.100", "uvicorn>=0.20", "scipy>=1.10", "matplotlib>=3.7"]
+torch = [
+    "torch>=2.0.0",
+]
+bench = [
+    "torch>=2.0.0",
+    "lm-eval>=0.4.5",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+]
+
+[project.scripts]
+uc = "ultracompress_cli.__main__:main"
+ultracompress = "ultracompress_cli.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/sipsalabs/ultracompress"
+Homepage = "https://sipsalabs.com"
+Documentation = "https://github.com/sipsalabs/ultracompress#readme"
 Repository = "https://github.com/sipsalabs/ultracompress"
 Issues = "https://github.com/sipsalabs/ultracompress/issues"
 
-[project.scripts]
-ultracompress = "ultracompress.cli:main"
-uc = "ultracompress.cli:main"
+[tool.hatch.build.targets.wheel]
+packages = ["src/ultracompress_cli"]
 
-[tool.setuptools.packages.find]
-include = ["ultracompress*", "lib*"]
-exclude = ["tests*", "docs*", "scripts*", "deploy*", "tools*", "experiments*", "archive*"]
+[tool.hatch.build.targets.wheel.sources]
+"src/ultracompress_cli" = "ultracompress_cli"
+
+[tool.hatch.build.targets.wheel.force-include]
+"THIRD_PARTY_LICENSES.txt" = "ultracompress_cli/THIRD_PARTY_LICENSES.txt"
+"SBOM-cyclonedx.json" = "ultracompress_cli/SBOM-cyclonedx.json"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/ultracompress_cli/**",
+    "tests/**",
+    "docs/**",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_LICENSES.txt",
+    "SBOM-cyclonedx.json",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "pyproject.toml",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]

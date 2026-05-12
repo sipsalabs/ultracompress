@@ -1,8 +1,8 @@
 # Contributing to UltraCompress
 
-Thanks for your interest in UltraCompress. This document covers how to contribute to the open-source CLI.
+Thanks for your interest in contributing. This page is the rendered docs-site version of [`CONTRIBUTING.md`](https://github.com/sipsalabs/ultracompress/blob/main/CONTRIBUTING.md) in the repository.
 
-## Scope of this repository
+## Scope
 
 This repository contains the **UltraCompress CLI** (`uc`, `ultracompress`) — the Apache-2.0-licensed tool for downloading and running pre-compressed language models distributed through the [official Hugging Face Hub collection](https://huggingface.co/sipsalabs) (rolling release through April–May 2026).
 
@@ -43,6 +43,14 @@ ruff format src/ tests/
 mypy src/ --ignore-missing-imports
 ```
 
+## Pre-commit hooks (optional)
+
+```bash
+pip install pre-commit
+pre-commit install
+# Now ruff + gitleaks run on every git commit
+```
+
 ## Pull request checklist
 
 - [ ] All tests pass (`pytest`)
@@ -63,18 +71,52 @@ mypy src/ --ignore-missing-imports
 - Imports grouped: stdlib, third-party, local — separated by blank lines
 - Docstrings on public functions (single-line or short triple-quoted)
 
+## What's in scope for contributions
+
+Welcome:
+- Bug fixes
+- Performance improvements
+- Documentation improvements
+- New CLI flags or subcommands that fit the existing surface
+- Integration support for new runtimes (vLLM, llama.cpp, TensorRT-LLM, etc.)
+- Test coverage improvements
+- CI/CD improvements
+- Translations of error messages and docs (if requested)
+
+Not welcome:
+- Reverse-engineering attempts of the compression methods
+- Changes that disclose internal Sipsa Labs trade secrets
+- Whitespace-only or noise PRs designed to inflate contributor count
+
+## CLA for substantive contributions
+
+For pull requests adding **>50 net lines of code** or new modules, we ask contributors to sign a Contributor License Agreement. The bot will post a link in your PR; signing takes ~1 minute.
+
+For typo fixes, doc tweaks, and small bug fixes: no CLA required.
+
 ## Issue reporting
 
-Use the issue templates on GitHub. Security issues — see [SECURITY.md](SECURITY.md).
+Use the issue templates on GitHub. Security issues — see [Security policy](../contributing/security.md).
 
 ## Code of Conduct
 
-By participating you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+By participating you agree to follow the [Code of Conduct](code-of-conduct.md).
 
 ## Licensing
 
-By contributing you agree that your contributions will be licensed under Apache-2.0 (the license of this repository). You retain copyright to your contributions.
+Contributions to this repository are licensed under Apache-2.0 (the license of the repository). You retain copyright to your contributions.
 
 ## Sign-off
 
-We do not currently require DCO sign-off, but please make sure you have the right to contribute the code under Apache-2.0.
+We do not require DCO sign-off. Please ensure you have the right to contribute the code under Apache-2.0.
+
+## Credits
+
+Contributors are listed in the GitHub contributors page automatically. We also acknowledge significant contributors in release notes.
+
+## Questions
+
+- For technical questions: open a GitHub Discussion
+- For product / commercial questions: `founder@sipsalabs.com`
+- For security: `security@sipsalabs.com`
+- For licensing / patents: `legal@sipsalabs.com`

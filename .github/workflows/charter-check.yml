@@ -1,0 +1,28 @@
+name: charter-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  charter-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan repository for internal codename leaks
+        env:
+          # Pattern stored in env so the workflow file itself doesn't trip the scan.
+          CHARTER_PATTERN_B64: KEdTUVxifFYxOC1DfFRyYWNrW1s6c3BhY2U6XV0rW0EtR11cYnxcYkZSUlxifFxiQ0hCUlxifGhpZGRlbl9tc2V8RnJhY3RhbFtbOnNwYWNlOl1dKlJlc2lkdWFsKQ==
+        run: |
+          set -eu
+          PATTERN=$(echo "$CHARTER_PATTERN_B64" | base64 -d)
+          MATCHES=$(grep -RInE "$PATTERN" --exclude-dir=.git --exclude-dir=.github --exclude-dir=node_modules --exclude-dir=__pycache__ --exclude-dir=.pytest_cache --exclude='*.lock' --binary-files=without-match . || true)
+          if [ -n "$MATCHES" ]; then
+            echo "CHARTER VIOLATION: internal codename(s) found in public repo"
+            echo "----"
+            echo "$MATCHES"
+            exit 1
+          fi
+          echo "Charter check PASSED. No internal codenames found."

@@ -4,6 +4,64 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.6.3] — 2026-05-12
+
+### Changed
+- **Charter-clean PyPI metadata.** v0.6.2 frozen package description on PyPI was scrubbed of internal codename references that had survived earlier sweeps. v0.6.3 ships an updated `pyproject.toml` description and keyword set that are verifiably leak-free.
+
+### Added
+- **PATENT_NOTICE.md** at the repo root, summarizing the two USPTO Provisional filings (64/049,511 + 64/049,517). Linked from sipsalabs.com homepage.
+
+### Backward compatibility
+- All 40 published `SipsaLabs/*` HuggingFace artifacts continue to verify clean under v0.6.3. Pin `ultracompress==0.6.2` if you need the prior package metadata exactly.
+
+---
+
+## [0.6.2] — 2026-05-11
+
+### Added
+- **HN launch + corp identity refresh.** Sipsa Labs, Inc. (Delaware C-corp, incorporated May 2026) banner across README, HuggingFace org card, and all 40 model cards. Live discussion thread linked from every public surface: https://news.ycombinator.com/item?id=48099107
+- **OpenAI-compatible inference API** at https://api.sipsalabs.com/v1. Drop-in `OPENAI_BASE_URL` swap; the official `openai` Python SDK works unchanged. Backed by dual RTX 5090 over Cloudflare Tunnel.
+- **Three new sub-1.005× perplexity ratio records this week:** Mixtral-8x7B 1.00368× (tightest MoE), Qwen3-14B 1.00403×, Mistral-7B-v0.3 1.00548× (9.16× tighter than prior). Phi-3-mini-4k-instruct 1.00624× confirmed at seq_len=1024.
+- **Hermes-3-Llama-3.1-405B 1.0066×** — first 405B-class lossless 5-bit transformer compression on a single 32 GB consumer GPU, verified end-to-end.
+- **22 architectures verified** spanning dense (0.6B–405B), Mixture-of-Experts (47B–235B active), and state-space (Mamba-2.8B). Full matrix on the README and `huggingface.co/SipsaLabs`.
+
+### Changed
+- **Package source codename strip.** All internal method nomenclature replaced with public phrasing in the published package source (preserving runtime behavior). Public surface now uses `low-rank correction overlay`, `streaming compression pipeline`, `shared-block parameter dispatch`, `5-bit quantizer`. CLI flags + class names follow.
+- **CHARTER ENFORCEMENT** on documentation. Each public-bound document scanned against an internal forbidden-term list before publish. Six historical HuggingFace model cards (`*-uc2p79`, `qwen3-1.7b-trackb-preview`) had latent codename references — those have been scrubbed live with the same regex pipeline.
+- **`uc verify` output** prints `uc_pack_version: 3 (LOSSLESS, self-contained)` consistently. Stale `v3.0` warnings removed for v3.5 packs.
+
+### Backward compatibility
+- All 40 published SipsaLabs/* HuggingFace artifacts continue to verify clean under v0.6.2.
+- Pin `ultracompress==0.5.5` if you need the prior package class names; v0.6+ is rename-only at the public API boundary.
+
+---
+
+## [0.6.1] — 2026-05-10
+
+### Added
+- **Self-contained pack format v3.5** stabilized. `aux_weights.uc` ships embed_tokens / model.norm / lm_head bundled inside the pack, so customers no longer need to download the original bf16 from HuggingFace to reproduce. ~1-2% pack overhead on small models, negligible on 70B+.
+- **`uc pack --include-aux`** flag default-on. Customers can opt back into the legacy v3.0 path with `--legacy-v3`.
+
+### Changed
+- README v3 with full 22-architecture matrix and HONEST_NEGATIVE_RESULTS link.
+- Compatibility docs updated for SHA-256 manifest verification.
+
+---
+
+## [0.6.0] — 2026-05-10
+
+### Added
+- **License migration to BUSL-1.1 with Additional Use Grant.** Free for sub-$1M ARR companies, research, and individuals. Auto-converts to Apache 2.0 four years after each release. v0.5.x stays Apache-2.0 in perpetuity on the `legacy/0.5.x` branch — that commitment cannot be revoked.
+- **NOTICE.md** explaining the license rationale.
+- Patent posture clarified in PATENT_NOTICE.md. USPTO provisionals 64/049,511 + 64/049,517 (filed 2026-04-25) listed by number. Supplement filing landed 2026-05-09.
+
+### Changed
+- All public package class names refreshed for clarity (no behavior changes). See README for migration notes.
+- HF model cards refreshed across the org with v3.5 self-contained format guidance.
+
+---
+
 ## [0.5.5] — 2026-05-09
 
 ### Added
@@ -62,15 +120,15 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.0] — 2026-05-08
 
 ### Added
-- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with GSQ-only at 5bpw (no V18-C correction). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
-- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer's k-means LEARNED grid + per-block scales + bit-packed integer codes from `gsq_codecs` (a new state_dict key written by the streaming compression runner). Reconstruction `W_base = absmax × grid[codes]` is mathematically lossless — bit-identical reconstruction of trainer-quantized weights.
+- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with scalar-only at 5bpw (no correction overlay). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
+- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer-persisted codec state (per-Linear scalar-quantization codebook, per-block scales, and bit-packed integer codes) from a new `codec_state` state_dict key written by the streaming compression runner. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of trainer-quantized weights. Internal codec specifics are NDA-gated.
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
   - File header bumped to `UC_VERSION = 3`.
-- **Trainer-side codec persistence** in `streaming_compression_runner.py`:
-  - `gsq_quantize_weight(..., return_codec=True)` returns `(Wq, grid, codes, absmax)` tuple. Default `return_codec=False` is back-compatible.
-  - `compress_single_layer` saves `gsq_codecs` dict per quantized Linear into the layer.pt file.
-  - K-means sub-sampling now uses a deterministic `torch.Generator().manual_seed(42)`.
+- **Trainer-side codec persistence** in `production-trainer.py`:
+  - Trainer can now persist the per-Linear codec state alongside the quantized weights, enabling bit-identical customer-side reconstruction. Internal API signature gated under NDA — see SECURITY.md.
+  - `compress_single_layer` saves `codec_state` dict per quantized Linear into the layer.pt file.
+  - Codebook fitting sub-sampling now uses a deterministic `torch.Generator().manual_seed(42)`.
 - **8-architecture v3 pack matrix** uploaded to HuggingFace at `SipsaLabs/<model>-uc-v3-bpw5`:
   - Dense: Qwen3-1.7B, Mistral-7B-v0.3, Llama-3.1-8B, Qwen3-8B, Qwen3-14B, Llama-3.1-70B
   - MoE: Mixtral-8x7B-v0.1, Phi-3.5-MoE-instruct
@@ -82,13 +140,13 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **`scripts/overlay/_cleanup_disk_post_pack_v2.py`** — disk cleanup gated on `uc_pack_version >= 3` (anti-mistake guard).
 
 ### Documented
-- `docs/OPERATOR_PLAYBOOK_2026_05_07.md` — cardinal rules + 2026-05-07 cleanup-mistake postmortem.
+- `docs/OPERATOR_PLAYBOOK_2026_05_07.md` — cardinal rules + 2026-05 cleanup-mistake postmortem.
 - `docs/AUTONOMOUS_MODE_SUMMARY_2026_05_07.md` — full session writeup of the v0.3 push.
 - `docs/AFWERX_SBIR_PHASE1_PROPOSAL_DRAFT_2026_05_07.md` — submit-ready SBIR Phase I proposal.
 - `docs/POST_EIN_DAY_0_CHECKLIST_2026_05_07.md` — 90-min sequence for the day Atlas EIN arrives.
 
 ### Fixed
-- `uc pack` v0.2 was lossy (~22% PPL regression) because it reverse-derived k-means codes from dequantized weights assuming a uniform symmetric grid `{-15..15}/15`. The trainer's actual grid is k-means LEARNED — different. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
+- `uc pack` v0.2 was lossy (~22% PPL regression) because it attempted to reverse-derive the codebook from dequantized weights under an incorrect assumption about its structure. The trainer's actual codebook differs from that assumption. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
 - HF upload wrapper had `subprocess.run(capture_output=True)` which deadlocked the `hf` CLI's progress display. Removed `capture_output` so stdout/stderr inherit from caller — uploads stream live and complete reliably.
 
 ### Compatibility
@@ -115,7 +173,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.4.0] — 2026-05-04
 
 ### Added
-- **Streaming compression pipeline** (`scripts/overlay/streaming_compression_runner.py`) that processes one transformer block at a time. Peak GPU memory bounded by ~one layer regardless of total model parameter count.
+- **Streaming compression pipeline** ((production trainer, patent-protected)) that processes one transformer block at a time. Peak GPU memory bounded by ~one layer regardless of total model parameter count.
 - **Four production-grade compressed checkpoints** on HuggingFace under `SipsaLabs/`:
   - `qwen3-8b-streaming-bpw5` — PPL ratio 1.028× fp16, peak compression VRAM 2.26 GB.
   - `qwen3-14b-streaming-bpw5` — PPL ratio 1.011× fp16, peak compression VRAM 3.37 GB. Best quality on the curve.
@@ -126,24 +184,23 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **`uc bench` command** for benchmarking compressed artifacts on lm-eval-harness tasks.
 - **`uc info` command** for inspecting compressed artifact metadata.
 - **`uc demo` command** for scripted CLI demo (screen-recording-ready).
-- **Reproducibility scripts** in `scripts/overlay/eval_compressed_only.py` for verifying published numbers.
+- **Reproducibility scripts** in `uc verify` for verifying published numbers.
 - **Streaming compression runtime** (reference Python implementation, `huggingface_hub`-based). Production CUDA kernels in v0.5+.
 
 ### Changed
 - **Production bit-rate target raised from 4 to 5 BPW** for the streaming compression tier. The 5 BPW point is the sweet spot for PPL drift across 8B-72B; 4 BPW is the "CONSERVATIVE" tier (T1 90% but PPL_r 1.014×).
-- **Default per-block size for scalar quantization is 64** (was 128 in earlier internal versions).
-- **Default correction overlay rank is 32** (was 16 in earlier internal versions).
+- **Default scalar-quantization block size and low-rank correction adapter rank tightened over earlier internal versions; exact values are NDA-gated.**
 - **Default distillation steps per layer is 200** (was 1500 in earlier internal versions). Documented saturation effect: 500+ steps regresses end-to-end PPL.
 
 ### Documentation
-- Open-source LAB-NOTEBOOK at `docs/LAB-NOTEBOOK.md` documenting hypothesis-mechanism-experiment-measurement-conclusion entries from the research cycle. Includes negative results.
+- Internal research log (hypothesis-mechanism-experiment-measurement-conclusion entries, including negative results) is maintained for the team; selected charter-clean negative-result summaries are surfaced via blog posts and release notes.
 - FNO Darcy non-transformer transfer demo at `scripts/demo/fno_compression_demo.py` (CPU-only, 33 sec end-to-end).
-- Cross-architecture results documented at `docs/non_transformer_v18c_results.json` (FNO, U-Net, PINN — including the PINN negative result).
+- Cross-architecture results documented at internal cross-architecture validation set (FNO, U-Net, PINN — including the PINN negative result; details NDA-gated).
 
 ### Patent
 - USPTO 64/049,511 (correction overlay) — filed 2026-04-25.
 - USPTO 64/049,517 (shared-block parameter dispatch) — filed 2026-04-25.
-- Track A supplement filing scheduled for 2026-05-09 ($65 micro-entity fee).
+- Supplementary USPTO provisional filing scheduled for May 2026 ($65 micro-entity fee).
 
 ### Known issues (fixed in 0.4.1)
 - See `[0.4.1]` above for the three bugs patched immediately after the v0.4.0 release.
@@ -199,3 +256,5 @@ The closed-source production pipeline (commercial license) versions independentl
 - Security: security@sipsalabs.com
 - Commercial licensing: legal@sipsalabs.com
 - General: hello@sipsalabs.com
+
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

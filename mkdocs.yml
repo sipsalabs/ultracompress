@@ -1,0 +1,111 @@
+site_name: UltraCompress
+site_url: https://docs.sipsalabs.com
+site_description: Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517.
+site_author: Sipsa Labs, Inc.
+copyright: Copyright &copy; 2026 Sipsa Labs, Inc.
+
+repo_name: sipsalabs/ultracompress
+repo_url: https://github.com/sipsalabs/ultracompress
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+    - toc.integrate
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sipsalabs/ultracompress
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/sipsalabs
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/company/sipsa-labs
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ultracompress/
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Install: getting-started/install.md
+      - Quickstart: getting-started/quickstart.md
+      - Configuration: getting-started/configuration.md
+  - Commands:
+      - uc list: commands/list.md
+      - uc pull: commands/pull.md
+      - uc info: commands/info.md
+      - uc bench: commands/bench.md
+      - uc demo: commands/demo.md
+      - uc version: commands/version.md
+  - Concepts:
+      - Compression methods: concepts/compression-methods.md
+      - Bits per weight: concepts/bits-per-weight.md
+      - Catastrophic failures: concepts/catastrophic-failures.md
+      - Reproducibility: concepts/reproducibility.md
+  - Integration:
+      - With llama.cpp: integration/llamacpp.md
+      - With Hugging Face Transformers: integration/transformers.md
+      - With vLLM: integration/vllm.md
+      - With TensorRT-LLM: integration/tensorrt-llm.md
+  - Reference:
+      - Manifest schema: reference/manifest-schema.md
+      - Exit codes: reference/exit-codes.md
+      - Environment variables: reference/env-vars.md
+      - uc serve spec (v0.2): reference/uc-serve-spec.md
+      - uc compress spec (v0.2): reference/uc-compress-spec.md
+  - Contributing:
+      - Code of Conduct: contributing/code-of-conduct.md
+      - Contributing guide: contributing/index.md
+      - Security policy: contributing/security.md
+      - Release process: contributing/release-process.md
+  - Changelog: changelog.md
