@@ -48,8 +48,8 @@ The compression method applied. Currently one of:
 | Value | Description |
 |---|---|
 | `track-a-row-overlay` | Post-training row-overlay quantization (USPTO 64/049,511) |
-| `track-b-frr` | Fractal Residual Recursion (USPTO 64/049,517) |
-| `track-a+b` | Combined Row-Overlay Quantization + Fractal Residual Recursion stack |
+| `track-b-frr` | shared-block parameter dispatch (USPTO 64/049,517) |
+| `track-a+b` | Combined Row-Overlay Quantization + shared-block parameter dispatch stack |
 
 Future methods will be added as new strings; readers should accept unknown values gracefully.
 
