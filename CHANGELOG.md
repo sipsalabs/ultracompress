@@ -4,6 +4,27 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.6.6] - 2026-05-12
+
+### Changed
+- **Public-surface version alignment.** GitHub release tag `v0.6.6` published to match PyPI (`pypi.org/project/ultracompress/0.6.6/`). Repo README badge, pip-install command, and prose all bumped to v0.6.6 across `sipsalabs/ultracompress` and 35 of 40 SipsaLabs HuggingFace model cards. Cosmetic consistency only -- no functional changes.
+
+### Verified
+- 22 architectures end-to-end; canonical PPL ratios in `docs/BENCHMARKS_2026_05_10.json`. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU.
+
+## [0.6.5] - 2026-05-09
+
+### Added
+- **`uc pack` v0.2 format** -- self-contained pack files now persist all calibration norms and codec metadata inline. Removes the v0.1 dependency on a separate sidecar JSON for reconstruction; pack is the single source of truth.
+
+### Changed
+- `uc verify` now checks the inline metadata block before reconstruction, returning a precise mismatch diagnostic if a pack was produced under v0.1 trainer-side codec persistence.
+
+## [0.6.4] - 2026-05-08
+
+### Changed
+- Maintenance release. Charter scrubbing across runtime CLI strings + internal symbol names. No PPL or behavior changes vs v0.6.3.
+
 ## [0.6.3] — 2026-05-12
 
 ### Changed
