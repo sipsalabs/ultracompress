@@ -1,7 +1,7 @@
 # Patent Notice
 
 The compression methods implemented in this repository — including but not limited to:
-- Per-row scalar quantization at 5 bits per weight with a learned per-Linear codebook
+- Per-row scalar quantization at 5 bits per weight with a learned per-module codebook
 - A low-rank residual correction adapter trained via KL divergence distillation against a teacher
 - The bit-identical reconstruction contract from persisted codec state plus the correction adapter
 - The streaming per-layer compression pipeline that bounds peak VRAM to a single transformer layer
