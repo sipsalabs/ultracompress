@@ -8,7 +8,7 @@ Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed 
 [![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
 [![Hacker News](https://img.shields.io/badge/Hacker%20News-Live%20discussion-orange.svg)](https://news.ycombinator.com/item?id=48099107)
 
-> **Live on Hacker News today (2026-05-11):** [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107). OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is in **private beta** — drop-in replacement for `OPENAI_BASE_URL` once provisioned. Email founder@sipsalabs.com for early access (24-hour turnaround). The `pip install ultracompress` substrate is fully production today (no API key required for self-host). v0.6.2 strips internal codenames from package source; same lossless contract, same SHA-256 verifier.
+> **Live on Hacker News today (2026-05-11):** [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107). OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — Pro $99/mo + Team $499/mo at [sipsalabs.com/pricing](https://sipsalabs.com/pricing), or [free $5 credits](https://sipsalabs.com/get-access) (no card). Drop-in OpenAI base_url swap. The `pip install ultracompress` substrate is fully production today (no API key required for self-host). v0.6.2 strips internal codenames from package source; same lossless contract, same SHA-256 verifier.
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). First 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
@@ -86,7 +86,7 @@ Other notable verified results (full table in [Appendix](#appendix-full-architec
 - **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (scalar-only; the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 40 repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
 - **PyPI**: [pypi.org/project/ultracompress/0.6.2](https://pypi.org/project/ultracompress/0.6.2/).
-- **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) (private beta, email founder@sipsalabs.com for access).
+- **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) — self-serve [Pro $99/mo + Team $499/mo](https://sipsalabs.com/pricing) or [free $5 credits](https://sipsalabs.com/get-access).
 
 The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo there has files committed, `uc verify` will pass on it after `hf download`.
 
