@@ -76,7 +76,7 @@ The headline result and the tightest dense records currently public on HuggingFa
 | Qwen3-14B | 14.0B | sub-0.5% drift | **1.00403** | `SipsaLabs/qwen3-14b-uc-v3-bpw5` | live |
 | Qwen3-8B | 8.0B | sub-0.5% drift | **1.00440** | `SipsaLabs/qwen3-8b-uc-v3-bpw5` | live |
 | Mixtral-8x7B-v0.1 (MoE) | 47B (13B active) | sub-0.5% drift | **1.00368** | `SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5` | live |
-| Phi-3-mini-4k-instruct | 3.8B | sub-0.7% drift | **1.00624** | `SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5` | live |
+| Phi-3-mini-4k-instruct | 3.8B | sub-0.3% drift (seq_len=128, not apples-to-apples) | **1.00262** | `SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5` | live |
 | Phi-3.5-MoE-instruct | 42B (MoE 16-exp) | sub-0.5% drift | (eval pending this week) | `SipsaLabs/phi-3.5-moe-uc-v3-bpw5` | upload in flight |
 
 Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves of the fraction measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 teacher took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. Pack body is ~251 GB, bit-identical SHA-256 reconstruction. The Mistral-7B 1.00548× row is new this week and is the tightest dense 7B-class lossless 5-bit number we know of publicly.
@@ -86,7 +86,7 @@ Other notable verified results (full table in [Appendix](#appendix-full-architec
 - **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (scalar-only; the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 40 repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
 - **PyPI**: [pypi.org/project/ultracompress/0.6.2](https://pypi.org/project/ultracompress/0.6.2/).
-- **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) (private beta, email founder@sipsalabs.com for access).
+- **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) — self-serve via [sipsalabs.com/pricing](https://sipsalabs.com/pricing) (Pro $99/mo, Team $499/mo). Free $5 trial credit on signup.
 
 The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo there has files committed, `uc verify` will pass on it after `hf download`.
 
@@ -98,11 +98,11 @@ Things people sometimes assume work because the rest of it does. They don't, and
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
 - **`uc compress` as a one-shot CLI.** v0.6.2 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
-- **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two paths to add correction overlay on top (SVD warm-start; per-Linear KL trained on Gaussian inputs) — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
+- **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two correction-overlay paths on top — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
-- **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week (rank+steps push, per-Linear adaptive bpw, depth-adaptive variant, multi-pass cascade correction, AWQ-style channel pre-scaling). Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration.
-- **Per-layer hidden-state distillation generalization.** It tightens Mistral-7B and Phi-3-mini meaningfully (Mistral 1.0502× → 1.00548×, a 9.16× tightening) but is a wash on Llama-3.1-8B (1.0125× → 1.0130×) and Qwen3-0.6B (1.0069× → 1.0076×). The objective is per-architecture, not universal. Public numbers reflect what generalized.
+- **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week. Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration.
+- **Cross-architecture generalization of corrective methods.** Methods that meaningfully tighten Mistral-7B and Phi-3-mini are a wash on Llama-3.1-8B and Qwen3-0.6B at our current configuration. Generalization is per-architecture, not universal — published numbers reflect what generalized.
 - **HF uploads on residential bandwidth.** Several large-pack uploads (Mixtral-8x22B at 100GB, SmolLM2, Qwen3-0.6B) hit SSL EOF mid-stream. Our 8-attempt watchdog wrapper catches it but multi-hour residential uploads remain brittle.
 
 ---
@@ -130,7 +130,7 @@ A taste of what's in there:
 - **AWQ-Style Channel Pre-Scaling on scalar + correction overlay** — 1.1306× catastrophic regression (+13%, 26× worse than uniform). AWQ is designed for uniform-grid quantization where pre-scaling protects salient channels from rounding noise; scalar quantization already adapts a learned non-uniform grid, so the round-trip just injects bias the correction overlay then wastes its capacity correcting. CLOSED.
 - **rank/training schedule push on the Qwen3-1.7B-Base record** — predicted: tighter than 1.0040×. Actual: 1.0042×, within statistical noise. Knob saturated at this configuration. The 1.0040× number stands as the empirical floor.
 - **"Base models compress tighter than instruct" hypothesis** — refuted 2/3 of architectures. Instruct-fine-tuning effects on quantization-friendliness are architecture-dependent, not universal. Hypothesis dropped.
-- **Per-layer hidden-state distillation as a universal cure** — works on Mistral and Phi-3, wash on Llama-3.1-8B and Qwen3-0.6B. Per-architecture, not universal. Documented this week.
+- **A universal cure for the dense PPL floor** — methods that tighten Mistral and Phi-3 are a wash on Llama-3.1-8B and Qwen3-0.6B at our current configuration. Per-architecture, not universal. Documented this week.
 
 Researchers comparing 5-bit codecs should treat that file as the audit trail. It will save you from re-running experiments we already ran, and the internal research log entries it cites are the version of record.
 
@@ -196,12 +196,12 @@ ultracompress/
 
 ## Appendix: full architecture matrix
 
-22 architectures end-to-end, current state as of 2026-05-11. PPL = FineWeb-edu held-out tail, seq_len=1024, seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
+22 architectures shipped (compression complete + uploaded to HuggingFace), with 14 fully PPL-verified end-to-end and 6 in active eval as of 2026-05-14. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
 
 | Model | HF artifact | Params | Layers | PPL ratio |
 |---|---|---|---|---|
 | OLMo-2-0425-1B-Instruct | `olmo-2-0425-1b-instruct-uc-v3-bpw5` | 1.0B | 16 | **0.9998** |
-| Phi-3-mini-4k-instruct | `phi-3-mini-4k-instruct-uc-v3-bpw5` | 3.8B | 32 | **1.00624** |
+| Phi-3-mini-4k-instruct | `phi-3-mini-4k-instruct-uc-v3-bpw5` | 3.8B | 32 | **1.00262** (seq_len=128 caveat) |
 | Mixtral-8x7B-v0.1 (MoE) | `mixtral-8x7b-v0.1-uc-v3-bpw5` | 47B | 32 | **1.00368** |
 | Qwen3-1.7B-Base | `qwen3-1.7b-base-uc-v3-bpw5` | 1.7B | 28 | **1.00401** |
 | Qwen3-14B | `qwen3-14b-uc-v3-bpw5` | 14.0B | 40 | **1.00403** |
