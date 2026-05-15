@@ -6,9 +6,9 @@ Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed 
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
-[![Hacker News](https://img.shields.io/badge/Hacker%20News-Live%20discussion-orange.svg)](https://news.ycombinator.com/item?id=48099107)
+[![Security](https://img.shields.io/badge/v0.6.9-RCE--class%20fix%20shipped-green.svg)](./CHANGELOG.md)
 
-> **Live on Hacker News today (2026-05-11):** [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107). OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. The `pip install ultracompress` substrate is fully production today (no API key required for self-host). v0.6.9 strips internal codenames from package source; same lossless contract, same SHA-256 verifier.
+> **v0.6.9 shipped 2026-05-15:** RCE-class fix on `torch.load()` paths + MANIFEST-scrubbed sdist (closes a leak path on prior 0.6.7 / 0.6.8 sdists, both now yanked from PyPI). Mistral-7B-v0.3 hits **1.00548×** — tightest dense 7B-class lossless 5-bit number on the public HF Hub. OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. `pip install ultracompress` substrate is fully production today (no API key required for self-host).
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). First 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
@@ -251,5 +251,5 @@ ultracompress/
 - HuggingFace: [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs)
 - PyPI: [`pypi.org/project/ultracompress`](https://pypi.org/project/ultracompress/0.6.9/)
 - API: [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1)
-- Hacker News (live discussion): [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107)
+- GitHub release: [v0.6.9](https://github.com/sipsalabs/ultracompress/releases/tag/v0.6.9)
 - Sponsors: [`github.com/sponsors/sipsalabs`](https://github.com/sponsors/sipsalabs)
