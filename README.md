@@ -2,13 +2,13 @@
 
 Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed by a SHA-256 manifest.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.6.2-blue.svg)](https://pypi.org/project/ultracompress/0.6.2/)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.9-blue.svg)](https://pypi.org/project/ultracompress/0.6.9/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
 [![Hacker News](https://img.shields.io/badge/Hacker%20News-Live%20discussion-orange.svg)](https://news.ycombinator.com/item?id=48099107)
 
-> **Live on Hacker News today (2026-05-11):** [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107). OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is in **private beta** — drop-in replacement for `OPENAI_BASE_URL` once provisioned. Email founder@sipsalabs.com for early access (24-hour turnaround). The `pip install ultracompress` substrate is fully production today (no API key required for self-host). v0.6.2 strips internal codenames from package source; same lossless contract, same SHA-256 verifier.
+> **Live on Hacker News today (2026-05-11):** [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107). OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. The `pip install ultracompress` substrate is fully production today (no API key required for self-host). v0.6.9 strips internal codenames from package source; same lossless contract, same SHA-256 verifier.
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). First 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
@@ -23,12 +23,12 @@ We're a small lab shipping this in public while the patents are pending. Most da
 ## Try it (3 commands)
 
 ```bash
-pip install ultracompress==0.6.2 huggingface_hub[cli]
+pip install ultracompress==0.6.9 huggingface_hub[cli]
 hf download SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5 --local-dir ./pack
 uc verify ./pack
 ```
 
-Expected output (real, not aspirational — this is what the v0.6.2 verifier prints on a clean pull of the 1.7B-Base artifact):
+Expected output (real, not aspirational — this is what the v0.6.9 verifier prints on a clean pull of the 1.7B-Base artifact):
 
 ```
 uc_pack_version: 3  (LOSSLESS, self-contained)
@@ -62,7 +62,7 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 ## What works today (verified, with JSON receipts)
 
-PyPI `v0.6.2` is the current release. v0.6.2 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
+PyPI `v0.6.9` is the current release. v0.6.9 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
 **End-to-end validated at 5 bpw across 22 transformer architectures** (dense 0.6B → 405B, MoE 47B → 235B, state-space). Of those, **16 have a verified PPL ratio against their bf16 baseline** on the FineWeb-edu held-out tail at seq_len=1024, seed=42; 6 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/` or `docs/PPL_EVAL_*.json`.
 
@@ -85,7 +85,7 @@ Other notable verified results (full table in [Appendix](#appendix-full-architec
 
 - **First lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (scalar-only; the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 40 repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
-- **PyPI**: [pypi.org/project/ultracompress/0.6.2](https://pypi.org/project/ultracompress/0.6.2/).
+- **PyPI**: [pypi.org/project/ultracompress/0.6.9](https://pypi.org/project/ultracompress/0.6.9/).
 - **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) — self-serve via [sipsalabs.com/pricing](https://sipsalabs.com/pricing) (Pro $99/mo, Team $499/mo). Free $5 trial credit on signup.
 
 The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo there has files committed, `uc verify` will pass on it after `hf download`.
@@ -97,7 +97,7 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
-- **`uc compress` as a one-shot CLI.** v0.6.2 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
+- **`uc compress` as a one-shot CLI.** v0.6.9 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
 - **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two correction-overlay paths on top — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred. Documented as failures #1 and #2 in [HONEST_NEGATIVE_RESULTS](docs/HONEST_NEGATIVE_RESULTS_2026_05_08.md).
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
@@ -249,7 +249,7 @@ ultracompress/
 - Security: `security@sipsalabs.com`
 - Press: `press@sipsalabs.com`
 - HuggingFace: [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs)
-- PyPI: [`pypi.org/project/ultracompress`](https://pypi.org/project/ultracompress/0.6.2/)
+- PyPI: [`pypi.org/project/ultracompress`](https://pypi.org/project/ultracompress/0.6.9/)
 - API: [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1)
 - Hacker News (live discussion): [news.ycombinator.com/item?id=48099107](https://news.ycombinator.com/item?id=48099107)
 - Sponsors: [`github.com/sponsors/sipsalabs`](https://github.com/sponsors/sipsalabs)
