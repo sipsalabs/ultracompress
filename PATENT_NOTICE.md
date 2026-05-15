@@ -1,12 +1,6 @@
 # Patent Notice
 
-The compression methods implemented in this repository — including but not limited to:
-- Per-row scalar quantization at 5 bits per weight with a learned per-module codebook
-- A low-rank residual correction adapter trained via KL divergence distillation against a teacher
-- The bit-identical reconstruction contract from persisted codec state plus the correction adapter
-- The streaming per-layer compression pipeline that bounds peak VRAM to a single transformer layer
-
-— are covered under United States Patent and Trademark Office provisional applications **64/049,511** and **64/049,517** (filed April 2026), with additional continuations and supplements pending.
+The compression and reconstruction methods implemented in this repository are the subject of United States provisional patent applications filed by Sipsa Labs, Inc. in April 2026, with additional continuations and supplements pending. Specific claim scope and application details are available to commercial counterparties under NDA.
 
 ## License grant (Apache 2.0)
 

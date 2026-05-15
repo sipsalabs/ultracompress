@@ -21,8 +21,7 @@ SCOPE OF THIS LICENSE
 The Apache-2.0 License above applies to the source code of this CLI
 (`ultracompress-cli`). It does NOT automatically grant any rights to the
 patent-pending compression methodologies that produce the pre-compressed
-artifacts (the subject of pending U.S. Provisional Patent Applications
-USPTO 64/049,511 and 64/049,517).
+artifacts (the subject of pending U.S. provisional patent applications).
 
 Pre-compressed model artifacts distributed via the Hugging Face Hub are
 subject to separate license terms accompanying each artifact. The model

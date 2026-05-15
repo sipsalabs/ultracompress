@@ -31,7 +31,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **Charter-clean PyPI metadata.** v0.6.2 frozen package description on PyPI was scrubbed of internal codename references that had survived earlier sweeps. v0.6.3 ships an updated `pyproject.toml` description and keyword set that are verifiably leak-free.
 
 ### Added
-- **PATENT_NOTICE.md** at the repo root, summarizing the two USPTO Provisional filings (64/049,511 + 64/049,517). Linked from sipsalabs.com homepage.
+- **PATENT_NOTICE.md** at the repo root, summarizing the U.S. provisional patent applications. Linked from sipsalabs.com homepage.
 
 ### Backward compatibility
 - All 40 published `SipsaLabs/*` HuggingFace artifacts continue to verify clean under v0.6.3. Pin `ultracompress==0.6.2` if you need the prior package metadata exactly.
@@ -48,7 +48,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **22 architectures verified** spanning dense (0.6B–405B), Mixture-of-Experts (47B–235B active), and state-space (Mamba-2.8B). Full matrix on the README and `huggingface.co/SipsaLabs`.
 
 ### Changed
-- **Package source codename strip.** All internal method nomenclature replaced with public phrasing in the published package source (preserving runtime behavior). Public surface now uses `low-rank correction overlay`, `streaming compression pipeline`, `shared-block parameter dispatch`, `5-bit quantizer`. CLI flags + class names follow.
+- **Package source codename strip.** All internal method nomenclature replaced with neutral public phrasing in the published package source (preserving runtime behavior). CLI flags + class names follow.
 - **CHARTER ENFORCEMENT** on documentation. Each public-bound document scanned against an internal forbidden-term list before publish. Six historical HuggingFace model cards (`*-uc2p79`, `qwen3-1.7b-trackb-preview`) had latent codename references — those have been scrubbed live with the same regex pipeline.
 - **`uc verify` output** prints `uc_pack_version: 3 (LOSSLESS, self-contained)` consistently. Stale `v3.0` warnings removed for v3.5 packs.
 
@@ -75,7 +75,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ### Added
 - **License migration to BUSL-1.1 with Additional Use Grant.** Free for sub-$1M ARR companies, research, and individuals. Auto-converts to Apache 2.0 four years after each release. v0.5.x stays Apache-2.0 in perpetuity on the `legacy/0.5.x` branch — that commitment cannot be revoked.
 - **NOTICE.md** explaining the license rationale.
-- Patent posture clarified in PATENT_NOTICE.md. USPTO provisionals 64/049,511 + 64/049,517 (filed 2026-04-25) listed by number. Supplement filing landed 2026-05-09.
+- Patent posture clarified in PATENT_NOTICE.md. U.S. provisional patent applications (filed 2026-04-25). Supplement filing landed 2026-05-09.
 
 ### Changed
 - All public package class names refreshed for clarity (no behavior changes). See README for migration notes.
@@ -219,9 +219,9 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - Cross-architecture results documented at internal cross-architecture validation set (FNO, U-Net, PINN — including the PINN negative result; details NDA-gated).
 
 ### Patent
-- USPTO 64/049,511 (correction overlay) — filed 2026-04-25.
-- USPTO 64/049,517 (shared-block parameter dispatch) — filed 2026-04-25.
-- Supplementary USPTO provisional filing scheduled for May 2026 ($65 micro-entity fee).
+- U.S. provisional patent application (filed 2026-04-25, patent pending).
+- U.S. provisional patent application (filed 2026-04-25, patent pending).
+- Supplementary U.S. provisional patent filing scheduled for May 2026.
 
 ### Known issues (fixed in 0.4.1)
 - See `[0.4.1]` above for the three bugs patched immediately after the v0.4.0 release.
@@ -235,7 +235,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - Initial published checkpoints: `qwen3-1.7b-uc2p79`, `qwen3-8b-uc2p79`, `mistral-7b-uc2p79`, `smollm2-1.7b-uc2p79`, `olmo2-1b-uc2p79`, `qwen3-1.7b-trackb-preview`.
 
 ### Notes
-- Pre-streaming-compression release. The `uc2p79` format used the row-overlay-rotation packing at 2.798 bpw.
+- Pre-streaming-compression release. The `uc2p79` format used the patent-pending weight-level packing at 2.798 bpw.
 
 ---
 
@@ -278,4 +278,4 @@ The closed-source production pipeline (commercial license) versions independentl
 - Commercial licensing: legal@sipsalabs.com
 - General: hello@sipsalabs.com
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and training procedure are patent-pending.

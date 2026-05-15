@@ -94,7 +94,7 @@ Compressed model checkpoints are released under the **Sipsa Labs Research Evalua
 
 The base model weights (embedding, LM head, layer norm) are subject to the original model's license (Qwen: Apache 2.0).
 
-Patent pending: USPTO applications 64/049,511 and 64/049,517, plus May 2026 supplements.
+Patent pending: U.S. provisional patent applications, plus 2026 supplements.
 
 ---
 
@@ -108,4 +108,4 @@ For pilot/commercial inquiries: founder@sipsalabs.com
 
 *The 32B and 72B checkpoints are significantly larger downloads. If you're on a metered connection, start with the 8B checkpoint.*
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and training procedure are patent-pending.

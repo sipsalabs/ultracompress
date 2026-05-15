@@ -6,7 +6,7 @@
 
 **From**: Sipsa Labs, Inc. (Delaware C-Corp in formation; sipsalabs.com)
 
-**Filed IP**: USPTO 64/049,511 + 64/049,517 (both filed 2026-04-25, patent pending)
+**Filed IP**: U.S. provisional patent applications (filed April 2026, patent pending)
 
 ---
 
@@ -23,13 +23,13 @@ The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) hit a wall at 4 bits per w
 
 ## What we deliver
 
-### Row-Overlay Quantization (USPTO 64/049,511) — shipping now
+### Weight-level compression method (patent pending) — shipping now
 
 Sub-3-bits-per-weight on a 6-model head-to-head cohort. **30% smaller than bitsandbytes NF4 at equivalent retention.** Zero catastrophic failures across the cohort — the only public method at this compression frontier with that property in the cohort we tested.
 
-### shared-block parameter dispatch (USPTO 64/049,517) — v0.2 (Q3 2026)
+### Architectural compression method (patent pending) — v0.2 (Q3 2026)
 
-Architectural compression beyond the published academic frontier. Combined with the Row-Overlay Quantization stack, the strongest end-to-end ratio we've measured for transformer language models in our cohort. Public-safe shared-block parameter dispatch evidence at [docs/evidence/matrix.md](evidence/matrix.md).
+Architectural compression beyond the published academic frontier. Combined with the weight-level method, the strongest end-to-end ratio we've measured for transformer language models in our cohort. Public-safe architectural-compression evidence at [docs/evidence/matrix.md](evidence/matrix.md).
 
 ### What ships under a pilot
 
@@ -115,10 +115,10 @@ We respond same-day during US business hours and target a kickoff call within 5 
 
 ---
 
-*UltraCompress v0.1 alpha shipped 2026-04-25. Pre-compressed reference models release throughout April–May 2026. shared-block parameter dispatch support and `uc compress` ship in v0.2 (Q3 2026), gated on patent prosecution timing.*
+*UltraCompress v0.1 alpha shipped 2026-04-25. Pre-compressed reference models release throughout April–May 2026. Architectural compression support and `uc compress` ship in v0.2 (Q3 2026), gated on patent prosecution timing.*
 
 *The CLI is Apache 2.0. The pre-compressed model artifacts are licensed separately (research-free or commercial-paid). The compression methodology is patent pending.*
 
 *sipsalabs.com · github.com/sipsalabs/ultracompress · huggingface.co/sipsalabs*
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and training procedure are patent-pending.

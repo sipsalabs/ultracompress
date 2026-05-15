@@ -22,13 +22,11 @@ license: Apache-2.0
 abstract: >-
   UltraCompress is the open-source CLI for downloading, inspecting, and benchmarking
   pre-compressed large language model artifacts produced by the Sipsa Labs compression
-  stack. The compression methods themselves — post-training row-overlay quantization
-  (the production substrate) and shared-block parameter dispatch (the shared-block experimental substrate) — are the subject of pending
-  U.S. provisional patent applications USPTO 64/049,511 and USPTO 64/049,517,
-  filed April 25, 2026.
+  stack. The patent-pending compression methods themselves are the subject of pending
+  U.S. provisional patent applications filed April 2026.
 
   On a 6-model x 8-method x 500-sample head-to-head benchmark, the v0.1 reference
-  artifacts (the production substrate) achieve sub-3 bits per weight (2.798 bpw) with 95.6% cohort
+  artifacts achieve sub-3 bits per weight (2.798 bpw) with 95.6% cohort
   median top-1 retention and zero catastrophic failures — the only public method
   at this compression frontier with that property.
 
@@ -54,4 +52,4 @@ preferred-citation:
     - name: "Sipsa Labs, Inc."
   year: 2026
   url: "https://github.com/sipsalabs/ultracompress"
-  notes: "U.S. patent applications 64/049,511 and 64/049,517, patent pending"
+  notes: "U.S. provisional patent applications, patent pending"

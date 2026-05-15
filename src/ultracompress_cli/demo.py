@@ -112,7 +112,7 @@ def _scene_list(console: Console, speed: float, no_pause: bool) -> None:
         _pause(0.5, speed)
     console.print()
     console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]")
-    console.print("[dim]Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517[/dim]")
+    console.print("[dim]Extreme compression for large language models. Patent pending[/dim]")
     console.print()
     with console.status("[cyan]Querying Hugging Face Hub..."):
         _pause(1.0, speed)
@@ -209,7 +209,7 @@ def _scene_close(console: Console, speed: float, no_pause: bool) -> None:
     console.print("  [bold]pip install ultracompress[/bold]")
     console.print()
     console.print("  [dim]sipsalabs.com[/dim]")
-    console.print("  [dim]Patent pending — USPTO 64/049,511 + 64/049,517[/dim]")
+    console.print("  [dim]Patent pending[/dim]")
     console.print()
     console.print("[bold cyan]" + "=" * 60 + "[/bold cyan]")
     if not no_pause:

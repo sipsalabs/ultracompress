@@ -27,7 +27,7 @@ def _banner() -> None:
     console.print("[bold cyan]UltraCompress[/bold cyan] "
                   f"[dim]v{__version__}[/dim]  "
                   f"[dim]· {PORTFOLIO_URL}[/dim]")
-    console.print("[dim]Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517[/dim]")
+    console.print("[dim]Extreme compression for large language models. Patent pending[/dim]")
     console.print()
 
 

@@ -8,7 +8,7 @@ This repository contains the **UltraCompress CLI** (`uc`, `ultracompress`) — t
 
 The repository does **not** contain:
 
-- The compression methods themselves (the subject of pending U.S. patent applications 64/049,511 and 64/049,517)
+- The compression methods themselves (the subject of pending U.S. patent applications)
 - Training code, weight overlays, or architectural-compression internals
 - Pre-compressed model weights (distributed via the Hugging Face Hub under their own license; rolling release through April–May 2026)
 

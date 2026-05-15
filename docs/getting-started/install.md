@@ -35,7 +35,7 @@ If you need a specific CUDA version, install PyTorch first per [pytorch.org](htt
 ```bash
 uc --version
 # UltraCompress v0.1.0  · https://sipsalabs.com
-# Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517
+# Extreme compression for large language models. Patent pending
 
 uc --help
 # Lists all sub-commands

@@ -14,7 +14,7 @@ The canonical version of this file lives in the repository at [`CHANGELOG.md`](h
 
 ## [0.1.0] — 2026-04-25
 
-Initial public alpha release. Patent-pending compression methods (USPTO 64/049,511 + 64/049,517) underpinning the pre-compressed reference models on the Hugging Face Hub.
+Initial public alpha release. Patent-pending compression methods underpinning the pre-compressed reference models on the Hugging Face Hub.
 
 ### Added
 
@@ -37,4 +37,4 @@ Initial public alpha release. Patent-pending compression methods (USPTO 64/049,5
 [Unreleased]: https://github.com/sipsalabs/ultracompress/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.0
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and training procedure are patent-pending.
