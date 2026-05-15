@@ -25,7 +25,7 @@ uc pull <model-id> [-o <output-dir>] [--revision <ref>]
 
 ```
 UltraCompress v0.1.0  · https://sipsalabs.com
-Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517
+Extreme compression for large language models. Patent pending
 
 → Pulling sipsalabs/<model-id> to models/sipsalabs_<model-id>
 ⠋ downloading...

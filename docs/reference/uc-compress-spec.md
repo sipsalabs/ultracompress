@@ -15,7 +15,7 @@ This feature is planned for v0.2 (Q3 2026). To register interest, email `founder
 1. **One-command compression** of any HF Hub or local-disk transformer model
 2. **Reproducibility** — every output artifact ships with a complete provenance manifest
 3. **Sensible defaults** — `uc compress <model>` Just Works for typical models without per-model tuning
-4. **Pluggable compression methods** — both Row-Overlay Quantization (RoQ) and shared-block parameter dispatch (shared-block) accessible via flags
+4. **Pluggable compression methods** — both the weight-level and architectural compression methods accessible via flags
 5. **Resumable** — long-running compression jobs can resume after interruption
 
 ## Synopsis (planned)
@@ -64,7 +64,7 @@ uc compress <source-model> [--bpw FLOAT] [--method STR] [--track STR]
 ## Example
 
 ```bash
-# Default settings — compress Qwen3-1.7B to 2.798 bpw via Row-Overlay Quantization (RoQ)
+# Default settings — compress Qwen3-1.7B to 2.798 bpw via the weight-level method
 uc compress Qwen/Qwen3-1.7B
 
 # Output:
@@ -76,7 +76,7 @@ uc compress Qwen/Qwen3-1.7B
 #   └── LICENSE                     (Sipsa Labs Research and Evaluation License)
 ```
 
-## shared-block parameter dispatch (shared-block) (architectural compression)
+## Architectural compression
 
 Architectural compression is the most aggressive variant; it produces a model with substantially fewer trainable parameters but requires a calibration pass on representative training data.
 
@@ -87,13 +87,13 @@ uc compress Qwen/Qwen3-1.7B --method shared-block --output-dir ./models/qwen3-sh
 
 The calibration data is a JSONL file with prompt/response pairs representative of the customer's deployment workload. The compression service uses this to validate that the architectural-compression preserves quality on the customer's distribution.
 
-## Combined Row-Overlay Quantization (RoQ) + shared-block parameter dispatch (shared-block)
+## Combined weight-level + architectural compression
 
 ```bash
-uc compress Qwen/Qwen3-1.7B --method roq+shared-block --output-dir ./models/qwen3-uc-combo
+uc compress Qwen/Qwen3-1.7B --method track-a+b --output-dir ./models/qwen3-uc-combo
 ```
 
-Stacks shared-block parameter dispatch (shared-block)'s architectural compression with Row-Overlay Quantization (RoQ)'s quantization. ~26.7× end-to-end with 68% top-10 retention (cohort median).
+Stacks the architectural compression method with the weight-level quantization method. ~26.7× end-to-end with 68% top-10 retention (cohort median).
 
 ## Why a remote service vs. local
 
@@ -120,18 +120,18 @@ Every compression run is deterministic given the same seed + same source model. 
 - Source model SHA-256
 - Compression method version
 - Seed
-- Calibration data SHA-256 (for shared-block parameter dispatch (shared-block) + combined)
+- Calibration data SHA-256 (for the architectural method + combined)
 - Compute environment fingerprint
 
 A second `uc compress` run with the same inputs and same seed produces a byte-identical output (within GPU-arithmetic non-determinism bounds; we publish the bound).
 
 ## Resumability
 
-For long-running compression jobs (shared-block parameter dispatch (shared-block) at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
+For long-running compression jobs (the architectural method at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
 
 ```bash
 # Submit the job
-uc compress Qwen/Qwen3-32B --method shared-block --bpw 2.5 --output-dir ./models/qwen3-32b-shared-block-2p5
+uc compress Qwen/Qwen3-32B --method track-b-shared-block --bpw 2.5 --output-dir ./models/qwen3-32b-trackb-2p5
 
 # Job interrupted (say, network drop)
 # Resume with the same command:
@@ -178,9 +178,9 @@ v0.1 doesn't have `uc compress`. The migration path:
 
 | Feature | Target |
 |---|---|
-| Basic `uc compress` with Row-Overlay Quantization (RoQ) | v0.2 (Q3 2026) |
-| shared-block parameter dispatch (shared-block) support (architectural compression) | v0.2 |
-| Combined Row-Overlay Quantization (RoQ) + shared-block parameter dispatch (shared-block) | v0.2 |
+| Basic `uc compress` with the weight-level method | v0.2 (Q3 2026) |
+| Architectural compression method support | v0.2 |
+| Combined weight-level + architectural compression | v0.2 |
 | Resumable jobs | v0.2.1 |
 | Custom calibration cohorts (enterprise tier) | v0.3 |
 | Encoder-only model support (T5, BERT) | v0.3 |

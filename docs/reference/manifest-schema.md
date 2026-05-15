@@ -47,9 +47,9 @@ The compression method applied. Currently one of:
 
 | Value | Description |
 |---|---|
-| `track-a-row-overlay` | Post-training row-overlay quantization (USPTO 64/049,511) |
-| `track-b-shared-block` | shared-block parameter dispatch (USPTO 64/049,517) |
-| `track-a+b` | Combined Row-Overlay Quantization + shared-block parameter dispatch stack |
+| `track-a-row-overlay` | Patent-pending weight-level compression method |
+| `track-b-shared-block` | Patent-pending architectural compression method |
+| `track-a+b` | Combined weight-level + architectural compression stack |
 
 Future methods will be added as new strings; readers should accept unknown values gracefully.
 
@@ -82,7 +82,7 @@ License identifier. Currently one of:
 
 ### `patents`
 
-List of patent numbers covering the method. Always populated. Example: `["USPTO 64/049,511"]`.
+Patent status of the method. Always populated. Example: `["patent pending"]`.
 
 ### `created_at`
 
@@ -143,7 +143,7 @@ We commit to never removing or repurposing existing fields within a major schema
     }
   },
   "license": "sipsalabs-research-eval-1.0",
-  "patents": ["USPTO 64/049,511"],
+  "patents": ["patent pending"],
   "created_at": "2026-04-22T18:32:11Z",
   "tooling_version": "ultracompress-internal-publishing/0.3.2",
   "notes": "Initial public release"

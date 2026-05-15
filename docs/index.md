@@ -12,7 +12,7 @@ UltraCompress shrinks transformer language models below the 4-bits-per-weight fl
 !!! info "v0.1 alpha"
     Pre-compressed reference models are uploading to the Hugging Face Hub throughout April–May 2026. Run `uc list` for the live catalog at any time.
 
-The compression methods are the subject of pending U.S. patent applications (USPTO 64/049,511 and 64/049,517, filed 2026-04-25). This CLI is the open-source distribution layer; pre-compressed reference models roll out through the [`sipsalabs`](https://huggingface.co/sipsalabs) organization on the Hugging Face Hub through April–May 2026 — `uc list` shows the live catalog at any time.
+The compression methods are the subject of pending U.S. patent applications (filed April 2026). This CLI is the open-source distribution layer; pre-compressed reference models roll out through the [`sipsalabs`](https://huggingface.co/sipsalabs) organization on the Hugging Face Hub through April–May 2026 — `uc list` shows the live catalog at any time.
 
 ## Install
 

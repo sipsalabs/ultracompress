@@ -8,7 +8,7 @@ matches the inflated form, not the on-disk form).
 
 Estimates storage, bandwidth, and (v0.2-projected) inference-memory savings for
 a model fleet when migrating from FP16 / NF4 / int8 baselines to UltraCompress
-2.798-bpw Row-Overlay Quantization (RoQ) reference artifacts.
+2.798-bpw patent-pending compression reference artifacts.
 
 Usage:
     python savings_calculator.py

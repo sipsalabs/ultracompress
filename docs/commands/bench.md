@@ -28,7 +28,7 @@ uc bench <path> [--tasks <list>] [--limit <int>] [--batch-size <int>] [--device 
 
 ```
 UltraCompress v0.1.0  · https://sipsalabs.com
-Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517
+Extreme compression for large language models. Patent pending
 
 → Benchmarking ./models/sipsalabs_<model-id> on tasks: hellaswag,arc_challenge
   limit=500  batch_size=8  device=cuda:0

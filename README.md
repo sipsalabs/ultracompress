@@ -5,14 +5,14 @@ Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed 
 [![PyPI](https://img.shields.io/badge/pypi-0.6.9-blue.svg)](https://pypi.org/project/ultracompress/0.6.9/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Patent](https://img.shields.io/badge/USPTO-64%2F049%2C511%20%2B%2064%2F049%2C517-orange.svg)](./PATENT_NOTICE.md)
+[![Patent](https://img.shields.io/badge/patent-pending-orange.svg)](./PATENT_NOTICE.md)
 [![Security](https://img.shields.io/badge/v0.6.9-RCE--class%20fix%20shipped-green.svg)](./CHANGELOG.md)
 
 > **v0.6.9 shipped 2026-05-15:** RCE-class fix on `torch.load()` paths + MANIFEST-scrubbed sdist (closes a leak path on prior 0.6.7 / 0.6.8 sdists, both now yanked from PyPI). Mistral-7B-v0.3 hits **1.00548×** — tightest dense 7B-class lossless 5-bit number on the public HF Hub. OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. `pip install ultracompress` substrate is fully production today (no API key required for self-host).
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). First 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
-UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack you can verify against the original — not "1% PPL drift on WikiText," but a deterministic reconstruction that hashes byte-for-byte to what the trainer measured. That's the honest definition of lossless we care about: an auditor can re-derive every weight from the pack alone, and the SHA-256 manifest fails loudly if anything drifted. Codec internals are patent-protected.
+UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack you can verify against the original — not "1% PPL drift on WikiText," but a deterministic reconstruction that hashes byte-for-byte to what the trainer measured. That's the honest definition of lossless we care about: an auditor can re-derive every weight from the pack alone, and the SHA-256 manifest fails loudly if anything drifted. Codec internals are patent-pending.
 
 It exists because the bf16-equivalent quality bar matters in places where "good enough on MMLU" isn't enough — defense, FDA-regulated healthcare, SR 11-7 model validation, internal red-team eval at frontier labs. And as a side-effect of the streaming compression path, it lets us put a 405B-parameter model through a single 32 GB consumer GPU without renting an H100 cluster.
 
@@ -109,7 +109,7 @@ Things people sometimes assume work because the rest of it does. They don't, and
 
 ## Why this isn't AWQ / GPTQ / EXL3
 
-Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains the trainer's persisted codec state plus a low-rank correction overlay trained per-layer against teacher activations, and the deterministic reconstruction reproduces — bit-identically — the dequantized weight the trainer used during distillation. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith. Codec internals are patent-protected.
+Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains the trainer's persisted codec state plus a low-rank correction overlay trained per-layer against teacher activations, and the deterministic reconstruction reproduces — bit-identically — the dequantized weight the trainer used during distillation. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith. Codec internals are patent-pending.
 
 This matters when "the model picks a slightly-wrong variable name" is a regulatory finding rather than a cosmetic complaint. Defense / aerospace deploy-bit-exactness is a compliance requirement. FDA-regulated healthcare AI requires model equivalence between dev and deploy. SR 11-7 (Federal Reserve model validation) requires reproducible audit recovery. A frontier lab's red-team eval is only valid against the same inference path the team will actually deploy.
 
@@ -153,10 +153,10 @@ If your workload is "MMLU has to stay above X" and you're not pushing the model 
 
 Sipsa Labs is a small lab shipping in public. Our compression methods are patent-pending; details are in [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). Short version: BUSL-1.1 with Additional Use Grant gives you full use of the published source for any non-competing purpose including running it commercially on your own infrastructure if you're under $1M ARR or doing research, and we'd like a conversation if you're building a derivative product whose core value depends on the underlying invention. Email `founder@sipsalabs.com`.
 
-We're cash-constrained pre-funding. Spending discipline is real: only hard expense booked through end of June is the USPTO conversion fee. That means honest engagement keeps this shipping faster than anything else can:
+We ship in public and work with a small number of design partners. The most useful ways to engage:
 
 - **Paid Phase 0 POC** — `founder@sipsalabs.com`, $5K / 5 business days / customer-picked model. The Day 7 deliverable is a pack you can self-verify with `uc verify` + benchmark with `uc bench`. Acceptance gate is `uc verify` PASS + PPL ratio within 1.5% on your eval set. Cadence is documented in [`docs/CUSTOMER_ONBOARDING_v0.5.5_2026_05_09.md`](docs/CUSTOMER_ONBOARDING_v0.5.5_2026_05_09.md).
-- **GitHub Sponsors** — [github.com/sponsors/sipsalabs](https://github.com/sponsors/sipsalabs). Keeps the GPU bills paid while the rest of this gets to the next milestone.
+- **GitHub Sponsors** — [github.com/sponsors/sipsalabs](https://github.com/sponsors/sipsalabs). Supports continued open releases.
 - **Press / commentary** — `press@sipsalabs.com`. Most useful framing is "first 5-bit lossless library on the public HF Hub" and "first 405B compression on a single 32 GB consumer GPU" — both verifiable via the artifacts above.
 - **Twitter** — `@SipsaLabs`. New account; if you found this repo first that's because we ship faster than we tweet.
 - **CHANGELOG** — [v0.6.9 release notes](./CHANGELOG.md) for the RCE-class fix narrative + MANIFEST scrub.
@@ -230,7 +230,7 @@ ultracompress/
 - **v0.6+** ships under the [Business Source License 1.1](./LICENSE) with an Additional Use Grant for research, individuals, and companies under $1M ARR. Auto-converts to Apache 2.0 four years after each release. See [NOTICE.md](./NOTICE.md) for the full why.
 - **v0.5.x** stays under [Apache License 2.0](./LICENSE.apache) on the `legacy/0.5.x` branch — perpetual, never changing, freely usable. That commitment cannot be revoked.
 - Above $1M ARR running v0.6+ in commercial production? `founder@sipsalabs.com`.
-- Patent posture: [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). USPTO provisionals `64/049,511` + `64/049,517` filed April 2026.
+- Patent posture: [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). U.S. provisional patent applications filed April 2026.
 
 ## Citation
 

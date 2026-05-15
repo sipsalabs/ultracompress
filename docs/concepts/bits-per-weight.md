@@ -86,4 +86,4 @@ Some artifacts include the tokenizer and config in addition to the weights. The 
 - [Catastrophic failures](catastrophic-failures.md)
 - [Reproducibility](reproducibility.md)
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and training procedure are patent-pending.

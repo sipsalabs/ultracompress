@@ -49,12 +49,12 @@ You'll see the provenance manifest:
 UltraCompress artifact: sipsalabs/<model-id>
 ─────────────────────────────────────────────────
 Base model:   Qwen/Qwen3-1.7B
-Method:       row-overlay-quantization (RoQ) v1
+Method:       weight-level-compression v1
 Bits/weight:  2.798
 Size:         1.04 GB
 SHA-256:      a3f5c8...   (verified ✓)
 License:      research-free; commercial requires separate license
-Patents:      USPTO 64/049,511 (filed 2026-04-25)
+Patents:      patent pending (filed April 2026)
 ```
 
 ## 5. Run a benchmark

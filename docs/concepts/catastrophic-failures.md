@@ -54,7 +54,7 @@ Public methods that try to push below 4 bits (HQQ 3-bit, HQQ 2-bit, GPTQ at low 
 
 ## What UltraCompress does differently
 
-The Row-Overlay Quantization method doesn't try to do better quantization. It uses a **fundamentally different weight representation** that preserves more of the model's structural information at the same bit budget. The mechanism is described in the filed patent specification (USPTO 64/049,511) and is available under NDA for serious technical conversations.
+The patent-pending compression method doesn't try to do better quantization. It uses a **fundamentally different weight representation** that preserves more of the model's structural information at the same bit budget. The mechanism is covered by pending patent applications and is available under NDA for serious technical conversations.
 
 The empirical result is that the method's quality-bpw curve doesn't have a cliff at 4 bits; it's smoother all the way down to 2.798 bpw, at which point it starts degrading more steeply but stays well above the catastrophic-failure threshold.
 
@@ -86,4 +86,4 @@ To reproduce: see [Reproducibility](reproducibility.md).
 - [Bits per weight](bits-per-weight.md) — what the bpw number actually means
 - [Reproducibility](reproducibility.md) — how to verify our numbers locally
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and training procedure are patent-pending.
