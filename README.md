@@ -159,7 +159,7 @@ We're cash-constrained pre-funding. Spending discipline is real: only hard expen
 - **GitHub Sponsors** — [github.com/sponsors/sipsalabs](https://github.com/sponsors/sipsalabs). Keeps the GPU bills paid while the rest of this gets to the next milestone.
 - **Press / commentary** — `press@sipsalabs.com`. Most useful framing is "first 5-bit lossless library on the public HF Hub" and "first 405B compression on a single 32 GB consumer GPU" — both verifiable via the artifacts above.
 - **Twitter** — `@SipsaLabs`. New account; if you found this repo first that's because we ship faster than we tweet.
-- **Hacker News** — [today's discussion thread](https://news.ycombinator.com/item?id=48099107).
+- **CHANGELOG** — [v0.6.9 release notes](./CHANGELOG.md) for the RCE-class fix narrative + MANIFEST scrub.
 
 If you're tracking the project: release notes in `CHANGELOG.md` and the `/blog` posts on sipsalabs.com are the canonical "what shipped" surfaces.
 
