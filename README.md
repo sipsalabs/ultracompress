@@ -214,7 +214,7 @@ ultracompress/
 | SmolLM2-1.7B | `smollm2-1.7b-uc-v3-bpw5` | 1.7B | 24 | 1.0085 |
 | Mamba-2.8B (SSM) | `mamba-2.8b-hf-uc-v3-bpw5` | 2.8B | 64 | 1.0119 |
 | Llama-3.1-8B | `llama-3.1-8b-uc-v3-bpw5` | 8.0B | 32 | 1.0125 |
-| Qwen3-1.7B (Instruct) | `qwen3-1.7b-uc-v3-bpw5` | 1.7B | 28 | 1.0200 |
+| Qwen3-1.7B (Instruct) | `qwen3-1.7b-uc-v3-bpw5` | 1.7B | 28 | 1.0200 *(eval pending reconciliation)* |
 | Hermes-3-Llama-3.1-405B | `hermes-3-llama-3.1-405b-uc-v3-bpw5` | 405B | 126 | **1.0066** (5.0692 / 5.0358, n=50, per-layer streaming) |
 | Qwen3-32B | `qwen3-32b-streaming-bpw5` | 32B | 64 | (re-eval pending) |
 | Llama-3.1-70B | `llama-3.1-70b-uc-v3-bpw5` | 70B | 80 | (re-eval pending) |
