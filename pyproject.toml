@@ -36,10 +36,10 @@ dependencies = [
 
 [project.optional-dependencies]
 torch = [
-    "torch>=2.0.0",
+    "torch>=2.11.0",
 ]
 bench = [
-    "torch>=2.0.0",
+    "torch>=2.11.0",
     "lm-eval>=0.4.5",
 ]
 dev = [
