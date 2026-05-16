@@ -7,7 +7,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.6.10] - 2026-05-15
 
 ### Changed
-- **Public-surface version alignment.** GitHub storefront README badge, `pip install` command, and prose bumped to v0.6.10 to match the current PyPI release (`pypi.org/project/ultracompress/`). Cosmetic consistency only -- no functional changes vs 0.6.9.
+- **Public-surface version alignment.** GitHub storefront README badge, `pip install` command, and prose bumped to v0.6.10 to match the current PyPI release (`pypi.org/project/ultracompress/`). Cosmetic consistency only -- no functional changes vs 0.6.9. No separate GitHub release or git tag was cut for 0.6.10; the latest tagged GitHub release remains v0.6.9 (see [releases/latest](https://github.com/sipsalabs/ultracompress/releases/latest)).
 
 ### Security
 - Ships on the MANIFEST-scrubbed sdist introduced in 0.6.9. The 0.6.7 / 0.6.8 sdists were yanked from PyPI after the 0.6.9 RCE-class fix on `torch.load()` paths; 0.6.10 carries that fix forward.
@@ -145,7 +145,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.1] — 2026-05-08
 
 ### Fixed
-- **`uc verify`, `uc pack`, and any `import ultracompress` was failing on a fresh `pip install ultracompress==0.5.0` install** with `ModuleNotFoundError: No module named 'track_a_adaptive'`. The 0.5.0 wheel bundled `ultracompress/api_v2.py`, which top-level-imports an internal research module (`track_a_adaptive`) that is not packaged. Customer-facing CLI commands (pack / load / verify) do not need v2 at all, but the eager import in `ultracompress/__init__.py` made the whole package un-importable when v2's dependencies were missing.
+- **`uc verify`, `uc pack`, and any `import ultracompress` was failing on a fresh `pip install ultracompress==0.5.0` install** with a `ModuleNotFoundError` for an internal research module that is not shipped in the public package. The 0.5.0 wheel bundled `ultracompress/api_v2.py`, which top-level-imports an internal research module that is not packaged. Customer-facing CLI commands (pack / load / verify) do not need v2 at all, but the eager import in `ultracompress/__init__.py` made the whole package un-importable when v2's dependencies were missing.
 - 0.5.1 wraps the v2 + legacy-api imports in `try / except` so the customer-facing v3 API + CLI keep working when internal research modules are absent. The deprecation shim is only patched onto v2 if v2 actually loaded. `_API_V2_AVAILABLE` is exposed as a module-level flag so callers can branch on availability.
 
 ### Discovery
