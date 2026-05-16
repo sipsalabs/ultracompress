@@ -4,13 +4,32 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.6.10] - 2026-05-15
+
+### Changed
+- **Public-surface version alignment.** GitHub storefront README badge, `pip install` command, and prose bumped to v0.6.10 to match the current PyPI release (`pypi.org/project/ultracompress/`). Cosmetic consistency only -- no functional changes vs 0.6.9.
+
+### Security
+- Ships on the MANIFEST-scrubbed sdist introduced in 0.6.9. The 0.6.7 / 0.6.8 sdists were yanked from PyPI after the 0.6.9 RCE-class fix on `torch.load()` paths; 0.6.10 carries that fix forward.
+
+### Verified
+- 22 architectures shipped end-to-end (compression complete + uploaded to HuggingFace); 14 PPL-verified end-to-end against their bf16 baseline, the remaining 8 pending eval. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU. Canonical ratios in the README architecture matrix and the JSONs under `scripts/overlay/artifacts/`.
+
+## [0.6.9] - 2026-05-15
+
+### Security
+- **RCE-class fix** on `torch.load()` reconstruction paths. Prior 0.6.7 / 0.6.8 sdists shipped without a scrubbed MANIFEST and are yanked from PyPI; 0.6.9 ships a MANIFEST-scrubbed sdist. Wheel installs were unaffected.
+
+### Verified
+- Mistral-7B-v0.3 at 1.00548x — the tightest dense 7B-class lossless 5-bit ratio we currently publish.
+
 ## [0.6.6] - 2026-05-12
 
 ### Changed
 - **Public-surface version alignment.** GitHub release tag `v0.6.6` published to match PyPI (`pypi.org/project/ultracompress/0.6.6/`). Repo README badge, pip-install command, and prose all bumped to v0.6.6 across `sipsalabs/ultracompress` and 35 of 40 SipsaLabs HuggingFace model cards. Cosmetic consistency only -- no functional changes.
 
 ### Verified
-- 22 architectures end-to-end; canonical PPL ratios in `docs/BENCHMARKS_2026_05_10.json`. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU.
+- 22 architectures shipped end-to-end; 14 PPL-verified end-to-end (remaining 8 pending eval). Canonical PPL ratios in the README architecture matrix. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU.
 
 ## [0.6.5] - 2026-05-09
 
@@ -41,11 +60,11 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.6.2] — 2026-05-11
 
 ### Added
-- **HN launch + corp identity refresh.** Sipsa Labs, Inc. (Delaware C-corp, incorporated May 2026) banner across README, HuggingFace org card, and all 40 model cards. Live discussion thread linked from every public surface: https://news.ycombinator.com/item?id=48099107
+- **Corp identity refresh.** Sipsa Labs, Inc. (Delaware C-corp, incorporated May 2026) banner across README, HuggingFace org card, and all 40 model cards.
 - **OpenAI-compatible inference API** at https://api.sipsalabs.com/v1. Drop-in `OPENAI_BASE_URL` swap; the official `openai` Python SDK works unchanged. Backed by dual RTX 5090 over Cloudflare Tunnel.
-- **Three new sub-1.005× perplexity ratio records this week:** Mixtral-8x7B 1.00368× (tightest MoE), Qwen3-14B 1.00403×, Mistral-7B-v0.3 1.00548× (9.16× tighter than prior). Phi-3-mini-4k-instruct 1.00624× confirmed at seq_len=1024.
-- **Hermes-3-Llama-3.1-405B 1.0066×** — first 405B-class lossless 5-bit transformer compression on a single 32 GB consumer GPU, verified end-to-end.
-- **22 architectures verified** spanning dense (0.6B–405B), Mixture-of-Experts (47B–235B active), and state-space (Mamba-2.8B). Full matrix on the README and `huggingface.co/SipsaLabs`.
+- **Three new sub-1.005× perplexity ratio records this week:** Mixtral-8x7B 1.00368×, Qwen3-14B 1.00403×, Mistral-7B-v0.3 1.00548× (9.16× tighter than prior). Phi-3-mini-4k-instruct 1.00262× (seq_len=128 — not apples-to-apples vs the seq_len=1024 rows).
+- **Hermes-3-Llama-3.1-405B 1.0066×** — a 405B-class lossless 5-bit transformer compressed end-to-end on a single 32 GB consumer GPU, verified end-to-end.
+- **22 architectures shipped** spanning dense (0.6B–405B), Mixture-of-Experts (47B–235B active), and state-space (Mamba-2.8B); 14 PPL-verified end-to-end, the rest pending eval. Full matrix on the README and `huggingface.co/SipsaLabs`.
 
 ### Changed
 - **Package source codename strip.** All internal method nomenclature replaced with neutral public phrasing in the published package source (preserving runtime behavior). CLI flags + class names follow.
@@ -65,7 +84,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **`uc pack --include-aux`** flag default-on. Customers can opt back into the legacy v3.0 path with `--legacy-v3`.
 
 ### Changed
-- README v3 with full 22-architecture matrix and HONEST_NEGATIVE_RESULTS link.
+- README v3 with the full 22-architecture matrix and a negative-results summary.
 - Compatibility docs updated for SHA-256 manifest verification.
 
 ---
@@ -73,9 +92,8 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.6.0] — 2026-05-10
 
 ### Added
-- **License migration to BUSL-1.1 with Additional Use Grant.** Free for sub-$1M ARR companies, research, and individuals. Auto-converts to Apache 2.0 four years after each release. v0.5.x stays Apache-2.0 in perpetuity on the `legacy/0.5.x` branch — that commitment cannot be revoked.
-- **NOTICE.md** explaining the license rationale.
-- Patent posture clarified in PATENT_NOTICE.md. U.S. provisional patent applications (filed 2026-04-25). Supplement filing landed 2026-05-09.
+- **License clarified.** The CLI source ships under Apache-2.0; the Apache-2.0 patent grant covers the as-published source code. The patent-pending compression methodology that produces the artifacts is out of scope of that grant — see PATENT_NOTICE.md. The `legacy/0.5.x` branch remains Apache-2.0 in perpetuity.
+- Patent posture clarified in PATENT_NOTICE.md. U.S. provisional patent applications (filed April 2026), with supplements pending. Specific claim scope is available to commercial counterparties under NDA.
 
 ### Changed
 - All public package class names refreshed for clarity (no behavior changes). See README for migration notes.
@@ -141,7 +159,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.0] — 2026-05-08
 
 ### Added
-- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with scalar-only at 5bpw (no correction overlay). To our knowledge, UltraCompress is the first quantization library publicly compatible with both transformer and state-space architectures, including emerging hybrids such as AI21 Jamba.
+- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with scalar-only at 5bpw (no correction overlay). The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
 - **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer-persisted codec state (scalar-quantization codebook, per-block scales, and bit-packed integer codes) from a new `codec_state` state_dict key written by the streaming compression runner. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of trainer-quantized weights. Internal codec specifics are NDA-gated.
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
@@ -219,9 +237,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - Cross-architecture results documented at internal cross-architecture validation set (FNO, U-Net, PINN — including the PINN negative result; details NDA-gated).
 
 ### Patent
-- U.S. provisional patent application (filed 2026-04-25, patent pending).
-- U.S. provisional patent application (filed 2026-04-25, patent pending).
-- Supplementary U.S. provisional patent filing scheduled for May 2026.
+- U.S. provisional patent applications filed April 2026 (patent pending), with supplements pending. Specific claim scope is available to commercial counterparties under NDA — see PATENT_NOTICE.md.
 
 ### Known issues (fixed in 0.4.1)
 - See `[0.4.1]` above for the three bugs patched immediately after the v0.4.0 release.
