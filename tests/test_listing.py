@@ -20,13 +20,13 @@ def fake_hf_models() -> list[Any]:
             self.likes = 0
             self.card_data = {
                 "base_model": "Qwen/Qwen3-1.7B" if "qwen" in modelId else "?",
-                "bpw": 2.798,
+                "bpw": 5,
                 "size_human": "1.04GB",
             }
 
     return [
-        _Model("sipsalabs/qwen3-1.7b-uc2p79", downloads=42),
-        _Model("sipsalabs/llama2-7b-uc2p79", downloads=17),
+        _Model("sipsalabs/qwen3-1.7b-uc-v3-bpw5", downloads=42),
+        _Model("sipsalabs/llama2-7b-uc-v3-bpw5", downloads=17),
     ]
 
 

@@ -24,7 +24,7 @@ uc pull <model-id> [-o <output-dir>] [--revision <ref>]
 ## Output
 
 ```
-UltraCompress v0.1.0  · https://sipsalabs.com
+UltraCompress v0.6.11  · https://sipsalabs.com
 Extreme compression for large language models. Patent pending
 
 → Pulling sipsalabs/<model-id> to models/sipsalabs_<model-id>
@@ -59,7 +59,7 @@ uc info ~/models/qwen3-1.7b-uc
 
 ## Disk space
 
-Plan for the artifact size shown in `uc list`. A 7B-parameter model at 2.798 bpw is approximately 4.2 GB on disk; a 1.7B model is approximately 1.0 GB. The download is **incremental** — interrupted pulls resume from the last completed file.
+Plan for the artifact size shown in `uc list`. A 7B-parameter model at 5 bpw is approximately 4.4 GB on disk; a 1.7B model is approximately 1.1 GB. The download is **incremental** — interrupted pulls resume from the last completed file.
 
 ## Network behavior
 

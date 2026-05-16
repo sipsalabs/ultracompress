@@ -29,7 +29,7 @@ We ship reproducibility from day one because it's increasingly the difference be
 
 There is a long history of compression-method papers that report cherry-picked, non-reproducible, single-model numbers. We will not be one of them.
 
-Our headline numbers — `2.798 bpw`, `95.6% retention`, `0/6 catastrophic failures` — are cohort-level, deterministic, and audit-grade. We round down, not up.
+Our headline numbers — lossless 5-bit packs, bit-identical reconstruction, end-to-end PPL ratios within a fraction of a percent of the bf16 baseline — are deterministic and audit-grade. We round down, not up.
 
 ## How a customer reproduces our numbers
 
@@ -72,7 +72,7 @@ If your numbers differ from ours by more than the standard error reported in our
 
 | Level | What it gives you | Public? |
 |---|---|---|
-| **Aggregate cohort numbers** (`2.798 bpw, 95.6%, 0/6 catastrophic`) | Confidence in the headline | ✅ Public |
+| **Aggregate numbers** (`5 bpw lossless, bit-identical, PPL ratio ≈ 1.00x`) | Confidence in the headline | ✅ Public |
 | **Per-model numbers** (Llama-2-7B at 95.4%, Qwen3-1.7B at 96.1%, ...) | Confidence in the cohort isn't a fluke | ✅ Public |
 | **Per-task numbers** (HellaSwag, ARC, MMLU, etc.) | Confidence the cohort generalizes | ✅ Public |
 | **Per-sample logs** (the actual model outputs at each prompt) | Audit-grade verification of any specific sample | NDA |

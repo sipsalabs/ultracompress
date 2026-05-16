@@ -3,16 +3,14 @@
   "_owner": "Sipsa Labs",
   "_last_reviewed": "2026-04-27",
   "_external_sharing": "allowed",
-  "label": "UltraCompress architectural-compression public evidence matrix",
-  "track": "B",
-  "experiment_family": "architectural compression",
+  "label": "UltraCompress research-preview public evidence matrix",
+  "experiment_family": "research preview",
   "availability": "v0.2 (Q3 2026) \u2014 evidence now, customer-shippable artifacts in v0.2",
   "patent_status": "Patent pending.",
-  "important_disclaimer": "This matrix is the architectural-compression experiment only. README headline numbers (95.63% T1 retention at 2.798 bpw, zero catastrophic failures, 30% smaller than NF4) are the weight-level method \u2014 a separate experiment, separate operating point, separate availability. Do not combine retention numbers across methods as a single quality curve.",
+  "important_disclaimer": "This matrix is a research-preview experiment only. README headline numbers are the shipped lossless 5-bit method (bit-identical reconstruction; end-to-end PPL ratios within a fraction of a percent of the bf16 baseline) \u2014 a separate experiment, separate operating point, separate availability. Do not combine retention numbers across these as a single quality curve.",
   "models": [
     {
-      "track": "B",
-      "experiment_family": "architectural compression",
+      "experiment_family": "research preview",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "TinyLlama-1.1B",
@@ -32,8 +30,7 @@
       "t10_retention_pct": 91.7292
     },
     {
-      "track": "B",
-      "experiment_family": "architectural compression",
+      "experiment_family": "research preview",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "OLMo-2-1B",
@@ -53,8 +50,7 @@
       "t10_retention_pct": 90.8302
     },
     {
-      "track": "B",
-      "experiment_family": "architectural compression",
+      "experiment_family": "research preview",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "SmolLM2-1.7B",
@@ -74,8 +70,7 @@
       "t10_retention_pct": 90.1823
     },
     {
-      "track": "B",
-      "experiment_family": "architectural compression",
+      "experiment_family": "research preview",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Qwen3-1.7B",
@@ -95,8 +90,7 @@
       "t10_retention_pct": 90.6831
     },
     {
-      "track": "B",
-      "experiment_family": "architectural compression",
+      "experiment_family": "research preview",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Mistral-7B-v0.3",
@@ -116,8 +110,7 @@
       "t10_retention_pct": 93.1928
     },
     {
-      "track": "B",
-      "experiment_family": "architectural compression",
+      "experiment_family": "research preview",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Qwen3-8B",
@@ -160,7 +153,6 @@
     "no_hand_entered_numbers": true
   },
   "field_definitions": {
-    "track": "compression track \u2014 A (post-training quantization) or B (architectural compression)",
     "availability": "when the customer-shippable artifact reaches Hugging Face Hub",
     "customer_ship_status": "is this an artifact a customer can download today, or evidence-only",
     "bpw": "bits per weight; effective on-disk per-parameter cost including all overhead",

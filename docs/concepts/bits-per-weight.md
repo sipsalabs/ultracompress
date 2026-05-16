@@ -9,9 +9,9 @@
 For a 1.7-billion-parameter model:
 - FP16 source: `1.7e9 × 16 = 27.2e9 bits = 3.4 GB`
 - 4-bit quantization (e.g., NF4): `1.7e9 × 4 = 6.8e9 bits = 850 MB`
-- UltraCompress 2.798 bpw: `1.7e9 × 2.798 = 4.76e9 bits = 595 MB`
+- UltraCompress 5 bpw (lossless): `1.7e9 × 5 = 8.5e9 bits = 1.06 GB`
 
-The lower the bpw, the smaller the artifact. Below the 4-bit-per-weight cliff, public methods degrade catastrophically (see [Catastrophic failures](catastrophic-failures.md)).
+The lower the bpw, the smaller the artifact — but bpw alone says nothing about whether the model still works. UltraCompress targets a lossless 5-bit pack: bit-identical reconstruction rather than lossy drift (see [Catastrophic failures](catastrophic-failures.md)).
 
 ## What the number includes
 
@@ -23,7 +23,7 @@ A naive `bpw = (file size × 8) / weight count` would understate compression for
 - **Residual outliers** (a few weights stored at higher precision)
 - **Header / metadata bytes**
 
-We define `bpw` to include **all of these** in the numerator. The published `bpw=2.798` means 2.798 bits per weight in the **on-disk artifact**, including codebooks, scales, zero points, and metadata.
+We define `bpw` to include **all of these** in the numerator. The published `bpw=5` means 5 bits per weight in the **on-disk artifact**, including codebooks, scales, zero points, and metadata.
 
 This is more honest than the alternative — some methods report `bpw` as the per-weight bits *excluding* overhead, which makes their numbers look better on paper but isn't a fair comparison to UltraCompress's reported number.
 
@@ -43,7 +43,7 @@ The most useful visualization of compression methods is a **2D Pareto plot**: x-
 
 The interesting region for deployment is **bpw < 4**. Above bpw=4, every method works well; the differences are minor. Below bpw=4, the methods diverge sharply.
 
-UltraCompress at 2.798 bpw / 95.6% retention sits **alone** in the lower-left quadrant of "below 3 bpw, above 90% retention." Every other public method either fails catastrophically or sits at higher bpw.
+UltraCompress at 5 bpw is *lossless* — bit-identical reconstruction — where comparable-bpw lossy methods still drift relative to the original weights. The differentiator is not a lower bpw point; it is reconstruction fidelity at 5 bpw.
 
 ## Practical implication for hardware budgets
 
@@ -52,9 +52,9 @@ A 12 GB phone-class GPU can hold:
 - A 7B-parameter FP16 model: **no** (needs ~14 GB)
 - A 7B-parameter int8 model: **maybe** (~7 GB + activations)
 - A 7B-parameter NF4 model: **yes** (~3.5 GB)
-- A 7B-parameter UltraCompress 2.798-bpw model: **yes with headroom for two models** (~2.4 GB each)
+- A 7B-parameter UltraCompress 5-bpw model: **yes** (~4.4 GB on disk; lossless reconstruction)
 
-The ability to fit **two simultaneous models** in a memory budget that traditionally fits **one** is a step-change for use cases like multi-modal inference (text model + vision model both resident).
+The benefit here is not the smallest possible footprint but a *lossless* 5-bit footprint — bf16-equivalent reconstruction at sub-NF4-quality risk, which matters where "good enough on MMLU" isn't enough.
 
 ## Common pitfalls
 

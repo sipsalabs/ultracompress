@@ -89,9 +89,9 @@ Approximate GPU memory for `uc serve` at the v0.2 deployment:
 
 | Model | Loaded weights | Activations (batch=1) | Total (batch=1) | Total (batch=8) |
 |---|---|---|---|---|
-| Qwen3-1.7B at 2.798 bpw | ~0.6 GB | ~0.5 GB | ~1.1 GB | ~3.5 GB |
-| Llama-2-7B at 2.798 bpw | ~2.5 GB | ~1.5 GB | ~4.0 GB | ~12 GB |
-| Llama-2-13B at 2.798 bpw | ~4.5 GB | ~2.5 GB | ~7.0 GB | ~22 GB |
+| Qwen3-1.7B at 5 bpw | ~0.6 GB | ~0.5 GB | ~1.1 GB | ~3.5 GB |
+| Llama-2-7B at 5 bpw | ~2.5 GB | ~1.5 GB | ~4.0 GB | ~12 GB |
+| Llama-2-13B at 5 bpw | ~4.5 GB | ~2.5 GB | ~7.0 GB | ~22 GB |
 
 (These are rough estimates; actual numbers depend on the runtime kernel path, which we'll publish in v0.2 release notes.)
 

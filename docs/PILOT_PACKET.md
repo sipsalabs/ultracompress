@@ -19,17 +19,17 @@ Modern transformer language models have outgrown the hardware most of the world 
 - **Inference platforms** at scale are GPU-memory-bound on margins
 - **Model registries** absorb storage + egress costs that scale linearly with fleet size
 
-The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) hit a wall at 4 bits per weight. Below 4 bpw, **in our 6-model benchmark cohort**, every public method falls off a quality cliff.
+The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) are all lossy — they drift relative to the original weights, which is unacceptable where bf16-equivalent quality is a hard requirement.
 
 ## What we deliver
 
-### Weight-level compression method (patent pending) — shipping now
+### Lossless 5-bit compression (patent pending) — shipping now
 
-Sub-3-bits-per-weight on a 6-model head-to-head cohort. **30% smaller than bitsandbytes NF4 at equivalent retention.** Zero catastrophic failures across the cohort — the only public method at this compression frontier with that property in the cohort we tested.
+A lossless 5-bit pack: bit-identical reconstruction guaranteed by a SHA-256 manifest. **22 architectures shipped end-to-end; 14 PPL-verified end-to-end** against their bf16 baseline, with end-to-end perplexity ratios within a fraction of a percent of the bf16 teacher.
 
-### Architectural compression method (patent pending) — v0.2 (Q3 2026)
+### Research preview (patent pending) — v0.2 (Q3 2026)
 
-Architectural compression beyond the published academic frontier. Combined with the weight-level method, the strongest end-to-end ratio we've measured for transformer language models in our cohort. Public-safe architectural-compression evidence at [docs/evidence/matrix.md](evidence/matrix.md).
+A separate research-preview compression experiment under active patent strategy. Public-safe research-preview evidence at [docs/evidence/matrix.md](evidence/matrix.md).
 
 ### What ships under a pilot
 

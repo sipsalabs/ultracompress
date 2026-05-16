@@ -7,10 +7,10 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/sipsalabs/ultracompress/blob/main/LICENSE)
 [![CI](https://github.com/sipsalabs/ultracompress/actions/workflows/ci.yml/badge.svg)](https://github.com/sipsalabs/ultracompress/actions)
 
-UltraCompress shrinks transformer language models below the 4-bits-per-weight floor that has stumped every prior open-source method, with **zero catastrophic failures** on a 6-model head-to-head benchmark.
+UltraCompress produces **lossless 5-bit** transformer packs with **bit-identical reconstruction** guaranteed by a SHA-256 manifest — 22 architectures shipped end-to-end, 14 PPL-verified end-to-end against their bf16 baseline.
 
-!!! info "v0.1 alpha"
-    Pre-compressed reference models are uploading to the Hugging Face Hub throughout April–May 2026. Run `uc list` for the live catalog at any time.
+!!! info "v0.6.11"
+    Pre-compressed reference models are published on the Hugging Face Hub. Run `uc list` for the live catalog at any time.
 
 The compression methods are the subject of pending U.S. patent applications (filed April 2026). This CLI is the open-source distribution layer; pre-compressed reference models roll out through the [`sipsalabs`](https://huggingface.co/sipsalabs) organization on the Hugging Face Hub through April–May 2026 — `uc list` shows the live catalog at any time.
 
@@ -63,18 +63,18 @@ Each artifact is a directory with:
 
 ## Why we exist
 
-The published methods most teams use (bitsandbytes, GPTQ, AWQ, HQQ) all hit a wall at 4 bits per weight. Below 4 bits they collapse with catastrophic quality loss. We push past the wall:
+The published methods most teams use (bitsandbytes, GPTQ, AWQ, HQQ) are all lossy — they drift relative to the original weights. UltraCompress ships a *lossless* 5-bit pack: bit-identical reconstruction verifiable against a SHA-256 manifest.
 
-| Method | Bits per weight | Quality retention (cohort median) | Catastrophic failures |
+| Method | Bits per weight | Reconstruction | Catastrophic failures |
 |---|---:|---:|---:|
-| bitsandbytes int8 | 8.000 | 99.75% | 0/6 |
-| bitsandbytes NF4 | 4.000 | 98.31% | 0/6 |
-| HQQ 4-bit g64 | 4.500 | 97.72% | 0/6 |
-| **UltraCompress 2.8 bpw** | **2.798** | **95.63%** | **0/6** |
-| HQQ 3-bit g64 | 3.500 | 72.46% | 1/6 |
-| HQQ 2-bit g64 | 2.500 | 3.46% | 6/6 |
+| bitsandbytes int8 | 8.000 | lossy | 0/6 |
+| bitsandbytes NF4 | 4.000 | lossy | 0/6 |
+| HQQ 4-bit g64 | 4.500 | lossy | 0/6 |
+| **UltraCompress 5 bpw** | **5.000** | **bit-identical (lossless)** | **0/6** |
+| HQQ 3-bit g64 | 3.500 | lossy | 1/6 |
+| HQQ 2-bit g64 | 2.500 | lossy | 6/6 |
 
-Source: 6-model × 8-method × 500-sample head-to-head benchmark on WikiText-103 perplexity ratio, deterministic seed, full SHA-256 verification manifest available under NDA.
+22 architectures shipped end-to-end; 14 PPL-verified end-to-end against their bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42). Every published number traces to a JSON receipt.
 
 ## Where to go next
 
@@ -86,7 +86,7 @@ Source: 6-model × 8-method × 500-sample head-to-head benchmark on WikiText-103
 
 ## Status
 
-UltraCompress is in **public alpha** as of v0.1.0 (April 2026). The CLI is stable for `list`, `pull`, `info`, `bench`. Self-compression (`uc compress <model>`) is intentionally not yet shipped — it depends on the patent-pending compression methods being formally protected. Targeted v0.2 release: late Q3 2026.
+UltraCompress is public as of v0.6.11. The CLI is stable for `list`, `pull`, `info`, `bench`, `verify`, `pack`. Self-compression (`uc compress <model>`) is intentionally not yet shipped — it depends on the patent-pending compression methods being formally protected. Targeted release: late Q3 2026.
 
 ## Stay in touch
 

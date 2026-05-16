@@ -37,40 +37,40 @@ SCENES = [
 # popularity numbers. Use `uc list` against the live Hub for actual state.
 DEMO_MODELS = [
     {
-        "modelId": "sipsalabs/qwen3-1.7b-uc2p79",
+        "modelId": "sipsalabs/qwen3-1.7b-uc-v3-bpw5",
         "base": "Qwen3-1.7B",
-        "bpw": 2.798,
-        "size": "635 MB",
+        "bpw": 5,
+        "size": "1.1 GB",
     },
     {
-        "modelId": "sipsalabs/mistral-7b-uc2p79",
+        "modelId": "sipsalabs/mistral-7b-v0.3-uc-v3-bpw5",
         "base": "Mistral-7B-v0.3",
-        "bpw": 2.798,
-        "size": "2.7 GB",
+        "bpw": 5,
+        "size": "4.8 GB",
     },
     {
-        "modelId": "sipsalabs/qwen3-8b-uc2p79",
+        "modelId": "sipsalabs/qwen3-8b-uc-v3-bpw5",
         "base": "Qwen3-8B",
-        "bpw": 2.798,
-        "size": "3.0 GB",
+        "bpw": 5,
+        "size": "5.3 GB",
     },
     {
-        "modelId": "sipsalabs/tinyllama-1.1b-uc2p40",
+        "modelId": "sipsalabs/tinyllama-1.1b-uc-v3-bpw5",
         "base": "TinyLlama-1.1B",
-        "bpw": 2.405,
-        "size": "412 MB",
+        "bpw": 5,
+        "size": "735 MB",
     },
     {
-        "modelId": "sipsalabs/olmo2-1b-uc2p79",
+        "modelId": "sipsalabs/olmo2-1b-uc-v3-bpw5",
         "base": "OLMo-2-1B",
-        "bpw": 2.798,
-        "size": "452 MB",
+        "bpw": 5,
+        "size": "805 MB",
     },
     {
-        "modelId": "sipsalabs/smollm2-1.7b-uc2p79",
+        "modelId": "sipsalabs/smollm2-1.7b-uc-v3-bpw5",
         "base": "SmolLM2-1.7B",
-        "bpw": 2.798,
-        "size": "672 MB",
+        "bpw": 5,
+        "size": "1.2 GB",
     },
 ]
 
@@ -96,9 +96,9 @@ def _scene_install(console: Console, speed: float, no_pause: bool) -> None:
         _pause(0.6, speed)
     console.print("[dim]Collecting ultracompress...[/dim]")
     _pause(0.4, speed)
-    console.print("[dim]  Downloading ultracompress-0.1.3-py3-none-any.whl (10 KB)[/dim]")
+    console.print("[dim]  Downloading ultracompress-0.6.11-py3-none-any.whl (10 KB)[/dim]")
     _pause(0.3, speed)
-    console.print("[green]Successfully installed ultracompress-0.1.3[/green]")
+    console.print("[green]Successfully installed ultracompress-0.6.11[/green]")
     if not no_pause:
         _pause(0.5, speed)
 
@@ -111,7 +111,7 @@ def _scene_list(console: Console, speed: float, no_pause: bool) -> None:
     if not no_pause:
         _pause(0.5, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.6.11  ·  sipsalabs.com  ·  DEMO MODE — illustrative data[/dim]")
     console.print("[dim]Extreme compression for large language models. Patent pending[/dim]")
     console.print()
     with console.status("[cyan]Querying Hugging Face Hub..."):
@@ -140,16 +140,16 @@ def _scene_pull(console: Console, speed: float, no_pause: bool) -> None:
     """Show `uc pull` with progress bar."""
     console.print()
     console.print("[bold yellow]$[/bold yellow] ", end="")
-    _slow_print(console, "uc pull sipsalabs/qwen3-1.7b-uc2p79")
+    _slow_print(console, "uc pull sipsalabs/qwen3-1.7b-uc-v3-bpw5")
     if not no_pause:
         _pause(0.4, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  sipsalabs.com  ·  DEMO MODE[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.6.11  ·  sipsalabs.com  ·  DEMO MODE[/dim]")
     console.print()
-    console.print("[cyan]->[/cyan] Pulling [bright_white]sipsalabs/qwen3-1.7b-uc2p79[/bright_white] "
-                  "to [dim]./models/sipsalabs_qwen3-1.7b-uc2p79[/dim]")
+    console.print("[cyan]->[/cyan] Pulling [bright_white]sipsalabs/qwen3-1.7b-uc-v3-bpw5[/bright_white] "
+                  "to [dim]./models/sipsalabs_qwen3-1.7b-uc-v3-bpw5[/dim]")
 
-    total_mb = 635
+    total_mb = 1100
     bar_width = 40
     download_seconds = 4.0 / speed
     steps = 5
@@ -163,7 +163,7 @@ def _scene_pull(console: Console, speed: float, no_pause: bool) -> None:
         console.print(f"  downloading... [{bar}]  {downloaded} MB / {total_mb} MB",
                       soft_wrap=False)
         time.sleep(sleep_per_step)
-    console.print("[green]OK[/green] Saved to [bright_white]./models/sipsalabs_qwen3-1.7b-uc2p79[/bright_white]")
+    console.print("[green]OK[/green] Saved to [bright_white]./models/sipsalabs_qwen3-1.7b-uc-v3-bpw5[/bright_white]")
     if not no_pause:
         _pause(1.0, speed)
 
@@ -172,11 +172,11 @@ def _scene_bench(console: Console, speed: float, no_pause: bool) -> None:
     """Show `uc bench` with results."""
     console.print()
     console.print("[bold yellow]$[/bold yellow] ", end="")
-    _slow_print(console, "uc bench ./models/sipsalabs_qwen3-1.7b-uc2p79 --tasks hellaswag --limit 500")
+    _slow_print(console, "uc bench ./models/sipsalabs_qwen3-1.7b-uc-v3-bpw5 --tasks hellaswag --limit 500")
     if not no_pause:
         _pause(0.4, speed)
     console.print()
-    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.1.3  ·  DEMO MODE[/dim]")
+    console.print("[bold cyan]UltraCompress[/bold cyan] [dim]v0.6.11  ·  DEMO MODE[/dim]")
     console.print()
     console.print("[cyan]->[/cyan] Benchmarking on tasks: [cyan]hellaswag[/cyan]  [dim]limit=500  device=cuda:0[/dim]")
     console.print()

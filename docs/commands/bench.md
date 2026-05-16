@@ -27,7 +27,7 @@ uc bench <path> [--tasks <list>] [--limit <int>] [--batch-size <int>] [--device 
 ## Output
 
 ```
-UltraCompress v0.1.0  · https://sipsalabs.com
+UltraCompress v0.6.11  · https://sipsalabs.com
 Extreme compression for large language models. Patent pending
 
 → Benchmarking ./models/sipsalabs_<model-id> on tasks: hellaswag,arc_challenge
@@ -55,7 +55,7 @@ Extreme compression for large language models. Patent pending
 
 - PyTorch (`pip install "ultracompress[torch]"`)
 - A CUDA GPU (default device `cuda:0`; specify `--device cpu` for CPU-only, but expect 100× slower)
-- ~2-8 GB GPU memory for a 7B-parameter model at 2.798 bpw
+- ~4-10 GB GPU memory for a 7B-parameter model at 5 bpw
 
 ## Examples
 
