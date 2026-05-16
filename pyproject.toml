@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ultracompress"
-version = "0.6.11"
+version = "0.6.12"
 description = "Extreme compression for large language models. Download pre-compressed models from Hugging Face Hub; self-compress support coming soon."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Apache-2.0" }
+license = { text = "BUSL-1.1" }
 authors = [
     { name = "Sipsa Labs", email = "founder@sipsalabs.com" }
 ]
@@ -17,7 +17,7 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
