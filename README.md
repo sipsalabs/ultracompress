@@ -2,8 +2,8 @@
 
 Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed by a SHA-256 manifest.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.6.11-blue.svg)](https://pypi.org/project/ultracompress/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.12-blue.svg)](https://pypi.org/project/ultracompress/)
+[![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/patent-pending-orange.svg)](./PATENT_NOTICE.md)
 [![Security](https://img.shields.io/badge/v0.6.11-hardened%20sdist-green.svg)](./CHANGELOG.md)
@@ -141,7 +141,7 @@ Researchers comparing 5-bit codecs can treat this list as a partial audit trail 
 Direct, not aspirational:
 
 - **If you serve LLMs in production and your VRAM bill is the constraint**, this might help. The streaming compression path bounds peak compression-time VRAM to roughly one transformer layer regardless of total depth (8.98 GB for Qwen2.5-72B; same recipe scales to 405B), and the v3 pack format is bit-exact-reproducible at inference time. Email `founder@sipsalabs.com` with your stack and a target latency/quality bar; we'll tell you honestly whether UC fits.
-- **If you're a researcher comparing 5-bit codecs**, the ground-truth JSONs in `scripts/overlay/artifacts/` are the audit trail, the methodology is fixed (FineWeb-edu held-out tail, seq_len=1024, seed=42, per-model n noted in the matrix), and the negative-results section above tells you what we already tried that didn't work. The Apache-2.0 CLI license covers reproduction and citation freely.
+- **If you're a researcher comparing 5-bit codecs**, the ground-truth JSONs in `scripts/overlay/artifacts/` are the audit trail, the methodology is fixed (FineWeb-edu held-out tail, seq_len=1024, seed=42, per-model n noted in the matrix), and the negative-results section above tells you what we already tried that didn't work. The BUSL-1.1 license covers research, reproduction, and citation freely.
 - **If you're in a regulated domain** (defense, FDA-regulated healthcare, SR 11-7 model validation, frontier lab red-team), the bit-identical reconstruction contract is the actual reason to talk to us. Phase 0 POC ($5K, 5 business days, customer-picked model) gets you a pack you can audit yourself. Email `founder@sipsalabs.com` for the POC scope.
 - **If you're at a frontier lab** distributing internal model artifacts and want red-team eval fidelity preserved across deploy environments, the SHA-256 manifest exists for exactly that.
 
@@ -151,7 +151,7 @@ If your workload is "MMLU has to stay above X" and you're not pushing the model 
 
 ## We're a small company looking for design partners
 
-Sipsa Labs is a small lab shipping in public. Our compression methods are patent-pending; details are in [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). Short version: the CLI source is Apache-2.0 — use it freely, including commercially on your own infrastructure — and we'd like a conversation if you're building a derivative product whose core value depends on the underlying invention. Email `founder@sipsalabs.com`.
+Sipsa Labs is a small lab shipping in public. Our compression methods are patent-pending; details are in [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). Short version: the CLI/verifier source is Business Source License 1.1 — free for individuals, research, and organizations under $1M revenue; any other commercial or production use needs a commercial license — and the patent-pending method and the compressed artifacts are licensed separately. Email `founder@sipsalabs.com`.
 
 We ship in public and work with a small number of design partners. The most useful ways to engage:
 
@@ -186,7 +186,7 @@ ultracompress/
 ├── docs/                         Quickstart, concepts, command + reference docs (mkdocs site)
 ├── PATENT_NOTICE.md              Patent posture + commercial-license contact
 ├── CHANGELOG.md                  Per-release narrative (canonical "what shipped")
-└── LICENSE                       Apache-2.0 (CLI source) + patent-scope notice
+└── LICENSE                       BUSL-1.1 (CLI source) + patent-scope notice
 ```
 
 The production trainer that produces packs is patent-protected and not part of this public package; this repo ships the verifier, benchmarker, and CLI that operate on published artifacts.
@@ -226,10 +226,11 @@ The production trainer that produces packs is patent-protected and not part of t
 
 ## License
 
-- The CLI source in this repository is published under the [Apache License 2.0](./LICENSE) — free to use, reproduce, and distribute, including commercially. The Apache-2.0 patent grant covers the as-published source code.
-- The Apache-2.0 grant does **not** extend to the patent-pending compression methodology that produces the artifacts. Reimplementing the underlying method in a competing product is a separate conversation — see [`PATENT_NOTICE.md`](./PATENT_NOTICE.md).
-- Pre-compressed model artifacts on HuggingFace carry the upstream teacher model's license (e.g. Apache-2.0 for Qwen3, Llama Community License for Llama variants) plus this project's patent terms.
-- Building a derivative product whose core value depends on the method, or want technical due diligence under NDA? `founder@sipsalabs.com`.
+- The CLI/verifier source in this repository is published under the [Business Source License 1.1](./LICENSE). It is **free of charge** for (a) individuals, (b) non-commercial research/academic use, and (c) organizations with annual revenue under US $1,000,000. On the Change Date (2030-05-16) it converts to Apache License 2.0.
+- **Any other commercial or production use** — including using it in or for a paid product, a hosted/managed service, or any revenue-generating activity — requires a commercial license. Contact `legal@sipsalabs.com`.
+- BUSL-1.1 conveys **no** license to the patent-pending compression/reconstruction methods or the production trainer (not in this repo) — see [`PATENT_NOTICE.md`](./PATENT_NOTICE.md).
+- Pre-compressed model artifacts on HuggingFace are licensed **separately** (Business Source License 1.1, per the license on each artifact) and additionally carry the upstream teacher model's license. They are not covered by this repository's grant.
+- Building a product whose core value depends on the method, or want technical due diligence under NDA? `legal@sipsalabs.com`.
 
 ## Citation
 

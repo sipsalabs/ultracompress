@@ -2,9 +2,9 @@
 
 The compression and reconstruction methods implemented in this repository are the subject of United States provisional patent applications filed by Sipsa Labs, Inc. in April 2026, with additional continuations and supplements pending. Specific claim scope and application details are available to commercial counterparties under NDA.
 
-## License grant (Apache 2.0)
+## License grant (Business Source License 1.1)
 
-This codebase is published under the Apache License 2.0. The Apache 2.0 license includes an explicit patent grant for the use, reproduction, and distribution of the **as-published source code** for any purpose, including commercial use of the open-source software itself.
+This codebase (the verifier/benchmarker/CLI) is published under the Business Source License 1.1. It is free of charge for individuals, non-commercial research, and organizations under US $1,000,000 in annual revenue; any other commercial or production use requires a commercial license. On the Change Date it converts to Apache License 2.0. The BUSL-1.1 grant covers only the as-published source code in this repository — it does not grant any rights to the patent-pending compression and reconstruction methods, the production compression trainer (not included here), or the separately-licensed pre-compressed model artifacts.
 
 ## Commercial productization
 
