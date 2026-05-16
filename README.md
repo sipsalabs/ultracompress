@@ -250,5 +250,5 @@ The production trainer that produces packs is patent-protected and not part of t
 - HuggingFace: [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs)
 - PyPI: [`pypi.org/project/ultracompress`](https://pypi.org/project/ultracompress/)
 - API: [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1)
-- GitHub release: [v0.6.10](https://github.com/sipsalabs/ultracompress/releases/tag/v0.6.10)
+- GitHub release: [latest release](https://github.com/sipsalabs/ultracompress/releases/latest)
 - Sponsors: [`github.com/sponsors/sipsalabs`](https://github.com/sponsors/sipsalabs)
