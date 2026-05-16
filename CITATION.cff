@@ -27,8 +27,7 @@ abstract: >-
 
   On a 6-model x 8-method x 500-sample head-to-head benchmark, the v0.1 reference
   artifacts achieve sub-3 bits per weight (2.798 bpw) with 95.6% cohort
-  median top-1 retention and zero catastrophic failures — the only public method
-  at this compression frontier with that property.
+  median top-1 retention and zero catastrophic failures on that cohort.
 
 keywords:
   - large-language-models
