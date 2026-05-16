@@ -9,7 +9,7 @@ This repository contains the **UltraCompress CLI** (`uc`, `ultracompress`) — t
 The repository does **not** contain:
 
 - The compression methods themselves (the subject of pending U.S. patent applications)
-- Training code, weight overlays, or architectural-compression internals
+- Training code or any compression-method internals
 - Pre-compressed model weights (distributed via the Hugging Face Hub under their own license; rolling release through April–May 2026)
 
 Pull requests touching the public CLI surface, documentation, packaging, CI/CD, and tests are welcome. Pull requests attempting to add or reverse-engineer the compression methods will be closed.

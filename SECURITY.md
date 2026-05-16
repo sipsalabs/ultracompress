@@ -37,8 +37,8 @@ We follow **coordinated disclosure**. Once a fix is available we will:
 
 | Version | Supported |
 |---------|-----------|
-| 0.1.x   | yes       |
-| < 0.1   | no        |
+| 0.6.x   | yes       |
+| < 0.6   | no        |
 
 We commit to security patches for the latest minor release line and the immediately previous one. Older releases will be marked end-of-life when a new minor line ships.
 
@@ -47,4 +47,4 @@ We commit to security patches for the latest minor release line and the immediat
 - Always install from PyPI (`pip install ultracompress`) — never from untrusted forks
 - Verify model artifacts using the per-artifact provenance manifest shipped alongside each compressed model on the Hugging Face Hub when artifacts publish
 - Run `pip-audit` periodically against your environment
-- Pin versions in production (`ultracompress==0.1.2` or later — 0.1.0 is yanked and should not be installed)
+- Pin versions in production (`ultracompress==0.6.11` or later — the 0.6.7 / 0.6.8 sdists are yanked and should not be installed)

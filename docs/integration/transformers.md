@@ -44,7 +44,7 @@ We're working with the Hugging Face team on the right integration shape.
 | Qwen3-1.7B FP16 | ~3.5 GB |
 | Qwen3-1.7B int8 (bitsandbytes) | ~1.8 GB |
 | Qwen3-1.7B NF4 (bitsandbytes) | ~1.0 GB |
-| **Qwen3-1.7B UltraCompress 2.798 bpw** | **~0.7 GB** |
+| **Qwen3-1.7B UltraCompress 5 bpw (lossless)** | **~1.1 GB** |
 
 (All measured on a CUDA device with the loader's default inflation; "memory at runtime" is `torch.cuda.memory_allocated()` after model load.)
 

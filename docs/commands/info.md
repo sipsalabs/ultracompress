@@ -17,14 +17,14 @@ uc info <path>
 ## Output
 
 ```
-UltraCompress v0.1.0  · https://sipsalabs.com
+UltraCompress v0.6.11  · https://sipsalabs.com
 Extreme compression for large language models. Patent pending
 
 UltraCompress artifact: sipsalabs/<model-id>
 ─────────────────────────────────────────────────
 Base model:   Qwen/Qwen3-1.7B
-Method:       weight-level-compression v1
-Bits/weight:  2.798
+Method:       uc-v3 lossless 5-bit
+Bits/weight:  5
 Size:         1.04 GB
 SHA-256:      a3f5c8...   (verified ✓)
 License:      research-free; commercial requires separate license
@@ -46,9 +46,9 @@ The `ultracompress.json` file is a JSON document with the following fields. See 
   "schema_version": "1.0",
   "model_id": "sipsalabs/<model-id>",
   "base_model": "Qwen/Qwen3-1.7B",
-  "method": "track-a-row-overlay",
-  "method_version": "1.0",
-  "bpw": 2.798,
+  "method": "uc-v3",
+  "method_version": "3.0",
+  "bpw": 5,
   "size_bytes": 1116691072,
   "files": {
     "model.safetensors": {

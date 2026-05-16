@@ -4,7 +4,7 @@ Public API surface is deliberately minimal. Use the CLI via `uc <command>` or
 the `ultracompress` entry point. Programmatic access will be added in v0.2
 once the underlying patent-pending methods are published.
 """
-__version__ = "0.1.3"
+__version__ = "0.6.11"
 __author__ = "Sipsa Labs"
 __license__ = "Apache-2.0"
 

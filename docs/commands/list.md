@@ -21,9 +21,9 @@ uc list [--json]
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓
 ┃ Model ID                    ┃ Base               ┃    bpw ┃   Size ┃ Downloads┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩
-│ sipsalabs/<model-id> │ Qwen/Qwen3-1.7B    │  2.798 │ 1.04GB │     12.4k│
-│ sipsalabs/llama2-7b-uc2p79  │ meta-llama/Ll...   │  2.798 │ 4.20GB │      8.7k│
-│ sipsalabs/mistral-7b-uc2p79 │ mistralai/Mi...    │  2.798 │ 4.21GB │      4.2k│
+│ sipsalabs/<model-id> │ Qwen/Qwen3-1.7B    │      5 │ 1.04GB │     12.4k│
+│ sipsalabs/llama2-7b-uc-v3-bpw5  │ meta-llama/Ll... │      5 │ 4.40GB │      8.7k│
+│ sipsalabs/mistral-7b-v0.3-uc-v3-bpw5 │ mistralai/Mi... │  5 │ 4.41GB │      4.2k│
 └─────────────────────────────┴────────────────────┴────────┴────────┴──────────┘
 
 Pull one with: uc pull sipsalabs/<model-id>
@@ -36,7 +36,7 @@ Pull one with: uc pull sipsalabs/<model-id>
   {
     "modelId": "sipsalabs/<model-id>",
     "base_model": "Qwen/Qwen3-1.7B",
-    "bpw": 2.798,
+    "bpw": 5,
     "size_bytes": 1116691072,
     "size_human": "1.04GB",
     "downloads": 12421,

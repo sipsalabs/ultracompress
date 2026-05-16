@@ -8,7 +8,7 @@ matches the inflated form, not the on-disk form).
 
 Estimates storage, bandwidth, and (v0.2-projected) inference-memory savings for
 a model fleet when migrating from FP16 / NF4 / int8 baselines to UltraCompress
-2.798-bpw patent-pending compression reference artifacts.
+lossless 5-bit patent-pending compression reference artifacts.
 
 Usage:
     python savings_calculator.py
@@ -17,7 +17,7 @@ Usage:
 
 For sales conversations: quote the storage + egress columns directly. Treat the
 v0.2 GPU memory ceiling column as a planning estimate, not a v0.1 deliverable.
-The v0.2 native sub-3-bpw kernel path ships in Q3 2026, gated on patent
+The v0.2 native lossless 5-bit kernel path ships in Q3 2026, gated on patent
 prosecution timing.
 
 Adjust customer-specific cost assumptions before quoting; the defaults below
@@ -49,15 +49,15 @@ BASELINES = {
     "int8 (bitsandbytes)": 1.000,
     "NF4 (bitsandbytes)": 0.500,
     "HQQ 4-bit g64": 0.563,
-    "UltraCompress 2.798 bpw": 0.350,  # 2.798 bits / 8 bits per byte
+    "UltraCompress 5 bpw (lossless)": 0.625,  # 5 bits / 8 bits per byte
 }
 
-ULTRACOMPRESS_BPP = BASELINES["UltraCompress 2.798 bpw"]
+ULTRACOMPRESS_BPP = BASELINES["UltraCompress 5 bpw (lossless)"]
 
 
 @dataclass
 class FleetSavings:
-    """Per-baseline savings vs UltraCompress 2.798 bpw."""
+    """Per-baseline savings vs UltraCompress 5 bpw (lossless)."""
 
     baseline_name: str
     baseline_bytes_per_param: float
@@ -87,7 +87,7 @@ def compute_savings(params_per_model: float, model_count: int,
 
     rows: list[FleetSavings] = []
     for name, bpp in BASELINES.items():
-        if name == "UltraCompress 2.798 bpw":
+        if name == "UltraCompress 5 bpw (lossless)":
             continue
         fleet_baseline_bytes = total_params * bpp
         fleet_baseline_gb = fleet_baseline_bytes / (1024 ** 3)
@@ -130,12 +130,12 @@ def compute_savings(params_per_model: float, model_count: int,
             "gpu_memory_usd_per_gb_hour": GPU_MEMORY_USD_PER_GB_HOUR,
         },
         "notes": [
-            "v0.1 alpha — storage and egress savings reflect the on-disk artifact size (2.798 bpw vs the baseline). "
-            "Continuous inference-time memory savings are NOT a v0.1 deliverable — the v0.1 reference loader "
+            "Storage and egress savings reflect the on-disk artifact size (5 bpw lossless vs the baseline). "
+            "Continuous inference-time memory savings are NOT a current deliverable — the reference loader "
             "inflates compressed weights at load time, so steady-state inference memory matches the inflated form. "
             "The 'inference_memory_savings_usd_year_per_replica' field below is therefore a v0.2 (Q3 2026) projection, "
-            "gated on the quantized-runtime kernel path shipping with native sub-3-bpw inference. Use it as a v0.2 "
-            "ceiling estimate, not a v0.1 quote.",
+            "gated on the quantized-runtime kernel path shipping with native lossless 5-bit inference. Use it as a v0.2 "
+            "ceiling estimate, not a current quote.",
             "Storage assumes a single canonical artifact per model. Multi-region replication multiplies savings linearly.",
             "Egress assumes one full redownload per pull event. Differential / patch updates further reduce egress.",
             "Customers with custom storage tiers (Glacier, S3 IA, on-prem) should substitute their own per-GB rate.",

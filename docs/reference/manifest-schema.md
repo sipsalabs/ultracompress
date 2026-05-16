@@ -9,7 +9,7 @@ Every UltraCompress artifact ships with a JSON manifest at `<artifact>/ultracomp
   "schema_version": "1.0",
   "model_id": "string (HF Hub repo id)",
   "base_model": "string (HF Hub repo id of the FP16 source)",
-  "method": "string (track-a-row-overlay | track-b-shared-block | track-a+b)",
+  "method": "string (uc-v3 lossless 5-bit pack)",
   "method_version": "string (semver)",
   "bpw": "number (effective bits per weight, includes any overhead)",
   "size_bytes": "integer (total artifact size on disk)",
@@ -43,15 +43,13 @@ The FP16 source model from which this artifact was derived. Example: `Qwen/Qwen3
 
 ### `method`
 
-The compression method applied. Currently one of:
+The compression method applied. Currently:
 
 | Value | Description |
 |---|---|
-| `track-a-row-overlay` | Patent-pending weight-level compression method |
-| `track-b-shared-block` | Patent-pending architectural compression method |
-| `track-a+b` | Combined weight-level + architectural compression stack |
+| `uc-v3` | Patent-pending lossless 5-bit pack format (bit-identical reconstruction) |
 
-Future methods will be added as new strings; readers should accept unknown values gracefully.
+Future methods will be added as new strings; readers should accept unknown values gracefully. Internal method specifics are NDA-gated.
 
 ### `method_version`
 
@@ -61,7 +59,7 @@ Semver version of the method. Bumped when the method itself changes (not just th
 
 Effective bits per weight. This is the **total artifact size in bits** divided by **the number of weights in the model** — including any overhead for codebooks, scales, zero-points, etc. Round to 3 decimal places.
 
-Example: a 1.7B-parameter model at 2.798 bpw means total artifact is approximately `1.7e9 × 2.798 / 8 = 595 MB` (plus tokenizer, config files, etc.).
+Example: a 1.7B-parameter model at 5 bpw means total artifact is approximately `1.7e9 × 5 / 8 = 1.06 GB` (plus tokenizer, config files, etc.).
 
 ### `size_bytes`
 
@@ -124,9 +122,9 @@ We commit to never removing or repurposing existing fields within a major schema
   "schema_version": "1.0",
   "model_id": "sipsalabs/<model-id>",
   "base_model": "Qwen/Qwen3-1.7B",
-  "method": "track-a-row-overlay",
-  "method_version": "1.0.0",
-  "bpw": 2.798,
+  "method": "uc-v3",
+  "method_version": "3.0.0",
+  "bpw": 5,
   "size_bytes": 1116691072,
   "files": {
     "model.safetensors": {

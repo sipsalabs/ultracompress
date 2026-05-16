@@ -23,9 +23,9 @@ You'll see a table of pre-compressed models published by Sipsa Labs:
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓
 ┃ Model ID                    ┃ Base               ┃    bpw ┃   Size ┃ Downloads┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩
-│ sipsalabs/<model-id> │ Qwen/Qwen3-1.7B    │  2.798 │ 1.04GB │      ... │
-│ sipsalabs/llama2-7b-uc2p79  │ meta-llama/Ll...   │  2.798 │ 4.20GB │      ... │
-│ sipsalabs/mistral-7b-uc2p79 │ mistralai/Mis...   │  2.798 │ 4.21GB │      ... │
+│ sipsalabs/<model-id> │ Qwen/Qwen3-1.7B    │      5 │ 1.04GB │      ... │
+│ sipsalabs/llama2-7b-uc-v3-bpw5  │ meta-llama/Ll... │      5 │ 4.40GB │      ... │
+│ sipsalabs/mistral-7b-v0.3-uc-v3-bpw5 │ mistralai/Mis... │  5 │ 4.41GB │      ... │
 └─────────────────────────────┴────────────────────┴────────┴────────┴──────────┘
 ```
 
@@ -49,8 +49,8 @@ You'll see the provenance manifest:
 UltraCompress artifact: sipsalabs/<model-id>
 ─────────────────────────────────────────────────
 Base model:   Qwen/Qwen3-1.7B
-Method:       weight-level-compression v1
-Bits/weight:  2.798
+Method:       uc-v3 lossless 5-bit
+Bits/weight:  5
 Size:         1.04 GB
 SHA-256:      a3f5c8...   (verified ✓)
 License:      research-free; commercial requires separate license

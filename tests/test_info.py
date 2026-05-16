@@ -18,17 +18,17 @@ def test_read_metadata_returns_none_for_missing_path(tmp_path: Path) -> None:
 def test_read_metadata_loads_manifest(tmp_path: Path) -> None:
     """A directory with a valid ultracompress.json returns the parsed dict."""
     manifest = {
-        "model_id": "sipsalabs/qwen3-1.7b-uc2p79",
+        "model_id": "sipsalabs/qwen3-1.7b-uc-v3-bpw5",
         "base_model": "Qwen/Qwen3-1.7B",
-        "method": "track-a-row-overlay",
-        "bpw": 2.798,
+        "method": "uc-v3",
+        "bpw": 5,
         "size_bytes": 1_098_421_760,
         "license": "research-free",
     }
     (tmp_path / "ultracompress.json").write_text(json.dumps(manifest))
     result = info.read_artifact_metadata(tmp_path)
     assert result is not None
-    assert result["bpw"] == pytest.approx(2.798)
+    assert result["bpw"] == pytest.approx(5)
     assert result["base_model"] == "Qwen/Qwen3-1.7B"
 
 

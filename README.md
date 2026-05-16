@@ -2,13 +2,13 @@
 
 Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed by a SHA-256 manifest.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.6.10-blue.svg)](https://pypi.org/project/ultracompress/)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.11-blue.svg)](https://pypi.org/project/ultracompress/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/patent-pending-orange.svg)](./PATENT_NOTICE.md)
-[![Security](https://img.shields.io/badge/v0.6.10-hardened%20sdist-green.svg)](./CHANGELOG.md)
+[![Security](https://img.shields.io/badge/v0.6.11-hardened%20sdist-green.svg)](./CHANGELOG.md)
 
-> **v0.6.10 (current PyPI release):** ships on a MANIFEST-scrubbed sdist (the prior 0.6.7 / 0.6.8 sdists were yanked from PyPI after an RCE-class fix on `torch.load()` paths in 0.6.9). Mistral-7B-v0.3 hits **1.00548×** — the tightest dense 7B-class lossless 5-bit ratio we currently publish. OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — a drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. The `pip install ultracompress` substrate is fully production today (no API key required for self-host).
+> **v0.6.11 (current PyPI release):** ships on a MANIFEST-scrubbed sdist (the prior 0.6.7 / 0.6.8 sdists were yanked from PyPI after an RCE-class fix on `torch.load()` paths in 0.6.9). Mistral-7B-v0.3 hits **1.00548×** — the tightest dense 7B-class lossless 5-bit ratio we currently publish. OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — a drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. The `pip install ultracompress` substrate is fully production today (no API key required for self-host).
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). A 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
@@ -23,12 +23,12 @@ We're a small lab shipping this in public while the patents are pending. Most da
 ## Try it (3 commands)
 
 ```bash
-pip install ultracompress==0.6.10 huggingface_hub[cli]
+pip install ultracompress==0.6.11 huggingface_hub[cli]
 hf download SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5 --local-dir ./pack
 uc verify ./pack
 ```
 
-Expected output (real, not aspirational — this is what the v0.6.10 verifier prints on a clean pull of the 1.7B-Base artifact):
+Expected output (real, not aspirational — this is what the v0.6.11 verifier prints on a clean pull of the 1.7B-Base artifact):
 
 ```
 uc_pack_version: 3  (LOSSLESS, self-contained)
@@ -62,7 +62,7 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 ## What works today (verified, with JSON receipts)
 
-PyPI `v0.6.10` is the current release. v0.6.10 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
+PyPI `v0.6.11` is the current release. v0.6.11 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
 **22 architectures shipped at 5 bpw** (dense 0.6B → 405B, MoE 47B → 235B, state-space) — compression complete and uploaded to HuggingFace. Of those, **14 are PPL-verified end-to-end** against their bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42; the remaining 8 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/`.
 
@@ -83,7 +83,7 @@ Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both h
 
 Other notable verified results (full table in [Appendix](#appendix-full-architecture-matrix) below):
 
-- **Lossless 5-bit state-space-model compression**: Mamba-2.8B at 1.0119 (scalar-only; the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
+- **Lossless 5-bit state-space-model compression**: Mamba-2.8B compression validated with bit-identical reconstruction (scalar-only; end-to-end PPL eval pending, and the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 40 repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
 - **PyPI**: [pypi.org/project/ultracompress](https://pypi.org/project/ultracompress/).
 - **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) — self-serve via [sipsalabs.com/pricing](https://sipsalabs.com/pricing) (Pro $99/mo, Team $499/mo). Free $5 trial credit on signup.
@@ -97,8 +97,8 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
-- **`uc compress` as a one-shot CLI.** v0.6.10 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
-- **State-space models past scalar-only.** Mamba-2.8B at 1.0119 is the SSM number, full stop. We tried two correction-overlay paths on top — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred.
+- **`uc compress` as a one-shot CLI.** v0.6.11 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
+- **State-space models past scalar-only.** Mamba-2.8B compression is validated (bit-identical reconstruction) but its end-to-end PPL eval is still pending; scalar-only is as far as the SSM path goes today. We tried two correction-overlay paths on top — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred.
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
 - **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week. Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration.
@@ -159,7 +159,7 @@ We ship in public and work with a small number of design partners. The most usef
 - **GitHub Sponsors** — [github.com/sponsors/sipsalabs](https://github.com/sponsors/sipsalabs). Supports continued open releases.
 - **Press / commentary** — `press@sipsalabs.com`. The framing we can stand behind: a 405B-class model compressed end-to-end on a single 32 GB consumer GPU, and a 5-bit codec built around a bit-identical reconstruction contract — both verifiable via the artifacts above.
 - **Twitter** — `@SipsaLabs`. New account; if you found this repo first that's because we ship faster than we tweet.
-- **CHANGELOG** — [v0.6.10 release notes](./CHANGELOG.md) for the hardened-sdist + MANIFEST-scrub narrative.
+- **CHANGELOG** — [v0.6.11 release notes](./CHANGELOG.md) for the hardened-sdist + MANIFEST-scrub narrative.
 
 If you're tracking the project: release notes in `CHANGELOG.md` and the `/blog` posts on sipsalabs.com are the canonical "what shipped" surfaces.
 
@@ -211,7 +211,7 @@ The production trainer that produces packs is patent-protected and not part of t
 | OLMo-2-0425-1B | `olmo-2-0425-1b-uc-v3-bpw5` | 1.0B | 16 | 1.0073 |
 | SmolLM2-1.7B-Instruct | `smollm2-1.7b-instruct-uc-v3-bpw5` | 1.7B | 24 | 1.0075 |
 | SmolLM2-1.7B | `smollm2-1.7b-uc-v3-bpw5` | 1.7B | 24 | 1.0085 |
-| Mamba-2.8B (SSM) | `mamba-2.8b-hf-uc-v3-bpw5` | 2.8B | 64 | 1.0119 |
+| Mamba-2.8B (SSM) | `mamba-2.8b-hf-uc-v3-bpw5` | 2.8B | 64 | (compression validated; PPL eval pending) |
 | Llama-3.1-8B | `llama-3.1-8b-uc-v3-bpw5` | 8.0B | 32 | 1.0125 |
 | Qwen3-1.7B (Instruct) | `qwen3-1.7b-uc-v3-bpw5` | 1.7B | 28 | 1.0200 *(eval pending reconciliation)* |
 | Hermes-3-Llama-3.1-405B | `hermes-3-llama-3.1-405b-uc-v3-bpw5` | 405B | 126 | **1.0066** (5.0692 / 5.0358, n=50, per-layer streaming) |

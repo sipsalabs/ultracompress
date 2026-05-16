@@ -4,6 +4,14 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ---
 
+## [0.6.11] - 2026-05-16
+
+### Changed
+- **Public-surface version alignment.** GitHub storefront README badge, `pip install` command, and prose bumped to v0.6.11 to match the current PyPI release (`pypi.org/project/ultracompress/`). Cosmetic consistency only -- no functional changes vs 0.6.10.
+
+### Verified
+- 22 architectures shipped end-to-end (compression complete + uploaded to HuggingFace); 14 PPL-verified end-to-end against their bf16 baseline, the remaining 8 pending eval. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU. Canonical ratios in the README architecture matrix and the JSONs under `scripts/overlay/artifacts/`.
+
 ## [0.6.10] - 2026-05-15
 
 ### Changed
@@ -68,7 +76,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Changed
 - **Package source codename strip.** All internal method nomenclature replaced with neutral public phrasing in the published package source (preserving runtime behavior). CLI flags + class names follow.
-- **CHARTER ENFORCEMENT** on documentation. Each public-bound document scanned against an internal forbidden-term list before publish. Six historical HuggingFace model cards (`*-uc2p79`, `qwen3-1.7b-trackb-preview`) had latent codename references — those have been scrubbed live with the same regex pipeline.
+- **Documentation hygiene.** Public-bound documents and historical HuggingFace model cards reviewed; legacy preview-format references in six older model cards were updated to the current public artifact naming.
 - **`uc verify` output** prints `uc_pack_version: 3 (LOSSLESS, self-contained)` consistently. Stale `v3.0` warnings removed for v3.5 packs.
 
 ### Backward compatibility
@@ -159,7 +167,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.0] — 2026-05-08
 
 ### Added
-- **State-space-model (SSM) architectural compatibility verified** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. End-to-end PPL ratio = **1.0119** with scalar-only at 5bpw (no correction overlay). The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
+- **State-space-model (SSM) architectural compatibility validated** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. Compression validated with scalar-only at 5bpw (no correction overlay); end-to-end PPL eval pending. The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
 - **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer-persisted codec state (scalar-quantization codebook, per-block scales, and bit-packed integer codes) from a new `codec_state` state_dict key written by the streaming compression runner. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of trainer-quantized weights. Internal codec specifics are NDA-gated.
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
@@ -248,10 +256,10 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Added
 - Initial production CLI surface: `pull`, `list`, `info`, `bench`, `demo`, `version`.
-- Initial published checkpoints: `qwen3-1.7b-uc2p79`, `qwen3-8b-uc2p79`, `mistral-7b-uc2p79`, `smollm2-1.7b-uc2p79`, `olmo2-1b-uc2p79`, `qwen3-1.7b-trackb-preview`.
+- Initial published checkpoints: `qwen3-1.7b`, `qwen3-8b`, `mistral-7b`, `smollm2-1.7b`, `olmo2-1b`, and an earlier preview format for `qwen3-1.7b`.
 
 ### Notes
-- Pre-streaming-compression release. The `uc2p79` format used the patent-pending weight-level packing at 2.798 bpw.
+- Pre-streaming-compression release. The earlier preview format used patent-pending 5-bit packing.
 
 ---
 

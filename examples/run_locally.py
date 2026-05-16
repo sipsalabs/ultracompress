@@ -1,6 +1,6 @@
 """Run a Sipsa-compressed model locally — no API needed.
 
-For Natalie (or anyone evaluating Sipsa). Hardware: any machine with
+For anyone evaluating Sipsa. Hardware: any machine with
 either CUDA, MPS (M-series Mac), or even CPU (slow but works for tiny models).
 
 Walks the customer through:
@@ -46,7 +46,7 @@ from ultracompress.pack_v3 import (
 # Other architectures (PPL ratio >1%, transparently published — these are
 # arch-floor honest results, not failures):
 #   ("NousResearch/Meta-Llama-3.1-8B",  "SipsaLabs/llama-3.1-8b-uc-v3-bpw5",  1.0125)
-#   ("mistralai/Mistral-7B-v0.3",       "SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5", 1.0502)
+#   ("mistralai/Mistral-7B-v0.3",       "SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5", 1.00548)
 
 BASE_HF_ID = "Qwen/Qwen3-0.6B"
 SIPSA_HF_REPO = "SipsaLabs/qwen3-0.6b-uc-v3-bpw5"
