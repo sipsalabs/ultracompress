@@ -109,7 +109,7 @@ Things people sometimes assume work because the rest of it does. They don't, and
 
 ## Why this isn't AWQ / GPTQ / EXL3
 
-Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains the trainer's persisted codec state plus a low-rank correction overlay trained per-layer against teacher activations, and the deterministic reconstruction reproduces — bit-identically — the dequantized weight the trainer used during distillation. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith. Codec internals are patent-pending.
+Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains everything needed to deterministically reconstruct — bit-identically — the exact dequantized weights the trainer used. Internal codec details are patent-pending and deliberately not described here. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith. Codec internals are patent-pending.
 
 This matters when "the model picks a slightly-wrong variable name" is a regulatory finding rather than a cosmetic complaint. Defense / aerospace deploy-bit-exactness is a compliance requirement. FDA-regulated healthcare AI requires model equivalence between dev and deploy. SR 11-7 (Federal Reserve model validation) requires reproducible audit recovery. A frontier lab's red-team eval is only valid against the same inference path the team will actually deploy.
 
@@ -125,10 +125,10 @@ Most projects hide their failures. We catalogue them at the same level of detail
 
 A taste of what's in there:
 
-- **SVD warm-start on Mamba** — made PPL 0.07 pp WORSE than scalar-only. Truncated low-rank SVD on a high-rank residual injects noise the activation distribution doesn't want. Documented; the correction overlay value comes from the KL distillation pass, not from the SVD initialization.
-- **Multi-Pass Cascade Correction** — hypothesis: two low-rank corrections in series capture more than one at constant param budget. Result: catastrophic 1.0682× (13.7× worse than uniform single-pass). Pass-1 cannot recover information that pass-0 already discarded. CLOSED.
-- **AWQ-Style Channel Pre-Scaling on scalar + correction overlay** — 1.1306× catastrophic regression (+13%, 26× worse than uniform). AWQ is designed for uniform-grid quantization where pre-scaling protects salient channels from rounding noise; scalar quantization already adapts a learned non-uniform grid, so the round-trip just injects bias the correction overlay then wastes its capacity correcting. CLOSED.
-- **rank/training schedule push on the Qwen3-1.7B-Base record** — predicted: tighter than 1.0040×. Actual: 1.0042×, within statistical noise. Knob saturated at this configuration. The 1.0040× number stands as the empirical floor.
+- **An initialization shortcut we tried** — made PPL 0.07 pp WORSE on Mamba and was discarded. Documented as a negative result; method specifics withheld (patent-pending).
+- **A multi-pass variant we hypothesized would help** — produced a catastrophic 13.7× regression vs. the single-pass baseline. CLOSED.
+- **Importing an AWQ-style pre-scaling step** — produced a catastrophic +13% regression and was ruled out. CLOSED.
+- **Pushing the training schedule past the current configuration** — gained nothing (1.0042× vs 1.0040×, within noise). The 1.0040× floor stands.
 - **"Base models compress tighter than instruct" hypothesis** — refuted 2/3 of architectures. Instruct-fine-tuning effects on quantization-friendliness are architecture-dependent, not universal. Hypothesis dropped.
 - **A universal cure for the dense PPL floor** — methods that tighten Mistral and Phi-3 are a wash on Llama-3.1-8B and Qwen3-0.6B at our current configuration. Per-architecture, not universal. Documented this week.
 
@@ -169,7 +169,7 @@ If you're tracking the project: release notes in `CHANGELOG.md` and the `/blog` 
 
 The pack persists trainer-side codec state alongside the quantized weights so customer-side reconstruction is a deterministic function of bytes-on-disk that runs the same arithmetic the trainer ran. Bit-identity is verified by SHA-256 manifest at customer load. Internal codec specifics are NDA-gated — contact founder@sipsalabs.com for technical due diligence.
 
-The streaming compression path that makes this scale to 405B on one GPU works by lazy-loading each transformer layer's bf16 weights from the safetensors index, caching the teacher's hidden output for that layer, quantizing, fitting the correction overlay against the cache, saving the layer to disk, and freeing the layer before pulling the next one. Peak VRAM is bounded by ~one transformer layer (8.98 GB for Qwen2.5-72B; same shape for 405B). Compression time is roughly 1 minute per layer.
+The streaming path is what lets UltraCompress scale to a 405B-class model on a single 32 GB consumer GPU instead of a multi-GPU server. How that bound is achieved is patent-pending and deliberately not described here.
 
 The PPL evaluator + verifier ship public in this package; the production trainer is patent-protected. Released artifacts include the SHA-256 manifest needed to reproduce every published number via `uc verify`.
 
