@@ -6,9 +6,9 @@ Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed 
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/patent-pending-orange.svg)](./PATENT_NOTICE.md)
-[![Security](https://img.shields.io/badge/v0.6.11-hardened%20sdist-green.svg)](./CHANGELOG.md)
+[![Security](https://img.shields.io/badge/v0.6.12-hardened%20sdist-green.svg)](./CHANGELOG.md)
 
-> **v0.6.11 (current PyPI release):** ships on a MANIFEST-scrubbed sdist (the prior 0.6.7 / 0.6.8 sdists were yanked from PyPI after an RCE-class fix on `torch.load()` paths in 0.6.9). Mistral-7B-v0.3 hits **1.00548×** — the tightest dense 7B-class lossless 5-bit ratio we currently publish. OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — a drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. The `pip install ultracompress` substrate is fully production today (no API key required for self-host).
+> **v0.6.12 (current PyPI release):** ships on a MANIFEST-scrubbed sdist (the prior 0.6.7 / 0.6.8 sdists were yanked from PyPI after an RCE-class fix on `torch.load()` paths in 0.6.9). Mistral-7B-v0.3 hits **1.00548×** — the tightest dense 7B-class lossless 5-bit ratio we currently publish. OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — a drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. The `pip install ultracompress` substrate is fully production today (no API key required for self-host).
 
 Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). A 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
@@ -23,12 +23,12 @@ We're a small lab shipping this in public while the patents are pending. Most da
 ## Try it (3 commands)
 
 ```bash
-pip install ultracompress==0.6.11 huggingface_hub[cli]
+pip install ultracompress huggingface_hub[cli]
 hf download SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5 --local-dir ./pack
 uc verify ./pack
 ```
 
-Expected output (real, not aspirational — this is what the v0.6.11 verifier prints on a clean pull of the 1.7B-Base artifact):
+Expected output (real, not aspirational — this is what the v0.6.12 verifier prints on a clean pull of the 1.7B-Base artifact):
 
 ```
 uc_pack_version: 3  (LOSSLESS, self-contained)
@@ -62,15 +62,15 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 ## What works today (verified, with JSON receipts)
 
-PyPI `v0.6.11` is the current release. v0.6.11 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
+PyPI `v0.6.12` is the current release. v0.6.12 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
-**22 architectures shipped at 5 bpw** (dense 0.6B → 405B, MoE 47B → 235B, state-space) — compression complete and uploaded to HuggingFace. Of those, **14 are PPL-verified end-to-end** against their bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42; the remaining 8 are still pending eval. Every published number traces to a JSON in `scripts/overlay/artifacts/`.
+**14 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. A further 8 are compression-complete and uploaded to HuggingFace with eval pending (22 packs total; the OpenAI-compatible API serves 19). Verified PPL ratios are tracked in an internal benchmark ledger; the public streaming-compression eval JSONs live in `scripts/overlay/artifacts/`, and full per-architecture eval provenance is available under the verification flow / on request.
 
 The headline result and the tightest dense records currently public on HuggingFace:
 
 | Model | Params | Class | PPL ratio | HF artifact | Status |
 |---|---|---|---|---|---|
-| Hermes-3-Llama-3.1-405B | 405B | 405B-class lossless on a single 32 GB consumer GPU | **1.0066** | [`SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5) | live |
+| Hermes-3-Llama-3.1-405B | 405B | 405B-class lossless on a single 32 GB consumer GPU | **1.0066** | [`SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5) | gated · access on request |
 | Mistral-7B-v0.3 | 7.2B | sub-0.6% drift (new this week) | **1.00548** | [`SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5) | live |
 | Qwen3-1.7B-Base | 1.7B | sub-0.5% drift | **1.00401** | `SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5` | live |
 | Qwen3-14B | 14.0B | sub-0.5% drift | **1.00403** | `SipsaLabs/qwen3-14b-uc-v3-bpw5` | live |
@@ -97,7 +97,7 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
-- **`uc compress` as a one-shot CLI.** v0.6.11 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
+- **`uc compress` as a one-shot CLI.** v0.6.12 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
 - **State-space models past scalar-only.** Mamba-2.8B compression is validated (bit-identical reconstruction) but its end-to-end PPL eval is still pending; scalar-only is as far as the SSM path goes today. We tried two correction-overlay paths on top — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred.
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
@@ -141,7 +141,7 @@ Researchers comparing 5-bit codecs can treat this list as a partial audit trail 
 Direct, not aspirational:
 
 - **If you serve LLMs in production and your VRAM bill is the constraint**, this might help. The streaming compression path bounds peak compression-time VRAM to roughly one transformer layer regardless of total depth (8.98 GB for Qwen2.5-72B; same recipe scales to 405B), and the v3 pack format is bit-exact-reproducible at inference time. Email `founder@sipsalabs.com` with your stack and a target latency/quality bar; we'll tell you honestly whether UC fits.
-- **If you're a researcher comparing 5-bit codecs**, the ground-truth JSONs in `scripts/overlay/artifacts/` are the audit trail, the methodology is fixed (FineWeb-edu held-out tail, seq_len=1024, seed=42, per-model n noted in the matrix), and the negative-results section above tells you what we already tried that didn't work. The BUSL-1.1 license covers research, reproduction, and citation freely.
+- **If you're a researcher comparing 5-bit codecs**, the public streaming-compression eval JSONs in `scripts/overlay/artifacts/` plus the fixed methodology (FineWeb-edu held-out tail, seq_len=1024, seed=42, per-model n noted in the matrix) are the audit trail; full per-architecture eval provenance is available on request, and the negative-results section above tells you what we already tried that didn't work. The BUSL-1.1 license covers research, reproduction, and citation freely.
 - **If you're in a regulated domain** (defense, FDA-regulated healthcare, SR 11-7 model validation, frontier lab red-team), the bit-identical reconstruction contract is the actual reason to talk to us. Phase 0 POC ($5K, 5 business days, customer-picked model) gets you a pack you can audit yourself. Email `founder@sipsalabs.com` for the POC scope.
 - **If you're at a frontier lab** distributing internal model artifacts and want red-team eval fidelity preserved across deploy environments, the SHA-256 manifest exists for exactly that.
 
@@ -159,7 +159,7 @@ We ship in public and work with a small number of design partners. The most usef
 - **GitHub Sponsors** — [github.com/sponsors/sipsalabs](https://github.com/sponsors/sipsalabs). Supports continued open releases.
 - **Press / commentary** — `press@sipsalabs.com`. The framing we can stand behind: a 405B-class model compressed end-to-end on a single 32 GB consumer GPU, and a 5-bit codec built around a bit-identical reconstruction contract — both verifiable via the artifacts above.
 - **Twitter** — `@SipsaLabs`. New account; if you found this repo first that's because we ship faster than we tweet.
-- **CHANGELOG** — [v0.6.11 release notes](./CHANGELOG.md) for the hardened-sdist + MANIFEST-scrub narrative.
+- **CHANGELOG** — [v0.6.12 release notes](./CHANGELOG.md) for the hardened-sdist + MANIFEST-scrub narrative.
 
 If you're tracking the project: release notes in `CHANGELOG.md` and the `/blog` posts on sipsalabs.com are the canonical "what shipped" surfaces.
 
@@ -195,7 +195,7 @@ The production trainer that produces packs is patent-protected and not part of t
 
 ## Appendix: full architecture matrix
 
-22 architectures shipped (compression complete + uploaded to HuggingFace), with 14 fully PPL-verified end-to-end and 8 still pending eval as of 2026-05-14. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
+14 architectures independently PPL-verified end-to-end; a further 8 are compression-complete and uploaded to HuggingFace with eval pending (22 packs total, 19 served on the OpenAI-compatible API) as of 2026-05-16. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
 
 | Model | HF artifact | Params | Layers | PPL ratio |
 |---|---|---|---|---|
