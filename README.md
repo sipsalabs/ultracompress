@@ -64,7 +64,7 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 PyPI `v0.6.12` is the current release. v0.6.12 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
-**14 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. A further 8 are compression-complete and uploaded to HuggingFace with eval pending (22 packs total; the OpenAI-compatible API serves 19). Verified PPL ratios are tracked in an internal benchmark ledger; the public streaming-compression eval JSONs live in `scripts/overlay/artifacts/`, and full per-architecture eval provenance is available under the verification flow / on request.
+**14 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. The full catalog is available to customers under engagement. Verified PPL ratios are tracked in an internal benchmark ledger; the public streaming-compression eval JSONs live in `scripts/overlay/artifacts/`, and full per-architecture eval provenance is available under the verification flow / on request.
 
 The headline result and the tightest dense records currently public on HuggingFace:
 
@@ -195,7 +195,7 @@ The production trainer that produces packs is patent-protected and not part of t
 
 ## Appendix: full architecture matrix
 
-14 architectures independently PPL-verified end-to-end; a further 8 are compression-complete and uploaded to HuggingFace with eval pending (22 packs total, 19 served on the OpenAI-compatible API) as of 2026-05-16. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
+14 architectures independently PPL-verified end-to-end; the full catalog is available to customers under engagement as of 2026-05-16. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
 
 | Model | HF artifact | Params | Layers | PPL ratio |
 |---|---|---|---|---|
