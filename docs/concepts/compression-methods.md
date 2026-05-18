@@ -8,7 +8,7 @@ This page is a high-level conceptual overview. For implementation specifics, con
 
 Quantization is the standard approach to model compression: take a 16-bit floating-point weight and store it in fewer bits. The traditional ceiling for "good quality" was **8 bits per weight** (int8). bitsandbytes pushed it to **4 bits** with NF4 in 2023, and HQQ pushed it slightly further with group-wise schemes — but those methods drift relative to the original weights.
 
-The patent-pending UltraCompress method produces a lossless 5-bit pack: the reconstruction is a deterministic dequantization that is mathematically bit-identical to the trainer-quantized weights, verifiable against a SHA-256 manifest. Across the published architecture matrix:
+The patent-pending UltraCompress method produces a lossless 5-bit pack: the reconstruction is a deterministic dequantization that is mathematically bit-identical to the the original weights, verifiable against a SHA-256 manifest. Across the published architecture matrix:
 
 - 22 architectures shipped end-to-end; 14 PPL-verified end-to-end against their bf16 baseline
 - Bit-identical reconstruction — an auditor can re-derive every weight from the pack alone
@@ -51,4 +51,4 @@ This is increasingly a procurement gate for enterprise customers. See [reproduci
 - `uc compress` self-compression ships in Q3 2026, gated on patent prosecution timing
 - Future research is under active patent strategy; out of scope for public discussion
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
