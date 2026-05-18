@@ -10,9 +10,9 @@ Lossless 5-bit transformer compression. Bit-identical reconstruction guaranteed 
 
 > **v0.6.12 (current PyPI release):** ships on a MANIFEST-scrubbed sdist (the prior 0.6.7 / 0.6.8 sdists were yanked from PyPI after an RCE-class fix on `torch.load()` paths in 0.6.9). Mistral-7B-v0.3 hits **1.00548×** — the tightest dense 7B-class lossless 5-bit ratio we currently publish. OpenAI-compatible inference API at [`api.sipsalabs.com/v1`](https://api.sipsalabs.com/v1) is **publicly self-serve** — a drop-in replacement for `OPENAI_BASE_URL`. Free $5 credit on signup, no card. Pro $99/mo + Team $499/mo at sipsalabs.com/pricing. The `pip install ultracompress` substrate is fully production today (no API key required for self-host).
 
-Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). A 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
+Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 baseline (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). A 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU. Reproduce in 3 commands.
 
-UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack you can verify against the original — not "1% PPL drift on WikiText," but a deterministic reconstruction that hashes byte-for-byte to what the trainer measured. That's the honest definition of lossless we care about: an auditor can re-derive every weight from the pack alone, and the SHA-256 manifest fails loudly if anything drifted. Codec internals are patent-pending.
+UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack you can verify against the original — not "1% PPL drift on WikiText," but a deterministic reconstruction that hashes byte-for-byte to the exact weight value Sipsa's compressor reconstructs. That's the honest definition of lossless we care about: an auditor can re-derive every weight from the pack alone, and the SHA-256 manifest fails loudly if anything drifted. Codec internals are patent-pending.
 
 It exists because the bf16-equivalent quality bar matters in places where "good enough on MMLU" isn't enough — defense, FDA-regulated healthcare, SR 11-7 model validation, internal red-team eval at frontier labs. And as a side-effect of the streaming compression path, it lets us put a 405B-parameter model through a single 32 GB consumer GPU without renting an H100 cluster.
 
@@ -32,7 +32,6 @@ Expected output (real, not aspirational — this is what the v0.6.12 verifier pr
 
 ```
 uc_pack_version: 3  (LOSSLESS, self-contained)
-codec_source:    trainer-persisted
 n_layers:        28
 bpw:             5
 Spot-check SHA256:
@@ -79,7 +78,7 @@ The headline result and the tightest dense records currently public on HuggingFa
 | Phi-3-mini-4k-instruct | 3.8B | sub-0.3% drift (seq_len=128, not apples-to-apples) | **1.00262** | `SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5` | live |
 | Phi-3.5-MoE-instruct | 42B (MoE 16-exp) | sub-0.5% drift | (eval pending this week) | `SipsaLabs/phi-3.5-moe-uc-v3-bpw5` | upload in flight |
 
-Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves of the fraction measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 teacher took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. Pack body is ~251 GB, bit-identical SHA-256 reconstruction. The Mistral-7B 1.00548× row is new this week and is the tightest dense 7B-class lossless 5-bit ratio we currently publish.
+Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves of the fraction measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 baseline took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. Pack body is ~251 GB, bit-identical SHA-256 reconstruction. The Mistral-7B 1.00548× row is new this week and is the tightest dense 7B-class lossless 5-bit ratio we currently publish.
 
 Other notable verified results (full table in [Appendix](#appendix-full-architecture-matrix) below):
 
@@ -97,7 +96,7 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
-- **`uc compress` as a one-shot CLI.** v0.6.12 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → public packer → published artifact + `uc verify`.
+- **`uc compress` as a one-shot CLI.** v0.6.12 still requires the production compression pipeline (patent-protected, not part of the public package). The release path is: production pipeline (private) → public packer → published artifact + `uc verify`.
 - **State-space models past the baseline path.** Mamba-2.8B compression is validated (bit-identical reconstruction) but its end-to-end PPL eval is still pending; the baseline path is as far as the SSM path goes today. We tried two tighter paths on top — both made it worse. Breaking this needs SSM-specific work that is deferred.
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
@@ -109,7 +108,7 @@ Things people sometimes assume work because the rest of it does. They don't, and
 
 ## Why this isn't AWQ / GPTQ / EXL3
 
-Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains everything needed to deterministically reconstruct — bit-identically — the exact dequantized weights the trainer used. Internal codec details are patent-pending and deliberately not described here. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith. Codec internals are patent-pending.
+Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the customer artifact contains everything needed to deterministically reconstruct — bit-identically — the exact dequantized weights. Internal codec details are patent-pending and deliberately not described here. A SHA-256 manifest covers the pack end-to-end. If anything drifts, `uc verify` fails loudly; you don't have to take "it should be close" on faith. Codec internals are patent-pending.
 
 This matters when "the model picks a slightly-wrong variable name" is a regulatory finding rather than a cosmetic complaint. Defense / aerospace deploy-bit-exactness is a compliance requirement. FDA-regulated healthcare AI requires model equivalence between dev and deploy. SR 11-7 (Federal Reserve model validation) requires reproducible audit recovery. A frontier lab's red-team eval is only valid against the same inference path the team will actually deploy.
 
@@ -128,7 +127,7 @@ A taste of what's in there:
 - **An initialization shortcut we tried** — made PPL 0.07 pp WORSE on Mamba and was discarded. Documented as a negative result; method specifics withheld (patent-pending).
 - **A multi-pass variant we hypothesized would help** — produced a catastrophic 13.7× regression vs. the single-pass baseline. CLOSED.
 - **Importing an AWQ-style pre-scaling step** — produced a catastrophic +13% regression and was ruled out. CLOSED.
-- **Pushing the training schedule past the current configuration** — gained nothing (1.0042× vs 1.0040×, within noise). The 1.0040× floor stands.
+- **Pushing the optimization schedule past the current configuration** — gained nothing (1.0042× vs 1.0040×, within noise). The 1.0040× floor stands.
 - **"Base models compress tighter than instruct" hypothesis** — refuted 2/3 of architectures. Instruct-fine-tuning effects on quantization-friendliness are architecture-dependent, not universal. Hypothesis dropped.
 - **A universal cure for the dense PPL floor** — methods that tighten Mistral and Phi-3 are a wash on Llama-3.1-8B and Qwen3-0.6B at our current configuration. Per-architecture, not universal. Documented this week.
 
@@ -167,11 +166,11 @@ If you're tracking the project: release notes in `CHANGELOG.md` and the `/blog` 
 
 ## How v3 lossless actually works
 
-The pack persists trainer-side codec state alongside the quantized weights so customer-side reconstruction is a deterministic function of bytes-on-disk that runs the same arithmetic the trainer ran. Bit-identity is verified by SHA-256 manifest at customer load. Internal codec specifics are NDA-gated — contact founder@sipsalabs.com for technical due diligence.
+Customer-side reconstruction is a deterministic function of bytes-on-disk: the pack contains everything needed to reproduce the exact weights, with no external state required. Bit-identity is verified by SHA-256 manifest at customer load. Internal codec specifics are NDA-gated — contact founder@sipsalabs.com for technical due diligence.
 
 The streaming path is what lets UltraCompress scale to a 405B-class model on a single 32 GB consumer GPU instead of a multi-GPU server. How that bound is achieved is patent-pending and deliberately not described here.
 
-The PPL evaluator + verifier ship public in this package; the production trainer is patent-protected. Released artifacts include the SHA-256 manifest needed to reproduce every published number via `uc verify`.
+The PPL evaluator + verifier ship public in this package; the production compression pipeline is patent-protected. Released artifacts include the SHA-256 manifest needed to reproduce every published number via `uc verify`.
 
 ---
 
@@ -188,7 +187,7 @@ ultracompress/
 └── LICENSE                       BUSL-1.1 (CLI source) + patent-scope notice
 ```
 
-The production trainer that produces packs is patent-protected and not part of this public package; this repo ships the verifier, benchmarker, and CLI that operate on published artifacts.
+The production compression pipeline that produces packs is patent-protected and not part of this public package; this repo ships the verifier, benchmarker, and CLI that operate on published artifacts.
 
 ---
 
@@ -227,8 +226,8 @@ The production trainer that produces packs is patent-protected and not part of t
 
 - The CLI/verifier source in this repository is published under the [Business Source License 1.1](./LICENSE). It is **free of charge** for (a) individuals, (b) non-commercial research/academic use, and (c) organizations with annual revenue under US $1,000,000. On the Change Date (2030-05-16) it converts to Apache License 2.0.
 - **Any other commercial or production use** — including using it in or for a paid product, a hosted/managed service, or any revenue-generating activity — requires a commercial license. Contact `legal@sipsalabs.com`.
-- BUSL-1.1 conveys **no** license to the patent-pending compression/reconstruction methods or the production trainer (not in this repo) — see [`PATENT_NOTICE.md`](./PATENT_NOTICE.md).
-- Pre-compressed model artifacts on HuggingFace are licensed **separately** (Business Source License 1.1, per the license on each artifact) and additionally carry the upstream teacher model's license. They are not covered by this repository's grant.
+- BUSL-1.1 conveys **no** license to the patent-pending compression/reconstruction methods or the production pipeline (not in this repo) — see [`PATENT_NOTICE.md`](./PATENT_NOTICE.md).
+- Pre-compressed model artifacts on HuggingFace are licensed **separately** (Business Source License 1.1, per the license on each artifact) and additionally carry the upstream model's license. They are not covered by this repository's grant.
 - Building a product whose core value depends on the method, or want technical due diligence under NDA? `legal@sipsalabs.com`.
 
 ## Citation
