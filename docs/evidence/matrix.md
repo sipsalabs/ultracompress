@@ -76,4 +76,4 @@ The README headline numbers are the **shipped lossless 5-bit method**: bit-ident
 
 *Both `matrix.md` (this file) and `matrix.json` are direct field copies from the source-of-truth file in the internal Sipsa Labs benchmark archive. Method-internal fields (operating-point parameters, codebook sizes, calibration constants) are deliberately excluded; the patent specifications cover those.*
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
