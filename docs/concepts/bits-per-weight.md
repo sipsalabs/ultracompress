@@ -86,4 +86,4 @@ Some artifacts include the tokenizer and config in addition to the weights. The 
 - [Catastrophic failures](catastrophic-failures.md)
 - [Reproducibility](reproducibility.md)
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
