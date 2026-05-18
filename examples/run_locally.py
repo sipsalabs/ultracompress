@@ -6,15 +6,20 @@ either CUDA, MPS (M-series Mac), or even CPU (slow but works for tiny models).
 Walks the customer through:
   1. pip install ultracompress
   2. hf download SipsaLabs/qwen3-0.6b-uc-v3-bpw5
-  3. wrap base HF skeleton with CorrectionLinear
-  4. load per-layer reconstructed state dicts
+  3. uc verify ./pack    (SHA-256 bit-identical reconstruction check)
+  4. load the reconstructed model via the public loader
   5. run real generate() — no Sipsa servers involved
 
 This is the substrate proof: customers can audit the bit-identical
 reconstruction themselves and run inference on their own hardware.
+
+The reconstruction step is handled entirely by the public `ultracompress`
+package; the internal codec is proprietary and NDA-gated. From the customer's
+side it is a single deterministic call that returns a runnable model.
 """
 from __future__ import annotations
 
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -24,13 +29,9 @@ from pathlib import Path
 
 import torch
 from huggingface_hub import snapshot_download
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
 
-from ultracompress.api_v3 import DEFAULT_TARGETS, _wrap_with_correction
-from ultracompress.pack_v3 import (
-    parse_uc_layer_v3,
-    reconstruct_layer_state_dict_v3,
-)
+from ultracompress import load_packed_model
 
 
 # Pick whichever model you want — all 6 of these are real Sipsa-compressed
@@ -69,35 +70,23 @@ def main() -> int:
     print(f"=== model = {BASE_HF_ID} (Sipsa-compressed at {SIPSA_HF_REPO})")
 
     t0 = time.time()
-    print("\n[1/5] downloading the Sipsa-compressed pack from HuggingFace...")
+    print("\n[1/4] downloading the Sipsa-compressed pack from HuggingFace...")
     pack_dir = Path(snapshot_download(SIPSA_HF_REPO))
     print(f"      pack at {pack_dir}")
 
-    print(f"\n[2/5] loading the base bf16 skeleton ({BASE_HF_ID})...")
-    base = AutoModelForCausalLM.from_pretrained(BASE_HF_ID, dtype=torch.bfloat16)
+    print("\n[2/4] verifying bit-identical reconstruction (uc verify)...")
+    subprocess.run(["uc", "verify", str(pack_dir)], check=True)
+
+    print(f"\n[3/4] loading the reconstructed model (public loader)...")
     tok = AutoTokenizer.from_pretrained(BASE_HF_ID)
     if tok.pad_token_id is None:
         tok.pad_token_id = tok.eos_token_id
-    print(f"      base loaded — {sum(p.numel() for p in base.parameters())/1e9:.2f}B params")
-
-    print("\n[3/5] detecting correction rank from layer_000.uc...")
-    parsed_l0 = parse_uc_layer_v3(pack_dir / "layer_000.uc")
-    ranks = sorted({int(p["rank"]) for k, p in parsed_l0.items()
-                    if isinstance(p, dict) and "rank" in p})
-    rank = ranks[0] if ranks else 32
-    print(f"      rank={rank}")
-
-    print(f"\n[4/5] wrapping target Linears + loading per-layer state dicts...")
-    n_replaced = _wrap_with_correction(base, rank=rank, targets=DEFAULT_TARGETS)
-    n_layers = base.config.num_hidden_layers
-    for i in range(n_layers):
-        sd = reconstruct_layer_state_dict_v3(pack_dir / f"layer_{i:03d}.uc")
-        base.model.layers[i].load_state_dict(sd, strict=False)
-    print(f"      replaced {n_replaced} Linears across {n_layers} layers")
+    base = load_packed_model(pack_dir, base_model=BASE_HF_ID)
     base = base.to(device)
     base.train(False)
+    print(f"      model loaded — {sum(p.numel() for p in base.parameters())/1e9:.2f}B params")
 
-    print(f"\n[5/5] running real inference (Sipsa-compressed substrate)...")
+    print(f"\n[4/4] running real inference (Sipsa-compressed substrate)...")
     print(f"      prompt: {PROMPT!r}")
     inputs = tok(PROMPT, return_tensors="pt").to(device)
     t_gen = time.time()
