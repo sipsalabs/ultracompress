@@ -108,4 +108,4 @@ For pilot/commercial inquiries: founder@sipsalabs.com
 
 *The 32B and 72B checkpoints are significantly larger downloads. If you're on a metered connection, start with the 8B checkpoint.*
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
