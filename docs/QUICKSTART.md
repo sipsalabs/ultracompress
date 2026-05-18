@@ -69,7 +69,7 @@ The full streaming compression pipeline (training a fresh pack from scratch) shi
 
 Each checkpoint is a directory with:
 
-- **Per-layer `.pt` files** -- the compressed weight tensors and learned correction overlays for each transformer layer, saved independently.
+- **Per-layer `.pt` files** -- the compressed weight tensors and internal codec state for each transformer layer, saved independently.
 - **`manifest.json`** -- metadata listing the base model, bits-per-weight, block size, correction rank, and the eval metrics at compression time.
 - **Scaffold weights are NOT included.** At inference time, the base model's embedding layer, final layer norm, and language model head are loaded from the original Hugging Face model (e.g., `Qwen/Qwen3-8B`). The compressed checkpoint replaces only the transformer body. This keeps download sizes small and avoids redistributing unmodified weights.
 
