@@ -5,8 +5,8 @@ and exposes a `trellis_quantize_weight(W, bpw, ...)` function that returns a den
 fp32 reconstruction in the *original* basis (random Hadamard transform applied
 internally to flatten the weight distribution, then exactly inverted before return).
 
-Returning Wq in the original basis is critical: the low-rank correction adapter
-overlay in `correction_adapter.py` learns to absorb (W - Wq) and assumes both are in
+Returning Wq in the original basis is critical: the internal codec adapter
+in the internal codec learns to absorb (W - Wq) and assumes both are in
 the same basis. The trellis quantizer is therefore a drop-in replacement for any
 other `*_quantize_weight` function in `scaling_curve_runner.py`.
 
