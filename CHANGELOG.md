@@ -167,7 +167,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.0] — 2026-05-08
 
 ### Added
-- **State-space-model (SSM) architectural compatibility validated** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. Compression validated with scalar-only at 5bpw (no correction overlay); end-to-end PPL eval pending. The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
+- **State-space-model (SSM) architectural compatibility validated** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. Compression validated with scalar-only at 5bpw; end-to-end PPL eval pending. The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
 - **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer-persisted codec state (scalar-quantization codebook, per-block scales, and bit-packed integer codes) from a new `codec_state` state_dict key written by the streaming compression runner. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of trainer-quantized weights. Internal codec specifics are NDA-gated.
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
@@ -236,7 +236,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Changed
 - **Production bit-rate target raised from 4 to 5 BPW** for the streaming compression tier. The 5 BPW point is the sweet spot for PPL drift across 8B-72B; 4 BPW is the "CONSERVATIVE" tier (T1 90% but PPL_r 1.014×).
-- **Default scalar-quantization block size and low-rank correction adapter rank tightened over earlier internal versions; exact values are NDA-gated.**
+- **Default internal codec parameters tightened over earlier internal versions; exact values are NDA-gated.**
 - **Default distillation steps per layer is 200** (was 1500 in earlier internal versions). Documented saturation effect: 500+ steps regresses end-to-end PPL.
 
 ### Documentation
