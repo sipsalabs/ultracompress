@@ -110,4 +110,4 @@ We report the standard error alongside every benchmark number. Customers reprodu
 - [Manifest schema](../reference/manifest-schema.md)
 - [`uc bench`](../commands/bench.md)
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
