@@ -64,7 +64,7 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 PyPI `v0.6.12` is the current release. v0.6.12 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
-**14 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. The full catalog is available to customers under engagement. Verified PPL ratios are tracked in an internal benchmark ledger; the public streaming-compression eval JSONs live in `scripts/overlay/artifacts/`, and full per-architecture eval provenance is available under the verification flow / on request.
+**14 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. The full catalog is available to customers under engagement. Verified PPL ratios are tracked in an internal benchmark ledger; full per-architecture eval provenance is available under the verification flow / on request.
 
 The headline result and the tightest dense records currently public on HuggingFace:
 
@@ -83,7 +83,7 @@ Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both h
 
 Other notable verified results (full table in [Appendix](#appendix-full-architecture-matrix) below):
 
-- **Lossless 5-bit state-space-model compression**: Mamba-2.8B compression validated with bit-identical reconstruction (scalar-only; end-to-end PPL eval pending, and the tighter SSM path hasn't landed yet, see "what doesn't work").
+- **Lossless 5-bit state-space-model compression**: Mamba-2.8B compression validated with bit-identical reconstruction (end-to-end PPL eval pending, and the tighter SSM path hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 40 repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
 - **PyPI**: [pypi.org/project/ultracompress](https://pypi.org/project/ultracompress/).
 - **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) — self-serve via [sipsalabs.com/pricing](https://sipsalabs.com/pricing) (Pro $99/mo, Team $499/mo). Free $5 trial credit on signup.
@@ -97,8 +97,8 @@ The `SipsaLabs` HuggingFace org page is the live source of truth. If a repo ther
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
-- **`uc compress` as a one-shot CLI.** v0.6.12 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
-- **State-space models past scalar-only.** Mamba-2.8B compression is validated (bit-identical reconstruction) but its end-to-end PPL eval is still pending; scalar-only is as far as the SSM path goes today. We tried two tighter paths on top — both made it worse. Breaking this needs SSM-specific work that is deferred.
+- **`uc compress` as a one-shot CLI.** v0.6.12 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → public packer → published artifact + `uc verify`.
+- **State-space models past the baseline path.** Mamba-2.8B compression is validated (bit-identical reconstruction) but its end-to-end PPL eval is still pending; the baseline path is as far as the SSM path goes today. We tried two tighter paths on top — both made it worse. Breaking this needs SSM-specific work that is deferred.
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
 - **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week. Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration.
@@ -141,7 +141,7 @@ Researchers comparing 5-bit codecs can treat this list as a partial audit trail 
 Direct, not aspirational:
 
 - **If you serve LLMs in production and your VRAM bill is the constraint**, this might help. The streaming compression path bounds peak compression-time VRAM to roughly one transformer layer regardless of total depth (8.98 GB for Qwen2.5-72B; same recipe scales to 405B), and the v3 pack format is bit-exact-reproducible at inference time. Email `founder@sipsalabs.com` with your stack and a target latency/quality bar; we'll tell you honestly whether UC fits.
-- **If you're a researcher comparing 5-bit codecs**, the public streaming-compression eval JSONs in `scripts/overlay/artifacts/` plus the fixed methodology (FineWeb-edu held-out tail, seq_len=1024, seed=42, per-model n noted in the matrix) are the audit trail; full per-architecture eval provenance is available on request, and the negative-results section above tells you what we already tried that didn't work. The BUSL-1.1 license covers research, reproduction, and citation freely.
+- **If you're a researcher comparing 5-bit codecs**, the fixed methodology (FineWeb-edu held-out tail, seq_len=1024, seed=42, per-model n noted in the matrix) plus the published per-model PPL ratios are the audit trail; full per-architecture eval provenance is available on request, and the negative-results section above tells you what we already tried that didn't work. The BUSL-1.1 license covers research, reproduction, and citation freely.
 - **If you're in a regulated domain** (defense, FDA-regulated healthcare, SR 11-7 model validation, frontier lab red-team), the bit-identical reconstruction contract is the actual reason to talk to us. Phase 0 POC ($5K, 5 business days, customer-picked model) gets you a pack you can audit yourself. Email `founder@sipsalabs.com` for the POC scope.
 - **If you're at a frontier lab** distributing internal model artifacts and want red-team eval fidelity preserved across deploy environments, the SHA-256 manifest exists for exactly that.
 
@@ -180,7 +180,6 @@ The PPL evaluator + verifier ship public in this package; the production trainer
 ```
 ultracompress/
 ├── src/ultracompress_cli/        CLI entry points (verify / pull / list / info / bench / demo)
-├── scripts/overlay/              Streaming-compression evaluators + ground-truth JSON artifacts
 ├── tests/                        Regression tests
 ├── examples/                     Minimal runnable usage
 ├── docs/                         Quickstart, concepts, command + reference docs (mkdocs site)
