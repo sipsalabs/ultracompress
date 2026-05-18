@@ -61,7 +61,7 @@ PPL ratio: ~1.028x
 Peak VRAM: ~2.26 GB
 ```
 
-The full streaming compression pipeline (training a fresh pack from scratch) ships in the production trainer, which is NDA-gated. Customer-side `uc verify` and `uc bench` are the public CLI surface; for trainer access, contact founder@sipsalabs.com.
+The full streaming compression pipeline (building a pack from source weights) ships in the production compression pipeline, which is NDA-gated. Customer-side `uc verify` and `uc bench` are the public CLI surface; for pipeline access, contact founder@sipsalabs.com.
 
 ---
 
