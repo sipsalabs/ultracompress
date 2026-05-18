@@ -298,4 +298,4 @@ The closed-source production pipeline (commercial license) versions independentl
 - Commercial licensing: legal@sipsalabs.com
 - General: hello@sipsalabs.com
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
