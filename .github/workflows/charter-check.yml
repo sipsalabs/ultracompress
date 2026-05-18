@@ -10,7 +10,7 @@ jobs:
   charter-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Scan repository for internal codename leaks
         env:
           # Pattern stored in env so the workflow file itself doesn't trip the scan.
