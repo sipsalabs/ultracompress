@@ -28,7 +28,7 @@ Each published artifact reports an end-to-end perplexity ratio against its bf16 
 | Validation cohort + benchmark methodology summary | ✅ | ✅ |
 | Per-model retention envelope | ✅ (model cards) | ✅ (full breakdown) |
 | Reproducibility manifest (SHA-256 file index) | reference only | full manifest |
-| Operating-point parameters and codebook structure | — | ✅ |
+| Internal codec parameters and structure | — | ✅ |
 | Codec mechanism and specification | — | ✅ |
 | Patent specifications (filed April 2026) | — | ✅ when public record |
 
