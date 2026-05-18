@@ -10,7 +10,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **Public-surface version alignment.** GitHub storefront README badge, `pip install` command, and prose bumped to v0.6.11 to match the current PyPI release (`pypi.org/project/ultracompress/`). Cosmetic consistency only -- no functional changes vs 0.6.10.
 
 ### Verified
-- 22 architectures shipped end-to-end (compression complete + uploaded to HuggingFace); 14 PPL-verified end-to-end against their bf16 baseline, the remaining 8 pending eval. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU. Canonical ratios in the README architecture matrix and the JSONs under `scripts/overlay/artifacts/`.
+- 22 architectures shipped end-to-end (compression complete + uploaded to HuggingFace); 14 PPL-verified end-to-end against their bf16 baseline, the remaining 8 pending eval. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU. Canonical ratios in the README architecture matrix.
 
 ## [0.6.10] - 2026-05-15
 
@@ -21,7 +21,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - Ships on the MANIFEST-scrubbed sdist introduced in 0.6.9. The 0.6.7 / 0.6.8 sdists were yanked from PyPI after the 0.6.9 RCE-class fix on `torch.load()` paths; 0.6.10 carries that fix forward.
 
 ### Verified
-- 22 architectures shipped end-to-end (compression complete + uploaded to HuggingFace); 14 PPL-verified end-to-end against their bf16 baseline, the remaining 8 pending eval. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU. Canonical ratios in the README architecture matrix and the JSONs under `scripts/overlay/artifacts/`.
+- 22 architectures shipped end-to-end (compression complete + uploaded to HuggingFace); 14 PPL-verified end-to-end against their bf16 baseline, the remaining 8 pending eval. Hermes-3-Llama-3.1-405B at 1.0066x on a single 32 GB consumer GPU. Canonical ratios in the README architecture matrix.
 
 ## [0.6.9] - 2026-05-15
 
@@ -119,13 +119,13 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
   - Weight-tied lm_head detection: when `lm_head.weight` is aliased to `embed_tokens.weight` (Qwen3-1.7B-Base, SmolLM2, Phi-3-Mini, Llama3 small), the loader stores only `embed_tokens` and re-ties at load time — no duplicate bytes on disk.
 - **`uc pack-aux <packed_dir>` CLI** — retrofit any existing v3.0 pack with self-contained aux without re-packing the layer files. Idempotent (deterministic serialization).
 - **`uc pack --include-aux/--no-aux/--base-model HF_ID`** flags on the main pack command. `--include-aux` is now the default.
-- **`uc pack --legacy-v3`** flag to opt back into the original lossy reverse-derived v3 path (kept for back-compat).
+- **`uc pack --legacy-v3`** flag to opt back into the original lossy v3 path (kept for back-compat).
 - **`ultracompress.aux_pack`** module — public API: `serialize_aux_weights`, `parse_aux_weights`, `collect_aux_tensors_from_model`, `load_aux_into_model`.
 
 ### Changed
 - `uc verify` now validates the aux file SHA-256, parses it, and confirms tensor key set matches the manifest. Output explicitly labels the pack as `SELF-CONTAINED` (v3.5) vs `requires base HF download` (v3.0).
 - `uc bench` automatically detects `aux_weights.uc` and skips the base-safetensors HF download — model is built from `AutoConfig` + per-layer reconstruction + injected aux tensors.
-- `uc pack` now defaults to the lossless v3 path (was previously the lossy v0.2 reverse-derived path); use `--legacy-v3` for the old behavior.
+- `uc pack` now defaults to the lossless v3 path (was previously the lossy v0.2 path); use `--legacy-v3` for the old behavior.
 
 ### Backward compatibility
 - Old v3.0 packs (no `aux_file` field in manifest, no `aux_weights.uc` on disk) continue to load via the existing HF-safetensors fallback. No re-pack required.
@@ -167,24 +167,21 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.5.0] — 2026-05-08
 
 ### Added
-- **State-space-model (SSM) architectural compatibility validated** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with mean rel_l2 = 0.0458 and bit-identical reconstruction. Compression validated with scalar-only at 5bpw; end-to-end PPL eval pending. The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
-- **`uc pack v0.3` lossless binary format** (`ultracompress/pack_v3.py`). Reads the trainer-persisted codec state (scalar-quantization codebook, per-block scales, and bit-packed integer codes) from a new `codec_state` state_dict key written by the streaming compression runner. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of trainer-quantized weights. Internal codec specifics are NDA-gated.
+- **State-space-model (SSM) architectural compatibility validated** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with bit-identical reconstruction; end-to-end PPL eval pending. The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
+- **`uc pack v0.3` lossless binary format**. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of the trainer-produced weights. Internal codec state and specifics are proprietary (NDA-gated).
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
   - File header bumped to `UC_VERSION = 3`.
-- **Trainer-side codec persistence** in `production-trainer.py`:
-  - Trainer can now persist the codec state alongside the quantized weights, enabling bit-identical customer-side reconstruction. Internal API signature gated under NDA — see SECURITY.md.
-  - `compress_single_layer` saves `codec_state` dict per quantized Linear into the layer.pt file.
-  - Codebook fitting sub-sampling now uses a deterministic `torch.Generator().manual_seed(42)`.
+- **Trainer-side codec persistence** (proprietary; NDA-gated): the trainer persists internal codec state alongside the weights, enabling bit-identical customer-side reconstruction. Internal API signature gated under NDA.
 - **8-architecture v3 pack matrix** uploaded to HuggingFace at `SipsaLabs/<model>-uc-v3-bpw5`:
   - Dense: Qwen3-1.7B, Mistral-7B-v0.3, Llama-3.1-8B, Qwen3-8B, Qwen3-14B, Llama-3.1-70B
   - MoE: Mixtral-8x7B-v0.1, Phi-3.5-MoE-instruct
-  - Mean PPL_r for 5 dense small models: **1.0077** (sub-1% perplexity degradation).
-- **Vectorized `_bitpack` / `_bitunpack`** in `ultracompress/pack.py` via `np.packbits` / `np.unpackbits` with bitorder='little'. **~1000× speedup** (16M-weight roundtrip in ~270ms vs prior Python loop in minutes).
-- **Pack format extras section** for non-quantized layer tensors (norms, layer-level routers). Pack format now self-contained — customer doesn't need source layer.pt files for reconstruction.
-- **`scripts/overlay/_hf_upload_v3_pack.py`** — wrapper for uploading v3 packs to HF with auto-generated README.md per repo.
-- **`scripts/overlay/_validate_uc_pack_v3.py`** — validation gate (pack → reconstruct → eval PPL → compare).
-- **`scripts/overlay/_cleanup_disk_post_pack_v2.py`** — disk cleanup gated on `uc_pack_version >= 3` (anti-mistake guard).
+  - Mean PPL ratio for 5 dense small models: **1.0077** (sub-1% perplexity degradation).
+- **Vectorized bit-level (de)serialization** in the pack writer. **~1000× speedup** (16M-weight roundtrip in ~270ms vs prior Python loop in minutes).
+- **Pack format extras section** for non-quantized layer tensors (norms, layer-level routers). Pack format now self-contained — customer doesn't need source layer files for reconstruction.
+- **HF upload wrapper** for publishing v3 packs with an auto-generated README.md per repo.
+- **Validation gate** (pack → reconstruct → eval PPL → compare).
+- **Disk-cleanup guard** gated on `uc_pack_version >= 3` (anti-mistake guard).
 
 ### Documented
 - `docs/OPERATOR_PLAYBOOK_2026_05_07.md` — cardinal rules + 2026-05 cleanup-mistake postmortem.
@@ -193,7 +190,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - `docs/POST_EIN_DAY_0_CHECKLIST_2026_05_07.md` — 90-min sequence for the day Atlas EIN arrives.
 
 ### Fixed
-- `uc pack` v0.2 was lossy (~22% PPL regression) because it attempted to reverse-derive the codebook from dequantized weights under an incorrect assumption about its structure. The trainer's actual codebook differs from that assumption. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
+- `uc pack` v0.2 was lossy (~22% PPL regression) because it attempted to derive internal codec state from dequantized weights under an incorrect assumption. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
 - HF upload wrapper had `subprocess.run(capture_output=True)` which deadlocked the `hf` CLI's progress display. Removed `capture_output` so stdout/stderr inherit from caller — uploads stream live and complete reliably.
 
 ### Compatibility
@@ -235,9 +232,8 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **Streaming compression runtime** (reference Python implementation, `huggingface_hub`-based). Production CUDA kernels in v0.5+.
 
 ### Changed
-- **Production bit-rate target raised from 4 to 5 BPW** for the streaming compression tier. The 5 BPW point is the sweet spot for PPL drift across 8B-72B; 4 BPW is the "CONSERVATIVE" tier (T1 90% but PPL_r 1.014×).
-- **Default internal codec parameters tightened over earlier internal versions; exact values are NDA-gated.**
-- **Default distillation steps per layer is 200** (was 1500 in earlier internal versions). Documented saturation effect: 500+ steps regresses end-to-end PPL.
+- **Production bit-rate target raised from 4 to 5 BPW** for the streaming compression tier. The 5 BPW point is the sweet spot for PPL drift across 8B-72B; 4 BPW is the "CONSERVATIVE" tier (T1 90% but PPL ratio 1.014×).
+- **Default internal codec parameters tuned (proprietary; NDA-gated).**
 
 ### Documentation
 - Internal research log (hypothesis-mechanism-experiment-measurement-conclusion entries, including negative results) is maintained for the team; selected charter-clean negative-result summaries are surfaced via blog posts and release notes.
