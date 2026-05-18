@@ -4,7 +4,7 @@ The compression and reconstruction methods implemented in this repository are th
 
 ## License grant (Business Source License 1.1)
 
-This codebase (the verifier/benchmarker/CLI) is published under the Business Source License 1.1. It is free of charge for individuals, non-commercial research, and organizations under US $1,000,000 in annual revenue; any other commercial or production use requires a commercial license. On the Change Date it converts to Apache License 2.0. The BUSL-1.1 grant covers only the as-published source code in this repository — it does not grant any rights to the patent-pending compression and reconstruction methods, the production compression trainer (not included here), or the separately-licensed pre-compressed model artifacts.
+This codebase (the verifier/benchmarker/CLI) is published under the Business Source License 1.1. It is free of charge for individuals, non-commercial research, and organizations under US $1,000,000 in annual revenue; any other commercial or production use requires a commercial license. On the Change Date it converts to Apache License 2.0. The BUSL-1.1 grant covers only the as-published source code in this repository — it does not grant any rights to the patent-pending compression and reconstruction methods, the production compression pipeline (not included here), or the separately-licensed pre-compressed model artifacts.
 
 ## Commercial productization
 
