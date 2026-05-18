@@ -54,7 +54,7 @@ Public methods that try to push below 4 bits (HQQ 3-bit, HQQ 2-bit, GPTQ at low 
 
 ## What UltraCompress does differently
 
-The patent-pending compression method doesn't try to do better lossy quantization. It produces a **lossless 5-bit pack**: the reconstruction is a deterministic dequantization that is mathematically bit-identical to the trainer-quantized weights, verifiable against a SHA-256 manifest. The mechanism is covered by pending patent applications and is available under NDA for serious technical conversations.
+The patent-pending compression method doesn't try to do better lossy quantization. It produces a **lossless 5-bit pack**: the reconstruction is a deterministic dequantization that is mathematically bit-identical to the the original weights, verifiable against a SHA-256 manifest. The mechanism is covered by pending patent applications and is available under NDA for serious technical conversations.
 
 The empirical result is that, because reconstruction is bit-identical, there is no quality cliff to fall off — the published end-to-end PPL ratios stay within a fraction of a percent of the bf16 baseline.
 
@@ -86,4 +86,4 @@ To reproduce: see [Reproducibility](reproducibility.md).
 - [Bits per weight](bits-per-weight.md) — what the bpw number actually means
 - [Reproducibility](reproducibility.md) — how to verify our numbers locally
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
