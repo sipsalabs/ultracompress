@@ -121,4 +121,4 @@ We respond same-day during US business hours and target a kickoff call within 5 
 
 *sipsalabs.com · github.com/sipsalabs/ultracompress · huggingface.co/sipsalabs*
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
