@@ -83,7 +83,7 @@ Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both h
 
 Other notable verified results (full table in [Appendix](#appendix-full-architecture-matrix) below):
 
-- **Lossless 5-bit state-space-model compression**: Mamba-2.8B compression validated with bit-identical reconstruction (scalar-only; end-to-end PPL eval pending, and the correction-overlay path for SSMs hasn't landed yet, see "what doesn't work").
+- **Lossless 5-bit state-space-model compression**: Mamba-2.8B compression validated with bit-identical reconstruction (scalar-only; end-to-end PPL eval pending, and the tighter SSM path hasn't landed yet, see "what doesn't work").
 - **HuggingFace presence**: 40 repos under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs).
 - **PyPI**: [pypi.org/project/ultracompress](https://pypi.org/project/ultracompress/).
 - **OpenAI-compatible API**: [api.sipsalabs.com/v1](https://api.sipsalabs.com/v1) — self-serve via [sipsalabs.com/pricing](https://sipsalabs.com/pricing) (Pro $99/mo, Team $499/mo). Free $5 trial credit on signup.
@@ -98,7 +98,7 @@ Things people sometimes assume work because the rest of it does. They don't, and
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context. If your workload depends on long-context behavior, treat the published ratios as "short-context evidence, long-context unmeasured." Eval harness for that lands in v0.7.
 - **`uc compress` as a one-shot CLI.** v0.6.12 still requires the production trainer (patent-protected, not part of the public package). The release path is: trainer (private) → `pack_v3.pack_e2e_dir_v3` (public packer) → published artifact + `uc verify`.
-- **State-space models past scalar-only.** Mamba-2.8B compression is validated (bit-identical reconstruction) but its end-to-end PPL eval is still pending; scalar-only is as far as the SSM path goes today. We tried two correction-overlay paths on top — both made it worse. The streaming compression runner has to be adapted for `MambaBlock` iteration with real activations to break this; deferred.
+- **State-space models past scalar-only.** Mamba-2.8B compression is validated (bit-identical reconstruction) but its end-to-end PPL eval is still pending; scalar-only is as far as the SSM path goes today. We tried two tighter paths on top — both made it worse. Breaking this needs SSM-specific work that is deferred.
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself verifies clean (`uc verify` PASS) and the HF artifact uploaded. But the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. The matrix shows it as `(deferred)`, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have local `uc verify` PASS; both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals at the standard methodology are queued.
 - **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor and we tried 5 different paths to break it this week. Three were within noise; two were catastrophic regressions (1.0682× and 1.1306×). 1.0040× stands as the empirical floor at the current configuration.
