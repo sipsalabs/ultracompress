@@ -37,4 +37,4 @@ Initial public alpha release. Patent-pending compression methods underpinning th
 [Unreleased]: https://github.com/sipsalabs/ultracompress/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/sipsalabs/ultracompress/releases/tag/v0.1.0
 
-Codec internals and training procedure are patent-pending.
+Implementation details are proprietary and patent-pending.
