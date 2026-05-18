@@ -45,7 +45,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - **`uc pack` v0.2 format** -- self-contained pack files now persist all calibration norms and codec metadata inline. Removes the v0.1 dependency on a separate sidecar JSON for reconstruction; pack is the single source of truth.
 
 ### Changed
-- `uc verify` now checks the inline metadata block before reconstruction, returning a precise mismatch diagnostic if a pack was produced under v0.1 trainer-side codec persistence.
+- `uc verify` now checks the inline metadata block before reconstruction, returning a precise mismatch diagnostic if a pack was produced under the v0.1 sidecar format.
 
 ## [0.6.4] - 2026-05-08
 
@@ -143,7 +143,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
   - Greedy decoding only (deterministic) so the reported throughput reproduces across runs.
   - CUDA OOM is caught and surfaced as a `warnings` field in the JSON; partial results still get written.
   - Public Python API: `from ultracompress import bench_packed; result = bench_packed(packed_dir, ...)` returns a `BenchResult` dataclass.
-- The legacy `uc bench --model <hf_id>` compression-vs-teacher benchmark is preserved as `uc bench-compress`.
+- The legacy `uc bench --model <hf_id>` compression-vs-baseline benchmark is preserved as `uc bench-compress`.
 
 ### Changed
 - `uc bench` is now a positional-arg command (`uc bench <packed_dir>`) instead of `--model <hf_id>`. The legacy form is available as `uc bench-compress`.
@@ -168,11 +168,11 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Added
 - **State-space-model (SSM) architectural compatibility validated** on Mamba-2.8B (`state-spaces/mamba-2.8b-hf`). 256 SSM Linear modules (`in_proj`, `x_proj`, `dt_proj`, `out_proj`) compress with bit-identical reconstruction; end-to-end PPL eval pending. The same pack path handles both transformer and state-space architectures, which should extend to emerging hybrids such as AI21 Jamba.
-- **`uc pack v0.3` lossless binary format**. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of the trainer-produced weights. Internal codec state and specifics are proprietary (NDA-gated).
+- **`uc pack v0.3` lossless binary format**. Reconstruction is a deterministic dequantization that is mathematically lossless — bit-identical reconstruction of the original weights. Internal format details are proprietary (patent-pending).
   - Validated end-to-end: source compressed PPL 18.3748 vs v3 reload PPL 18.3748 on Qwen3-1.7B (delta 0.000003%).
   - Bit-equal state-dict round-trip across 32 keys (max_abs_diff = 0.0).
   - File header bumped to `UC_VERSION = 3`.
-- **Trainer-side codec persistence** (proprietary; NDA-gated): the trainer persists internal codec state alongside the weights, enabling bit-identical customer-side reconstruction. Internal API signature gated under NDA.
+- **Self-contained pack format** (proprietary; patent-pending): the pack carries the state needed for bit-identical customer-side reconstruction inline alongside the weights. Internal format details are proprietary.
 - **8-architecture v3 pack matrix** uploaded to HuggingFace at `SipsaLabs/<model>-uc-v3-bpw5`:
   - Dense: Qwen3-1.7B, Mistral-7B-v0.3, Llama-3.1-8B, Qwen3-8B, Qwen3-14B, Llama-3.1-70B
   - MoE: Mixtral-8x7B-v0.1, Phi-3.5-MoE-instruct
@@ -190,7 +190,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 - `docs/POST_EIN_DAY_0_CHECKLIST_2026_05_07.md` — 90-min sequence for the day Atlas EIN arrives.
 
 ### Fixed
-- `uc pack` v0.2 was lossy (~22% PPL regression) because it attempted to derive internal codec state from dequantized weights under an incorrect assumption. v0.3 (this release) reads the trainer-persisted codec directly and is lossless.
+- `uc pack` v0.2 was lossy (~22% PPL regression) because it attempted to derive internal codec state from dequantized weights under an incorrect assumption. v0.3 (this release) reads the self-contained pack directly and is lossless.
 - HF upload wrapper had `subprocess.run(capture_output=True)` which deadlocked the `hf` CLI's progress display. Removed `capture_output` so stdout/stderr inherit from caller — uploads stream live and complete reliably.
 
 ### Compatibility
@@ -217,7 +217,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ## [0.4.0] — 2026-05-04
 
 ### Added
-- **Streaming compression pipeline** ((production trainer, patent-protected)) that processes one transformer block at a time. Peak GPU memory bounded by ~one layer regardless of total model parameter count.
+- **Streaming compression pipeline** ((production compressor, patent-pending)) that processes one transformer block at a time. Peak GPU memory bounded by ~one layer regardless of total model parameter count.
 - **Four production-grade compressed checkpoints** on HuggingFace under `SipsaLabs/`:
   - `qwen3-8b-streaming-bpw5` — PPL ratio 1.028× fp16, peak compression VRAM 2.26 GB.
   - `qwen3-14b-streaming-bpw5` — PPL ratio 1.011× fp16, peak compression VRAM 3.37 GB. Best quality on the curve.
@@ -233,7 +233,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Changed
 - **Production bit-rate target raised from 4 to 5 BPW** for the streaming compression tier. The 5 BPW point is the sweet spot for PPL drift across 8B-72B; 4 BPW is the "CONSERVATIVE" tier (T1 90% but PPL ratio 1.014×).
-- **Default internal codec parameters tuned (proprietary; NDA-gated).**
+- **Default packed-format parameters updated (proprietary; patent-pending).**
 
 ### Documentation
 - Internal research log (hypothesis-mechanism-experiment-measurement-conclusion entries, including negative results) is maintained for the team; selected charter-clean negative-result summaries are surfaced via blog posts and release notes.
