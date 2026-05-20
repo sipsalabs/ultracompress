@@ -63,7 +63,7 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 PyPI `v0.6.12` is the current release. v0.6.12 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
-**14 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. The full catalog is available to customers under engagement. Verified PPL ratios are tracked in an internal benchmark ledger; full per-architecture eval provenance is available under the verification flow / on request.
+**18 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. The full catalog is available to customers under engagement. Verified PPL ratios are tracked in an internal benchmark ledger; full per-architecture eval provenance is available under the verification flow / on request.
 
 The headline result and the tightest dense records currently public on HuggingFace:
 
@@ -76,7 +76,10 @@ The headline result and the tightest dense records currently public on HuggingFa
 | Qwen3-8B | 8.0B | sub-0.5% drift | **1.00440** | `SipsaLabs/qwen3-8b-uc-v3-bpw5` | live |
 | Mixtral-8x7B-v0.1 (MoE) | 47B (13B active) | sub-0.5% drift | **1.00368** | `SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5` | live |
 | Phi-3-mini-4k-instruct | 3.8B | sub-0.3% drift (seq_len=128, not apples-to-apples) | **1.00262** | `SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5` | live |
-| Phi-3.5-MoE-instruct | 42B (MoE 16-exp) | sub-0.5% drift | (eval pending this week) | `SipsaLabs/phi-3.5-moe-uc-v3-bpw5` | upload in flight |
+| Phi-3.5-MoE-instruct | 42B (MoE 16-exp) | sub-0.13% drift (tightest MoE record) | **1.00129** | `SipsaLabs/phi-3.5-moe-instruct-uc-v3-bpw5` | gated · access on request |
+| Qwen3-235B-A22B (MoE) | 235B (22B active) | sub-0.4% drift | **1.00377** | `SipsaLabs/qwen3-235b-a22b-uc-v3-bpw5` | gated · access on request |
+| Mixtral-8x22B-v0.1 (MoE) | 141B (39B active) | sub-0.7% drift | **1.00611** | `SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5` | gated · access on request |
+| Qwen3-1.7B (Instruct) | 1.7B | sub-0.8% drift | **1.00782** | `SipsaLabs/qwen3-1.7b-uc-v3-bpw5` | live |
 
 Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves of the fraction measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 baseline took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. Pack body is ~251 GB, bit-identical SHA-256 reconstruction. The Mistral-7B 1.00548× row is new this week and is the tightest dense 7B-class lossless 5-bit ratio we currently publish.
 
@@ -193,7 +196,7 @@ The production compression pipeline that produces packs is patent-protected and 
 
 ## Appendix: full architecture matrix
 
-14 architectures independently PPL-verified end-to-end; the full catalog is available to customers under engagement as of 2026-05-16. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
+18 architectures independently PPL-verified end-to-end; the full catalog is available to customers under engagement as of 2026-05-20. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
 
 | Model | HF artifact | Params | Layers | PPL ratio |
 |---|---|---|---|---|
@@ -211,13 +214,13 @@ The production compression pipeline that produces packs is patent-protected and 
 | SmolLM2-1.7B | `smollm2-1.7b-uc-v3-bpw5` | 1.7B | 24 | 1.0085 |
 | Mamba-2.8B (SSM) | `mamba-2.8b-hf-uc-v3-bpw5` | 2.8B | 64 | (compression validated; PPL eval pending) |
 | Llama-3.1-8B | `llama-3.1-8b-uc-v3-bpw5` | 8.0B | 32 | 1.0125 |
-| Qwen3-1.7B (Instruct) | `qwen3-1.7b-uc-v3-bpw5` | 1.7B | 28 | 1.0200 *(eval pending reconciliation)* |
+| Qwen3-1.7B (Instruct) | `qwen3-1.7b-uc-v3-bpw5` | 1.7B | 28 | **1.00782** |
 | Hermes-3-Llama-3.1-405B | `hermes-3-llama-3.1-405b-uc-v3-bpw5` | 405B | 126 | **1.0066** (5.0692 / 5.0358, n=50, per-layer streaming) |
 | Qwen3-32B | `qwen3-32b-streaming-bpw5` | 32B | 64 | (re-eval pending) |
 | Llama-3.1-70B | `llama-3.1-70b-uc-v3-bpw5` | 70B | 80 | (re-eval pending) |
-| Qwen3-235B-A22B (MoE) | `qwen3-235b-a22b-uc-v3-bpw5` | 235B | 94 | (eval pending) |
-| Mixtral-8x22B-v0.1 (MoE) | `mixtral-8x22b-v0.1-uc-v3-bpw5` | 141B | 56 | (eval pending) |
-| Phi-3.5-MoE-instruct (MoE) | `phi-3.5-moe-uc-v3-bpw5` | 42B | 32 | (eval pending this week) |
+| Qwen3-235B-A22B (MoE) | `qwen3-235b-a22b-uc-v3-bpw5` | 235B (22B active) | 94 | **1.00377** |
+| Mixtral-8x22B-v0.1 (MoE) | `mixtral-8x22b-v0.1-uc-v3-bpw5` | 141B (39B active) | 56 | **1.00611** |
+| Phi-3.5-MoE-instruct (MoE) | `phi-3.5-moe-instruct-uc-v3-bpw5` | 42B | 32 | **1.00129** |
 | TinyLlama-1.1B-Chat | `tinyllama-1.1b-chat-v1.0-uc-v3-bpw5` | 1.1B | 22 | (CUDA assert in eval harness; pack verifies clean) |
 
 ---
