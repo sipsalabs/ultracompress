@@ -63,7 +63,7 @@ Same OpenAI client SDK works unchanged. Inference runs on dual RTX 5090 over Clo
 
 PyPI `v0.6.12` is the current release. v0.6.12 packs are **self-contained** — they bundle LayerNorm + `embed_tokens` + `lm_head` inside the pack directory, so reproducing a published artifact no longer requires pulling the original bf16 alongside it. ~622 MB auxiliary on top of the compressed body for typical decoder vocab.
 
-**18 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. The full catalog is available to customers under engagement. Verified PPL ratios are tracked in an internal benchmark ledger; full per-architecture eval provenance is available under the verification flow / on request.
+**19 architectures independently PPL-verified end-to-end at 5 bpw** against their own bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42) — these are the numbers we stand behind. The full catalog is available to customers under engagement. Verified PPL ratios are tracked in an internal benchmark ledger; full per-architecture eval provenance is available under the verification flow / on request.
 
 The headline result and the tightest dense records currently public on HuggingFace:
 
@@ -80,6 +80,7 @@ The headline result and the tightest dense records currently public on HuggingFa
 | Qwen3-235B-A22B (MoE) | 235B (22B active) | sub-0.4% drift | **1.00377** | `SipsaLabs/qwen3-235b-a22b-uc-v3-bpw5` | gated · access on request |
 | Mixtral-8x22B-v0.1 (MoE) | 141B (39B active) | sub-0.7% drift | **1.00611** | `SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5` | gated · access on request |
 | Qwen3-1.7B (Instruct) | 1.7B | sub-0.8% drift | **1.00782** | `SipsaLabs/qwen3-1.7b-uc-v3-bpw5` | live |
+| Phi-4 | 14.7B | sub-0.51% drift (Microsoft flagship 14B dense, phi3 arch) | **1.00506** | `SipsaLabs/phi-4-uc-v3-bpw5` | gated · access on request |
 
 Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves of the fraction measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 baseline took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. Pack body is ~251 GB, bit-identical SHA-256 reconstruction. The Mistral-7B 1.00548× row is new this week and is the tightest dense 7B-class lossless 5-bit ratio we currently publish.
 
@@ -196,7 +197,7 @@ The production compression pipeline that produces packs is patent-protected and 
 
 ## Appendix: full architecture matrix
 
-18 architectures independently PPL-verified end-to-end; the full catalog is available to customers under engagement as of 2026-05-20. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
+19 architectures independently PPL-verified end-to-end; the full catalog is available to customers under engagement as of 2026-05-20. PPL = FineWeb-edu held-out tail, seq_len=1024 (Phi-3-mini noted at seq_len=128 — not apples-to-apples), seed=42, against the model's own bf16 baseline on a single RTX 5090. Most rows use n=30 prompts; the 405B row uses n=50 with per-layer streaming reconstruction on both halves of the fraction (apples-to-apples comparator). Sub-baseline OLMo-2-Instruct (0.9998×) is a real measurement — compression appears to act as a faint regularizer at n=30 — not a typo.
 
 | Model | HF artifact | Params | Layers | PPL ratio |
 |---|---|---|---|---|
@@ -207,6 +208,7 @@ The production compression pipeline that produces packs is patent-protected and 
 | Qwen3-14B | `qwen3-14b-uc-v3-bpw5` | 14.0B | 40 | **1.00403** |
 | Yi-1.5-9B | `yi-1.5-9b-uc-v3-bpw5` | 8.8B | — | 1.00414 |
 | Qwen3-8B | `qwen3-8b-uc-v3-bpw5` | 8.0B | 36 | **1.00440** |
+| Phi-4 | `phi-4-uc-v3-bpw5` | 14.7B | 40 | **1.00506** |
 | Mistral-7B-v0.3 | `mistral-7b-v0.3-uc-v3-bpw5` | 7.2B | 32 | **1.00548** |
 | Qwen3-0.6B | `qwen3-0.6b-uc-v3-bpw5` | 0.6B | 28 | 1.0069 |
 | OLMo-2-0425-1B | `olmo-2-0425-1b-uc-v3-bpw5` | 1.0B | 16 | 1.0073 |
