@@ -58,3 +58,7 @@ bench-results/
 
 # mkdocs build output (regenerate via `mkdocs build`)
 site/
+
+# Local-only research/benchmark runners (binary-format internals)
+scripts/benchmarks/
+scripts/overlay/
