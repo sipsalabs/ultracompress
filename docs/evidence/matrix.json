@@ -3,14 +3,16 @@
   "_owner": "Sipsa Labs",
   "_last_reviewed": "2026-04-27",
   "_external_sharing": "allowed",
-  "label": "UltraCompress research-preview public evidence matrix",
-  "experiment_family": "research preview",
+  "label": "UltraCompress the shared-block experimental substrate architectural-compression public evidence matrix",
+  "track": "B",
+  "experiment_family": "architectural compression (shared-block parameter dispatch)",
   "availability": "v0.2 (Q3 2026) \u2014 evidence now, customer-shippable artifacts in v0.2",
-  "patent_status": "Patent pending.",
-  "important_disclaimer": "This matrix is a research-preview experiment only. README headline numbers are the shipped lossless 5-bit method (bit-identical reconstruction; end-to-end PPL ratios within a fraction of a percent of the bf16 baseline) \u2014 a separate experiment, separate operating point, separate availability. Do not combine retention numbers across these as a single quality curve.",
+  "patent_status": "USPTO 64/049,517 filed 2026-04-25. Patent pending.",
+  "important_disclaimer": "This matrix is the shared-block experimental substrate only. README headline numbers (95.63% T1 retention at 2.798 bpw, zero catastrophic failures, 30% smaller than NF4) are the production substrate \u2014 a separate experiment, separate operating point, separate availability. Do not combine retention numbers across tracks as a single quality curve.",
   "models": [
     {
-      "experiment_family": "research preview",
+      "track": "B",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "TinyLlama-1.1B",
@@ -30,7 +32,8 @@
       "t10_retention_pct": 91.7292
     },
     {
-      "experiment_family": "research preview",
+      "track": "B",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "OLMo-2-1B",
@@ -50,7 +53,8 @@
       "t10_retention_pct": 90.8302
     },
     {
-      "experiment_family": "research preview",
+      "track": "B",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "SmolLM2-1.7B",
@@ -70,7 +74,8 @@
       "t10_retention_pct": 90.1823
     },
     {
-      "experiment_family": "research preview",
+      "track": "B",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Qwen3-1.7B",
@@ -90,7 +95,8 @@
       "t10_retention_pct": 90.6831
     },
     {
-      "experiment_family": "research preview",
+      "track": "B",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Mistral-7B-v0.3",
@@ -110,7 +116,8 @@
       "t10_retention_pct": 93.1928
     },
     {
-      "experiment_family": "research preview",
+      "track": "B",
+      "experiment_family": "architectural compression (shared-block parameter dispatch)",
       "availability": "v0.2 (Q3 2026)",
       "customer_ship_status": "evidence-only (not yet a downloadable artifact)",
       "model": "Qwen3-8B",
@@ -149,10 +156,11 @@
     "source_archive": "internal Sipsa Labs benchmark archive (private)",
     "sha256_manifest": "available under NDA \u2014 legal@sipsalabs.com",
     "extracted_at": "2026-04-27",
-    "extraction_method": "direct copy of public-safe fields only; method internals (operating-point parameters, codebook sizes, calibration constants) deliberately excluded",
+    "extraction_method": "direct copy of public-safe fields only; method-internal parameters deliberately excluded",
     "no_hand_entered_numbers": true
   },
   "field_definitions": {
+    "track": "compression track \u2014 A (post-training quantization) or B (architectural compression)",
     "availability": "when the customer-shippable artifact reaches Hugging Face Hub",
     "customer_ship_status": "is this an artifact a customer can download today, or evidence-only",
     "bpw": "bits per weight; effective on-disk per-parameter cost including all overhead",
@@ -171,7 +179,7 @@
   "notes": [
     "All numeric values are direct field copies from the source archive; no hand-entered values.",
     "Family labels for OLMo-2 and SmolLM2 corrected from the upstream archive's incorrect 'Llama-2' label.",
-    "Method-internal fields (operating-point parameters, codebook sizes, calibration constants) are deliberately excluded.",
+    "Method-internal parameters are deliberately excluded.",
     "Models that ran the agreement/retention pipeline but not the perplexity pipeline have null ppl_* fields."
   ]
 }
