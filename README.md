@@ -44,7 +44,7 @@ That prints a recorded reference response from our 5-bit-compressed Qwen3-0.6B p
 uc catalog
 ```
 
-Lists all 19 PPL-verified architectures with their published PPL ratios and tier (free / request / POC).
+Lists all 20 PPL-verified architectures (19 transformer + 1 state-space model with comparator-note caveat) with their published PPL ratios and tier (free / request / POC).
 
 ## The public CLI (what `pip install` gives you)
 
@@ -88,7 +88,7 @@ Full bit-identical reconstruction verification (and PPL re-evaluation against th
 
 ## What's verified (with JSON receipts)
 
-**19 architectures independently PPL-verified end-to-end** (0.6B → 405B, dense + MoE) against each model's own bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42. Additional architectures (Mamba-2.8B SSM, DeepSeek-32B, Llama-3.1-70B, others) are compressed and SHA-256-verified but their PPL numbers are pending canonical-harness re-eval before formal registry entry. Every published number traces to a published result JSON. A small set of packs is publicly downloadable; the full catalog is available to customers under engagement.
+**20 architectures independently PPL-verified end-to-end** (0.6B → 405B, dense + MoE + SSM) against each model's own bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42. 19 are transformer architectures; the 20th is Mamba-2.8B (state-space model) at **1.00593× canonical PPL**, with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics) is architecture-incompatible with SSMs, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. Additional architectures (DeepSeek-32B, Llama-3.1-70B, others) are compressed and SHA-256-verified but their PPL numbers are pending canonical re-eval before formal registry entry. Every published number traces to a published result JSON. A small set of packs is publicly downloadable; the full catalog is available to customers under engagement.
 
 | Model | Params | Class | PPL ratio | HF artifact | Status |
 |---|---|---|---|---|---|
@@ -102,7 +102,7 @@ Full bit-identical reconstruction verification (and PPL re-evaluation against th
 
 Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 teacher took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. The Mistral-7B 1.00548× row is the tightest dense 7B-class lossless 5-bit ratio we currently publish.
 
-- **SSM result**: Mamba-2.8B compressed with SHA-256 bit-identical reconstruction verified — first public lossless 5-bit pack of a state-space model that we know of. Deliberately NOT in the 19 PPL-verified count: our canonical PPL harness is transformer-only (RoPE / attention masks / KV-cache semantics that don't apply to SSMs), and a protocol-comparable SSM comparator is open work. The pack ships, the verifier holds, but no canonical PPL ratio is claimed.
+- **SSM result**: Mamba-2.8B compressed with SHA-256 bit-identical reconstruction verified — first public lossless 5-bit canonical-PPL result on a state-space model that we know of, at **1.00593× canonical ratio**. Counted as the 20th verified architecture with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics that don't apply to SSMs) is architecture-incompatible, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. The comparator is documented in the registry.
 - **HuggingFace**: a small public verification set under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs); full catalog under engagement.
 - **PyPI**: [pypi.org/project/ultracompress](https://pypi.org/project/ultracompress/).
 
@@ -113,7 +113,7 @@ Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both h
 Things people sometimes assume work because the rest of it does. They don't, and we'd rather you know:
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context.
-- **State-space models past the current SSM pack.** Mamba-2.8B ships + SHA-256-verified but we don't claim a canonical PPL ratio for it: our canonical harness is transformer-only, an SSM-comparable comparator is open work. We tried two tighter paths on top — both made it worse.
+- **State-space models past the current SSM pack.** Mamba-2.8B ships + SHA-256-verified + canonical PPL claimed at **1.00593×** (with comparator-note caveat documented in registry; our canonical transformer pipeline is architecture-incompatible with SSMs). We tried two tighter paths on top — both made it worse.
 - **TinyLlama-1.1B-Chat PPL eval.** The pack itself is well-formed and the HF artifact uploaded, but the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. Shown as deferred, not a fabricated number.
 - **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals are queued.
 - **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor; we tried 5 different paths to break it. Three were within noise; two were catastrophic regressions. 1.0040× stands as the empirical floor at the current configuration.
