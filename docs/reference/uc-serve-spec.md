@@ -183,4 +183,4 @@ These are open. We'd love customer feedback — file an issue at [github.com/sip
 
 ---
 
-*Last updated: 2026-04-25 evening. This is a design spec for v0.2; revise as v0.2 implementation progresses.*
+*Last updated: April 2026. This is a design spec for v0.2; revise as v0.2 implementation progresses.*

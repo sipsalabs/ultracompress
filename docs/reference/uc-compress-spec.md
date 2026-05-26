@@ -191,4 +191,4 @@ These are open. Customer feedback welcome — file an issue at [github.com/sipsa
 
 ---
 
-*Last updated: 2026-04-25 evening. This is a design spec for v0.2; revise as implementation progresses.*
+*Last updated: April 2026. This is a design spec for v0.2; revise as implementation progresses.*

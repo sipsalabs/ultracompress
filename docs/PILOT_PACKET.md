@@ -115,7 +115,7 @@ We respond same-day during US business hours and target a kickoff call within 5 
 
 ---
 
-*UltraCompress v0.1 alpha shipped 2026-04-25. Pre-compressed reference models release throughout April–May 2026. Architectural compression support and `uc compress` ship in v0.2 (Q3 2026), gated on patent prosecution timing.*
+*UltraCompress v0.1 alpha shipped April 2026. Pre-compressed reference models release throughout April–May 2026. Architectural compression support and `uc compress` ship in v0.2 (Q3 2026), gated on patent prosecution timing.*
 
 *The CLI is Apache 2.0. The pre-compressed model artifacts are licensed separately (research-free or commercial-paid). The compression methodology is patent pending.*
 
