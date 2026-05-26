@@ -69,7 +69,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ## Pre-0.6.7 releases (condensed)
 
-Between 2026-04-26 and 2026-05-12, the project delivered:
+In the project's first two-week ramp (late April through mid-May 2026), the project delivered:
 
 - Initial public CLI surface (`pull`, `list`, `info`, `bench`, `bench-ppl`, `demo`, `pack`, `verify`, `load`, `version`).
 - Initial Hugging Face publishing of compressed reference packs across dense, Mixture-of-Experts, and state-space architectures at the 5-bit-per-weight operating point with SHA-256 manifest verification.
@@ -99,4 +99,4 @@ The closed-source production pipeline (commercial license) versions independentl
 - Commercial licensing: legal@sipsalabs.com
 - General: hello@sipsalabs.com
 
-Codec internals + training procedure are patent-protected; provisional applications filed with USPTO. Application identifiers available to partners under NDA.
+Codec internals are patent-protected; USPTO provisional applications on file. Application identifiers available to partners under NDA.

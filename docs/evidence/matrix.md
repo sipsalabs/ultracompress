@@ -15,4 +15,4 @@ Detailed per-model evidence (per-tensor SHA-256 manifests, full eval-pipeline lo
 
 ---
 
-*UltraCompress is published by Sipsa Labs, Inc. (Delaware C-Corporation). Codec internals + training procedure are patent-protected; application identifiers available to partners under NDA.*
+*UltraCompress is published by Sipsa Labs, Inc. (Delaware C-Corporation). Codec internals are patent-protected; USPTO provisional applications on file. Application identifiers available to partners under NDA.*

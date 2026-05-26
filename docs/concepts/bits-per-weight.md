@@ -80,4 +80,4 @@ Some artifacts include the tokenizer and config in addition to the weights. The 
 - [Catastrophic failures](catastrophic-failures.md)
 - [Reproducibility](reproducibility.md)
 
-Codec internals + training procedure are patent-protected; provisional applications filed with USPTO. Application identifiers available to partners under NDA — contact legal@sipsalabs.com.
+Codec internals are patent-protected; USPTO provisional applications on file. Application identifiers available to partners under NDA — contact legal@sipsalabs.com.

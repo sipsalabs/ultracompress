@@ -142,7 +142,7 @@ We commit to never removing or repurposing existing fields within a major schema
   },
   "license": "sipsalabs-research-eval-1.0",
   "patents": ["patent pending"],
-  "created_at": "2026-04-22T18:32:11Z",
+  "created_at": "2026-05-15T12:00:00Z",
   "tooling_version": "ultracompress-internal-publishing/0.3.2",
   "notes": "Initial public release"
 }

@@ -1,4 +1,4 @@
-<!-- Classification: PUBLIC | Owner: Sipsa Labs | Last Reviewed: 2026-04-27 | External Sharing: allowed -->
+<!-- Classification: PUBLIC | Owner: Sipsa Labs | Last Reviewed: April 2026 | External Sharing: allowed -->
 
 # UltraCompress design-partner pilot
 

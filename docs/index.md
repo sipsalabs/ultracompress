@@ -12,7 +12,7 @@ UltraCompress produces **lossless 5-bit** transformer packs with **bit-identical
 !!! info "v0.6.11"
     Pre-compressed reference models are published on the Hugging Face Hub. Run `uc list` for the live catalog at any time.
 
-The compression methods are the subject of pending U.S. patent applications (filed April 2026). This CLI is the open-source distribution layer; pre-compressed reference models roll out through the [`sipsalabs`](https://huggingface.co/sipsalabs) organization on the Hugging Face Hub through April–May 2026 — `uc list` shows the live catalog at any time.
+The compression methods are the subject of pending USPTO provisional applications filed in April 2026. This CLI is the open-source distribution layer; pre-compressed reference models roll out through the [`sipsalabs`](https://huggingface.co/sipsalabs) organization on the Hugging Face Hub through April–May 2026 — `uc list` shows the live catalog at any time.
 
 ## Install
 

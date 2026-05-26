@@ -12,7 +12,7 @@ The canonical version of this file lives in the repository at [`CHANGELOG.md`](h
 
 - (placeholder for next release)
 
-## [0.1.0] — 2026-04-25
+## [0.1.0] — April 2026
 
 Initial public alpha release. Patent-pending compression methods underpinning the pre-compressed reference models on the Hugging Face Hub.
 

@@ -40,7 +40,7 @@ Pull one with: uc pull sipsalabs/<model-id>
     "size_bytes": 1116691072,
     "size_human": "1.04GB",
     "downloads": 12421,
-    "last_modified": "2026-04-22T18:32:11Z",
+    "last_modified": "2026-05-15T12:00:00Z",
     "license": "research-free; commercial-required"
   },
   ...
