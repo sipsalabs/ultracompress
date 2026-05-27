@@ -46,7 +46,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 ### Security (RCE-class fix — please upgrade)
 
 - **`torch.load(weights_only=False)` removed from every customer-facing call site.** `uc verify`, `uc.load`, the inference server `.uc` loader, and the v3 packer all use the safe loader (`weights_only=True`). A tampered `.uc` artifact that previously could have executed arbitrary code at deserialization time now raises `UnpicklingError` at load. No payload format change — the `.uc` schema is fully covered by the safe-loader allowlist; no `add_safe_globals()` registration is required.
-- **Legacy `.pt` fallback gated behind explicit opt-in.** The pre-v3 fallback path now refuses to deserialize unless `--allow-unsafe-load` is passed (or `UC_ALLOW_UNSAFE_LOAD=1` is set in the environment), and emits a loud stderr warning when activated. Without the opt-in, the command exits cleanly with a remediation hint. This path is not exercised by `uc verify`, `uc.load`, `uc bench-ppl`, `uc list`, or `uc pull`, so the typical customer workflow is unaffected.
+- **Legacy `.pt` fallback gated behind explicit opt-in.** The pre-v3 fallback path now refuses to deserialize unless `--allow-unsafe-load` is passed (or `UC_ALLOW_UNSAFE_LOAD=1` is set in the environment), and emits a loud stderr warning when activated. Without the opt-in, the command exits cleanly with a remediation hint. This path is not exercised by `uc verify`, `uc.load`, `uc verify`, `uc catalog`, or `hf download`, so the typical customer workflow is unaffected.
 
 ### Tests
 
@@ -76,7 +76,7 @@ In the project's first two-week ramp (late April through mid-May 2026), the proj
 - Self-contained pack format with embed/lm-head bundling so customers do not need to re-download the original bf16 from Hugging Face for reconstruction.
 - License migration to BUSL-1.1 with Additional Use Grant (free for sub-$1M ARR companies, research, and individuals).
 - Sipsa Labs, Inc. (Delaware C-corp) corporate banner across all public surfaces and `PATENT_NOTICE.md` at the repository root.
-- Customer-grade inference throughput benchmark (`uc bench`) producing JSON reports suitable for procurement / acceptance testing.
+- Customer-grade inference throughput benchmark (`uc verify`) producing JSON reports suitable for procurement / acceptance testing.
 
 Method-internal release notes (operating-point parameters, codebook configuration, calibration constants, codec format internals) live under NDA. Contact `legal@sipsalabs.com` for details.
 

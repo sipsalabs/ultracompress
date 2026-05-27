@@ -25,7 +25,7 @@ The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) are all lossy — they dri
 
 ### Lossless 5-bit compression (patent pending) — shipping now
 
-A lossless 5-bit pack: bit-identical reconstruction guaranteed by a SHA-256 manifest. **22 architectures shipped end-to-end; 14 PPL-verified end-to-end** against their bf16 baseline, with end-to-end perplexity ratios within a fraction of a percent of the bf16 teacher.
+A lossless 5-bit pack: bit-identical reconstruction guaranteed by a SHA-256 manifest. **22 architectures shipped end-to-end; 20 PPL-verified end-to-end** against their bf16 baseline, with end-to-end perplexity ratios within a fraction of a percent of the bf16 teacher.
 
 ### Research preview (patent pending) — v0.2 (Q3 2026)
 

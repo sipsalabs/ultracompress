@@ -28,7 +28,7 @@ uc serve <path> [--port INT] [--host STR] [--max-tokens INT]
 
 | Option | Default | Description |
 |---|---|---|
-| `<path>` | required | Path to a directory or `ultracompress.json` produced by `uc pull` |
+| `<path>` | required | Path to a directory or `ultracompress.json` produced by `hf download` |
 | `--port` | `8080` | Port to bind |
 | `--host` | `127.0.0.1` | Bind address; `0.0.0.0` for all interfaces |
 | `--max-tokens` | `2048` | Maximum new tokens per request |

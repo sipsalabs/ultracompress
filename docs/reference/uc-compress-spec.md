@@ -162,7 +162,7 @@ For chip vendors and OEMs: a separate per-device royalty model is available — 
 v0.1 doesn't have `uc compress`. The migration path:
 
 - v0.1 → v0.2: `uc compress` becomes available for customers on a paid tier
-- Existing v0.1 reference-model artifacts (downloaded via `uc pull`) keep working in v0.2
+- Existing v0.1 reference-model artifacts (downloaded via `hf download`) keep working in v0.2
 
 ## Roadmap
 
@@ -183,7 +183,7 @@ v0.1 doesn't have `uc compress`. The migration path:
 
 2. **Custom calibration cohorts**: how do we expose them safely? Tentatively: customers upload calibration JSONL with stricter NDA/contractual terms, similar to enterprise data-handling.
 
-3. **Performance benchmarks per output**: should `uc compress` automatically run `uc bench` on the output before declaring success? Yes; small `--bench-on-finish` flag (default on, suppressible).
+3. **Performance benchmarks per output**: should `uc compress` automatically run `uc verify` on the output before declaring success? Yes; small `--bench-on-finish` flag (default on, suppressible).
 
 4. **Per-customer compression-method versioning**: should customers be able to pin to a specific method version (e.g., `--method-version 1.2.0`)? Yes; expose via flag.
 

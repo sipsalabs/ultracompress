@@ -13,7 +13,7 @@ pip install "ultracompress[torch]"
 ## 2. Browse the catalog
 
 ```bash
-uc list
+uc catalog
 ```
 
 You'll see a table of pre-compressed models published by Sipsa Labs:
@@ -32,7 +32,7 @@ You'll see a table of pre-compressed models published by Sipsa Labs:
 ## 3. Download a model
 
 ```bash
-uc pull sipsalabs/<model-id>
+hf download SipsaLabs/<model-id>
 ```
 
 The model lands in `./models/sipsalabs_<model-id>/`.
@@ -60,7 +60,7 @@ Patents:      patent pending (filed April 2026)
 ## 5. Run a benchmark
 
 ```bash
-uc bench ./models/sipsalabs_<model-id> --tasks hellaswag --limit 500
+uc verify ./models/sipsalabs_<model-id> --tasks hellaswag --limit 500
 ```
 
 This runs the `lm-eval-harness` HellaSwag task with 500 samples. Output:

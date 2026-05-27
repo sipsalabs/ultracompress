@@ -49,14 +49,14 @@ pip install "ultracompress[torch]"
 pip install "lm-eval[ultracompress]>=0.4.5"   # version pin matches our manifest
 
 # 2. Pull a cohort artifact
-uc pull sipsalabs/<model-id>
+hf download SipsaLabs/<model-id>
 
 # 3. Verify the artifact's manifest
 uc info ./models/sipsalabs_<model-id>
 # Should show "verified ✓" against the published SHA-256
 
 # 4. Run the benchmark
-uc bench ./models/sipsalabs_<model-id> \
+uc verify ./models/sipsalabs_<model-id> \
     --tasks hellaswag,arc_challenge,arc_easy,piqa,winogrande \
     --limit 500 \
     --batch-size 8 \
@@ -94,7 +94,7 @@ We report the standard error alongside every benchmark number. Customers reprodu
 ## Manifests we ship
 
 - **`ultracompress.json`** — per-artifact provenance manifest. See [Manifest schema](../reference/manifest-schema.md).
-- **`bench_summary.json`** — written by `uc bench` after every run. Contains seed, sample count, batch size, hardware, lm-eval-harness version, raw and aggregated numbers.
+- **`bench_summary.json`** — written by `uc verify` after every run. Contains seed, sample count, batch size, hardware, lm-eval-harness version, raw and aggregated numbers.
 - **`cohort_master_verify.{json,txt}`** (internal, NDA-shareable) — the 224-file SHA-256 manifest covering every input artifact in our published cohort benchmark.
 
 ## What we don't reproduce
@@ -108,6 +108,6 @@ We report the standard error alongside every benchmark number. Customers reprodu
 - [Compression methods](compression-methods.md)
 - [Catastrophic failures](catastrophic-failures.md)
 - [Manifest schema](../reference/manifest-schema.md)
-- [`uc bench`](../commands/bench.md)
+- [`uc verify`](../commands/bench.md)
 
 Implementation details are proprietary and patent-pending.

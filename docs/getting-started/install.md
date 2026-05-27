@@ -20,7 +20,7 @@ uv add ultracompress
 pip install ultracompress
 ```
 
-## With PyTorch (for `uc bench`)
+## With PyTorch (for `uc verify`)
 
 The benchmarking command requires PyTorch. Install with the optional `torch` extra:
 
@@ -43,7 +43,7 @@ uc --help
 
 ## Configure access to the Hugging Face Hub
 
-The `uc list` and `uc pull` commands query the Hugging Face Hub. By default this works without authentication for the public `sipsalabs` org. If you have a Hugging Face account with private models or higher-rate-limit access:
+The `uc catalog` and `hf download` commands query the Hugging Face Hub. By default this works without authentication for the public `sipsalabs` org. If you have a Hugging Face account with private models or higher-rate-limit access:
 
 ```bash
 pip install -U huggingface_hub

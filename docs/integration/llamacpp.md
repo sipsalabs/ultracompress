@@ -11,7 +11,7 @@ This page describes both.
 
 ```bash
 pip install "ultracompress[torch]"
-uc pull sipsalabs/<model-id>
+hf download SipsaLabs/<model-id>
 ```
 
 Inference via the Python reference loader:
@@ -69,7 +69,7 @@ Exporting to a lossy GGUF type trades the lossless guarantee for native llama.cp
 ## What you can do today (mid-2026)
 
 - Use the Python loader for evaluation + prototyping
-- Run `uc bench` to compare compressed vs FP16 quality on your tasks
+- Run `uc verify` to compare compressed vs FP16 quality on your tasks
 - Open a GitHub issue with your specific llama.cpp use case so we prioritize the export path correctly
 
 ## What you'll be able to do post-Q3 2026

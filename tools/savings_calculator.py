@@ -95,7 +95,7 @@ def compute_savings(params_per_model: float, model_count: int,
 
         storage_savings_year = delta_gb * STORAGE_USD_PER_GB_MONTH * 12
         egress_savings_per_pull = delta_gb * EGRESS_USD_PER_GB
-        egress_savings_year = egress_savings_per_pull * pulls_per_model_per_year
+        egress_savings_per_pull * pulls_per_model_per_year
         inference_savings_year = (
             delta_gb * GPU_MEMORY_USD_PER_GB_HOUR * 24 * 365 * inference_replicas
         )
@@ -147,7 +147,7 @@ def render_human_readable(result: dict) -> str:
     """Pretty-print for sales conversations."""
     lines = []
     inp = result["inputs"]
-    lines.append(f"\n=== UltraCompress fleet savings ===\n")
+    lines.append("\n=== UltraCompress fleet savings ===\n")
     lines.append(f"Fleet: {inp['model_count']} models × {inp['params_per_model']:,.0f} params each")
     lines.append(f"Total parameters: {inp['total_params']:,.0f}\n")
     lines.append(f"UltraCompress fleet on disk: {result['ultracompress']['fleet_gb']:.2f} GB\n")

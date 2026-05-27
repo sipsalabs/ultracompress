@@ -10,7 +10,7 @@ If you're evaluating UltraCompress on NVIDIA hardware:
 
 ```bash
 pip install "ultracompress[torch]"
-uc pull sipsalabs/<model-id>
+hf download SipsaLabs/<model-id>
 ```
 
 Then use the UltraCompress reference loader directly. It runs on CUDA and gives you correct (though slower than TensorRT-LLM) inference for evaluation purposes.

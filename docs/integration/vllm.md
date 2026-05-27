@@ -14,7 +14,7 @@ This loses the memory savings but gives you vLLM's throughput. Useful for evalua
 
 ```bash
 pip install "ultracompress[torch]" vllm
-uc pull sipsalabs/<model-id>
+hf download SipsaLabs/<model-id>
 ```
 
 ```python

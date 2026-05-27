@@ -18,10 +18,10 @@ Initial public alpha release. Patent-pending compression methods underpinning th
 
 ### Added
 
-- `uc list` — list pre-compressed models from the official Hugging Face Hub collection
-- `uc pull <model-id>` — download a pre-compressed model artifact
+- `uc catalog` — list pre-compressed models from the official Hugging Face Hub collection
+- `hf download` — download a pre-compressed model artifact
 - `uc info <path>` — inspect compression metadata of a local artifact
-- `uc bench <path> --tasks <list>` — run downstream benchmarks via lm-eval-harness
+- `uc verify` — run downstream benchmarks via lm-eval-harness
 - `uc demo` — play a scripted demo session (no Hub access required)
 - `uc version` / `uc --version` / `-V` — print version
 - Apache-2.0 license for the CLI source code

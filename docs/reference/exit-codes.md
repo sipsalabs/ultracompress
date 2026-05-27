@@ -6,7 +6,7 @@ UltraCompress follows standard Unix exit-code conventions. All commands below `u
 
 | Code | Meaning | Example |
 |---|---|---|
-| `0` | Success | `uc list` (even if no models published) |
+| `0` | Success | `uc catalog` (even if no models published) |
 | `1` | Generic runtime error | network failure, missing file, manifest corrupt |
 | `2` | Invalid arguments | from `click` (typo'd subcommand, missing required arg) |
 | `130` | Interrupted by Ctrl-C | user aborted |
@@ -15,7 +15,7 @@ We deliberately do not use specialized exit codes (e.g., 64-78 from `sysexits.h`
 
 ## Per-command nuances
 
-### `uc list`
+### `uc catalog`
 
 | Outcome | Code |
 |---|---|
@@ -23,7 +23,7 @@ We deliberately do not use specialized exit codes (e.g., 64-78 from `sysexits.h`
 | Hub unreachable | 0 (we degrade gracefully — `[]` returned) |
 | Bad arguments | 2 |
 
-### `uc pull`
+### `hf download`
 
 | Outcome | Code |
 |---|---|
@@ -44,7 +44,7 @@ We deliberately do not use specialized exit codes (e.g., 64-78 from `sysexits.h`
 | Path doesn't exist | 2 |
 | Bad arguments | 2 |
 
-### `uc bench`
+### `uc verify`
 
 | Outcome | Code |
 |---|---|
@@ -70,8 +70,8 @@ Always returns 0.
 ### Loop over models and pull each
 
 ```bash
-uc list --json | jq -r '.[].modelId' | while read -r model; do
-    uc pull "$model" || echo "[warn] failed to pull $model" >&2
+uc catalog --json | jq -r '.[].modelId' | while read -r model; do
+    hf download SipsaLabs/<model-id> || echo "[warn] failed to pull $model" >&2
 done
 ```
 
@@ -79,7 +79,7 @@ done
 
 ```bash
 for d in ./models/*/; do
-    uc bench "$d" --tasks hellaswag --limit 100 \
+    uc verify "$d"
         || echo "[warn] bench failed on $d" >&2
 done
 ```
@@ -98,7 +98,7 @@ done
 
 ```bash
 set -euo pipefail
-uc pull sipsalabs/<model-id>
+hf download SipsaLabs/<model-id>
 uc info ./models/sipsalabs_<model-id>
-uc bench ./models/sipsalabs_<model-id> --tasks hellaswag --limit 50
+uc verify ./models/sipsalabs_<model-id> --tasks hellaswag --limit 50
 ```

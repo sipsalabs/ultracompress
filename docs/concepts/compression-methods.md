@@ -10,7 +10,7 @@ Quantization is the standard approach to model compression: take a 16-bit floati
 
 The patent-pending UltraCompress method produces a lossless 5-bit pack: the reconstruction is a deterministic dequantization that is mathematically bit-identical to the the original weights, verifiable against a SHA-256 manifest. Across the published architecture matrix:
 
-- 22 architectures shipped end-to-end; 14 PPL-verified end-to-end against their bf16 baseline
+- 22 architectures shipped end-to-end; 20 PPL-verified end-to-end against their bf16 baseline
 - Bit-identical reconstruction — an auditor can re-derive every weight from the pack alone
 - Per-model PPL ratios ship in the per-model card on each artifact's Hugging Face Hub repository
 

@@ -12,7 +12,7 @@ uc info <path>
 
 | Argument | Required | Description |
 |---|---|---|
-| `<path>` | yes | Path to a directory or `ultracompress.json` file produced by `uc pull` |
+| `<path>` | yes | Path to a directory or `ultracompress.json` file produced by `hf download` |
 
 ## Output
 
@@ -92,10 +92,10 @@ uc info ./models/sipsalabs_<model-id>/ultracompress.json
 - **Path doesn't exist** → exit 2 with Click's standard error
 - **Path is a directory but contains no `ultracompress.json`** → exit 1 with "No ultracompress metadata found at `<path>`"
 - **Path is `ultracompress.json` but corrupt** → exit 1 with parse error
-- **Path is a manifest but the referenced `model.safetensors` SHA mismatches** → prints with "verified ✗" warning but still exits 0 (you should `uc pull` again)
+- **Path is a manifest but the referenced `model.safetensors` SHA mismatches** → prints with "verified ✗" warning but still exits 0 (you should `hf download` again)
 
 ## See also
 
-- [`uc pull`](pull.md) — download an artifact in the first place
-- [`uc bench`](bench.md) — benchmark the artifact on downstream tasks
+- [`hf download`](pull.md) — download an artifact in the first place
+- [`uc verify`](bench.md) — benchmark the artifact on downstream tasks
 - [Manifest schema](../reference/manifest-schema.md) — formal schema documentation

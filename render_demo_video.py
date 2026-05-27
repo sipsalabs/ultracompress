@@ -7,7 +7,12 @@ with monospace font on dark background, then stitch into MP4 with ffmpeg.
 Output: ~60 sec, 1920×1080, H.264, ready to upload to YC's demo video field.
 """
 from __future__ import annotations
-import os, subprocess, time, threading, queue, shutil, tempfile, sys
+import os
+import subprocess
+import time
+import shutil
+import tempfile
+import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -152,7 +157,6 @@ def render_frames(chunks: list[tuple[float, bytes]], out_dir: Path, total_second
         draw.text((W // 2 - 80, 8), "ultracompress demo", fill=DIM, font=font)
 
         # Render each row
-        cursor = screen.cursor
         for row_idx, line in enumerate(screen.display):
             x = PADDING
             y = PADDING + 36 + row_idx * line_h
@@ -163,7 +167,6 @@ def render_frames(chunks: list[tuple[float, bytes]], out_dir: Path, total_second
                     ch = " "
                 ce = row_data.get(col_idx)
                 fg_name = ce.fg if ce else "default"
-                bgname = ce.bg if ce else "default"
                 bold_flag = ce.bold if ce else False
                 fg_color = PALETTE.get(fg_name, FG) if fg_name != "default" else FG
                 f_use = bold if bold_flag else font
