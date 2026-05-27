@@ -26,7 +26,7 @@ _POC = "https://sipsalabs.com/poc"
 # with PPL ratios + tier markers + approximate size. Everything here is
 # already public on sipsalabs.com/inference and the GitHub README.
 # PPL ratios below are the canonical verified records from
-# docs/BENCHMARKS_2026_05_10.json verified_records[], rounded to 3 decimals
+# docs/benchmarks.json verified_records[] (public auditor registry), rounded to 3 decimals
 # with an "x" suffix. Updating this dict requires re-running canonical eval
 # and updating the JSON source first; never edit by hand.
 # Entries marked "ppl_pending" are SHA-256-verified shipped packs whose
@@ -97,7 +97,7 @@ def cmd_catalog(_args: Any = None) -> int:
 
     if has_ssm_caveat:
         print("\n* SSM record uses architecture-compatible comparator; see")
-        print("  docs/BENCHMARKS_2026_05_10.json comparator_note.")
+        print("  github.com/sipsalabs/ultracompress/blob/main/docs/benchmarks.json comparator_note.")
     if has_pending:
         print("\nppl_pending: SHA-256-verified shipped pack; canonical PPL run queued.")
 
