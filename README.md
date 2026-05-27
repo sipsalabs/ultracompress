@@ -2,12 +2,12 @@
 
 Lossless 5-bit transformer compression. Published model artifacts are bit-identical to their bf16 reference.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.6.19-blue.svg)](https://pypi.org/project/ultracompress/)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.20-blue.svg)](https://pypi.org/project/ultracompress/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/patent-pending-orange.svg)](./PATENT_NOTICE.md)
 
-> **v0.6.19:** the public package is intentionally minimal — a small,
+> **v0.6.20:** the public package is intentionally minimal — a small,
 > dependency-free CLI that lets you (a) generate text against a Sipsa-
 > hosted compressed model in 30 seconds (`uc try`), (b) browse the full
 > catalog with tiers and PPL ratios (`uc catalog`), and (c) verify pack
