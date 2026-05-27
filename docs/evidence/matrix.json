@@ -4,8 +4,8 @@
   "_last_reviewed": "2026-05-25",
   "_external_sharing": "allowed",
   "label": "UltraCompress evidence matrix",
-  "note": "This evidence summary has been moved to NDA-only access during a documentation refresh. The canonical public registry of UltraCompress PPL-verified architectures (20 records: 19 transformer + 1 state-space model, the SSM with an explicit comparator-note caveat) is in docs/BENCHMARKS_2026_05_10.json at the repo root. Public model packs (PPL-verified subset published, others gated:manual under MOAT policy) are at huggingface.co/SipsaLabs. Per-model SHA-256 manifests and detailed eval-pipeline logs are available to partners under NDA — contact legal@sipsalabs.com.",
-  "registry_source_of_truth": "docs/BENCHMARKS_2026_05_10.json",
+  "note": "This evidence summary has been moved to NDA-only access during a documentation refresh. The canonical public registry of UltraCompress PPL-verified architectures (20 records: 19 transformer + 1 state-space model, the SSM with an explicit comparator-note caveat) is in docs/benchmarks.json at the repo root. Public model packs (PPL-verified subset published, others gated:manual under MOAT policy) are at huggingface.co/SipsaLabs. Per-model SHA-256 manifests and detailed eval-pipeline logs are available to partners under NDA — contact legal@sipsalabs.com.",
+  "registry_source_of_truth": "docs/benchmarks.json",
   "public_packs_index": "https://huggingface.co/SipsaLabs",
   "contact_nda": "legal@sipsalabs.com",
   "contact_security": "security@sipsalabs.com"
