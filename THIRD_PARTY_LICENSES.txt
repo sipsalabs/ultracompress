@@ -23,7 +23,7 @@ RUNTIME DEPENDENCIES (declared in pyproject.toml [project.dependencies])
    License: Apache License, Version 2.0
    Copyright: Copyright (c) Hugging Face, Inc. and contributors
    Source: https://github.com/huggingface/huggingface_hub
-   Use: Hugging Face Hub client used by `uc list`, `uc pull`, and artifact
+   Use: Hugging Face Hub client used for downloading published pack artifacts
         manifest distribution.
 
 2. safetensors
@@ -39,7 +39,7 @@ RUNTIME DEPENDENCIES (declared in pyproject.toml [project.dependencies])
    License: Mozilla Public License 2.0 AND MIT License
    Copyright: Copyright (c) tqdm developers
    Source: https://github.com/tqdm/tqdm
-   Use: Progress-bar UI for long-running operations such as `uc pull` and
+   Use: Progress-bar UI for long-running operations such as
         manifest verification.  Subject to MPL-2.0 file-level copyleft for
         the tqdm-licensed source files; MIT for the remainder of the
         codebase.
@@ -57,7 +57,7 @@ RUNTIME DEPENDENCIES (declared in pyproject.toml [project.dependencies])
    License: MIT License
    Copyright: Copyright (c) 2020 Will McGugan
    Source: https://github.com/Textualize/rich
-   Use: Terminal rendering and formatting for `uc list`, `uc info`,
+   Use: Terminal rendering and formatting for `uc catalog`, `uc info`,
         `uc demo`.
 
 6. PyYAML
