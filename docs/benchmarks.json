@@ -1,0 +1,144 @@
+{
+  "schema_version": "2026-05-27",
+  "description": "Sipsa Labs UltraCompress published PPL-verified records. Public auditor-facing source-of-truth for every published PPL ratio. For internal eval provenance + run scripts, contact founder@sipsalabs.com under NDA.",
+  "methodology_summary": {
+    "data_slice": "FineWeb-edu held-out tail",
+    "default_seq_len": 1024,
+    "default_seed": 42,
+    "default_n": 30,
+    "comparator": "per-layer streaming reconstruction (transformer); architecture-compatible comparator (SSM, see per-record comparator_note)",
+    "baseline": "each model's own bf16 reference checkpoint"
+  },
+  "verified_records": [
+    {
+      "model": "Phi-3-mini-4k-instruct",
+      "ppl_ratio": 1.00262,
+      "hf": "SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5"
+    },
+    {
+      "model": "Mixtral-8x7B-v0.1",
+      "ppl_ratio": 1.00368,
+      "hf": "SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5"
+    },
+    {
+      "model": "Qwen3-1.7B-Base",
+      "ppl_ratio": 1.00401,
+      "hf": "SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5"
+    },
+    {
+      "model": "Qwen3-14B",
+      "ppl_ratio": 1.00403,
+      "hf": "SipsaLabs/qwen3-14b-uc-v3-bpw5"
+    },
+    {
+      "model": "Yi-1.5-9B",
+      "ppl_ratio": 1.00414,
+      "hf": "SipsaLabs/yi-1.5-9b-uc-v3-bpw5"
+    },
+    {
+      "model": "Qwen3-8B",
+      "ppl_ratio": 1.0044,
+      "hf": "SipsaLabs/qwen3-8b-uc-v3-bpw5"
+    },
+    {
+      "model": "Qwen3-0.6B",
+      "ppl_ratio": 1.0069,
+      "hf": "SipsaLabs/qwen3-0.6b-uc-v3-bpw5"
+    },
+    {
+      "model": "OLMo-2-0425-1B",
+      "ppl_ratio": 1.0073,
+      "hf": "SipsaLabs/olmo-2-0425-1b-uc-v3-bpw5"
+    },
+    {
+      "model": "OLMo-2-0425-1B-Instruct",
+      "ppl_ratio": 0.9998,
+      "hf": "SipsaLabs/olmo-2-0425-1b-instruct-uc-v3-bpw5"
+    },
+    {
+      "model": "SmolLM2-1.7B-Instruct",
+      "ppl_ratio": 1.0075,
+      "hf": "SipsaLabs/smollm2-1.7b-instruct-uc-v3-bpw5"
+    },
+    {
+      "model": "SmolLM2-1.7B",
+      "ppl_ratio": 1.0085,
+      "hf": "SipsaLabs/smollm2-1.7b-uc-v3-bpw5"
+    },
+    {
+      "model": "Mistral-7B-v0.3",
+      "ppl_ratio": 1.00548,
+      "seq_len": 1024,
+      "seed": 42,
+      "hf": "SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5"
+    },
+    {
+      "model": "Llama-3.1-8B",
+      "ppl_ratio": 1.0125,
+      "hf": "SipsaLabs/llama-3.1-8b-uc-v3-bpw5"
+    },
+    {
+      "model": "Hermes-3-Llama-3.1-405B",
+      "ppl_ratio": 1.0066418727370694,
+      "seq_len": 1024,
+      "seed": 42,
+      "hf": "SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5",
+      "verified_at": "2026-05-10T05:08:31.192417"
+    },
+    {
+      "model": "Qwen3-235B-A22B",
+      "ppl_ratio": 1.0037726338916,
+      "seq_len": 1024,
+      "seed": 42,
+      "hf": "SipsaLabs/qwen3-235b-a22b-uc-v3-bpw5",
+      "verified_at": "2026-05-20"
+    },
+    {
+      "model": "Mixtral-8x22B-v0.1",
+      "ppl_ratio": 1.0061064988,
+      "seq_len": 1024,
+      "seed": 42,
+      "hf": "SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5",
+      "verified_at": "2026-05-20"
+    },
+    {
+      "model": "Phi-3.5-MoE-instruct",
+      "ppl_ratio": 1.00128792,
+      "seq_len": 1024,
+      "seed": 42,
+      "hf": "SipsaLabs/phi-3.5-moe-instruct-uc-v3-bpw5",
+      "verified_at": "2026-05-20"
+    },
+    {
+      "model": "Qwen3-1.7B (instruct)",
+      "ppl_ratio": 1.0078173065687175,
+      "seq_len": 1024,
+      "seed": 42,
+      "hf": "SipsaLabs/qwen3-1.7b-uc-v3-bpw5",
+      "verified_at": "2026-05-20"
+    },
+    {
+      "model": "Phi-4",
+      "ppl_ratio": 1.0050600964783662,
+      "seq_len": 1024,
+      "seed": 42,
+      "hf": "SipsaLabs/phi-4-uc-v3-bpw5",
+      "verified_at": "2026-05-20"
+    },
+    {
+      "model": "Mamba-2.8B-hf",
+      "ppl_ratio": 1.005929835881552,
+      "ppl_compressed": 11.665906,
+      "seq_len": 1024,
+      "seed": 42,
+      "data_slice": "FineWeb-edu held-out tail",
+      "method_version": "uc-v3-bpw5",
+      "hf": "SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5",
+      "verified_at": "2026-05-25",
+      "patent_status": "patent-pending",
+      "comparator_note": "SSM-compatible comparator — the HF Mamba pack does not carry transformer-overlay overlays; transformer streaming reconstruction comparator (used for the 19 dense+MoE records) is architecture-incompatible with SSM. This record uses canonical sample protocol with the SSM-compatible comparator that matches the artifact.",
+      "hf_manifest": "https://huggingface.co/SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5/blob/main/SHA256_MANIFEST.json"
+    }
+  ],
+  "last_updated": "2026-05-27"
+}

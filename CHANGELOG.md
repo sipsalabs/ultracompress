@@ -78,7 +78,7 @@ In the project's first two-week ramp (late April through mid-May 2026), the proj
 - Sipsa Labs, Inc. (Delaware C-corp) corporate banner across all public surfaces and `PATENT_NOTICE.md` at the repository root.
 - Customer-grade inference throughput benchmark (`uc verify`) producing JSON reports suitable for procurement / acceptance testing.
 
-Method-internal release notes (operating-point parameters, codebook configuration, calibration constants, codec format internals) live under NDA. Contact `legal@sipsalabs.com` for details.
+Method-internal release notes live under NDA. Contact `legal@sipsalabs.com` for details.
 
 ---
 

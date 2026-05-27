@@ -101,7 +101,7 @@ The CLI verifies the manifest at `uc info` time:
 1. Schema is valid JSON
 2. All declared files exist in the artifact directory
 3. SHA-256 of each declared file matches the manifest
-4. `bpw` × `weight_count` ≈ `model.safetensors` size (with some tolerance for codebook overhead)
+4. `bpw` × `weight_count` ≈ `model.safetensors` size (with some tolerance for on-disk overhead)
 
 If any verification fails, `uc info` prints a warning but does not exit non-zero (the manifest may still be useful even if files are partially corrupt).
 
