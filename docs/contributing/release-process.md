@@ -19,7 +19,7 @@ Before tagging a release:
 - [ ] Version bumped in `src/ultracompress_cli/__init__.py` (`__version__`)
 - [ ] Version bumped in `pyproject.toml`
 - [ ] No secrets or credentials in the diff (gitleaks pre-commit catches this)
-- [ ] Manual smoke test: `pip install -e . && uc version && uc catalog && uc info`
+- [ ] Manual smoke test: `pip install -e . && uc --version && uc list && uc info <local-artifact>`
 - [ ] Documentation site builds: `mkdocs build --strict`
 
 ## Cutting a release
@@ -58,7 +58,7 @@ Both should complete within a few minutes. Monitor the Actions tab to verify.
 - [ ] Visit https://github.com/sipsalabs/ultracompress/releases — confirm Release page is rendered
 - [ ] Run `pip install --upgrade ultracompress` in a fresh venv; confirm version matches
 - [ ] Run `uc --version` — confirm version matches
-- [ ] Smoke test the published package end-to-end (`uc catalog`, `hf download`, `uc info`)
+- [ ] Smoke test the published package end-to-end (`uc catalog`, `huggingface-cli download SipsaLabs/<repo-id>`, `uc verify`, `uc info`)
 
 ## Rollback
 

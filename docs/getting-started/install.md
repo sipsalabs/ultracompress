@@ -20,7 +20,7 @@ uv add ultracompress
 pip install ultracompress
 ```
 
-## With PyTorch (for `uc verify`)
+## With PyTorch (for `uc bench`)
 
 The benchmarking command requires PyTorch. Install with the optional `torch` extra:
 
@@ -35,7 +35,7 @@ If you need a specific CUDA version, install PyTorch first per [pytorch.org](htt
 ```bash
 uc --version
 # UltraCompress v0.1.0  · https://sipsalabs.com
-# Extreme compression for large language models. Patent pending
+# Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517
 
 uc --help
 # Lists all sub-commands
@@ -43,7 +43,7 @@ uc --help
 
 ## Configure access to the Hugging Face Hub
 
-The `uc catalog` and `hf download` commands query the Hugging Face Hub. By default this works without authentication for the public `sipsalabs` org. If you have a Hugging Face account with private models or higher-rate-limit access:
+The `uc catalog` command and the `huggingface-cli download` flow both query the Hugging Face Hub. By default this works without authentication for the public `SipsaLabs` org. If you have a Hugging Face account with private models or higher-rate-limit access:
 
 ```bash
 pip install -U huggingface_hub

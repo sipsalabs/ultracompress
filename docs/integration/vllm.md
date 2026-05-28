@@ -14,7 +14,7 @@ This loses the memory savings but gives you vLLM's throughput. Useful for evalua
 
 ```bash
 pip install "ultracompress[torch]" vllm
-hf download SipsaLabs/<model-id>
+huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 ```
 
 ```python
@@ -67,7 +67,7 @@ The plugin will:
 |---|---|
 | Qwen3-1.7B FP16 (vLLM standard) | ~3.5 GB |
 | Qwen3-1.7B AWQ-INT4 (vLLM AWQ path) | ~1.0 GB |
-| **Qwen3-1.7B UltraCompress 5 bpw lossless (v0.2 plugin)** | **~1.1 GB** |
+| **Qwen3-1.7B UltraCompress 2.798 bpw (v0.2 plugin)** | **~0.7 GB** |
 
 (Inference speed targets ~2-3× UltraCompress reference loader, comparable to vLLM's AWQ path on equivalent hardware.)
 

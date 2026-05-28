@@ -57,13 +57,13 @@ The token is read by all HF Hub-using commands automatically.
 Default device is `cuda:0`. To use a different GPU:
 
 ```bash
-uc verify ./models/sipsalabs_<model-id> --device cuda:1
+uc bench ./models/sipsalabs_<model-id> --device cuda:1
 ```
 
 For CPU-only:
 
 ```bash
-uc verify ./models/sipsalabs_<model-id> --device cpu --limit 50
+uc bench ./models/sipsalabs_<model-id> --device cpu --limit 50
 ```
 
 (CPU is ~100× slower; useful for smoke testing only.)
@@ -72,21 +72,21 @@ To restrict visible GPUs at the OS level:
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1
-uc verify ./models/sipsalabs_<model-id> --device cuda:0
+uc bench ./models/sipsalabs_<model-id> --device cuda:0
 ```
 
 ## Output directory
 
-By default `hf download` saves to `./models/<model-id-underscored>`. Override:
+By default `huggingface-cli download` saves to the HuggingFace cache at `~/.cache/huggingface`. Use `--local-dir` to control where it lands:
 
 ```bash
-hf download SipsaLabs/<model-id> -o ~/models/qwen3-uc
+huggingface-cli download SipsaLabs/<repo-id> --local-dir ~/models/qwen3-uc
 ```
 
-By default `uc verify` saves to `./bench-results`. Override:
+By default `uc bench` saves to `./bench-results`. Override:
 
 ```bash
-uc verify ./models/sipsalabs_<model-id> -o /tmp/bench-runs/run-001
+uc bench ./models/sipsalabs_<model-id> -o /tmp/bench-runs/run-001
 ```
 
 ## Quiet / scripted mode
@@ -95,7 +95,7 @@ Suppress the brand banner:
 
 ```bash
 export UC_NO_BANNER=1
-uc catalog --json | jq '.'   # clean JSON output
+uc list --json | jq '.'   # clean JSON output
 ```
 
 ## Verbose mode
@@ -104,7 +104,7 @@ Enable diagnostic logging:
 
 ```bash
 export UC_VERBOSE=1
-uc verify ./models/sipsalabs_<model-id> --tasks hellaswag --limit 50
+uc bench ./models/sipsalabs_<model-id> --tasks hellaswag --limit 50
 # Logs go to stderr
 ```
 
@@ -113,8 +113,8 @@ uc verify ./models/sipsalabs_<model-id> --tasks hellaswag --limit 50
 | Cache | Default location | Override |
 |---|---|---|
 | Hugging Face Hub | `~/.cache/huggingface` | `HF_HOME` |
-| Pulled models | `./models/` | `-o` flag on `hf download` |
-| Benchmark results | `./bench-results/` | `-o` flag on `uc verify` |
+| Downloaded models | `~/.cache/huggingface` | `--local-dir` flag on `huggingface-cli download` |
+| Benchmark results | `./bench-results/` | `-o` flag on `uc bench` |
 
 ## What we don't support yet
 

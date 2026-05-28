@@ -1,6 +1,6 @@
 site_name: UltraCompress
 site_url: https://docs.sipsalabs.com
-site_description: Extreme compression for large language models. Patent pending.
+site_description: Extreme compression for large language models. Patent pending — USPTO 64/049,511 + 64/049,517.
 site_author: Sipsa Labs, Inc.
 copyright: Copyright &copy; 2026 Sipsa Labs, Inc.
 
@@ -81,7 +81,11 @@ nav:
       - Quickstart: getting-started/quickstart.md
       - Configuration: getting-started/configuration.md
   - Commands:
+      - uc list: commands/list.md
+      - Downloading a compressed model: commands/pull.md
       - uc info: commands/info.md
+      - uc bench: commands/bench.md
+      - uc demo: commands/demo.md
       - uc version: commands/version.md
   - Concepts:
       - Compression methods: concepts/compression-methods.md

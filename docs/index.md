@@ -7,12 +7,12 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/sipsalabs/ultracompress/blob/main/LICENSE)
 [![CI](https://github.com/sipsalabs/ultracompress/actions/workflows/ci.yml/badge.svg)](https://github.com/sipsalabs/ultracompress/actions)
 
-UltraCompress produces **lossless 5-bit** transformer packs with **bit-identical reconstruction** guaranteed by a SHA-256 manifest — 22 architectures shipped end-to-end, 20 PPL-verified end-to-end against their bf16 baseline.
+UltraCompress produces **lossless 5-bit** transformer packs with **bit-identical reconstruction** guaranteed by a SHA-256 manifest — 22 architectures shipped end-to-end, 14 PPL-verified end-to-end against their bf16 baseline.
 
 !!! info "v0.6.11"
-    Pre-compressed reference models are published on the Hugging Face Hub. Run `uc catalog` for the live catalog at any time.
+    Pre-compressed reference models are published on the Hugging Face Hub. Run `uc list` for the live catalog at any time.
 
-The compression methods are the subject of pending USPTO provisional applications filed in April 2026. This CLI is the open-source distribution layer; pre-compressed reference models roll out through the [`sipsalabs`](https://huggingface.co/sipsalabs) organization on the Hugging Face Hub through April–May 2026 — `uc catalog` shows the live catalog at any time.
+The compression methods are the subject of pending USPTO provisional applications filed in April 2026. This CLI is the open-source distribution layer; pre-compressed reference models roll out through the [`sipsalabs`](https://huggingface.co/sipsalabs) organization on the Hugging Face Hub through April–May 2026 — `uc list` shows the live catalog at any time.
 
 ## Install
 
@@ -42,14 +42,14 @@ The compression methods are the subject of pending USPTO provisional application
 # Browse the official catalog
 uc catalog
 
-# Download a pre-compressed model
-hf download SipsaLabs/<model-id>
+# Download a pre-compressed model (via HuggingFace CLI)
+huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 
-# Inspect what's in it
-uc info ./models/<model-id>
+# Verify the SHA-256 reconstruction contract
+uc verify ./<repo-id>
 
-# Run downstream benchmarks
-uc verify ./models/<model-id> --tasks hellaswag --limit 500
+# Inspect manifest
+uc info ./<repo-id>
 ```
 
 ## What's in a pre-compressed artifact
@@ -74,14 +74,14 @@ The published methods most teams use (bitsandbytes, GPTQ, AWQ, HQQ) are all loss
 | HQQ 3-bit g64 | 3.500 | lossy | 1/6 |
 | HQQ 2-bit g64 | 2.500 | lossy | 6/6 |
 
-22 architectures shipped end-to-end; 20 PPL-verified end-to-end against their bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42). Every published number traces to a JSON receipt.
+22 architectures shipped end-to-end; 14 PPL-verified end-to-end against their bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42). Every published number traces to a JSON receipt.
 
 ## Where to go next
 
 - **First time here?** [Quickstart](getting-started/quickstart.md)
 - **Want to understand the methods?** [Compression methods overview](concepts/compression-methods.md)
 - **Need to integrate with your inference stack?** [Integration guides](integration/llamacpp.md)
-- **Looking for a specific model?** Run `uc catalog` for the live catalog.
+- **Looking for a specific model?** Run `uc list` for the live catalog.
 - **Deploying in a commercial product?** Email `legal@sipsalabs.com`.
 
 ## Status

@@ -11,7 +11,7 @@ This page describes both.
 
 ```bash
 pip install "ultracompress[torch]"
-hf download SipsaLabs/<model-id>
+huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 ```
 
 Inference via the Python reference loader:
@@ -57,19 +57,19 @@ We're pursuing both paths. The export-to-existing-types path lands first (v0.2, 
 
 ## Memory footprint after GGUF export
 
-Exporting UltraCompress's lossless 5-bit pack to llama.cpp's nearest existing type:
+Inflating UltraCompress's 2.798-bpw representation to llama.cpp's nearest existing type:
 
-| UltraCompress source | llama.cpp target | Memory after export | Compression vs FP16 |
+| UltraCompress source | llama.cpp target | Memory after inflation | Compression vs FP16 |
 |---|---|---|---|
-| 5 bpw (lossless) | Q5_K_M (~5.5 bpw) | ~1.2 GB for 1.7B | ~2.9× |
-| 5 bpw (lossless) | Q4_K_M (~4.5 bpw) | ~1.0 GB for 1.7B | ~3.4× |
+| 2.798 bpw | Q3_K_S (~3.4 bpw) | ~720 MB for 1.7B | 4.7× |
+| 2.798 bpw | IQ3_XS (~2.9 bpw) | ~620 MB for 1.7B | 5.5× |
 
-Exporting to a lossy GGUF type trades the lossless guarantee for native llama.cpp inference speed. This is the right tradeoff for many production deployment scenarios; where bit-identical reconstruction matters, keep the native UltraCompress format.
+We give up some of the on-disk compression efficiency in exchange for native llama.cpp inference speed. This is the right tradeoff for almost all production deployment scenarios; for **storage**-bound use cases (e.g., mobile distribution where the artifact is downloaded once), keep the native UltraCompress format.
 
 ## What you can do today (mid-2026)
 
 - Use the Python loader for evaluation + prototyping
-- Run `uc verify` to compare compressed vs FP16 quality on your tasks
+- Run `uc bench` to compare compressed vs FP16 quality on your tasks
 - Open a GitHub issue with your specific llama.cpp use case so we prioritize the export path correctly
 
 ## What you'll be able to do post-Q3 2026

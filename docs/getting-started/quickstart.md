@@ -13,7 +13,7 @@ pip install "ultracompress[torch]"
 ## 2. Browse the catalog
 
 ```bash
-uc catalog
+uc list
 ```
 
 You'll see a table of pre-compressed models published by Sipsa Labs:
@@ -23,19 +23,24 @@ You'll see a table of pre-compressed models published by Sipsa Labs:
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓
 ┃ Model ID                    ┃ Base               ┃    bpw ┃   Size ┃ Downloads┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩
-│ sipsalabs/<model-id> │ Qwen/Qwen3-1.7B    │      5 │ 1.04GB │      ... │
-│ sipsalabs/llama2-7b-uc-v3-bpw5  │ meta-llama/Ll... │      5 │ 4.40GB │      ... │
-│ sipsalabs/mistral-7b-v0.3-uc-v3-bpw5 │ mistralai/Mis... │  5 │ 4.41GB │      ... │
+│ sipsalabs/<model-id> │ Qwen/Qwen3-1.7B    │  2.798 │ 1.04GB │      ... │
+│ sipsalabs/llama2-7b-uc2p79  │ meta-llama/Ll...   │  2.798 │ 4.20GB │      ... │
+│ sipsalabs/mistral-7b-uc2p79 │ mistralai/Mis...   │  2.798 │ 4.21GB │      ... │
 └─────────────────────────────┴────────────────────┴────────┴────────┴──────────┘
 ```
 
 ## 3. Download a model
 
 ```bash
-hf download SipsaLabs/<model-id>
+huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 ```
 
-The model lands in `./models/sipsalabs_<model-id>/`.
+Or use the Python API:
+
+```python
+from huggingface_hub import snapshot_download
+snapshot_download("SipsaLabs/<repo-id>", local_dir="./<repo-id>")
+```
 
 ## 4. Inspect the artifact
 
@@ -49,18 +54,18 @@ You'll see the provenance manifest:
 UltraCompress artifact: sipsalabs/<model-id>
 ─────────────────────────────────────────────────
 Base model:   Qwen/Qwen3-1.7B
-Method:       uc-v3 lossless 5-bit
-Bits/weight:  5
+Method:       row-overlay-quantization (RoQ) v1
+Bits/weight:  2.798
 Size:         1.04 GB
 SHA-256:      a3f5c8...   (verified ✓)
 License:      research-free; commercial requires separate license
-Patents:      patent pending (filed April 2026)
+Patents:      USPTO 64/049,511 (filed 2026-04-25)
 ```
 
 ## 5. Run a benchmark
 
 ```bash
-uc verify ./models/sipsalabs_<model-id> --tasks hellaswag --limit 500
+uc bench ./models/sipsalabs_<model-id> --tasks hellaswag --limit 500
 ```
 
 This runs the `lm-eval-harness` HellaSwag task with 500 samples. Output:

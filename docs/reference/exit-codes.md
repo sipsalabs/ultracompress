@@ -6,7 +6,7 @@ UltraCompress follows standard Unix exit-code conventions. All commands below `u
 
 | Code | Meaning | Example |
 |---|---|---|
-| `0` | Success | `uc catalog` (even if no models published) |
+| `0` | Success | `uc list` (even if no models published) |
 | `1` | Generic runtime error | network failure, missing file, manifest corrupt |
 | `2` | Invalid arguments | from `click` (typo'd subcommand, missing required arg) |
 | `130` | Interrupted by Ctrl-C | user aborted |
@@ -15,7 +15,7 @@ We deliberately do not use specialized exit codes (e.g., 64-78 from `sysexits.h`
 
 ## Per-command nuances
 
-### `uc catalog`
+### `uc list`
 
 | Outcome | Code |
 |---|---|
@@ -23,16 +23,19 @@ We deliberately do not use specialized exit codes (e.g., 64-78 from `sysexits.h`
 | Hub unreachable | 0 (we degrade gracefully — `[]` returned) |
 | Bad arguments | 2 |
 
-### `hf download`
+### Downloading via `huggingface-cli`
 
-| Outcome | Code |
-|---|---|
-| Download succeeded, manifest verified | 0 |
-| Download succeeded, manifest mismatch | 0 with stderr warning |
-| Hub unreachable | 1 |
-| Authentication required (private model) | 1 |
-| Insufficient disk space | 1 |
-| Bad arguments | 2 |
+`uc pull` was removed in v0.6.21. Use `huggingface-cli download` for the
+download step, then `uc verify` to check the SHA-256 reconstruction
+contract on disk.
+
+| Outcome | Command | Code |
+|---|---|---|
+| Download succeeded | `huggingface-cli download` | 0 |
+| Hub unreachable / auth error | `huggingface-cli download` | non-zero (set by HF CLI) |
+| Verification PASS | `uc verify` | 0 |
+| Verification FAIL | `uc verify` | 1 |
+| Bad arguments | either | 2 |
 
 ### `uc info`
 
@@ -44,7 +47,7 @@ We deliberately do not use specialized exit codes (e.g., 64-78 from `sysexits.h`
 | Path doesn't exist | 2 |
 | Bad arguments | 2 |
 
-### `uc verify`
+### `uc bench`
 
 | Outcome | Code |
 |---|---|
@@ -67,11 +70,13 @@ Always returns 0.
 
 ## Scripting patterns
 
-### Loop over models and pull each
+### Loop over models and download each
 
 ```bash
-uc catalog --json | jq -r '.[].modelId' | while read -r model; do
-    hf download SipsaLabs/<model-id> || echo "[warn] failed to pull $model" >&2
+uc catalog | awk 'NR>2 && $1 ~ /^sipsa-/ {print $1}' | while read -r model; do
+    repo="SipsaLabs/${model#sipsa-}-uc-v3-bpw5"
+    huggingface-cli download "$repo" --local-dir "./${model}" \
+        || echo "[warn] failed to download $repo" >&2
 done
 ```
 
@@ -79,7 +84,7 @@ done
 
 ```bash
 for d in ./models/*/; do
-    uc verify "$d"
+    uc bench "$d" --tasks hellaswag --limit 100 \
         || echo "[warn] bench failed on $d" >&2
 done
 ```
@@ -98,7 +103,7 @@ done
 
 ```bash
 set -euo pipefail
-hf download SipsaLabs/<model-id>
-uc info ./models/sipsalabs_<model-id>
-uc verify ./models/sipsalabs_<model-id> --tasks hellaswag --limit 50
+huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
+uc verify ./<repo-id>
+uc info ./<repo-id>
 ```

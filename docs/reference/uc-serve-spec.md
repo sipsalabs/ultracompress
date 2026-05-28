@@ -28,7 +28,7 @@ uc serve <path> [--port INT] [--host STR] [--max-tokens INT]
 
 | Option | Default | Description |
 |---|---|---|
-| `<path>` | required | Path to a directory or `ultracompress.json` produced by `hf download` |
+| `<path>` | required | Path to a directory containing a Sipsa-compressed pack (downloaded via `huggingface-cli download`) |
 | `--port` | `8080` | Port to bind |
 | `--host` | `127.0.0.1` | Bind address; `0.0.0.0` for all interfaces |
 | `--max-tokens` | `2048` | Maximum new tokens per request |
@@ -89,9 +89,9 @@ Approximate GPU memory for `uc serve` at the v0.2 deployment:
 
 | Model | Loaded weights | Activations (batch=1) | Total (batch=1) | Total (batch=8) |
 |---|---|---|---|---|
-| Qwen3-1.7B at 5 bpw | ~0.6 GB | ~0.5 GB | ~1.1 GB | ~3.5 GB |
-| Llama-2-7B at 5 bpw | ~2.5 GB | ~1.5 GB | ~4.0 GB | ~12 GB |
-| Llama-2-13B at 5 bpw | ~4.5 GB | ~2.5 GB | ~7.0 GB | ~22 GB |
+| Qwen3-1.7B at 2.798 bpw | ~0.6 GB | ~0.5 GB | ~1.1 GB | ~3.5 GB |
+| Llama-2-7B at 2.798 bpw | ~2.5 GB | ~1.5 GB | ~4.0 GB | ~12 GB |
+| Llama-2-13B at 2.798 bpw | ~4.5 GB | ~2.5 GB | ~7.0 GB | ~22 GB |
 
 (These are rough estimates; actual numbers depend on the runtime kernel path, which we'll publish in v0.2 release notes.)
 
@@ -183,4 +183,4 @@ These are open. We'd love customer feedback — file an issue at [github.com/sip
 
 ---
 
-*Last updated: April 2026. This is a design spec for v0.2; revise as v0.2 implementation progresses.*
+*Last updated: 2026-04-25 evening. This is a design spec for v0.2; revise as v0.2 implementation progresses.*

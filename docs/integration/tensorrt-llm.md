@@ -10,7 +10,7 @@ If you're evaluating UltraCompress on NVIDIA hardware:
 
 ```bash
 pip install "ultracompress[torch]"
-hf download SipsaLabs/<model-id>
+huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 ```
 
 Then use the UltraCompress reference loader directly. It runs on CUDA and gives you correct (though slower than TensorRT-LLM) inference for evaluation purposes.
@@ -82,7 +82,7 @@ This is the deployment path we'll recommend for cloud-native enterprise customer
 
 ## A note on patent-licensing alignment
 
-The UltraCompress methods are patent-pending. NVIDIA TensorRT-LLM is a closed-source NVIDIA product. Our integration works at the **export-format** level — we produce a TensorRT-LLM-compatible engine — without requiring NVIDIA to integrate or license our methods.
+The UltraCompress methods are patent-pending (USPTO 64/049,511 + 64/049,517). NVIDIA TensorRT-LLM is a closed-source NVIDIA product. Our integration works at the **export-format** level — we produce a TensorRT-LLM-compatible engine — without requiring NVIDIA to integrate or license our methods.
 
 This is an important architectural choice. Customers using TensorRT-LLM directly are unaffected by our patents (they're using NVIDIA's existing W4A16 / INT4 AWQ paths). Customers using **our exported artifact** through TensorRT-LLM are using our patented methods at the **artifact-production** stage and need a license; the runtime is NVIDIA's, the artifact is ours.
 

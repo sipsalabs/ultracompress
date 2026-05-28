@@ -56,7 +56,7 @@ The ability to fit **two simultaneous models** in a memory budget that tradition
 
 Some methods report aggressive numbers like 1-bit or sub-1-bit quantization. Almost always these:
 
-1. Don't exclude on-disk overhead from the headline bpw
+1. Don't include codebook/scale overhead in the headline bpw
 2. Don't measure retention on a multi-model cohort
 3. Are demonstrated only on a single small model (where catastrophic failures hide)
 4. Use heavy mixed-precision (some weights at 16-bit, others at 1-bit) — making the "1-bit" claim misleading

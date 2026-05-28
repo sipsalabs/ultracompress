@@ -57,7 +57,7 @@ Semver version of the method. Bumped when the method itself changes (not just th
 
 ### `bpw`
 
-Effective bits per weight. This is the **total artifact size in bits** divided by **the number of weights in the model** — including all on-disk overhead. Round to 3 decimal places.
+Effective bits per weight. This is the **total artifact size in bits** divided by **the number of weights in the model** — including any overhead for codebooks, scales, zero-points, etc. Round to 3 decimal places.
 
 Example: a 1.7B-parameter model at 5 bpw means total artifact is approximately `1.7e9 × 5 / 8 = 1.06 GB` (plus tokenizer, config files, etc.).
 
@@ -101,7 +101,7 @@ The CLI verifies the manifest at `uc info` time:
 1. Schema is valid JSON
 2. All declared files exist in the artifact directory
 3. SHA-256 of each declared file matches the manifest
-4. `bpw` × `weight_count` ≈ `model.safetensors` size (with some tolerance for on-disk overhead)
+4. `bpw` × `weight_count` ≈ `model.safetensors` size (with some tolerance for codebook overhead)
 
 If any verification fails, `uc info` prints a warning but does not exit non-zero (the manifest may still be useful even if files are partially corrupt).
 

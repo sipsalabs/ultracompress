@@ -15,13 +15,13 @@ This feature is planned for v0.2 (Q3 2026). To register interest, email `founder
 1. **One-command compression** of any HF Hub or local-disk transformer model
 2. **Reproducibility** — every output artifact ships with a complete provenance manifest
 3. **Sensible defaults** — `uc compress <model>` Just Works for typical models without per-model tuning
-4. **Patent-pending lossless 5-bit compression** with bit-identical reconstruction
+4. **Pluggable compression methods** — both Row-Overlay Quantization (RoQ) and shared-block parameter dispatch (shared-block) accessible via flags
 5. **Resumable** — long-running compression jobs can resume after interruption
 
 ## Synopsis (planned)
 
 ```
-uc compress <source-model> [--bpw FLOAT]
+uc compress <source-model> [--bpw FLOAT] [--method STR] [--track STR]
                             [--output-dir PATH] [--device STR]
                             [--max-batch-size INT] [--seed INT]
                             [--license STR] [--api-key STR]
@@ -32,8 +32,10 @@ uc compress <source-model> [--bpw FLOAT]
 | Option | Default | Description |
 |---|---|---|
 | `<source-model>` | required | HF Hub model ID (e.g., `Qwen/Qwen3-1.7B`) or local-disk path |
-| `--bpw FLOAT` | `5` | Target bits per weight |
-| `--output-dir PATH` | `./models/<source-name>-uc-v3-bpw<bpw>` | Where to save the compressed artifact |
+| `--bpw FLOAT` | `2.798` | Target bits per weight |
+| `--method STR` | `track-a-row-overlay` | Compression method to apply |
+| `--track STR` | `a` | Which patent-pending track: `a`, `b`, `a+b` |
+| `--output-dir PATH` | `./models/<source-name>-uc<bpw>` | Where to save the compressed artifact |
 | `--device STR` | `cuda:0` | PyTorch device for compression |
 | `--max-batch-size INT` | `8` | Batch size for the calibration data pass |
 | `--seed INT` | `42` | Deterministic seed for reproducibility |
@@ -62,11 +64,11 @@ uc compress <source-model> [--bpw FLOAT]
 ## Example
 
 ```bash
-# Default settings — compress Qwen3-1.7B to 5 bpw (lossless pack)
+# Default settings — compress Qwen3-1.7B to 2.798 bpw via Row-Overlay Quantization (RoQ)
 uc compress Qwen/Qwen3-1.7B
 
 # Output:
-# ./models/<source-model-name>-uc-v3-bpw5/
+# ./models/<source-model-name>-uc<bpw>/
 #   ├── model.safetensors           (1.04 GB)
 #   ├── tokenizer/                  (2.7 MB, copied from source)
 #   ├── config.json                 (4 KB)
@@ -74,16 +76,24 @@ uc compress Qwen/Qwen3-1.7B
 #   └── LICENSE                     (Sipsa Labs Research and Evaluation License)
 ```
 
-## Optional calibration pass
+## shared-block parameter dispatch (shared-block) (architectural compression)
 
-For workloads where you want quality validated against your own deployment distribution, an optional calibration pass is supported.
+Architectural compression is the most aggressive variant; it produces a model with substantially fewer trainable parameters but requires a calibration pass on representative training data.
 
 ```bash
-uc compress Qwen/Qwen3-1.7B --output-dir ./models/qwen3-1.7b-uc-v3-bpw5 \
+uc compress Qwen/Qwen3-1.7B --method shared-block --output-dir ./models/qwen3-shared-block-311x \
     --calibration-data ./calibration.jsonl
 ```
 
-The calibration data is a JSONL file with prompt/response pairs representative of the customer's deployment workload. The compression service uses this to validate that the compression preserves quality on the customer's distribution.
+The calibration data is a JSONL file with prompt/response pairs representative of the customer's deployment workload. The compression service uses this to validate that the architectural-compression preserves quality on the customer's distribution.
+
+## Combined Row-Overlay Quantization (RoQ) + shared-block parameter dispatch (shared-block)
+
+```bash
+uc compress Qwen/Qwen3-1.7B --method roq+shared-block --output-dir ./models/qwen3-uc-combo
+```
+
+Stacks shared-block parameter dispatch (shared-block)'s architectural compression with Row-Overlay Quantization (RoQ)'s quantization. ~26.7× end-to-end with 68% top-10 retention (cohort median).
 
 ## Why a remote service vs. local
 
@@ -101,7 +111,7 @@ The customer's source model is uploaded to the service over TLS, processed, and 
 
 - Sign up at sipsalabs.com to get a `UC_COMPRESS_API_KEY`
 - Free tier: 1 compression per month on models < 7B parameters
-- Paid tiers: see [sipsalabs.com/pricing](https://sipsalabs.com/pricing)
+- Paid tiers: per `PRICING_CALCULATOR.md`
 
 ## Reproducibility
 
@@ -110,22 +120,22 @@ Every compression run is deterministic given the same seed + same source model. 
 - Source model SHA-256
 - Compression method version
 - Seed
-- Calibration data SHA-256 (when an optional calibration pass is used)
+- Calibration data SHA-256 (for shared-block parameter dispatch (shared-block) + combined)
 - Compute environment fingerprint
 
 A second `uc compress` run with the same inputs and same seed produces a byte-identical output (within GPU-arithmetic non-determinism bounds; we publish the bound).
 
 ## Resumability
 
-For long-running compression jobs (large models at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
+For long-running compression jobs (shared-block parameter dispatch (shared-block) at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
 
 ```bash
 # Submit the job
-uc compress Qwen/Qwen3-32B --bpw 5 --output-dir ./models/qwen3-32b-uc-v3-bpw5
+uc compress Qwen/Qwen3-32B --method shared-block --bpw 2.5 --output-dir ./models/qwen3-32b-shared-block-2p5
 
 # Job interrupted (say, network drop)
 # Resume with the same command:
-uc compress Qwen/Qwen3-32B --bpw 5 --output-dir ./models/qwen3-32b-uc-v3-bpw5
+uc compress Qwen/Qwen3-32B --method shared-block --bpw 2.5 --output-dir ./models/qwen3-32b-shared-block-2p5
 # CLI detects the partial state in the output dir, resumes from the last checkpoint
 ```
 
@@ -145,7 +155,7 @@ uc compress Qwen/Qwen3-32B --bpw 5 --output-dir ./models/qwen3-32b-uc-v3-bpw5
 
 ## Pricing for `uc compress`
 
-See [sipsalabs.com/pricing](https://sipsalabs.com/pricing) for current pricing:
+Per `PRICING_CALCULATOR.md`:
 
 | Plan | Cost | What you get |
 |---|---|---|
@@ -155,21 +165,22 @@ See [sipsalabs.com/pricing](https://sipsalabs.com/pricing) for current pricing:
 | Business | $1,999/mo | 200 compressions / month, 15 users, SLA |
 | Enterprise | $5K-$50K/mo | Custom volume, custom users, SLA, audit logs, custom calibration cohorts |
 
-For chip vendors and OEMs: a separate per-device royalty model is available — email `legal@sipsalabs.com`.
+For chip vendors and OEMs: separate per-device royalty model in `OEM_LICENSING_TERMS.md`.
 
 ## Migration path from v0.1
 
 v0.1 doesn't have `uc compress`. The migration path:
 
 - v0.1 → v0.2: `uc compress` becomes available for customers on a paid tier
-- Existing v0.1 reference-model artifacts (downloaded via `hf download`) keep working in v0.2
+- Existing v0.1 reference-model artifacts (downloaded via `huggingface-cli download`) keep working in v0.2
 
 ## Roadmap
 
 | Feature | Target |
 |---|---|
-| Basic `uc compress` with the lossless 5-bit method | v0.2 (Q3 2026) |
-| Optional calibration pass | v0.2 |
+| Basic `uc compress` with Row-Overlay Quantization (RoQ) | v0.2 (Q3 2026) |
+| shared-block parameter dispatch (shared-block) support (architectural compression) | v0.2 |
+| Combined Row-Overlay Quantization (RoQ) + shared-block parameter dispatch (shared-block) | v0.2 |
 | Resumable jobs | v0.2.1 |
 | Custom calibration cohorts (enterprise tier) | v0.3 |
 | Encoder-only model support (T5, BERT) | v0.3 |
@@ -183,7 +194,7 @@ v0.1 doesn't have `uc compress`. The migration path:
 
 2. **Custom calibration cohorts**: how do we expose them safely? Tentatively: customers upload calibration JSONL with stricter NDA/contractual terms, similar to enterprise data-handling.
 
-3. **Performance benchmarks per output**: should `uc compress` automatically run `uc verify` on the output before declaring success? Yes; small `--bench-on-finish` flag (default on, suppressible).
+3. **Performance benchmarks per output**: should `uc compress` automatically run `uc bench` on the output before declaring success? Yes; small `--bench-on-finish` flag (default on, suppressible).
 
 4. **Per-customer compression-method versioning**: should customers be able to pin to a specific method version (e.g., `--method-version 1.2.0`)? Yes; expose via flag.
 
@@ -191,4 +202,4 @@ These are open. Customer feedback welcome — file an issue at [github.com/sipsa
 
 ---
 
-*Last updated: April 2026. This is a design spec for v0.2; revise as implementation progresses.*
+*Last updated: 2026-04-25 evening. This is a design spec for v0.2; revise as implementation progresses.*

@@ -14,22 +14,22 @@ Requires Python 3.10+. PyTorch with CUDA is needed for GPU inference and evaluat
 
 ---
 
-## Pull a compressed model
+## Download a compressed model
 
 The smallest/fastest checkpoint to start with:
 
 ```bash
-ultracompress pull SipsaLabs/qwen3-8b-streaming-bpw5
+huggingface-cli download SipsaLabs/qwen3-8b-uc-v3-bpw5 --local-dir ./qwen3-8b
 ```
 
-This downloads the streaming-compressed Qwen3-8B checkpoint from Hugging Face. Download size is roughly 5 GB.
+This downloads the 5-bit compressed Qwen3-8B pack from Hugging Face. Download size is roughly 5 GB.
 
-Other available models:
+Other available models (see `uc catalog` for the full live list):
 
 ```bash
-ultracompress pull SipsaLabs/qwen3-14b-streaming-bpw5
-ultracompress pull SipsaLabs/qwen3-32b-streaming-bpw5
-ultracompress pull SipsaLabs/qwen2.5-72b-streaming-bpw5
+huggingface-cli download SipsaLabs/qwen3-14b-uc-v3-bpw5 --local-dir ./qwen3-14b
+huggingface-cli download SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5 --local-dir ./phi-3-mini
+huggingface-cli download SipsaLabs/qwen3-0.6b-uc-v3-bpw5 --local-dir ./qwen3-0.6b
 ```
 
 The 32B and 72B checkpoints are larger downloads (roughly 20 GB and 45 GB respectively). Start with 8B.
@@ -61,7 +61,7 @@ PPL ratio: ~1.028x
 Peak VRAM: ~2.26 GB
 ```
 
-The full streaming compression pipeline (building a pack from source weights) ships in the production compression pipeline, which is NDA-gated. Customer-side `uc verify` and `uc verify` are the public CLI surface; for pipeline access, contact founder@sipsalabs.com.
+The full streaming compression pipeline (training a fresh pack from scratch) ships in the production trainer, which is NDA-gated. Customer-side `uc verify` and `uc bench` are the public CLI surface; for trainer access, contact founder@sipsalabs.com.
 
 ---
 
@@ -69,8 +69,8 @@ The full streaming compression pipeline (building a pack from source weights) sh
 
 Each checkpoint is a directory with:
 
-- **Per-layer `.pt` files** -- the compressed weight tensors and internal codec state for each transformer layer, saved independently.
-- **`manifest.json`** -- metadata listing the base model, bits-per-weight, internal codec state, and the eval metrics at compression time.
+- **Per-layer `.pt` files** -- the compressed weight tensors and learned correction overlays for each transformer layer, saved independently.
+- **`manifest.json`** -- metadata listing the base model, bits-per-weight, block size, correction rank, and the eval metrics at compression time.
 - **Scaffold weights are NOT included.** At inference time, the base model's embedding layer, final layer norm, and language model head are loaded from the original Hugging Face model (e.g., `Qwen/Qwen3-8B`). The compressed checkpoint replaces only the transformer body. This keeps download sizes small and avoids redistributing unmodified weights.
 
 The streaming compression pipeline compresses each transformer layer independently in a single GPU residency window, which is why peak VRAM stays bounded by roughly one transformer layer regardless of total model depth. Internal codec specifics are NDA-gated.
@@ -94,7 +94,7 @@ Compressed model checkpoints are released under the **Sipsa Labs Research Evalua
 
 The base model weights (embedding, LM head, layer norm) are subject to the original model's license (Qwen: Apache 2.0).
 
-Patent pending: U.S. provisional patent applications, plus 2026 supplements.
+Patent pending: USPTO applications 64/049,511 and 64/049,517, plus May 2026 supplements.
 
 ---
 
@@ -108,4 +108,4 @@ For pilot/commercial inquiries: founder@sipsalabs.com
 
 *The 32B and 72B checkpoints are significantly larger downloads. If you're on a metered connection, start with the 8B checkpoint.*
 
-Implementation details are proprietary and patent-pending.
+Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).

@@ -6,10 +6,10 @@ UltraCompress respects a small set of environment variables. They are intentiona
 
 | Variable | Default | Effect |
 |---|---|---|
-| `UC_HF_ORG` | `sipsalabs` | Override the Hugging Face Hub organization queried by `uc catalog`. Useful for testing forks or mirrors. |
-| `UC_HF_COLLECTION_TAG` | `ultracompress` | Override the Hugging Face Hub tag filter used by `uc catalog`. |
-| `UC_BENCH_SEED` | `42` | Override the deterministic seed used by `uc verify`. |
-| `UC_BENCH_OUTPUT_DIR` | `./bench-results` | Override the default `--output-dir` for `uc verify`. |
+| `UC_HF_ORG` | `sipsalabs` | Override the Hugging Face Hub organization queried by `uc list`. Useful for testing forks or mirrors. |
+| `UC_HF_COLLECTION_TAG` | `ultracompress` | Override the Hugging Face Hub tag filter used by `uc list`. |
+| `UC_BENCH_SEED` | `42` | Override the deterministic seed used by `uc bench`. |
+| `UC_BENCH_OUTPUT_DIR` | `./bench-results` | Override the default `--output-dir` for `uc bench`. |
 | `UC_VERBOSE` | unset | If set to `1`, print extra diagnostic logs to stderr. |
 | `UC_NO_BANNER` | unset | If set to `1`, suppress the `_banner()` printout (useful for scripted use). |
 
@@ -27,7 +27,7 @@ UltraCompress uses `huggingface_hub` for Hub access; the standard Hub env vars a
 | `HF_HUB_OFFLINE` | If set to `1`, never call the Hub; serve only from local cache |
 | `HF_HUB_DISABLE_PROGRESS_BARS` | Hide tqdm progress bars |
 
-## Inherited from `transformers` (when running `uc verify`)
+## Inherited from `transformers` (when running `uc bench`)
 
 | Variable | Effect |
 |---|---|
@@ -54,7 +54,7 @@ UltraCompress uses `huggingface_hub` for Hub access; the standard Hub env vars a
 
 ```bash
 export UC_HF_ORG=your-org
-uc catalog   # queries hf.co/your-org instead of hf.co/sipsalabs
+uc list   # queries hf.co/your-org instead of hf.co/sipsalabs
 ```
 
 ### Run completely offline
@@ -68,12 +68,12 @@ uc info ./models/sipsalabs_<model-id>   # works as long as files are cached
 
 ```bash
 export UC_NO_BANNER=1
-uc catalog --json | jq '.'   # clean JSON output without the banner
+uc list --json | jq '.'   # clean JSON output without the banner
 ```
 
-### Limit GPUs for `uc verify`
+### Limit GPUs for `uc bench`
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0   # use only the first GPU
-uc verify ./models/sipsalabs_<model-id> --tasks hellaswag --limit 100
+uc bench ./models/sipsalabs_<model-id> --tasks hellaswag --limit 100
 ```
