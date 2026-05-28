@@ -44,11 +44,12 @@ Issues = "https://github.com/sipsalabs/ultracompress/issues"
 ultracompress = "ultracompress.cli:main"
 uc = "ultracompress.cli:main"
 
-# IMPORTANT: the wheel is built from the minimal clean staging directory
-# (_build_public/ultracompress/) populated by `python build_public_wheel.py`
-# from _public_src/. The lab tree at ./ultracompress/ never ships.
+# Public package lives at src/ultracompress/. The canonical "src layout"
+# keeps the importable package isolated from repo-root noise (docs, tools,
+# tests). `pip install -e .` makes src/ultracompress importable as
+# `ultracompress` without copying.
 [tool.setuptools]
-package-dir = {"ultracompress" = "_build_public/ultracompress"}
+package-dir = {"" = "src"}
 packages = ["ultracompress"]
 
 [tool.ruff]
