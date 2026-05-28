@@ -2,12 +2,12 @@
 
 Lossless 5-bit transformer compression. Published model artifacts are bit-identical to their bf16 reference.
 
-[![PyPI](https://img.shields.io/badge/pypi-0.6.22-blue.svg)](https://pypi.org/project/ultracompress/)
+[![PyPI](https://img.shields.io/badge/pypi-0.6.24-blue.svg)](https://pypi.org/project/ultracompress/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Patent](https://img.shields.io/badge/patent-pending-orange.svg)](./PATENT_NOTICE.md)
 
-> **v0.6.22:** the public package is intentionally minimal — a small,
+> **v0.6.24:** the public package is intentionally minimal — a small,
 > dependency-free CLI that lets you (a) generate text against a Sipsa-
 > hosted compressed model in 30 seconds (`uc try`), (b) browse the full
 > catalog with tiers and PPL ratios (`uc catalog`), and (c) verify pack
@@ -44,7 +44,7 @@ That prints a recorded reference response from our 5-bit-compressed Qwen3-0.6B p
 uc catalog
 ```
 
-Lists all 20 PPL-verified architectures (19 transformer + 1 state-space model with comparator-note caveat) with their published PPL ratios and tier (free / request / POC).
+Lists the 22 PPL-verified architectures (21 transformer + 1 state-space model with comparator-note caveat) with their published PPL ratios and tier (free / request / POC).
 
 ## The public CLI (what `pip install` gives you)
 
@@ -76,10 +76,11 @@ SHA-256 (spot-check; use --full for all):
 pack fingerprint (sha256 of sorted file digests):
   4e9c… (64 hex)
 
-→ STRUCTURE OK — pack is well-formed; fingerprint above is the
-  download-integrity reference. This is NOT a reconstruction proof;
-  bit-identical reconstruction verification is provided by Sipsa
-  Labs under engagement (founder@sipsalabs.com).
+→ STRUCTURE OK — download integrity verified; pack is well-formed
+  and the fingerprint above is the per-file SHA-256 reference.
+  End-to-end bit-identical reconstruction is delivered via `uc audit`
+  under engagement (founder@sipsalabs.com); see
+  docs/reference/audit-receipt-schema.md for the audit-receipt schema.
 ```
 
 Full bit-identical reconstruction verification (and PPL re-evaluation against the bf16 baseline) is an auditor-grade deliverable Sipsa Labs runs with you under engagement — it is deliberately not shipped in the public package.
@@ -88,7 +89,7 @@ Full bit-identical reconstruction verification (and PPL re-evaluation against th
 
 ## What's verified (with JSON receipts)
 
-**20 architectures independently PPL-verified end-to-end** (0.6B → 405B, dense + MoE + SSM) against each model's own bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42. 19 are transformer architectures; the 20th is Mamba-2.8B (state-space model) at **1.00593× canonical PPL**, with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics) is architecture-incompatible with SSMs, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. Additional architectures (DeepSeek-32B, Llama-3.1-70B, others) are compressed and SHA-256-verified but their PPL numbers are pending canonical re-eval before formal registry entry. Every published number traces to a published result JSON. A small set of packs is publicly downloadable; the full catalog is available to customers under engagement.
+**22 architectures independently PPL-verified end-to-end** (0.6B → 405B, dense + MoE + SSM) against each model's own bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42. 21 are transformer architectures; the 22nd is Mamba-2.8B (state-space model) at **1.00593× canonical PPL**, with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics) is architecture-incompatible with SSMs, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. TinyLlama-1.1B (1.003×) and Llama-3.1-70B (1.009×) graduated to PPL-verified in v0.6.23. DeepSeek-32B and other queued packs remain SHA-256-verified pending canonical re-eval before formal registry entry. Every published number traces to a published result JSON. A small set of packs is publicly downloadable; the full catalog is available to customers under engagement.
 
 | Model | Params | Class | PPL ratio | HF artifact | Status |
 |---|---|---|---|---|---|
@@ -114,8 +115,7 @@ Things people sometimes assume work because the rest of it does. They don't, and
 
 - **Long-context evaluation past seq_len=1024.** Every PPL number above is at seq_len=1024 on the FineWeb-edu held-out tail. We have not yet run controlled evals at 4K/8K/32K context.
 - **State-space models past the current SSM pack.** Mamba-2.8B ships + SHA-256-verified + canonical PPL claimed at **1.00593×** (with comparator-note caveat documented in registry; our canonical transformer pipeline is architecture-incompatible with SSMs). We tried two tighter paths on top — both made it worse.
-- **TinyLlama-1.1B-Chat PPL eval.** The pack itself is well-formed and the HF artifact uploaded, but the PPL eval forward pass throws a CUDA device-side assert that we haven't traced yet. Shown as deferred, not a fabricated number.
-- **Qwen3-32B and Llama-3.1-70B PPL ratios.** Both have stale or suspect baseline PPL numbers we won't republish. Apples-to-apples re-evals are queued.
+- **Qwen3-32B PPL ratio.** Stale or suspect baseline PPL number we won't republish. Apples-to-apples re-eval is queued.
 - **Below 1.0040× on Qwen3-1.7B-Base.** This is our tightest dense floor; we tried 5 different paths to break it. Three were within noise; two were catastrophic regressions. 1.0040× stands as the empirical floor at the current configuration.
 
 ---

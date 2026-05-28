@@ -7,5 +7,5 @@ the public package. Full bit-identical reconstruction verification is
 performed by Sipsa Labs under engagement.
 """
 
-__version__ = "0.6.22"
+__version__ = "0.6.24"
 __all__ = ["__version__"]

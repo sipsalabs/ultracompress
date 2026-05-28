@@ -8,10 +8,11 @@ What this does (and only this):
     can confirm they hold byte-identical downloads, or compare against a
     fingerprint Sipsa Labs publishes out of band.
 
-What this deliberately does NOT do: reconstruct weights or expose anything
-about the compression codec. Full bit-identical reconstruction verification
-is performed by Sipsa Labs under engagement (founder@sipsalabs.com). The
-public package contains no reconstruction methodology by design.
+This verifies download integrity. The end-to-end bit-identical
+reconstruction audit (the rigorous form of the reconstruction contract)
+is delivered via the `uc audit` primitive under engagement; see
+docs/reference/audit-receipt-schema.md for the audit-receipt schema.
+The public package contains no reconstruction methodology by design.
 """
 from __future__ import annotations
 
@@ -97,10 +98,11 @@ def cmd_verify(args) -> int:
 
     print()
     if ok:
-        print("=> STRUCTURE OK - pack is well-formed; the fingerprint above is")
-        print("   the download-integrity reference. This is NOT a reconstruction")
-        print("   proof; bit-identical reconstruction verification is provided")
-        print("   by Sipsa Labs under engagement (founder@sipsalabs.com).")
+        print("=> STRUCTURE OK - download integrity verified; pack is well-formed and")
+        print("   the fingerprint above is the per-file SHA-256 reference. End-to-end")
+        print("   bit-identical reconstruction is delivered via `uc audit` under")
+        print("   engagement (founder@sipsalabs.com); see")
+        print("   docs/reference/audit-receipt-schema.md for the audit-receipt schema.")
         print()
         print("Next:")
         print("   uc try sipsa-qwen3-0.6b     generate text with a compressed model")
