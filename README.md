@@ -44,7 +44,7 @@ That prints a recorded reference response from our 5-bit-compressed Qwen3-0.6B p
 uc catalog
 ```
 
-Lists the 22 PPL-verified architectures (21 transformer + 1 state-space model with comparator-note caveat) with their published PPL ratios and tier (free / request / POC).
+Lists the 22 PPL-verified architectures (17 dense + 4 MoE + 1 SSM with comparator-note caveat) plus 1 ViT cosine-verified (DINOv2-Large) — across 4 architecture classes — with their published PPL ratios and tier (free / request / POC).
 
 ## The public CLI (what `pip install` gives you)
 
@@ -89,7 +89,7 @@ Full bit-identical reconstruction verification (and PPL re-evaluation against th
 
 ## What's verified (with JSON receipts)
 
-**22 architectures independently PPL-verified end-to-end** (0.6B → 405B, dense + MoE + SSM) against each model's own bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42. 21 are transformer architectures; the 22nd is Mamba-2.8B (state-space model) at **1.00593× canonical PPL**, with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics) is architecture-incompatible with SSMs, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. TinyLlama-1.1B (1.003×) and Llama-3.1-70B (1.009×) graduated to PPL-verified in v0.6.23. DeepSeek-32B and other queued packs remain SHA-256-verified pending canonical re-eval before formal registry entry. Every published number traces to a published result JSON. A small set of packs is publicly downloadable; the full catalog is available to customers under engagement.
+**22 architectures independently PPL-verified end-to-end** (0.6B → 405B, 17 dense + 4 MoE + 1 SSM) against each model's own bf16 baseline on the FineWeb-edu held-out tail at seq_len=1024, seed=42 — plus **1 Vision Transformer cosine-verified** (DINOv2-Large, 304M, ViT-L/14), bringing the catalog to **23 architectures across 4 classes**. 21 are transformer (17 dense + 4 MoE); the 22nd PPL-verified row is Mamba-2.8B (state-space model) at **1.00593× canonical PPL**, with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics) is architecture-incompatible with SSMs, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. The 23rd (DINOv2-Large) uses CLS-token cosine similarity instead of PPL (encoder-only ViT has no autoregressive likelihood). TinyLlama-1.1B (1.003×) and Llama-3.1-70B (1.009×) graduated to PPL-verified in v0.6.23. DeepSeek-32B and other queued packs remain SHA-256-verified pending canonical re-eval before formal registry entry. Every published number traces to a published result JSON. A small set of packs is publicly downloadable; the full catalog is available to customers under engagement.
 
 | Model | Params | Class | PPL ratio | HF artifact | Status |
 |---|---|---|---|---|---|

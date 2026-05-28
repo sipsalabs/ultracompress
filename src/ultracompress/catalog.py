@@ -33,7 +33,7 @@ _POC = "https://sipsalabs.com/poc"
 # canonical PPL run is still in the queue.
 _MODEL_META: dict[str, dict[str, str]] = {
     "sipsa-qwen3-0.6b":           {"params": "0.6B",  "ppl": "1.007x",      "tier": "free"},
-    "sipsa-tinyllama-1.1b":       {"params": "1.1B",  "ppl": "ppl_pending", "tier": "free"},
+    "sipsa-tinyllama-1.1b":       {"params": "1.1B",  "ppl": "1.003x",      "tier": "free"},
     "sipsa-smollm2-1.7b":         {"params": "1.7B",  "ppl": "1.008x",      "tier": "free"},
     "sipsa-qwen3-1.7b":           {"params": "1.7B",  "ppl": "1.008x",      "tier": "free"},
     "sipsa-qwen3-1.7b-base":      {"params": "1.7B",  "ppl": "1.004x",      "tier": "free"},
@@ -47,11 +47,19 @@ _MODEL_META: dict[str, dict[str, str]] = {
     "sipsa-qwen3-14b":            {"params": "14B",   "ppl": "1.004x",      "tier": "gated"},
     "sipsa-qwen3-32b":            {"params": "32B",   "ppl": "ppl_pending", "tier": "gated"},
     "sipsa-mixtral-8x7b":         {"params": "46B",   "ppl": "1.004x",      "tier": "gated"},
-    "sipsa-llama-3.1-70b":        {"params": "70B",   "ppl": "ppl_pending", "tier": "gated"},
+    "sipsa-llama-3.1-70b":        {"params": "70B",   "ppl": "1.009x",      "tier": "gated"},
     "sipsa-phi-3.5-moe":          {"params": "42B",   "ppl": "1.001x",      "tier": "gated"},
     "sipsa-mixtral-8x22b":        {"params": "141B",  "ppl": "1.006x",      "tier": "gated"},
     "sipsa-qwen3-235b-a22b":      {"params": "235B",  "ppl": "1.004x",      "tier": "gated"},
     "sipsa-hermes-3-llama-3.1-405b": {"params": "405B", "ppl": "1.007x",    "tier": "gated"},
+    # Three additions 2026-05-28 to bring catalog into sync with the 22
+    # PPL-verified architectures + 1 ppl_pending = 23-entry chat catalog
+    # (the 23rd architecture across 4 classes — DINOv2-Large ViT — is
+    # cosine-verified and not chat-completable, so it is intentionally
+    # NOT in this catalog; see sipsalabs.com/research for the ViT entry).
+    "sipsa-yi-1.5-9b":             {"params": "9B",    "ppl": "1.004x",      "tier": "gated"},
+    "sipsa-olmo-2-1b-base":        {"params": "1.0B",  "ppl": "1.007x",      "tier": "gated"},
+    "sipsa-smollm2-1.7b-base":     {"params": "1.7B",  "ppl": "1.008x",      "tier": "gated"},
 }
 
 _TIER_LABEL = {
