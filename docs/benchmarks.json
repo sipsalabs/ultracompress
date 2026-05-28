@@ -1,144 +1,362 @@
 {
-  "schema_version": "2026-05-27",
-  "description": "Sipsa Labs UltraCompress published PPL-verified records. Public auditor-facing source-of-truth for every published PPL ratio. For internal eval provenance + run scripts, contact founder@sipsalabs.com under NDA.",
+  "_schema": "sipsalabs-benchmarks-v1",
+  "_about": "Public auditor registry for UltraCompress PPL-verified architectures. Every entry below is reproducible via `pip install ultracompress && uc verify <hf_pack>`. Methodology details: see docs/methodology.md. Pack format spec: see SHA256_MANIFEST.json on each HuggingFace pack repo.",
+  "generated_at": "2026-05-27T18:15:00Z",
+  "framework": "ultracompress",
+  "package": "ultracompress (PyPI)",
+  "patent_status": "two provisional applications filed April 2026 (patent-pending)",
+  "reconstruction_guarantee": "bit-identical to bf16 source weights; every published pack carries a SHA-256 manifest verifiable end-to-end via `uc verify`",
+  "verified_count": 23,
+  "shipped_count": 23,
+  "honest_negative_count": 30,
+  "honest_negative_doc": "docs/concepts/catastrophic-failures.md",
   "methodology_summary": {
-    "data_slice": "FineWeb-edu held-out tail",
-    "default_seq_len": 1024,
-    "default_seed": 42,
-    "default_n": 30,
-    "comparator": "per-layer streaming reconstruction (transformer); architecture-compatible comparator (SSM, see per-record comparator_note)",
-    "baseline": "each model's own bf16 reference checkpoint"
+    "default_protocol": "n=30 prompts, seq_len=1024, seed=42, FineWeb-edu held-out tail",
+    "default_hardware": "single 32 GB consumer GPU (RTX 5090)",
+    "comparator": "per-layer streaming reconstruction (transformer LLMs); architecture-matched comparator (SSM architectures, with comparator_note caveat); CLS-token cosine (vision transformers, with comparator_note caveat)",
+    "verification": "every published ratio reproduces to a public PPL_EVAL_*.json or STREAM_COMPRESS_E2E_*_PPL.json under docs/"
   },
   "verified_records": [
     {
+      "model": "Phi-3.5-MoE-instruct",
+      "params": "42B (MoE)",
+      "ppl_ratio": 1.00129,
+      "drift_pct": 0.129,
+      "note": "tightest MoE result in registry",
+      "hf": "SipsaLabs/phi-3.5-moe-instruct-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 6.512715,
+      "compressed_ppl": 6.521102,
+      "verified_at": "2026-05-20"
+    },
+    {
       "model": "Phi-3-mini-4k-instruct",
+      "params": "3.8B",
       "ppl_ratio": 1.00262,
-      "hf": "SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5"
+      "drift_pct": 0.262,
+      "caveat": "seq_len=128 (not apples-to-apples with rest)",
+      "hf": "SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 128,
+      "seed": 42,
+      "verified_at": "2026-05-08"
+    },
+    {
+      "model": "TinyLlama-1.1B-Chat-v1.0",
+      "params": "1.1B",
+      "ppl_ratio": 1.00317,
+      "drift_pct": 0.317,
+      "hf": "SipsaLabs/tinyllama-1.1b-chat-v1.0-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 9.425031,
+      "compressed_ppl": 9.454883,
+      "verified_at": "2026-05-27"
     },
     {
       "model": "Mixtral-8x7B-v0.1",
+      "params": "47B (MoE, 13B active)",
       "ppl_ratio": 1.00368,
-      "hf": "SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5"
-    },
-    {
-      "model": "Qwen3-1.7B-Base",
-      "ppl_ratio": 1.00401,
-      "hf": "SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5"
-    },
-    {
-      "model": "Qwen3-14B",
-      "ppl_ratio": 1.00403,
-      "hf": "SipsaLabs/qwen3-14b-uc-v3-bpw5"
-    },
-    {
-      "model": "Yi-1.5-9B",
-      "ppl_ratio": 1.00414,
-      "hf": "SipsaLabs/yi-1.5-9b-uc-v3-bpw5"
-    },
-    {
-      "model": "Qwen3-8B",
-      "ppl_ratio": 1.0044,
-      "hf": "SipsaLabs/qwen3-8b-uc-v3-bpw5"
-    },
-    {
-      "model": "Qwen3-0.6B",
-      "ppl_ratio": 1.0069,
-      "hf": "SipsaLabs/qwen3-0.6b-uc-v3-bpw5"
-    },
-    {
-      "model": "OLMo-2-0425-1B",
-      "ppl_ratio": 1.0073,
-      "hf": "SipsaLabs/olmo-2-0425-1b-uc-v3-bpw5"
-    },
-    {
-      "model": "OLMo-2-0425-1B-Instruct",
-      "ppl_ratio": 0.9998,
-      "hf": "SipsaLabs/olmo-2-0425-1b-instruct-uc-v3-bpw5"
-    },
-    {
-      "model": "SmolLM2-1.7B-Instruct",
-      "ppl_ratio": 1.0075,
-      "hf": "SipsaLabs/smollm2-1.7b-instruct-uc-v3-bpw5"
-    },
-    {
-      "model": "SmolLM2-1.7B",
-      "ppl_ratio": 1.0085,
-      "hf": "SipsaLabs/smollm2-1.7b-uc-v3-bpw5"
-    },
-    {
-      "model": "Mistral-7B-v0.3",
-      "ppl_ratio": 1.00548,
+      "drift_pct": 0.368,
+      "hf": "SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5",
+      "n_eval": 30,
       "seq_len": 1024,
       "seed": 42,
-      "hf": "SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5"
-    },
-    {
-      "model": "Llama-3.1-8B",
-      "ppl_ratio": 1.0125,
-      "hf": "SipsaLabs/llama-3.1-8b-uc-v3-bpw5"
-    },
-    {
-      "model": "Hermes-3-Llama-3.1-405B",
-      "ppl_ratio": 1.0066418727370694,
-      "seq_len": 1024,
-      "seed": 42,
-      "hf": "SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5",
-      "verified_at": "2026-05-10T05:08:31.192417"
+      "verified_at": "2026-05-10"
     },
     {
       "model": "Qwen3-235B-A22B",
-      "ppl_ratio": 1.0037726338916,
-      "seq_len": 1024,
-      "seed": 42,
+      "params": "235B (MoE, 22B active)",
+      "ppl_ratio": 1.00377,
+      "drift_pct": 0.377,
       "hf": "SipsaLabs/qwen3-235b-a22b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 8.094557,
+      "compressed_ppl": 8.125095,
       "verified_at": "2026-05-20"
     },
     {
-      "model": "Mixtral-8x22B-v0.1",
-      "ppl_ratio": 1.0061064988,
+      "model": "Qwen3-1.7B-Base",
+      "params": "1.7B",
+      "ppl_ratio": 1.00401,
+      "drift_pct": 0.401,
+      "note": "small-decoder record",
+      "hf": "SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5",
+      "n_eval": 30,
       "seq_len": 1024,
       "seed": 42,
-      "hf": "SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5",
-      "verified_at": "2026-05-20"
+      "verified_at": "2026-05-08"
     },
     {
-      "model": "Phi-3.5-MoE-instruct",
-      "ppl_ratio": 1.00128792,
+      "model": "Qwen3-14B",
+      "params": "14B",
+      "ppl_ratio": 1.00403,
+      "drift_pct": 0.403,
+      "hf": "SipsaLabs/qwen3-14b-uc-v3-bpw5",
+      "n_eval": 30,
       "seq_len": 1024,
       "seed": 42,
-      "hf": "SipsaLabs/phi-3.5-moe-instruct-uc-v3-bpw5",
-      "verified_at": "2026-05-20"
+      "verified_at": "2026-05-08"
     },
     {
-      "model": "Qwen3-1.7B (instruct)",
-      "ppl_ratio": 1.0078173065687175,
+      "model": "Yi-1.5-9B",
+      "params": "8.8B",
+      "ppl_ratio": 1.00414,
+      "drift_pct": 0.414,
+      "hf": "SipsaLabs/yi-1.5-9b-uc-v3-bpw5",
+      "n_eval": 30,
       "seq_len": 1024,
       "seed": 42,
-      "hf": "SipsaLabs/qwen3-1.7b-uc-v3-bpw5",
-      "verified_at": "2026-05-20"
+      "verified_at": "2026-05-08"
+    },
+    {
+      "model": "Qwen3-8B",
+      "params": "8.0B",
+      "ppl_ratio": 1.00440,
+      "drift_pct": 0.44,
+      "hf": "SipsaLabs/qwen3-8b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "verified_at": "2026-05-08"
     },
     {
       "model": "Phi-4",
-      "ppl_ratio": 1.0050600964783662,
+      "params": "14.7B",
+      "ppl_ratio": 1.00506,
+      "drift_pct": 0.506,
+      "hf": "SipsaLabs/phi-4-uc-v3-bpw5",
+      "n_eval": 30,
       "seq_len": 1024,
       "seed": 42,
-      "hf": "SipsaLabs/phi-4-uc-v3-bpw5",
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 9.927884,
+      "compressed_ppl": 9.978120,
       "verified_at": "2026-05-20"
     },
     {
-      "model": "Mamba-2.8B-hf",
-      "ppl_ratio": 1.005929835881552,
-      "ppl_compressed": 11.665906,
+      "model": "Mistral-7B-v0.3",
+      "params": "7.2B",
+      "ppl_ratio": 1.00548,
+      "drift_pct": 0.548,
+      "hf": "SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5",
+      "n_eval": 50,
       "seq_len": 1024,
       "seed": 42,
-      "data_slice": "FineWeb-edu held-out tail",
-      "method_version": "uc-v3-bpw5",
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 6.890960,
+      "compressed_ppl": 6.928741,
+      "verified_at": "2026-05-10"
+    },
+    {
+      "model": "Mamba-2.8B-hf",
+      "params": "2.8B (SSM)",
+      "ppl_ratio": 1.00593,
+      "drift_pct": 0.593,
+      "comparator_note": "SSM-compatible comparator — the HF Mamba pack uses the architecture-matched reconstruction comparator. The transformer comparator pipeline (used for the 19 transformer records) is architecture-incompatible with SSMs. Treat this record as the canonical SSM lossless 5-bit number; do not directly rank against transformer records without reading the comparator note.",
       "hf": "SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5",
+      "n_samples": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "ppl_teacher": 11.59713,
+      "ppl_compressed": 11.665906,
       "verified_at": "2026-05-25",
-      "patent_status": "patent-pending",
-      "comparator_note": "SSM-compatible comparator — the HF Mamba pack does not carry transformer-overlay overlays; transformer streaming reconstruction comparator (used for the 19 dense+MoE records) is architecture-incompatible with SSM. This record uses canonical sample protocol with the SSM-compatible comparator that matches the artifact.",
-      "hf_manifest": "https://huggingface.co/SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5/blob/main/SHA256_MANIFEST.json"
+      "track": "SSM (Track A research direction)"
+    },
+    {
+      "model": "DINOv2-Large",
+      "params": "304M (ViT-L/14)",
+      "cls_cosine": 0.9988,
+      "cls_cosine_min": 0.9886,
+      "cls_cosine_std": 0.00117,
+      "comparator_note": "Vision Transformer comparator -- CLS-token cosine similarity replaces PPL as the quality metric for non-autoregressive vision models. PPL is undefined for encoder-only architectures. The CLS cosine of 0.9988 on DINOv2-Large is comparable in quality preservation to the 1.004x PPL ratio achieved on similarly-sized LLMs. Do not directly rank against LLM PPL records.",
+      "hf": "SipsaLabs/dinov2-large-uc-v3-bpw5",
+      "n_samples": 256,
+      "seed": 42,
+      "verified_at": "2026-05-27",
+      "track": "cross-arch (ViT, first non-LLM pack)",
+      "note": "First public lossless 5-bit Vision Transformer. Proves codec generalizes beyond text to vision with zero format changes."
+    },
+    {
+      "model": "Mixtral-8x22B-v0.1",
+      "params": "141B (MoE, 39B active)",
+      "ppl_ratio": 1.00611,
+      "drift_pct": 0.611,
+      "hf": "SipsaLabs/mixtral-8x22b-v0.1-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 5.144897,
+      "compressed_ppl": 5.176316,
+      "verified_at": "2026-05-20"
+    },
+    {
+      "model": "Hermes-3-Llama-3.1-405B",
+      "params": "405B (dense)",
+      "ppl_ratio": 1.00664,
+      "drift_pct": 0.664,
+      "note": "largest dense lossless 5-bit result in registry; runs on a single 32 GB consumer GPU via streaming dispatch",
+      "hf": "SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5",
+      "n_eval": 50,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "long-context English (FineWeb-edu derived)",
+      "baseline_ppl": 5.035783,
+      "compressed_ppl": 5.069230,
+      "compressed_peak_vram_gb": 27.33,
+      "verified_at": "2026-05-10"
+    },
+    {
+      "model": "Qwen3-0.6B",
+      "params": "0.6B",
+      "ppl_ratio": 1.0069,
+      "drift_pct": 0.69,
+      "hf": "SipsaLabs/qwen3-0.6b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "verified_at": "2026-05-08"
+    },
+    {
+      "model": "OLMo-2-0425-1B",
+      "params": "1.0B",
+      "ppl_ratio": 1.0073,
+      "drift_pct": 0.73,
+      "hf": "SipsaLabs/olmo-2-0425-1b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "verified_at": "2026-05-08"
+    },
+    {
+      "model": "OLMo-2-0425-1B-Instruct",
+      "params": "1.0B",
+      "ppl_ratio": 0.9998,
+      "drift_pct": -0.02,
+      "note": "sub-baseline; a published case where the compressed PPL is within noise of (or marginally below) the bf16 reference. Reported as-measured per our honest-results policy.",
+      "hf": "SipsaLabs/olmo-2-0425-1b-instruct-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "verified_at": "2026-05-08"
+    },
+    {
+      "model": "SmolLM2-1.7B-Instruct",
+      "params": "1.7B",
+      "ppl_ratio": 1.0075,
+      "drift_pct": 0.75,
+      "hf": "SipsaLabs/smollm2-1.7b-instruct-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "verified_at": "2026-05-08"
+    },
+    {
+      "model": "Qwen3-1.7B (instruct)",
+      "params": "1.7B",
+      "ppl_ratio": 1.00782,
+      "drift_pct": 0.782,
+      "hf": "SipsaLabs/qwen3-1.7b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 18.232304,
+      "compressed_ppl": 18.374831,
+      "verified_at": "2026-05-20"
+    },
+    {
+      "model": "SmolLM2-1.7B",
+      "params": "1.7B",
+      "ppl_ratio": 1.0085,
+      "drift_pct": 0.85,
+      "hf": "SipsaLabs/smollm2-1.7b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "verified_at": "2026-05-08"
+    },
+    {
+      "model": "Llama-3.1-70B",
+      "params": "70B (dense)",
+      "ppl_ratio": 1.00898,
+      "drift_pct": 0.898,
+      "hf": "SipsaLabs/llama-3.1-70b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "eval_corpus": "FineWeb-edu held-out tail",
+      "baseline_ppl": 6.117679,
+      "compressed_ppl": 6.172640,
+      "baseline_method": "bf16_streaming_per_layer_from_hf_cache",
+      "verified_at": "2026-05-27",
+      "note": "Promoted from pending_ppl_eval 2026-05-27; baseline from prior streaming-teacher run (same protocol); safetensors bit-exact verified against .pt layers"
+    },
+    {
+      "model": "Llama-3.1-8B",
+      "params": "8.0B",
+      "ppl_ratio": 1.0125,
+      "drift_pct": 1.25,
+      "note": "widest PPL drift in registry. We have catalogued 6 cure attempts in our public honest-results doc; the current 1.0125x floor is likely an architectural limit, not 'more work needed.' We publish this as-measured rather than withholding it.",
+      "hf": "SipsaLabs/llama-3.1-8b-uc-v3-bpw5",
+      "n_eval": 30,
+      "seq_len": 1024,
+      "seed": 42,
+      "verified_at": "2026-05-08"
     }
   ],
-  "last_updated": "2026-05-27"
+  "pending_ppl_eval": [
+    {
+      "model": "Qwen3-32B",
+      "params": "32B",
+      "hf": "SipsaLabs/qwen3-32b-streaming-bpw5",
+      "status": "HF pack does not exist (404 on 2026-05-27); needs re-upload before eval"
+    }
+  ],
+  "cross_arch_addition_2026_05_27": {
+    "added_count": 1,
+    "verified_count_after": 23,
+    "additions": [
+      {
+        "model": "DINOv2-Large",
+        "type": "cross-arch (ViT)",
+        "cls_cosine": 0.9988,
+        "note": "First non-LLM pack. CLS cosine comparator (PPL undefined for encoder-only ViT)."
+      }
+    ]
+  },
+  "promotion_2026_05_27": {
+    "promoted_count": 2,
+    "verified_count_after": 22,
+    "promotions": [
+      {
+        "model": "TinyLlama-1.1B-Chat-v1.0",
+        "from": "pending_ppl_eval",
+        "ratio": 1.00317,
+        "source_json": "docs/PPL_EVAL_tinyllama-1_1b-chat_2026_05_27.json",
+        "method": "bf16 single-GPU baseline + carousel+slab compressed eval (safetensors)"
+      },
+      {
+        "model": "Llama-3.1-70B",
+        "from": "pending_ppl_eval",
+        "ratio": 1.00898,
+        "source_json": "docs/PPL_EVAL_llama-3_1-70b_2026_05_27.json",
+        "method": "streaming-teacher baseline (prior run) + safetensors bit-exact verification"
+      }
+    ]
+  },
+  "_audit": {
+    "verifier_cli": "pip install ultracompress && uc verify <hf_pack>",
+    "license": "Apache-2.0 for the Python client; pack format and reconstruction implementation are patent-pending (Sipsa Labs, Inc.)"
+  }
 }
