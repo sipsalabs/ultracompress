@@ -13,8 +13,8 @@
   "methodology_summary": {
     "default_protocol": "n=30 prompts, seq_len=1024, seed=42, FineWeb-edu held-out tail",
     "default_hardware": "single 32 GB consumer GPU (RTX 5090)",
-    "comparator": "per-layer streaming reconstruction (transformer LLMs); architecture-matched comparator (SSM architectures, with comparator_note caveat); CLS-token cosine (vision transformers, with comparator_note caveat)",
-    "verification": "every published ratio reproduces to a public PPL_EVAL_*.json or STREAM_COMPRESS_E2E_*_PPL.json under docs/"
+    "comparator": "layer-by-layer streaming reconstruction (transformer LLMs); architecture-matched comparator (SSM architectures, with comparator_note caveat); CLS-token cosine (vision transformers, with comparator_note caveat)",
+    "verification": "every published ratio reproduces to a public PPL_EVAL_*.json under docs/"
   },
   "verified_records": [
     {
@@ -161,7 +161,7 @@
       "params": "2.8B (SSM)",
       "ppl_ratio": 1.00593,
       "drift_pct": 0.593,
-      "comparator_note": "SSM-compatible comparator — the HF Mamba pack uses the architecture-matched reconstruction comparator. The transformer comparator pipeline (used for the 19 transformer records) is architecture-incompatible with SSMs. Treat this record as the canonical SSM lossless 5-bit number; do not directly rank against transformer records without reading the comparator note.",
+      "comparator_note": "SSM-compatible comparator — the HF Mamba pack uses the architecture-matched reconstruction comparator. The transformer comparator pipeline (used for the 19 transformer records) is architecture-incompatible with SSMs. Treat this record as the canonical SSM lossless 5-bit number; do not directly compare against transformer records without reading the comparator note.",
       "hf": "SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5",
       "n_samples": 30,
       "seq_len": 1024,
