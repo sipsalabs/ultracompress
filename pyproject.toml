@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ultracompress"
-version = "0.6.22"
-description = "Lossless 5-bit transformer compression — 20 PPL-verified architectures (19 transformer + 1 state-space model with comparator-note caveat) across 22 packs shipped (0.6B–405B; dense + MoE + SSM). Public CLI does pack structure + download-integrity checks; the codec is patent-pending and not distributed. BUSL-1.1 + Additional Use Grant."
+version = "0.6.24"
+description = "Lossless 5-bit transformer compression — 22 PPL-verified architectures (17 dense + 4 MoE + 1 SSM) plus 1 ViT cosine-verified — across 4 architecture classes (0.6B–405B). Public CLI does pack structure + download-integrity checks; the codec is patent-pending and not distributed. BUSL-1.1 + Additional Use Grant."
 readme = "README.md"
 license = {text = "BUSL-1.1"}
 requires-python = ">=3.10"
@@ -48,7 +48,7 @@ uc = "ultracompress.cli:main"
 # (_build_public/ultracompress/) populated by `python build_public_wheel.py`
 # from _public_src/. The lab tree at ./ultracompress/ never ships.
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = {"ultracompress" = "_build_public/ultracompress"}
 packages = ["ultracompress"]
 
 [tool.ruff]
@@ -72,7 +72,3 @@ extend-exclude = [
 python_version = "3.10"
 ignore_missing_imports = true
 exclude = "^(archive|artifacts|big_models|checkpoints_.*|dist|hf_publish_.*|logs|runs|tmp|_build_public|_packed_.*)/"
-
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]

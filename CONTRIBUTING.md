@@ -4,7 +4,7 @@ Thanks for your interest in UltraCompress. This document covers how to contribut
 
 ## Scope of this repository
 
-This repository contains the **UltraCompress CLI** (`uc`, `ultracompress`) — the Apache-2.0-licensed tool for downloading and running pre-compressed language models distributed through the [official Hugging Face Hub collection](https://huggingface.co/sipsalabs) (rolling release through April–May 2026).
+This repository contains the **UltraCompress CLI** (`uc`, `ultracompress`) — the BUSL-1.1-licensed tool for downloading and running pre-compressed language models distributed through the [official Hugging Face Hub collection](https://huggingface.co/sipsalabs) (rolling release through April–May 2026). See [LICENSE](LICENSE) for the full Business Source License 1.1 terms, including the Additional Use Grant (non-production / internal research / sub-$1M-ARR commercial use permitted) and the Change Date (Apache-2.0 four years after each version's first publication).
 
 The repository does **not** contain:
 
@@ -73,8 +73,8 @@ By participating you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Licensing
 
-By contributing you agree that your contributions will be licensed under Apache-2.0 (the license of this repository). You retain copyright to your contributions.
+By contributing you agree that your contributions will be licensed under the Business Source License 1.1 (BUSL-1.1), the license of this repository, and will be subject to the same Change License (Apache-2.0) on the Change Date. You retain copyright to your contributions.
 
 ## Sign-off
 
-We do not currently require DCO sign-off, but please make sure you have the right to contribute the code under Apache-2.0.
+We do not currently require DCO sign-off, but please make sure you have the right to contribute the code under BUSL-1.1.

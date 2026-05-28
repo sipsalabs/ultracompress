@@ -4,13 +4,15 @@ The compression and reconstruction methods implemented in this repository are th
 
 ## License grant (Business Source License 1.1)
 
-This codebase (the verifier/benchmarker/CLI) is published under the Business Source License 1.1. It is free of charge for individuals, non-commercial research, and organizations under US $1,000,000 in annual revenue; any other commercial or production use requires a commercial license. On the Change Date it converts to Apache License 2.0. The BUSL-1.1 grant covers only the as-published source code in this repository — it does not grant any rights to the patent-pending compression and reconstruction methods, the production compression pipeline (not included here), or the separately-licensed pre-compressed model artifacts.
+This codebase is published under the [Business Source License 1.1](LICENSE) (BUSL-1.1). BUSL-1.1 grants the right to copy, modify, create derivative works, redistribute, and make non-production use of the as-published source code. The Additional Use Grant in [LICENSE](LICENSE) further permits production use by individuals, non-production / internal research / individual use, and any commercial entity with annual gross revenue under US $1,000,000, without a separate commercial license.
+
+BUSL-1.1 is **not** an Open Source license (in the OSI sense); the LICENSE file is explicit about this. On the Change Date stated in [LICENSE](LICENSE) (four years after each version's first publication), the rights granted convert to the Apache License, Version 2.0 (the Change License). Until then, the patent-pending compression methodology that produces the pre-compressed model artifacts is **not** licensed by BUSL-1.1 or by the Change License — that methodology is the subject of pending U.S. provisional patent applications and is licensed separately under commercial engagement.
 
 ## Commercial productization
 
-If you are integrating these compression methods into a commercial product, service, or paid offering — particularly if you are reimplementing the methods in a different language or runtime, or building a derivative product whose core value depends on these methods — we ask that you contact us at **founder@sipsalabs.com** to discuss a commercial license.
+If you are integrating these compression methods into a commercial product, service, or paid offering — particularly if you are reimplementing the methods in a different language or runtime, building a derivative product whose core value depends on these methods, or offering the Licensed Work (or a derivative) as a hosted or managed service that competes with Sipsa Labs' commercial offerings (a "Competing Use" under BUSL-1.1) — we ask that you contact us at **founder@sipsalabs.com** to discuss a commercial license.
 
-We are not seeking to restrict honest engineers running this code on their own infrastructure. We are seeking to maintain a clear conversation with companies productizing the underlying invention.
+We are not seeking to restrict honest engineers running this code on their own infrastructure under the Additional Use Grant. We are seeking to maintain a clear conversation with companies productizing the underlying invention or operating above the BUSL-1.1 Competing-Use threshold.
 
 ## Research use
 
