@@ -89,9 +89,9 @@ Approximate GPU memory for `uc serve` at the v0.2 deployment:
 
 | Model | Loaded weights | Activations (batch=1) | Total (batch=1) | Total (batch=8) |
 |---|---|---|---|---|
-| Qwen3-1.7B at 2.798 bpw | ~0.6 GB | ~0.5 GB | ~1.1 GB | ~3.5 GB |
-| Llama-2-7B at 2.798 bpw | ~2.5 GB | ~1.5 GB | ~4.0 GB | ~12 GB |
-| Llama-2-13B at 2.798 bpw | ~4.5 GB | ~2.5 GB | ~7.0 GB | ~22 GB |
+| Qwen3-1.7B at 5 bpw | ~1.1 GB | ~0.5 GB | ~1.6 GB | ~4.0 GB |
+| Llama-2-7B at 5 bpw | ~4.5 GB | ~1.5 GB | ~6.0 GB | ~14 GB |
+| Llama-2-13B at 5 bpw | ~8.5 GB | ~2.5 GB | ~11 GB | ~26 GB |
 
 (These are rough estimates; actual numbers depend on the runtime kernel path, which we'll publish in v0.2 release notes.)
 
@@ -183,4 +183,4 @@ These are open. We'd love customer feedback — file an issue at [github.com/sip
 
 ---
 
-*Last updated: 2026-04-25 evening. This is a design spec for v0.2; revise as v0.2 implementation progresses.*
+*Design spec for v0.2; revise as v0.2 implementation progresses.*

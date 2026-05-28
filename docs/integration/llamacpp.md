@@ -57,19 +57,19 @@ We're pursuing both paths. The export-to-existing-types path lands first (v0.2, 
 
 ## Memory footprint after GGUF export
 
-Inflating UltraCompress's 2.798-bpw representation to llama.cpp's nearest existing type:
+Inflating UltraCompress's 5-bpw representation to llama.cpp's nearest existing type:
 
 | UltraCompress source | llama.cpp target | Memory after inflation | Compression vs FP16 |
 |---|---|---|---|
-| 2.798 bpw | Q3_K_S (~3.4 bpw) | ~720 MB for 1.7B | 4.7× |
-| 2.798 bpw | IQ3_XS (~2.9 bpw) | ~620 MB for 1.7B | 5.5× |
+| 5 bpw | Q5_K_M (~5.5 bpw) | ~1.18 GB for 1.7B | 2.9× |
+| 5 bpw | Q5_K_S (~5.1 bpw) | ~1.10 GB for 1.7B | 3.1× |
 
 We give up some of the on-disk compression efficiency in exchange for native llama.cpp inference speed. This is the right tradeoff for almost all production deployment scenarios; for **storage**-bound use cases (e.g., mobile distribution where the artifact is downloaded once), keep the native UltraCompress format.
 
 ## What you can do today (mid-2026)
 
 - Use the Python loader for evaluation + prototyping
-- Run `uc bench` to compare compressed vs FP16 quality on your tasks
+- Run your own `lm-eval-harness` (or equivalent) against the reconstructed model to compare compressed vs FP16 quality on your tasks
 - Open a GitHub issue with your specific llama.cpp use case so we prioritize the export path correctly
 
 ## What you'll be able to do post-Q3 2026

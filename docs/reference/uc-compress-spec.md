@@ -15,7 +15,7 @@ This feature is planned for v0.2 (Q3 2026). To register interest, email `founder
 1. **One-command compression** of any HF Hub or local-disk transformer model
 2. **Reproducibility** — every output artifact ships with a complete provenance manifest
 3. **Sensible defaults** — `uc compress <model>` Just Works for typical models without per-model tuning
-4. **Pluggable compression methods** — both Row-Overlay Quantization (RoQ) and shared-block parameter dispatch (shared-block) accessible via flags
+4. **Pluggable compression components** — the shipping low-bpw codec and the roadmap architectural-compression component, accessible via flags
 5. **Resumable** — long-running compression jobs can resume after interruption
 
 ## Synopsis (planned)
@@ -32,9 +32,9 @@ uc compress <source-model> [--bpw FLOAT] [--method STR] [--track STR]
 | Option | Default | Description |
 |---|---|---|
 | `<source-model>` | required | HF Hub model ID (e.g., `Qwen/Qwen3-1.7B`) or local-disk path |
-| `--bpw FLOAT` | `2.798` | Target bits per weight |
-| `--method STR` | `track-a-row-overlay` | Compression method to apply |
-| `--track STR` | `a` | Which patent-pending track: `a`, `b`, `a+b` |
+| `--bpw FLOAT` | `5.0` | Target bits per weight |
+| `--method STR` | `default` | Compression method to apply (component identifiers NDA-gated) |
+| `--track STR` | `a` | Which patent-pending component pipeline: `a`, `b`, `a+b` |
 | `--output-dir PATH` | `./models/<source-name>-uc<bpw>` | Where to save the compressed artifact |
 | `--device STR` | `cuda:0` | PyTorch device for compression |
 | `--max-batch-size INT` | `8` | Batch size for the calibration data pass |
@@ -64,7 +64,7 @@ uc compress <source-model> [--bpw FLOAT] [--method STR] [--track STR]
 ## Example
 
 ```bash
-# Default settings — compress Qwen3-1.7B to 2.798 bpw via Row-Overlay Quantization (RoQ)
+# Default settings — compress Qwen3-1.7B to 5 bpw via the default UltraCompress codec
 uc compress Qwen/Qwen3-1.7B
 
 # Output:
@@ -76,24 +76,24 @@ uc compress Qwen/Qwen3-1.7B
 #   └── LICENSE                     (Sipsa Labs Research and Evaluation License)
 ```
 
-## shared-block parameter dispatch (shared-block) (architectural compression)
+## Architectural compression (roadmap component)
 
 Architectural compression is the most aggressive variant; it produces a model with substantially fewer trainable parameters but requires a calibration pass on representative training data.
 
 ```bash
-uc compress Qwen/Qwen3-1.7B --method shared-block --output-dir ./models/qwen3-shared-block-311x \
+uc compress Qwen/Qwen3-1.7B --method architectural --output-dir ./models/qwen3-architectural \
     --calibration-data ./calibration.jsonl
 ```
 
 The calibration data is a JSONL file with prompt/response pairs representative of the customer's deployment workload. The compression service uses this to validate that the architectural-compression preserves quality on the customer's distribution.
 
-## Combined Row-Overlay Quantization (RoQ) + shared-block parameter dispatch (shared-block)
+## Combined codec + architectural-compression pipeline
 
 ```bash
 uc compress Qwen/Qwen3-1.7B --method roq+shared-block --output-dir ./models/qwen3-uc-combo
 ```
 
-Stacks shared-block parameter dispatch (shared-block)'s architectural compression with Row-Overlay Quantization (RoQ)'s quantization. ~26.7× end-to-end with 68% top-10 retention (cohort median).
+Stacks the roadmap architectural-compression component on top of the shipping codec. Component-by-component breakdown is NDA-gated; reference cohort numbers are at [evidence/matrix.md](../evidence/matrix.md).
 
 ## Why a remote service vs. local
 
@@ -120,14 +120,14 @@ Every compression run is deterministic given the same seed + same source model. 
 - Source model SHA-256
 - Compression method version
 - Seed
-- Calibration data SHA-256 (for shared-block parameter dispatch (shared-block) + combined)
+- Calibration data SHA-256 (for the architectural-compression and combined pipelines)
 - Compute environment fingerprint
 
 A second `uc compress` run with the same inputs and same seed produces a byte-identical output (within GPU-arithmetic non-determinism bounds; we publish the bound).
 
 ## Resumability
 
-For long-running compression jobs (shared-block parameter dispatch (shared-block) at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
+For long-running compression jobs (architectural-compression at 70B+ parameters, expected to take several hours), `uc compress` supports resume:
 
 ```bash
 # Submit the job
@@ -178,9 +178,9 @@ v0.1 doesn't have `uc compress`. The migration path:
 
 | Feature | Target |
 |---|---|
-| Basic `uc compress` with Row-Overlay Quantization (RoQ) | v0.2 (Q3 2026) |
-| shared-block parameter dispatch (shared-block) support (architectural compression) | v0.2 |
-| Combined Row-Overlay Quantization (RoQ) + shared-block parameter dispatch (shared-block) | v0.2 |
+| Basic `uc compress` with the shipping codec | v0.2 (Q3 2026) |
+| Architectural-compression component support | v0.2 |
+| Combined codec + architectural-compression pipeline | v0.2 |
 | Resumable jobs | v0.2.1 |
 | Custom calibration cohorts (enterprise tier) | v0.3 |
 | Encoder-only model support (T5, BERT) | v0.3 |
@@ -202,4 +202,4 @@ These are open. Customer feedback welcome — file an issue at [github.com/sipsa
 
 ---
 
-*Last updated: 2026-04-25 evening. This is a design spec for v0.2; revise as implementation progresses.*
+*Design spec for v0.2; revise as implementation progresses.*

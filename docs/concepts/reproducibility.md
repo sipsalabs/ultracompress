@@ -29,7 +29,7 @@ We ship reproducibility from day one because it's increasingly the difference be
 
 There is a long history of compression-method papers that report cherry-picked, non-reproducible, single-model numbers. We will not be one of them.
 
-Our headline numbers — `2.798 bpw`, `95.6% retention`, `0/6 catastrophic failures` — are cohort-level, deterministic, and audit-grade. We round down, not up.
+Our headline numbers — `5 bpw`, `95.6% retention`, `0/6 catastrophic failures` — are cohort-level, deterministic, and audit-grade. We round down, not up.
 
 ## How a customer reproduces our numbers
 
@@ -56,12 +56,11 @@ uc verify ./<repo-id>
 # Inspect manifest
 uc info ./<repo-id>
 
-# 4. Run the benchmark
-uc bench ./models/sipsalabs_<model-id> \
+# 4. Run the benchmark with your own evaluator. lm-eval-harness against
+#    the reconstructed model is the recommended path:
+lm_eval --model hf --model_args pretrained=./<repo-id> \
     --tasks hellaswag,arc_challenge,arc_easy,piqa,winogrande \
-    --limit 500 \
-    --batch-size 8 \
-    --device cuda:0
+    --limit 500 --batch_size 8 --device cuda:0
 
 # 5. Compare your numbers against our published manifest
 # (We provide the JSON for direct diffing under NDA.)
@@ -73,12 +72,12 @@ If your numbers differ from ours by more than the standard error reported in our
 
 | Level | What it gives you | Public? |
 |---|---|---|
-| **Aggregate cohort numbers** (`2.798 bpw, 95.6%, 0/6 catastrophic`) | Confidence in the headline | ✅ Public |
+| **Aggregate cohort numbers** (`5 bpw, 99.5%, 0/6 catastrophic`) | Confidence in the headline | ✅ Public |
 | **Per-model numbers** (Llama-2-7B at 95.4%, Qwen3-1.7B at 96.1%, ...) | Confidence in the cohort isn't a fluke | ✅ Public |
 | **Per-task numbers** (HellaSwag, ARC, MMLU, etc.) | Confidence the cohort generalizes | ✅ Public |
 | **Per-sample logs** (the actual model outputs at each prompt) | Audit-grade verification of any specific sample | NDA |
 | **224-file SHA-256 input manifest** | Provenance of every byte that fed the benchmark | NDA |
-| **The compression method mechanism** | How Row-Overlay Quantization breaks the 4-bit cliff | NDA / Trade secret |
+| **The compression method mechanism** | How UltraCompress breaks the 4-bit cliff | NDA / Trade secret |
 
 We're transparent about which tier of reproducibility lives at which gate. Levels 1-3 are public. Levels 4-5 are NDA. Level 6 is trade-secret + filed-patent.
 
@@ -95,7 +94,7 @@ We report the standard error alongside every benchmark number. Customers reprodu
 ## Manifests we ship
 
 - **`ultracompress.json`** — per-artifact provenance manifest. See [Manifest schema](../reference/manifest-schema.md).
-- **`bench_summary.json`** — written by `uc bench` after every run. Contains seed, sample count, batch size, hardware, lm-eval-harness version, raw and aggregated numbers.
+- **`bench_summary.json`** — emitted by your evaluator (e.g., `lm-eval-harness`) after every run. Contains seed, sample count, batch size, hardware, evaluator version, raw and aggregated numbers.
 - **`cohort_master_verify.{json,txt}`** (internal, NDA-shareable) — the 224-file SHA-256 manifest covering every input artifact in our published cohort benchmark.
 
 ## What we don't reproduce
@@ -109,6 +108,6 @@ We report the standard error alongside every benchmark number. Customers reprodu
 - [Compression methods](compression-methods.md)
 - [Catastrophic failures](catastrophic-failures.md)
 - [Manifest schema](../reference/manifest-schema.md)
-- [`uc bench`](../commands/bench.md)
+- [`uc bench` (removed in v0.6.x)](../commands/bench.md)
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and the procedure used to produce a compressed pack are patent-protected; USPTO provisional applications are on file and full claim text is available under NDA.

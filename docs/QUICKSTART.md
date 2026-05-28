@@ -61,7 +61,7 @@ PPL ratio: ~1.028x
 Peak VRAM: ~2.26 GB
 ```
 
-The full streaming compression pipeline (training a fresh pack from scratch) ships in the production trainer, which is NDA-gated. Customer-side `uc verify` and `uc bench` are the public CLI surface; for trainer access, contact founder@sipsalabs.com.
+The full streaming pipeline that produces a fresh compressed pack is NDA-gated. Customer-side `uc verify` is the public CLI surface; for engagement access, contact founder@sipsalabs.com.
 
 ---
 
@@ -69,8 +69,8 @@ The full streaming compression pipeline (training a fresh pack from scratch) shi
 
 Each checkpoint is a directory with:
 
-- **Per-layer `.pt` files** -- the compressed weight tensors and learned correction overlays for each transformer layer, saved independently.
-- **`manifest.json`** -- metadata listing the base model, bits-per-weight, block size, correction rank, and the eval metrics at compression time.
+- **Per-layer `.pt` files** -- the compressed-weight tensors for each transformer layer, saved independently. Per-layer codec internals are NDA-gated.
+- **`manifest.json`** -- public auditor-facing metadata: base model, bits-per-weight, per-layer SHA-256 hashes, and the eval metrics at compression time. Internal codec geometry is NDA-gated.
 - **Scaffold weights are NOT included.** At inference time, the base model's embedding layer, final layer norm, and language model head are loaded from the original Hugging Face model (e.g., `Qwen/Qwen3-8B`). The compressed checkpoint replaces only the transformer body. This keeps download sizes small and avoids redistributing unmodified weights.
 
 The streaming compression pipeline compresses each transformer layer independently in a single GPU residency window, which is why peak VRAM stays bounded by roughly one transformer layer regardless of total model depth. Internal codec specifics are NDA-gated.
@@ -94,7 +94,7 @@ Compressed model checkpoints are released under the **Sipsa Labs Research Evalua
 
 The base model weights (embedding, LM head, layer norm) are subject to the original model's license (Qwen: Apache 2.0).
 
-Patent pending: USPTO applications 64/049,511 and 64/049,517, plus May 2026 supplements.
+Patent pending: two USPTO provisional applications on file, plus supplemental filings. Claim text under NDA.
 
 ---
 
@@ -108,4 +108,4 @@ For pilot/commercial inquiries: founder@sipsalabs.com
 
 *The 32B and 72B checkpoints are significantly larger downloads. If you're on a metered connection, start with the 8B checkpoint.*
 
-Codec internals + training procedure are patent-protected (USPTO 64/049,511 + 64/049,517).
+Codec internals and the procedure used to produce a compressed pack are patent-protected; USPTO provisional applications are on file and full claim text is available under NDA.

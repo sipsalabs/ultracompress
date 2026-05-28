@@ -23,9 +23,9 @@ You'll see a table of pre-compressed models published by Sipsa Labs:
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓
 ┃ Model ID                    ┃ Base               ┃    bpw ┃   Size ┃ Downloads┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩
-│ sipsalabs/<model-id> │ Qwen/Qwen3-1.7B    │  2.798 │ 1.04GB │      ... │
-│ sipsalabs/llama2-7b-uc2p79  │ meta-llama/Ll...   │  2.798 │ 4.20GB │      ... │
-│ sipsalabs/mistral-7b-uc2p79 │ mistralai/Mis...   │  2.798 │ 4.21GB │      ... │
+│ sipsalabs/<model-id>        │ Qwen/Qwen3-1.7B    │    5.0 │ ~1.2GB │      ... │
+│ sipsalabs/llama-3.1-70b-... │ meta-llama/Ll...   │    5.0 │ ~44 GB │      ... │
+│ sipsalabs/mistral-7b-...    │ mistralai/Mis...   │    5.0 │ ~4.5GB │      ... │
 └─────────────────────────────┴────────────────────┴────────┴────────┴──────────┘
 ```
 
@@ -54,29 +54,20 @@ You'll see the provenance manifest:
 UltraCompress artifact: sipsalabs/<model-id>
 ─────────────────────────────────────────────────
 Base model:   Qwen/Qwen3-1.7B
-Method:       row-overlay-quantization (RoQ) v1
-Bits/weight:  2.798
-Size:         1.04 GB
+Bits/weight:  5.0
+Size:         ~1.2 GB
 SHA-256:      a3f5c8...   (verified ✓)
 License:      research-free; commercial requires separate license
-Patents:      USPTO 64/049,511 (filed 2026-04-25)
+Patents:      USPTO provisional applications on file; method specifics under NDA
 ```
 
-## 5. Run a benchmark
+## 5. Verify the pack against your own runtime
+
+The public CLI in v0.6.x is intentionally minimal: `verify`, `try`, `catalog`, `info`, `audit`, `version`. Downstream-task benchmarking is the caller's responsibility — point your existing `lm-eval-harness` (or any other evaluator) at the reconstructed model and compare against the published numbers in `docs/benchmarks.json`.
 
 ```bash
-uc bench ./models/sipsalabs_<model-id> --tasks hellaswag --limit 500
-```
-
-This runs the `lm-eval-harness` HellaSwag task with 500 samples. Output:
-
-```
-                    Benchmark results
-┏━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
-┃ Task      ┃   acc   ┃ acc_norm       ┃    stderr ┃
-┡━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
-│ hellaswag │ 51.20%  │     67.60%     │  +/-2.23% │
-└───────────┴─────────┴────────────────┴───────────┘
+uc verify ./<repo-id>        # SHA-256 + manifest integrity
+uc info ./<repo-id>          # provenance + bpw + base model
 ```
 
 That's it — you're up and running.
