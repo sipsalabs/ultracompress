@@ -6,7 +6,7 @@
 
 To get a Sipsa-compressed model onto local disk, use the standard Hugging
 Face download path (no Sipsa-specific command is needed). Then use
-`uc verify` to validate the SHA-256 reconstruction contract on your own
+`uc verify` to validate the SHA-256 download-integrity / manifest check on your own
 hardware.
 
 ## Synopsis
@@ -18,7 +18,7 @@ uc catalog
 # 2. Download from HuggingFace
 huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 
-# 3. Verify the SHA-256 reconstruction contract
+# 3. Verify download integrity against the published SHA-256 manifest
 uc verify ./<repo-id>
 ```
 
@@ -70,7 +70,7 @@ from the last completed file.
 
 | Code | Meaning |
 |---|---|
-| 0 | OK — SHA-256 reconstruction contract holds |
+| 0 | OK — downloaded bytes match the published SHA-256 manifest |
 | 1 | Verification failed |
 | 2 | Invalid arguments |
 

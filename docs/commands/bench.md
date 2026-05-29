@@ -8,11 +8,11 @@ The v0.6.x public CLI exposes only these subcommands:
 
 | Command | What it does |
 |---|---|
-| `uc verify <dir>` | Pack structure + SHA-256 / manifest integrity check |
-| `uc audit <dir>` | Full provenance audit + signed verification receipt |
+| `uc verify <dir>` | Pack structure + SHA-256 / manifest download-integrity check |
+| `uc audit <dir>` | JSON audit receipt: pack structure + per-file SHA-256 + PII-free host fingerprint (a structural/integrity artifact, **not** a reconstruction proof) |
 | `uc try <model-id>` | Generate against a Sipsa-hosted compressed model |
 | `uc catalog` | List the full compressed-model catalog + tiers |
-| `uc info <dir>` | Inspect manifest + provenance of a local pack |
+| `uc info` | What this package is + contact/links |
 | `uc version` | Print the installed package version |
 
 ## Recommended replacement flow

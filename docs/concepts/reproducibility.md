@@ -51,7 +51,7 @@ pip install "lm-eval[ultracompress]>=0.4.5"   # version pin matches our manifest
 # 2. Download a cohort artifact (HuggingFace CLI)
 huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 
-# 3. Verify the artifact's SHA-256 reconstruction contract
+# 3. Verify the artifact's download integrity against the SHA-256 manifest
 uc verify ./<repo-id>
 # Inspect manifest
 uc info ./<repo-id>

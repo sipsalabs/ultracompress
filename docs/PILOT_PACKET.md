@@ -25,7 +25,7 @@ The methods that exist (bitsandbytes, GPTQ, AWQ, HQQ) are all lossy — they dri
 
 ### Near-lossless 5-bit compression (patent pending) — shipping now
 
-A near-lossless 5-bit pack (~1% perplexity vs the bf16 reference; lossy) with reproducible, cryptographically verifiable reconstruction — a deterministic decode to the SHA-256-pinned validated artifact (a ~1% PPL reconstruction of the bf16 source, not a bit-identical copy of it). **22 architectures shipped end-to-end; 20 PPL-verified end-to-end** against their bf16 baseline, with end-to-end perplexity ratios within a fraction of a percent of the bf16 teacher.
+A near-lossless 5-bit pack (~1% perplexity vs the bf16 reference; lossy) with reproducible, cryptographically verifiable reconstruction — a deterministic decode to the SHA-256-pinned validated artifact (a ~1% PPL reconstruction of the bf16 source, not a bit-identical copy of it). **22 architectures PPL-verified end-to-end** (plus 1 ViT cosine-verified) against their bf16 baseline, with end-to-end perplexity ratios within a fraction of a percent of the bf16 teacher.
 
 ### Research preview (patent pending) — v0.2 (Q3 2026)
 

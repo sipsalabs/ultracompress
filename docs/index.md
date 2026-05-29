@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/sipsalabs/ultracompress/blob/main/LICENSE)
 [![CI](https://github.com/sipsalabs/ultracompress/actions/workflows/ci.yml/badge.svg)](https://github.com/sipsalabs/ultracompress/actions)
 
-UltraCompress produces **near-lossless 5-bit** transformer packs (~1% perplexity vs the bf16 reference; lossy) with **reproducible, cryptographically verifiable reconstruction** — a deterministic decode to the SHA-256-pinned validated artifact (a ~1% PPL reconstruction of the bf16 source, not a bit-identical copy of it) — 22 architectures shipped end-to-end, 14 PPL-verified end-to-end against their bf16 baseline.
+UltraCompress produces **near-lossless 5-bit** transformer packs (~1% perplexity vs the bf16 reference; lossy) with **reproducible, cryptographically verifiable reconstruction** — a deterministic decode to the SHA-256-pinned validated artifact (a ~1% PPL reconstruction of the bf16 source, not a bit-identical copy of it) — 22 architectures shipped end-to-end, all 22 PPL-verified end-to-end against their bf16 baseline (plus 1 ViT cosine-verified).
 
 !!! info "v0.6.11"
     Pre-compressed reference models are published on the Hugging Face Hub. Run `uc list` for the live catalog at any time.
@@ -45,7 +45,7 @@ uc catalog
 # Download a pre-compressed model (via HuggingFace CLI)
 huggingface-cli download SipsaLabs/<repo-id> --local-dir ./<repo-id>
 
-# Verify the SHA-256 reconstruction contract
+# Verify download integrity against the SHA-256 manifest
 uc verify ./<repo-id>
 
 # Inspect manifest
@@ -74,7 +74,7 @@ The published methods most teams use (bitsandbytes, GPTQ, AWQ, HQQ) are all loss
 | HQQ 3-bit g64 | 3.500 | lossy | 1/6 |
 | HQQ 2-bit g64 | 2.500 | lossy | 6/6 |
 
-22 architectures shipped end-to-end; 14 PPL-verified end-to-end against their bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42). Every published number traces to a JSON receipt.
+22 architectures PPL-verified end-to-end against their bf16 baseline (FineWeb-edu held-out tail, seq_len=1024, seed=42), plus 1 ViT cosine-verified. Every published number traces to a JSON receipt.
 
 ## Where to go next
 

@@ -26,7 +26,7 @@ We deliberately do not use specialized exit codes (e.g., 64-78 from `sysexits.h`
 ### Downloading via `huggingface-cli`
 
 `uc pull` was removed in v0.6.21. Use `huggingface-cli download` for the
-download step, then `uc verify` to check the SHA-256 reconstruction
+download step, then `uc verify` to check download integrity against the SHA-256
 contract on disk.
 
 | Outcome | Command | Code |
