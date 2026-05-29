@@ -21,7 +21,7 @@ Academic research, internal benchmarking, paper reproduction, and non-commercial
 ```bibtex
 @software{sipsa_ultracompress_2026,
   author = {{Sipsa Labs, Inc.}},
-  title  = {UltraCompress: Lossless 5-bit Transformer Compression},
+  title  = {UltraCompress: Near-Lossless 5-bit Transformer Compression},
   year   = {2026},
   url    = {https://github.com/sipsalabs/ultracompress}
 }

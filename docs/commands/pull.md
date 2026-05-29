@@ -48,7 +48,7 @@ uc info ./qwen3-0.6b
 - Gated packs (`request` / `POC` tiers in `uc catalog`) require granted
   access on the HuggingFace repo first; see <https://sipsalabs.com/access>.
 - `uc verify` checks the SHA-256 manifest end-to-end against the on-disk
-  artifact: if the bytes do not reconstruct bit-identical, it fails.
+  artifact: if the downloaded bytes do not match the published manifest, it fails.
 
 ## Disk space
 

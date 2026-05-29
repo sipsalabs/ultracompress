@@ -1,6 +1,6 @@
 # UltraCompress
 
-Lossless 5-bit transformer compression. Published model artifacts are bit-identical to their bf16 reference.
+Near-lossless 5-bit transformer compression (~1% perplexity vs the bf16 reference; lossy), with reproducible, cryptographically verifiable reconstruction.
 
 [![PyPI](https://img.shields.io/badge/pypi-0.6.24-blue.svg)](https://pypi.org/project/ultracompress/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg)](LICENSE)
@@ -14,12 +14,12 @@ Lossless 5-bit transformer compression. Published model artifacts are bit-identi
 > **structure** and **download integrity** (`uc verify`) on any pack you
 > download from HuggingFace. It contains **no** compression or
 > reconstruction code: that methodology is patent-pending and is not
-> distributed. Bit-identical reconstruction verification of a pack is
-> performed by Sipsa Labs under engagement.
+> distributed. Reproducible, cryptographically verifiable reconstruction
+> of a pack is performed by Sipsa Labs under engagement.
 
-Hermes-3-Llama-3.1-405B compressed at 5 bpw lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). A 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU.
+Hermes-3-Llama-3.1-405B compressed at 5 bpw, near-lossless: **1.0066x PPL ratio** vs streaming bf16 teacher (5.0692 / 5.0358, n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). A 405B-class transformer compressed end-to-end on a single 32 GB consumer GPU.
 
-UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack that reconstructs **bit-identically** to the reference bf16 checkpoint — not "1% PPL drift on WikiText," but a deterministic reconstruction. That is the honest definition of lossless we care about: an auditor can re-derive every weight from the pack, and Sipsa Labs verifies that bit-identity under engagement. The codec is patent-pending.
+UltraCompress takes a transformer at fp16/bf16 and produces a 5-bit pack with **reproducible, cryptographically verifiable reconstruction** — a deterministic decode to the SHA-256-pinned validated artifact (a near-lossless, ~1% PPL reconstruction of the bf16 source, not a bit-identical copy of it). That is the honest contract we care about: an auditor can re-derive the validated quantized artifact from the pack and verify it byte-for-byte against the published SHA-256 manifest, and Sipsa Labs verifies that reproducibility under engagement. The codec is patent-pending.
 
 It exists because the bf16-equivalent quality bar matters in places where "good enough on MMLU" isn't enough — defense, FDA-regulated healthcare, SR 11-7 model validation, internal red-team eval at frontier labs. And as a side-effect of the streaming compression path, it lets us put a 405B-parameter model through a single 32 GB consumer GPU without renting an H100 cluster.
 
@@ -78,12 +78,12 @@ pack fingerprint (sha256 of sorted file digests):
 
 → STRUCTURE OK — download integrity verified; pack is well-formed
   and the fingerprint above is the per-file SHA-256 reference.
-  End-to-end bit-identical reconstruction is delivered via `uc audit`
+  End-to-end reproducible, verifiable reconstruction is delivered via `uc audit`
   under engagement (founder@sipsalabs.com); see
   docs/reference/audit-receipt-schema.md for the audit-receipt schema.
 ```
 
-Full bit-identical reconstruction verification (and PPL re-evaluation against the bf16 baseline) is an auditor-grade deliverable Sipsa Labs runs with you under engagement — it is deliberately not shipped in the public package.
+Full reproducible, cryptographically verifiable reconstruction (and PPL re-evaluation against the bf16 baseline) is an auditor-grade deliverable Sipsa Labs runs with you under engagement — it is deliberately not shipped in the public package.
 
 ---
 
@@ -93,7 +93,7 @@ Full bit-identical reconstruction verification (and PPL re-evaluation against th
 
 | Model | Params | Class | PPL ratio | HF artifact | Status |
 |---|---|---|---|---|---|
-| Hermes-3-Llama-3.1-405B | 405B | 405B-class lossless on a single 32 GB consumer GPU | **1.0066** | [`SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5) | live |
+| Hermes-3-Llama-3.1-405B | 405B | 405B-class near-lossless on a single 32 GB consumer GPU | **1.0066** | [`SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5) | live |
 | Mistral-7B-v0.3 | 7.2B | sub-0.6% drift | **1.00548** | [`SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5`](https://huggingface.co/SipsaLabs/mistral-7b-v0.3-uc-v3-bpw5) | live |
 | Qwen3-1.7B-Base | 1.7B | sub-0.5% drift | **1.00401** | `SipsaLabs/qwen3-1.7b-base-uc-v3-bpw5` | live |
 | Qwen3-14B | 14.0B | sub-0.5% drift | **1.00403** | `SipsaLabs/qwen3-14b-uc-v3-bpw5` | live |
@@ -101,9 +101,9 @@ Full bit-identical reconstruction verification (and PPL re-evaluation against th
 | Mixtral-8x7B-v0.1 (MoE) | 47B (13B active) | sub-0.5% drift | **1.00368** | `SipsaLabs/mixtral-8x7b-v0.1-uc-v3-bpw5` | live |
 | Phi-3-mini-4k-instruct | 3.8B | sub-0.3% drift (seq_len=128, not apples-to-apples) | **1.00262** | `SipsaLabs/phi-3-mini-4k-instruct-uc-v3-bpw5` | live |
 
-Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 teacher took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. The Mistral-7B 1.00548× row is the tightest dense 7B-class lossless 5-bit ratio we currently publish.
+Hermes-3-405B is the headline. The 1.0066x ratio is `5.0692 / 5.0358` — both halves measured under the same per-layer streaming reconstruction comparator (n=50, seq_len=1024, FineWeb-edu held-out tail, seed=42). The bf16 teacher took 7.7 hours on cuda:1; the 5-bpw pack took 14.3 hours. The Mistral-7B 1.00548× row is the tightest dense 7B-class near-lossless 5-bit ratio we currently publish.
 
-- **SSM result**: Mamba-2.8B compressed with SHA-256 bit-identical reconstruction verified — first public lossless 5-bit canonical-PPL result on a state-space model that we know of, at **1.00593× canonical ratio**. Counted as the 20th verified architecture with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics that don't apply to SSMs) is architecture-incompatible, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. The comparator is documented in the registry.
+- **SSM result**: Mamba-2.8B compressed with reproducible, SHA-256-verifiable reconstruction — first public near-lossless 5-bit canonical-PPL result on a state-space model that we know of, at **1.00593× canonical ratio**. Counted as the 20th verified architecture with an explicit comparator-note caveat in the registry: our canonical transformer pipeline (RoPE / attention masks / KV-cache semantics that don't apply to SSMs) is architecture-incompatible, so the Mamba record uses an SSM-compatible comparator that matches what's in the HF pack. The comparator is documented in the registry.
 - **HuggingFace**: a small public verification set under [`huggingface.co/SipsaLabs`](https://huggingface.co/SipsaLabs); full catalog under engagement.
 - **PyPI**: [pypi.org/project/ultracompress](https://pypi.org/project/ultracompress/).
 
@@ -122,13 +122,13 @@ Things people sometimes assume work because the rest of it does. They don't, and
 
 ## Why this isn't AWQ / GPTQ / EXL3
 
-Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reconstruction contract**: the published artifact reconstructs bit-identically to the reference bf16 checkpoint. Codec internals are patent-pending and deliberately not described here.
+Every other 4–5 bit compression library targets a quality threshold ("sub-1% PPL on WikiText"). UltraCompress targets a **reproducible, cryptographically verifiable reconstruction contract**: the published pack decodes deterministically to the SHA-256-pinned validated artifact (a near-lossless, ~1% PPL reconstruction of the bf16 reference), verifiable byte-for-byte against its manifest. Codec internals are patent-pending and deliberately not described here.
 
-This matters when "the model picks a slightly-wrong variable name" is a regulatory finding rather than a cosmetic complaint. Defense / aerospace deploy-bit-exactness is a compliance requirement. FDA-regulated healthcare AI requires model equivalence between dev and deploy. SR 11-7 (Federal Reserve model validation) requires reproducible audit recovery.
+This matters when "the model picks a slightly-wrong variable name" is a regulatory finding rather than a cosmetic complaint. Defense / aerospace reproducible, verifiable deployment is a compliance requirement. FDA-regulated healthcare AI requires model equivalence between dev and deploy. SR 11-7 (Federal Reserve model validation) requires reproducible audit recovery.
 
 For pure-throughput inference on a fixed prompt distribution that matches your AWQ calibration set, with no downstream fine-tuning, AWQ at 4 bpw on vLLM is genuinely fine and we'll say so on a sales call.
 
-As of mid-2026 we are not aware of another published library targeting a bit-identical reconstruction contract (as opposed to a PPL-threshold) for 5-bit transformer compression on the public HuggingFace Hub. If you find one, tell us — we'd rather benchmark against it than claim a gap that isn't there.
+As of mid-2026 we are not aware of another published library targeting a reproducible, cryptographically verifiable reconstruction contract (as opposed to a PPL-threshold) for 5-bit transformer compression on the public HuggingFace Hub. If you find one, tell us — we'd rather benchmark against it than claim a gap that isn't there.
 
 ---
 
@@ -149,7 +149,7 @@ Detailed methodology for any specific failure is available to design partners un
 ## Who this is for
 
 - **If you serve LLMs in production and your VRAM bill is the constraint**, this might help. It scales to a 405B-class model on a single 32 GB consumer GPU (the how is patent-pending). Email `founder@sipsalabs.com` with your stack and a target latency/quality bar; we'll tell you honestly whether UC fits.
-- **If you're in a regulated domain** (defense, FDA-regulated healthcare, SR 11-7 model validation, frontier lab red-team), the bit-identical reconstruction contract is the reason to talk to us. Phase 0 POC ($5K, 5 business days, customer-picked model) gets you a pack plus a Sipsa-run bit-identity + PPL audit you can review. Email `founder@sipsalabs.com`.
+- **If you're in a regulated domain** (defense, FDA-regulated healthcare, SR 11-7 model validation, frontier lab red-team), the reproducible, cryptographically verifiable reconstruction contract is the reason to talk to us. Phase 0 POC ($5K, 5 business days, customer-picked model) gets you a pack plus a Sipsa-run reproducibility + PPL audit you can review. Email `founder@sipsalabs.com`.
 
 If your workload is "MMLU has to stay above X" and you're not pushing the model into long-tail or downstream-fine-tuning territory, AWQ at 4 bpw is probably a better answer than this. We'll say so.
 
@@ -159,7 +159,7 @@ If your workload is "MMLU has to stay above X" and you're not pushing the model 
 
 Sipsa Labs is a small lab shipping in public. Our compression methods are patent-pending; details are in [`PATENT_NOTICE.md`](./PATENT_NOTICE.md). The CLI source is BUSL-1.1 with an Additional Use Grant — free for companies under $1M ARR, research, and individuals, auto-converting to Apache 2.0 four years post-release. If you're building a derivative product whose core value depends on the underlying invention, email `founder@sipsalabs.com`.
 
-- **Paid Phase 0 POC** — `founder@sipsalabs.com`, $5K / 5 business days / customer-picked model. Deliverable: a pack plus a Sipsa-run bit-identity + PPL audit on your eval set.
+- **Paid Phase 0 POC** — `founder@sipsalabs.com`, $5K / 5 business days / customer-picked model. Deliverable: a pack plus a Sipsa-run reproducibility + PPL audit on your eval set.
 - **GitHub Sponsors** — [github.com/sponsors/sipsalabs](https://github.com/sponsors/sipsalabs).
 - **Press / commentary** — `press@sipsalabs.com`.
 
@@ -176,7 +176,7 @@ Sipsa Labs is a small lab shipping in public. Our compression methods are patent
 ```bibtex
 @software{sipsa_ultracompress_2026,
   author = {{Sipsa Labs, Inc.}},
-  title  = {UltraCompress: Lossless 5-bit Transformer Compression},
+  title  = {UltraCompress: Near-Lossless 5-bit Transformer Compression},
   year   = {2026},
   url    = {https://github.com/sipsalabs/ultracompress}
 }

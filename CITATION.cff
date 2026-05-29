@@ -30,9 +30,12 @@ abstract: >-
   subject of pending U.S. provisional patent applications and are not disclosed
   in this repository.
 
-  Reproducibility surface: every published artifact reconstructs bit-identically
-  to the bf16 source weights, certified by a per-layer SHA-256 manifest verifiable
-  via `uc verify`. Verified-records registry lives at `docs/benchmarks.json`.
+  Reproducibility surface: every published artifact offers reproducible,
+  cryptographically verifiable reconstruction — a deterministic decode to the
+  SHA-256-pinned validated artifact (a near-lossless, ~1% PPL reconstruction of
+  the bf16 source, not a bit-identical copy of it), certified by a per-layer
+  SHA-256 manifest verifiable via `uc verify`. Verified-records registry lives
+  at `docs/benchmarks.json`.
 
 keywords:
   - large-language-models

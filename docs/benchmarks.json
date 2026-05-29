@@ -5,7 +5,7 @@
   "framework": "ultracompress",
   "package": "ultracompress (PyPI)",
   "patent_status": "two provisional applications filed April 2026 (patent-pending)",
-  "reconstruction_guarantee": "bit-identical to bf16 source weights; every published pack carries a SHA-256 manifest verifiable end-to-end via `uc verify`",
+  "reconstruction_guarantee": "reproducible, cryptographically verifiable reconstruction — a deterministic decode to the SHA-256-pinned validated artifact (a near-lossless, ~1% PPL reconstruction of the bf16 source, not a bit-identical copy of it); every published pack carries a SHA-256 manifest verifiable end-to-end via `uc verify`",
   "verified_count": 23,
   "shipped_count": 23,
   "honest_negative_count": 30,
@@ -161,7 +161,7 @@
       "params": "2.8B (SSM)",
       "ppl_ratio": 1.00593,
       "drift_pct": 0.593,
-      "comparator_note": "SSM-compatible comparator — the HF Mamba pack uses the architecture-matched reconstruction comparator. The transformer comparator pipeline (used for the 19 transformer records) is architecture-incompatible with SSMs. Treat this record as the canonical SSM lossless 5-bit number; do not directly compare against transformer records without reading the comparator note.",
+      "comparator_note": "SSM-compatible comparator — the HF Mamba pack uses the architecture-matched reconstruction comparator. The transformer comparator pipeline (used for the 19 transformer records) is architecture-incompatible with SSMs. Treat this record as the canonical SSM near-lossless 5-bit number; do not directly compare against transformer records without reading the comparator note.",
       "hf": "SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5",
       "n_samples": 30,
       "seq_len": 1024,
@@ -184,7 +184,7 @@
       "seed": 42,
       "verified_at": "2026-05-27",
       "track": "cross-arch (ViT, first non-LLM pack)",
-      "note": "First public lossless 5-bit Vision Transformer. Proves codec generalizes beyond text to vision with zero format changes."
+      "note": "First public near-lossless 5-bit Vision Transformer. Proves codec generalizes beyond text to vision with zero format changes."
     },
     {
       "model": "Mixtral-8x22B-v0.1",
@@ -205,7 +205,7 @@
       "params": "405B (dense)",
       "ppl_ratio": 1.00664,
       "drift_pct": 0.664,
-      "note": "largest dense lossless 5-bit result in registry; runs on a single 32 GB consumer GPU via streaming dispatch",
+      "note": "largest dense near-lossless 5-bit result in registry; runs on a single 32 GB consumer GPU via streaming dispatch",
       "hf": "SipsaLabs/hermes-3-llama-3.1-405b-uc-v3-bpw5",
       "n_eval": 50,
       "seq_len": 1024,

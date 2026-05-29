@@ -16,9 +16,11 @@ from . import __version__
 _INFO = """\
 UltraCompress {ver} - public CLI
 
-Lossless 5-bit transformer compression. Published model artifacts are
-bit-identical to their bf16 reference; that reconstruction and the codec
-are patent-pending and provided by Sipsa Labs under engagement.
+Near-lossless 5-bit transformer compression (~1% perplexity vs the bf16
+reference; lossy). Published model artifacts decode deterministically to a
+SHA-256-pinned validated artifact, giving reproducible, cryptographically
+verifiable reconstruction; that reconstruction and the codec are
+patent-pending and provided by Sipsa Labs under engagement.
 
 Quick start (30 seconds, no GPU, no signup):
   uc try sipsa-qwen3-0.6b    generate text with a compressed model

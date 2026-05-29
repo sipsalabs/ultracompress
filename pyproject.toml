@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ultracompress"
 version = "0.6.24"
-description = "Lossless 5-bit transformer compression — 22 PPL-verified architectures (17 dense + 4 MoE + 1 SSM) plus 1 ViT cosine-verified — across 4 architecture classes (0.6B–405B). Public CLI does pack structure + download-integrity checks; the codec is patent-pending and not distributed. BUSL-1.1 + Additional Use Grant."
+description = "Near-lossless 5-bit transformer compression (~1% perplexity vs the bf16 reference; lossy), with reproducible, cryptographically verifiable reconstruction — 22 PPL-verified architectures (17 dense + 4 MoE + 1 SSM) plus 1 ViT cosine-verified — across 4 architecture classes (0.6B–405B). Public CLI does pack structure + download-integrity checks; the codec is patent-pending and not distributed. BUSL-1.1 + Additional Use Grant."
 readme = "README.md"
 license = {text = "BUSL-1.1"}
 requires-python = ">=3.10"

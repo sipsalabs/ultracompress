@@ -23,7 +23,7 @@ Extreme compression for large language models. Patent pending
 UltraCompress artifact: sipsalabs/<model-id>
 ─────────────────────────────────────────────────
 Base model:   Qwen/Qwen3-1.7B
-Method:       uc-v3 lossless 5-bit
+Method:       uc-v3 near-lossless 5-bit
 Bits/weight:  5
 Size:         1.04 GB
 SHA-256:      a3f5c8...   (verified ✓)
