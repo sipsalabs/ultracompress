@@ -8,9 +8,11 @@ What this does (and only this):
     can confirm they hold byte-identical downloads, or compare against a
     fingerprint Sipsa Labs publishes out of band.
 
-This verifies download integrity. The end-to-end bit-identical
-reconstruction audit (the rigorous form of the reconstruction contract)
-is delivered via the `uc audit` primitive under engagement; see
+This verifies download integrity. The end-to-end cryptographically
+verifiable reconstruction audit (a deterministic decode to the
+SHA-256-pinned validated artifact — the rigorous form of the
+reconstruction contract) is delivered via the `uc audit` primitive
+under engagement; see
 docs/reference/audit-receipt-schema.md for the audit-receipt schema.
 The public package contains no reconstruction methodology by design.
 """
@@ -100,7 +102,8 @@ def cmd_verify(args) -> int:
     if ok:
         print("=> STRUCTURE OK - download integrity verified; pack is well-formed and")
         print("   the fingerprint above is the per-file SHA-256 reference. End-to-end")
-        print("   bit-identical reconstruction is delivered via `uc audit` under")
+        print("   cryptographically verifiable reconstruction (a deterministic decode to")
+        print("   the validated artifact) is delivered via `uc audit` under")
         print("   engagement (founder@sipsalabs.com); see")
         print("   docs/reference/audit-receipt-schema.md for the audit-receipt schema.")
         print()

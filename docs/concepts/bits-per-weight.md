@@ -37,7 +37,7 @@ The most useful visualization of compression methods is a **2D Pareto plot**: x-
 
 The interesting region for deployment is **bpw < 4**. Above bpw=4, every method works well; the differences are minor. Below bpw=4, the methods diverge sharply.
 
-UltraCompress's published 5-bit operating point pairs tight PPL ratios (e.g., 1.0066x on Hermes-3-Llama-3.1-405B, 1.00506x on Phi-4 14B) with SHA-256 bit-identical reconstruction — a property no other published 4-bit/5-bit quantizer attests. The verifiability axis, not the absolute bpw, is the differentiator.
+UltraCompress's published 5-bit operating point pairs tight PPL ratios (e.g., 1.0066x on Hermes-3-Llama-3.1-405B, 1.00506x on Phi-4 14B) with reproducible, cryptographically verifiable reconstruction — a deterministic decode to the SHA-256-pinned validated artifact — a property no other published 4-bit/5-bit quantizer attests. The verifiability axis, not the absolute bpw, is the differentiator.
 
 ## Practical implication for hardware budgets
 

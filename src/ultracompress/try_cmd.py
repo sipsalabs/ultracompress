@@ -31,7 +31,7 @@ _POC = "https://sipsalabs.com/poc"
 _DEFAULT_MODEL = "sipsa-qwen3-0.6b"
 
 _DEFAULT_PROMPT = (
-    "In one paragraph, explain why bit-identical reconstruction matters "
+    "In one paragraph, explain why reproducible, verifiable reconstruction matters "
     "for a regulated AI deployment."
 )
 
@@ -40,12 +40,12 @@ _DEFAULT_PROMPT = (
 # so a curious developer sees real generated text from the real model
 # without first needing to sign up.
 _DEMO_RECORDED = (
-    "Bit-identical reconstruction matters because a regulated AI "
+    "Reproducible, verifiable reconstruction matters because a regulated AI "
     "deployment must be able to prove, to an auditor, that the model "
     "running in production is the model that was validated. Standard "
     "quantization schemes produce numerically different tensors across "
     "hardware and library versions, which breaks that proof. A "
-    "reconstruction contract that returns the exact bf16 weights, "
+    "reconstruction contract that returns the exact validated artifact, "
     "verifiable via SHA-256 manifest, restores the audit floor: the "
     "deployed artifact IS the validated artifact, byte for byte."
 )

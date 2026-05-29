@@ -9,7 +9,7 @@ Every UltraCompress artifact ships with a JSON manifest at `<artifact>/ultracomp
   "schema_version": "1.0",
   "model_id": "string (HF Hub repo id)",
   "base_model": "string (HF Hub repo id of the FP16 source)",
-  "method": "string (uc-v3 lossless 5-bit pack)",
+  "method": "string (uc-v3 near-lossless 5-bit pack)",
   "method_version": "string (semver)",
   "bpw": "number (effective bits per weight, includes any overhead)",
   "size_bytes": "integer (total artifact size on disk)",
@@ -47,7 +47,7 @@ The compression method applied. Currently:
 
 | Value | Description |
 |---|---|
-| `uc-v3` | Patent-pending lossless 5-bit pack format (bit-identical reconstruction) |
+| `uc-v3` | Patent-pending near-lossless 5-bit pack format (~1% PPL; reproducible, cryptographically verifiable reconstruction) |
 
 Future methods will be added as new strings; readers should accept unknown values gracefully. Internal method specifics are NDA-gated.
 
