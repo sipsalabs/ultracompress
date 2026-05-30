@@ -344,7 +344,7 @@
         "from": "pending_ppl_eval",
         "ratio": 1.00317,
         "source_json": "docs/PPL_EVAL_tinyllama-1_1b-chat_2026_05_27.json",
-        "method": "bf16 single-GPU baseline + carousel+slab compressed eval (safetensors)"
+        "method": "bf16 single-GPU baseline + compressed eval (safetensors)"
       },
       {
         "model": "Llama-3.1-70B",
