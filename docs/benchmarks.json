@@ -161,7 +161,7 @@
       "params": "2.8B (SSM)",
       "ppl_ratio": 1.00593,
       "drift_pct": 0.593,
-      "comparator_note": "SSM-compatible comparator — the HF Mamba pack uses the architecture-matched reconstruction comparator. The transformer comparator pipeline (used for the 19 transformer records) is architecture-incompatible with SSMs. Treat this record as the canonical SSM near-lossless 5-bit number; do not directly compare against transformer records without reading the comparator note.",
+      "comparator_note": "SSM-compatible comparator — the HF Mamba pack uses the architecture-matched reconstruction comparator. The transformer comparator pipeline (used for the 21 transformer records) is architecture-incompatible with SSMs. Treat this record as the canonical SSM near-lossless 5-bit number; do not directly compare against transformer records without reading the comparator note.",
       "hf": "SipsaLabs/mamba-2.8b-hf-uc-v3-bpw5",
       "n_samples": 30,
       "seq_len": 1024,
@@ -357,6 +357,6 @@
   },
   "_audit": {
     "verifier_cli": "pip install ultracompress && uc verify <hf_pack>",
-    "license": "Apache-2.0 for the Python client; pack format and reconstruction implementation are patent-pending (Sipsa Labs, Inc.)"
+    "license": "BUSL-1.1 (Business Source License 1.1) for the Python client, auto-converting to Apache-2.0 four years post-release; pack format and reconstruction implementation are patent-pending (Sipsa Labs, Inc.)"
   }
 }
