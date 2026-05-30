@@ -6,7 +6,7 @@ _build_public/
 _public_src/
 
 # Agent-spawned research/experiment scripts — may contain pack-internal key names
-# (W_base, gsq_codecs, reconstruction formula) by functional necessity. Keep local;
+# may reference pack-internal identifiers by functional necessity. Keep local;
 # customer-facing converter tools ship via .private/ + NDA / Phase 0 POC engagement.
 # Per ultra-reviewer-v2 P0 finding 2026-05-28 (4 of 5 agent script dirs leaked tier-3
 # tokens but were not git-ignored — would have staged on any `git add .`).
