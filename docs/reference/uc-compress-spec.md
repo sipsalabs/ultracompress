@@ -34,7 +34,7 @@ uc compress <source-model> [--bpw FLOAT] [--method STR] [--track STR]
 | `<source-model>` | required | HF Hub model ID (e.g., `Qwen/Qwen3-1.7B`) or local-disk path |
 | `--bpw FLOAT` | `5.0` | Target bits per weight |
 | `--method STR` | `default` | Compression method to apply (component identifiers NDA-gated) |
-| `--track STR` | `a` | Which patent-pending component pipeline: `a`, `b`, `a+b` |
+| `--track STR` | `a` | Which patent-pending component pipeline (identifiers NDA-gated) |
 | `--output-dir PATH` | `./models/<source-name>-uc<bpw>` | Where to save the compressed artifact |
 | `--device STR` | `cuda:0` | PyTorch device for compression |
 | `--max-batch-size INT` | `8` | Batch size for the calibration data pass |
@@ -81,7 +81,7 @@ uc compress Qwen/Qwen3-1.7B
 Architectural compression is the most aggressive variant; it produces a model with substantially fewer trainable parameters but requires a calibration pass on representative training data.
 
 ```bash
-uc compress Qwen/Qwen3-1.7B --method architectural --output-dir ./models/qwen3-architectural \
+uc compress Qwen/Qwen3-1.7B --method <method-id> --output-dir ./models/qwen3-compressed \
     --calibration-data ./calibration.jsonl
 ```
 
@@ -90,7 +90,7 @@ The calibration data is a JSONL file with prompt/response pairs representative o
 ## Combined codec + architectural-compression pipeline
 
 ```bash
-uc compress Qwen/Qwen3-1.7B --method roq+shared-block --output-dir ./models/qwen3-uc-combo
+uc compress Qwen/Qwen3-1.7B --method <method-id> --output-dir ./models/qwen3-uc-combo
 ```
 
 Stacks the roadmap architectural-compression component on top of the shipping codec. Component-by-component breakdown is NDA-gated; reference cohort numbers are at [evidence/matrix.md](../evidence/matrix.md).
@@ -131,11 +131,11 @@ For long-running compression jobs (architectural-compression at 70B+ parameters,
 
 ```bash
 # Submit the job
-uc compress Qwen/Qwen3-32B --method shared-block --bpw 2.5 --output-dir ./models/qwen3-32b-shared-block-2p5
+uc compress Qwen/Qwen3-32B --method <method-id> --bpw 2.5 --output-dir ./models/qwen3-32b-compressed-2p5
 
 # Job interrupted (say, network drop)
 # Resume with the same command:
-uc compress Qwen/Qwen3-32B --method shared-block --bpw 2.5 --output-dir ./models/qwen3-32b-shared-block-2p5
+uc compress Qwen/Qwen3-32B --method <method-id> --bpw 2.5 --output-dir ./models/qwen3-32b-compressed-2p5
 # CLI detects the partial state in the output dir, resumes from the last checkpoint
 ```
 
