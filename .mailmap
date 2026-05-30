@@ -1,5 +1,5 @@
 # Canonical author attribution for sipsalabs/ultracompress
-# Maps prior commits made with incorrect author emails to the canonical solo-author identity.
+# Maps prior commit identities to the canonical project identity.
 
-Missipssa Ounnar <micipsa.ounner@gmail.com> <noreply@anthropic.com>
-Missipssa Ounnar <micipsa.ounner@gmail.com> Claude <noreply@anthropic.com>
+Sipsa Labs <founder@sipsalabs.com> <noreply@anthropic.com>
+Sipsa Labs <founder@sipsalabs.com> Claude <noreply@anthropic.com>
