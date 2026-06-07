@@ -29,7 +29,7 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ### Added
 
-- **vLLM Phase 2 plugin** — decode throughput parity within 0.4% of the bf16 baseline on Qwen3-8B at batch=8 (726.1 tok/s UC vs 723.2 tok/s bf16). Cold load uses the reconstruction path; subsequent inference runs at the fused-runtime rate.
+- **vLLM Phase 2 plugin** — decode throughput parity within 0.4% of the bf16 baseline on Qwen3-8B at batch=8 (726.1 tok/s UC vs 723.2 tok/s bf16). Runtime integration details are available to partners under NDA.
 
 ---
 
