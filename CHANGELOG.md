@@ -27,9 +27,9 @@ All notable changes to UltraCompress are documented here. Format: [Keep a Change
 
 ## [0.6.16] — 2026-05-23
 
-### Added
+### Changed
 
-- **vLLM Phase 2 plugin** — decode throughput parity within 0.4% of the bf16 baseline on Qwen3-8B at batch=8 (726.1 tok/s UC vs 723.2 tok/s bf16). Runtime integration details are available to partners under NDA.
+- Maintenance release. No `.uc` pack-format change; all published `SipsaLabs/*` packs verify identically. Detailed per-release notes are available to partners under NDA.
 
 ---
 
