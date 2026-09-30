@@ -1,11 +1,11 @@
 {
   "_schema": "sipsalabs-benchmarks-v1",
-  "_about": "Public auditor registry for UltraCompress PPL-verified architectures. Every entry below is reproducible via `pip install ultracompress && uc verify <hf_pack>`. Methodology details: see docs/methodology.md. Pack format spec: see SHA256_MANIFEST.json on each HuggingFace pack repo.",
+  "_about": "Historical UltraCompress evaluation registry. Each result applies to the model, comparator and evaluation conditions recorded in its entry. The public CLI checks basic pack structure and computes fingerprints; it does not reproduce these evaluations or reconstruct weights.",
   "generated_at": "2026-05-27T18:15:00Z",
   "framework": "ultracompress",
   "package": "ultracompress (PyPI)",
   "patent_status": "two provisional applications filed April 2026 (patent-pending)",
-  "reconstruction_guarantee": "reproducible, cryptographically verifiable reconstruction — a deterministic decode to the SHA-256-pinned validated artifact (a near-lossless, ~1% PPL reconstruction of the bf16 source, not a bit-identical copy of it); every published pack carries a SHA-256 manifest verifiable end-to-end via `uc verify`",
+  "reconstruction_guarantee": "Historical reconstruction claims concern the validated quantized artifact, not a bit-identical copy of the original bf16 model. The public CLI contains no reconstruction implementation and does not compare its computed fingerprint with a trusted expected fingerprint.",
   "verified_count": 23,
   "shipped_count": 23,
   "honest_negative_count": 30,
@@ -356,7 +356,7 @@
     ]
   },
   "_audit": {
-    "verifier_cli": "pip install ultracompress && uc verify <hf_pack>",
+    "verifier_cli": "pip install ultracompress && uc verify <downloaded_pack_dir> (structure and fingerprint only)",
     "license": "BUSL-1.1 (Business Source License 1.1) for the Python client, auto-converting to Apache-2.0 four years post-release; pack format and reconstruction implementation are patent-pending (Sipsa Labs, Inc.)"
   }
 }

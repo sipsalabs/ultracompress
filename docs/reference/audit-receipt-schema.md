@@ -126,18 +126,9 @@ audit receipt and a `verify --full` printout agree.
 
 ## Reconstruction status
 
-The receipt deliberately does **not** assert "this pack reconstructs to
-bit-identical weights." That assertion is provided by Sipsa Labs under
-engagement; the public package contains no reconstruction methodology and
-therefore cannot make the claim from a customer's machine. The audit
-receipt is a *structural* and *integrity* artifact: it proves the customer
-holds the bytes they think they hold, on the host they think they're
-holding them on.
+The receipt records structural checks and computed file fingerprints. It does not reconstruct model weights or compare them with a trusted expected artifact. A fingerprint can be compared with a trusted reference separately; generating it alone does not prove provenance or correctness.
 
-To upgrade an audit receipt to a reconstruction proof, contact
-founder@sipsalabs.com — the engagement runs the reference reconstruction
-against the same `pack_fingerprint_sha256` and returns a counter-signed
-certificate that incorporates the customer's receipt by fingerprint.
+UltraCompress is retired. Its public materials preserve historical research; new API access and paid pilots are no longer offered.
 
 ---
 
@@ -160,11 +151,7 @@ machine class hasn't changed; step 4 confirms the audit passed.
 
 ## Signing (optional, opt-in)
 
-The base receipt is unsigned: the customer's own SHA-256 of the file is
-the proof anyone needs. Customers who want a counter-signed receipt
-contact Sipsa Labs and submit the receipt JSON; we return a detached
-signature over the canonical JSON form. The signature format is recorded
-separately (`docs/reference/audit-signature.md`, future).
+The base receipt is unsigned. Hashing the receipt can detect a change when compared with a trusted reference, but does not authenticate its author. Historical counter-signing offers are no longer current.
 
 ---
 

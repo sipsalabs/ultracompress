@@ -1,5 +1,11 @@
 # Changelog
 
+## Documentation clarification - 2026-09-30
+
+UltraCompress is retired. Its public materials preserve historical research; new API access and paid pilots are no longer offered.
+
+The public v0.6.27 CLI checks basic pack structure and computes fingerprints. It does not reconstruct weights or automatically compare a fingerprint with a trusted reference. The no-key `uc try` path prints a recorded reference response. Earlier release entries preserve historical behavior and offers; this documentation update is not a package release.
+
 All notable changes to UltraCompress are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning per [SemVer](https://semver.org/).
 
 > **Note (2026-05-25):** Historical release notes pre-0.6.7 have been condensed during a documentation refresh. Detailed per-release internal notes (including method-internal specifics) are available to partners under NDA — contact legal@sipsalabs.com.

@@ -1,3 +1,5 @@
+> Historical documentation. UltraCompress is retired. Its public materials preserve historical research; new API access and paid pilots are no longer offered. Earlier commands and service descriptions below do not describe the current public CLI. See the [repository README](https://github.com/sipsalabs/ultracompress#the-public-cli-what-pip-install-gives-you) for its structure/fingerprint checks and recorded-demo behavior.
+
 # UltraCompress
 
 > Extreme compression for large language models.
